@@ -166,7 +166,7 @@ deploy:
   description: 'Automatic Build'
   provider: GitHub
   auth_token:
-    secure: 17200aff7ebf0bd4a2beb64a80e8a344589e1fc8
+    secure: 
   artifact: update,build
   draft: false
   prerelease: false
