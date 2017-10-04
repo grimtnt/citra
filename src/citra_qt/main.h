@@ -75,7 +75,6 @@ private:
 
     void ConnectWidgetEvents();
     void ConnectMenuEvents();
-    void ConnectToolbarEvents();
 
     bool LoadROM(const QString& filename);
     void BootGame(const QString& filename);
