@@ -172,4 +172,3 @@ deploy:
   prerelease: false
   on:
     branch: master
-    appveyor_repo_tag: true
