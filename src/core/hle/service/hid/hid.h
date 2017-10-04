@@ -276,7 +276,5 @@ void Shutdown();
 
 /// Reload input devices. Used when input configuration changed
 void ReloadInputDevices();
-
-PadState& GetInputsThisFrame();
 }
 }
