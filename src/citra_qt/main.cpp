@@ -107,7 +107,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     ConnectWidgetEvents();
     ConnectToolbarEvents();
 
-    setWindowTitle(QString("Citra %1| %2-%3")
+    setWindowTitle(QString("Citra Canary | tomodachi-%3")
                        .arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
     show();
 
