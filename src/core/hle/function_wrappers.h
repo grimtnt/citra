@@ -151,11 +151,9 @@ void Wrap() {
     FuncReturn(func(PARAM(0)).raw);
 }
 
-template <ResultCode func(s64*, u32, u32*, u32)>
+template <ResultCode func(VAddr, u32, VAddr, u32)>
 void Wrap() {
-    FuncReturn(func((s64*)Memory::GetPointer(PARAM(0)), PARAM(1),
-                    (u32*)Memory::GetPointer(PARAM(2)), (s32)PARAM(3))
-                   .raw);
+    FuncReturn(func(PARAM(0), PARAM(1), PARAM(2), (s32)PARAM(3)).raw);
 }
 
 template <ResultCode func(u32*, VAddr)>
