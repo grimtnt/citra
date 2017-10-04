@@ -162,10 +162,14 @@ artifacts:
     name: update
 
 deploy:
+  release: u-$(appveyor_build_version)
+  description: 'Automatic Build'
   provider: GitHub
-  release: $(appveyor_repo_tag_name)
   auth_token:
-    secure: "42cf040ba610a55d3333bacd90079484850fca85"
+    secure: 17200aff7ebf0bd4a2beb64a80e8a344589e1fc8
   artifact: update,build
   draft: false
   prerelease: false
+  on:
+    branch: master
+    appveyor_repo_tag: true
