@@ -201,21 +201,17 @@ static ResultCode UnmapMemoryBlock(Kernel::Handle handle, u32 addr) {
 }
 
 /// Connect to an OS service given the port name, returns the handle to the port to out
-static ResultCode ConnectToPort(Kernel::Handle* out_handle, VAddr port_name_address) {
-    if (!Memory::IsValidVirtualAddress(port_name_address))
+static ResultCode ConnectToPort(Kernel::Handle* out_handle, const char* port_name) {
+    if (port_name == nullptr)
         return Kernel::ERR_NOT_FOUND;
-
-    static constexpr std::size_t PortNameMaxLength = 11;
-    // Read 1 char beyond the max allowed port name to detect names that are too long.
-    std::string port_name = Memory::ReadCString(port_name_address, PortNameMaxLength + 1);
-    if (port_name.size() > PortNameMaxLength)
+    if (std::strlen(port_name) > 11)
         return Kernel::ERR_PORT_NAME_TOO_LONG;
 
-    LOG_TRACE(Kernel_SVC, "called port_name=%s", port_name.c_str());
+    LOG_TRACE(Kernel_SVC, "called port_name=%s", port_name);
 
     auto it = Service::g_kernel_named_ports.find(port_name);
     if (it == Service::g_kernel_named_ports.end()) {
-        LOG_WARNING(Kernel_SVC, "tried to connect to unknown port: %s", port_name.c_str());
+        LOG_WARNING(Kernel_SVC, "tried to connect to unknown port: %s", port_name);
         return Kernel::ERR_NOT_FOUND;
     }
 
@@ -305,11 +301,12 @@ static ResultCode WaitSynchronization1(Kernel::Handle handle, s64 nano_seconds) 
 }
 
 /// Wait for the given handles to synchronize, timeout after the specified nanoseconds
-static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 handle_count,
+static ResultCode WaitSynchronizationN(s32* out, Kernel::Handle* handles, s32 handle_count,
                                        bool wait_all, s64 nano_seconds) {
     Kernel::Thread* thread = Kernel::GetCurrentThread();
 
-    if (!Memory::IsValidVirtualAddress(handles_address))
+    // Check if 'handles' is invalid
+    if (handles == nullptr)
         return Kernel::ERR_INVALID_POINTER;
 
     // NOTE: on real hardware, there is no nullptr check for 'out' (tested with firmware 4.4). If
@@ -324,8 +321,7 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
     std::vector<ObjectPtr> objects(handle_count);
 
     for (int i = 0; i < handle_count; ++i) {
-        Kernel::Handle handle = Memory::Read32(handles_address + i * sizeof(Kernel::Handle));
-        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handle);
+        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handles[i]);
         if (object == nullptr)
             return ERR_INVALID_HANDLE;
         objects[i] = object;
@@ -454,9 +450,10 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
 }
 
 /// In a single operation, sends a IPC reply and waits for a new request.
-static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_count,
+static ResultCode ReplyAndReceive(s32* index, Kernel::Handle* handles, s32 handle_count,
                                   Kernel::Handle reply_target) {
-    if (!Memory::IsValidVirtualAddress(handles_address))
+    // 'handles' has to be a valid pointer even if 'handle_count' is 0.
+    if (handles == nullptr)
         return Kernel::ERR_INVALID_POINTER;
 
     // Check if 'handle_count' is invalid
@@ -467,8 +464,7 @@ static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_
     std::vector<ObjectPtr> objects(handle_count);
 
     for (int i = 0; i < handle_count; ++i) {
-        Kernel::Handle handle = Memory::Read32(handles_address + i * sizeof(Kernel::Handle));
-        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handle);
+        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handles[i]);
         if (object == nullptr)
             return ERR_INVALID_HANDLE;
         objects[i] = object;
@@ -676,10 +672,8 @@ static void Break(u8 break_reason) {
 }
 
 /// Used to output a message on a debug hardware unit - does nothing on a retail unit
-static void OutputDebugString(VAddr address, int len) {
-    std::vector<char> string(len);
-    Memory::ReadBlock(address, string.data(), len);
-    LOG_DEBUG(Debug_Emulated, "%.*s", len, string.data());
+static void OutputDebugString(const char* string, int len) {
+    LOG_DEBUG(Debug_Emulated, "%.*s", len, string);
 }
 
 /// Get resource limit
@@ -697,9 +691,9 @@ static ResultCode GetResourceLimit(Kernel::Handle* resource_limit, Kernel::Handl
 }
 
 /// Get resource limit current values
-static ResultCode GetResourceLimitCurrentValues(VAddr values, Kernel::Handle resource_limit_handle,
-                                                VAddr names, u32 name_count) {
-    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%08X, name_count=%d",
+static ResultCode GetResourceLimitCurrentValues(s64* values, Kernel::Handle resource_limit_handle,
+                                                u32* names, u32 name_count) {
+    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%p, name_count=%d",
               resource_limit_handle, names, name_count);
 
     SharedPtr<Kernel::ResourceLimit> resource_limit =
@@ -707,19 +701,16 @@ static ResultCode GetResourceLimitCurrentValues(VAddr values, Kernel::Handle res
     if (resource_limit == nullptr)
         return ERR_INVALID_HANDLE;
 
-    for (unsigned int i = 0; i < name_count; ++i) {
-        u32 name = Memory::Read32(names + i * sizeof(u32));
-        s64 value = resource_limit->GetCurrentResourceValue(name);
-        Memory::Write64(values + i * sizeof(u64), value);
-    }
+    for (unsigned int i = 0; i < name_count; ++i)
+        values[i] = resource_limit->GetCurrentResourceValue(names[i]);
 
     return RESULT_SUCCESS;
 }
 
 /// Get resource limit max values
-static ResultCode GetResourceLimitLimitValues(VAddr values, Kernel::Handle resource_limit_handle,
-                                              VAddr names, u32 name_count) {
-    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%08X, name_count=%d",
+static ResultCode GetResourceLimitLimitValues(s64* values, Kernel::Handle resource_limit_handle,
+                                              u32* names, u32 name_count) {
+    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%p, name_count=%d",
               resource_limit_handle, names, name_count);
 
     SharedPtr<Kernel::ResourceLimit> resource_limit =
@@ -727,11 +718,8 @@ static ResultCode GetResourceLimitLimitValues(VAddr values, Kernel::Handle resou
     if (resource_limit == nullptr)
         return ERR_INVALID_HANDLE;
 
-    for (unsigned int i = 0; i < name_count; ++i) {
-        u32 name = Memory::Read32(names + i * sizeof(u32));
-        s64 value = resource_limit->GetMaxResourceValue(names);
-        Memory::Write64(values + i * sizeof(u64), value);
-    }
+    for (unsigned int i = 0; i < name_count; ++i)
+        values[i] = resource_limit->GetMaxResourceValue(names[i]);
 
     return RESULT_SUCCESS;
 }
@@ -1163,9 +1151,9 @@ static ResultCode CreateMemoryBlock(Kernel::Handle* out_handle, u32 addr, u32 si
 }
 
 static ResultCode CreatePort(Kernel::Handle* server_port, Kernel::Handle* client_port,
-                             VAddr name_address, u32 max_sessions) {
+                             const char* name, u32 max_sessions) {
     // TODO(Subv): Implement named ports.
-    ASSERT_MSG(name_address == 0, "Named ports are currently unimplemented");
+    ASSERT_MSG(name == nullptr, "Named ports are currently unimplemented");
 
     using Kernel::ServerPort;
     using Kernel::ClientPort;
