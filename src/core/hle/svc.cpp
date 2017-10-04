@@ -201,17 +201,21 @@ static ResultCode UnmapMemoryBlock(Kernel::Handle handle, u32 addr) {
 }
 
 /// Connect to an OS service given the port name, returns the handle to the port to out
-static ResultCode ConnectToPort(Kernel::Handle* out_handle, const char* port_name) {
-    if (port_name == nullptr)
+static ResultCode ConnectToPort(Kernel::Handle* out_handle, VAddr port_name_address) {
+    if (!Memory::IsValidVirtualAddress(port_name_address))
         return Kernel::ERR_NOT_FOUND;
-    if (std::strlen(port_name) > 11)
+
+    static constexpr std::size_t PortNameMaxLength = 11;
+    // Read 1 char beyond the max allowed port name to detect names that are too long.
+    std::string port_name = Memory::ReadCString(port_name_address, PortNameMaxLength + 1);
+    if (port_name.size() > PortNameMaxLength)
         return Kernel::ERR_PORT_NAME_TOO_LONG;
 
-    LOG_TRACE(Kernel_SVC, "called port_name=%s", port_name);
+    LOG_TRACE(Kernel_SVC, "called port_name=%s", port_name.c_str());
 
     auto it = Service::g_kernel_named_ports.find(port_name);
     if (it == Service::g_kernel_named_ports.end()) {
-        LOG_WARNING(Kernel_SVC, "tried to connect to unknown port: %s", port_name);
+        LOG_WARNING(Kernel_SVC, "tried to connect to unknown port: %s", port_name.c_str());
         return Kernel::ERR_NOT_FOUND;
     }
 
@@ -691,9 +695,9 @@ static ResultCode GetResourceLimit(Kernel::Handle* resource_limit, Kernel::Handl
 }
 
 /// Get resource limit current values
-static ResultCode GetResourceLimitCurrentValues(s64* values, Kernel::Handle resource_limit_handle,
-                                                u32* names, u32 name_count) {
-    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%p, name_count=%d",
+static ResultCode GetResourceLimitCurrentValues(VAddr values, Kernel::Handle resource_limit_handle,
+                                                VAddr names, u32 name_count) {
+    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%08X, name_count=%d",
               resource_limit_handle, names, name_count);
 
     SharedPtr<Kernel::ResourceLimit> resource_limit =
@@ -701,16 +705,19 @@ static ResultCode GetResourceLimitCurrentValues(s64* values, Kernel::Handle reso
     if (resource_limit == nullptr)
         return ERR_INVALID_HANDLE;
 
-    for (unsigned int i = 0; i < name_count; ++i)
-        values[i] = resource_limit->GetCurrentResourceValue(names[i]);
+    for (unsigned int i = 0; i < name_count; ++i) {
+        u32 name = Memory::Read32(names + i * sizeof(u32));
+        s64 value = resource_limit->GetCurrentResourceValue(name);
+        Memory::Write64(values + i * sizeof(u64), value);
+    }
 
     return RESULT_SUCCESS;
 }
 
 /// Get resource limit max values
-static ResultCode GetResourceLimitLimitValues(s64* values, Kernel::Handle resource_limit_handle,
-                                              u32* names, u32 name_count) {
-    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%p, name_count=%d",
+static ResultCode GetResourceLimitLimitValues(VAddr values, Kernel::Handle resource_limit_handle,
+                                              VAddr names, u32 name_count) {
+    LOG_TRACE(Kernel_SVC, "called resource_limit=%08X, names=%08X, name_count=%d",
               resource_limit_handle, names, name_count);
 
     SharedPtr<Kernel::ResourceLimit> resource_limit =
@@ -718,8 +725,11 @@ static ResultCode GetResourceLimitLimitValues(s64* values, Kernel::Handle resour
     if (resource_limit == nullptr)
         return ERR_INVALID_HANDLE;
 
-    for (unsigned int i = 0; i < name_count; ++i)
-        values[i] = resource_limit->GetMaxResourceValue(names[i]);
+    for (unsigned int i = 0; i < name_count; ++i) {
+        u32 name = Memory::Read32(names + i * sizeof(u32));
+        s64 value = resource_limit->GetMaxResourceValue(names);
+        Memory::Write64(values + i * sizeof(u64), value);
+    }
 
     return RESULT_SUCCESS;
 }
@@ -1151,9 +1161,9 @@ static ResultCode CreateMemoryBlock(Kernel::Handle* out_handle, u32 addr, u32 si
 }
 
 static ResultCode CreatePort(Kernel::Handle* server_port, Kernel::Handle* client_port,
-                             const char* name, u32 max_sessions) {
+                             VAddr name_address, u32 max_sessions) {
     // TODO(Subv): Implement named ports.
-    ASSERT_MSG(name == nullptr, "Named ports are currently unimplemented");
+    ASSERT_MSG(name_address == 0, "Named ports are currently unimplemented");
 
     using Kernel::ServerPort;
     using Kernel::ClientPort;
