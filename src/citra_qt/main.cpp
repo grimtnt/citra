@@ -107,8 +107,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     ConnectWidgetEvents();
     ConnectToolbarEvents();
 
-    setWindowTitle(QString("Citra Canary | tomodachi-%3")
-                       .arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
+    setWindowTitle(QString("Citra Nightly | tomodachi-%s-dirty")
+                       .arg(Common::g_scm_desc));
     show();
 
     game_list->PopulateAsync(UISettings::values.gamedir, UISettings::values.gamedir_deepscan);
