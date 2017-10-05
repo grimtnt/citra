@@ -162,10 +162,5 @@ artifacts:
     name: update
 
 deploy:
-  provider: GitHub
-  release: $(appveyor_repo_tag_name)
-  auth_token:
-    secure: "niQJklHhCsD9YpybtdaHixdZnCO0VGj2/R7ELAUKhp5/AO4u2sjHX0Jjzj6UHSx+"
-  artifact: update,build
-  draft: false
-  prerelease: false
+  provider: Environment
+  name: ghreleases
