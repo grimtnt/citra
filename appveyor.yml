@@ -165,4 +165,4 @@ deploy:
   provider: Environment
   name: ghreleases
 on:
- branch: master
+  branch: master
