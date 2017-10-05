@@ -4,15 +4,18 @@
 
 #pragma once
 
-#include <memory>
-#include "core/hle/service/ac/ac.h"
+#include "core/hle/service/service.h"
 
 namespace Service {
 namespace AC {
 
-class AC_I final : public Module::Interface {
+class AC_I final : public Interface {
 public:
-    AC_I(std::shared_ptr<Module> ac);
+    AC_I();
+
+    std::string GetPortName() const override {
+        return "ac:i";
+    }
 };
 
 } // namespace AC

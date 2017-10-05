@@ -3,10 +3,10 @@
 // Refer to the license.txt file included.
 
 #include <array>
+
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "core/hle/ipc.h"
-#include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/event.h"
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/result.h"
@@ -17,169 +17,169 @@
 
 namespace Service {
 namespace AC {
-void Module::Interface::CreateDefaultConfig(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1, 0, 0);
 
-    std::size_t desc_size;
-    VAddr ac_config_addr = rp.PeekStaticBuffer(0, &desc_size);
+struct ACConfig {
+    std::array<u8, 0x200> data;
+};
 
-    ASSERT_MSG(desc_size == sizeof(Module::ACConfig), "Output buffer size not equal ACConfig size");
+static ACConfig default_config{};
 
-    Memory::WriteBlock(ac_config_addr, &ac->default_config, sizeof(ACConfig));
+static bool ac_connected = false;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
+static Kernel::SharedPtr<Kernel::Event> close_event;
+static Kernel::SharedPtr<Kernel::Event> connect_event;
+static Kernel::SharedPtr<Kernel::Event> disconnect_event;
 
-    LOG_WARNING(Service_AC, "(STUBBED) called");
-}
+void CreateDefaultConfig(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-void Module::Interface::ConnectAsync(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x4, 0, 6);
+    u32 ac_config_addr = cmd_buff[65];
 
-    rp.Skip(2, false); // ProcessId descriptor
-    ac->connect_event = rp.PopObject<Kernel::Event>();
+    ASSERT_MSG(cmd_buff[64] == (sizeof(ACConfig) << 14 | 2),
+               "Output buffer size not equal ACConfig size");
 
-    if (ac->connect_event) {
-        ac->connect_event->name = "AC:connect_event";
-        ac->connect_event->Signal();
-        ac->ac_connected = true;
-    }
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
+    Memory::WriteBlock(ac_config_addr, &default_config, sizeof(ACConfig));
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
-void Module::Interface::GetConnectResult(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x5, 0, 2);
-    rp.Skip(2, false); // ProcessId descriptor
+void ConnectAsync(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
-}
-
-void Module::Interface::CloseAsync(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x8, 0, 4);
-    rp.Skip(2, false); // ProcessId descriptor
-
-    ac->close_event = rp.PopObject<Kernel::Event>();
-
-    if (ac->ac_connected && ac->disconnect_event) {
-        ac->disconnect_event->Signal();
+    connect_event = Kernel::g_handle_table.Get<Kernel::Event>(cmd_buff[4]);
+    if (connect_event) {
+        connect_event->name = "AC:connect_event";
+        connect_event->Signal();
+        ac_connected = true;
     }
-
-    if (ac->close_event) {
-        ac->close_event->name = "AC:close_event";
-        ac->close_event->Signal();
-    }
-
-    ac->ac_connected = false;
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
-}
-
-void Module::Interface::GetCloseResult(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x9, 0, 2);
-    rp.Skip(2, false); // ProcessId descriptor
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
-void Module::Interface::GetWifiStatus(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xD, 0, 0);
+void GetConnectResult(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
+void CloseAsync(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    if (ac_connected && disconnect_event) {
+        disconnect_event->Signal();
+    }
+
+    close_event = Kernel::g_handle_table.Get<Kernel::Event>(cmd_buff[4]);
+    if (close_event) {
+        close_event->name = "AC:close_event";
+        close_event->Signal();
+    }
+
+    ac_connected = false;
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
+void GetCloseResult(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
+void GetWifiStatus(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
     // TODO(purpasmart96): This function is only a stub,
     // it returns a valid result without implementing full functionality.
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0); // Connection type set to none
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = 0;                  // Connection type set to none
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
-void Module::Interface::GetInfraPriority(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x27, 0, 2);
-    VAddr ac_config = rp.PeekStaticBuffer(0);
+void GetInfraPriority(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0); // Infra Priority, default 0
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = 0;                  // Infra Priority, default 0
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
-void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x2D, 2, 2);
+void SetRequestEulaVersion(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    u32 major = rp.Pop<u8>();
-    u32 minor = rp.Pop<u8>();
+    u32 major = cmd_buff[1] & 0xFF;
+    u32 minor = cmd_buff[2] & 0xFF;
 
-    std::size_t size_desc;
-    VAddr ac_config = rp.PopStaticBuffer(&size_desc, false);
+    ASSERT_MSG(cmd_buff[3] == (sizeof(ACConfig) << 14 | 2),
+               "Input buffer size not equal ACConfig size");
+    ASSERT_MSG(cmd_buff[64] == (sizeof(ACConfig) << 14 | 2),
+               "Output buffer size not equal ACConfig size");
 
-    ASSERT_MSG(size_desc == sizeof(ACConfig), "Input buffer size not equal ACConfig size");
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0); // Infra Priority
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = 0;                  // Infra Priority
 
     LOG_WARNING(Service_AC, "(STUBBED) called, major=%u, minor=%u", major, minor);
 }
 
-void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x30, 0, 4);
-    rp.Skip(2, false); // ProcessId descriptor
+void RegisterDisconnectEvent(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    ac->disconnect_event = rp.PopObject<Kernel::Event>();
-    if (ac->disconnect_event) {
-        ac->disconnect_event->name = "AC:disconnect_event";
+    disconnect_event = Kernel::g_handle_table.Get<Kernel::Event>(cmd_buff[4]);
+    if (disconnect_event) {
+        disconnect_event->name = "AC:disconnect_event";
     }
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
-void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x3E, 1, 2);
-    u32 unk = rp.Pop<u32>();
-    u32 unk_descriptor = rp.Pop<u32>();
-    u32 unk_param = rp.Pop<u32>();
+void IsConnected(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push(ac->ac_connected);
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = ac_connected;
 
-    LOG_WARNING(Service_AC, "(STUBBED) called unk=%08X descriptor=%08X param=%08X", unk,
-                unk_descriptor, unk_param);
+    LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
-void Module::Interface::SetClientVersion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x40, 1, 2);
+void SetClientVersion(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    u32 version = rp.Pop<u32>();
-    rp.Skip(2, false); // ProcessId descriptor
+    const u32 version = cmd_buff[1];
+    self->SetVersion(version);
 
     LOG_WARNING(Service_AC, "(STUBBED) called, version: 0x%08X", version);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RESULT_SUCCESS);
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> ac, const char* name, u32 max_session)
-    : ac(std::move(ac)), ServiceFramework(name, max_session) {}
+void Init() {
+    AddService(new AC_I);
+    AddService(new AC_U);
 
-void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto ac = std::make_shared<Module>();
-    std::make_shared<AC_I>(ac)->InstallAsService(service_manager);
-    std::make_shared<AC_U>(ac)->InstallAsService(service_manager);
+    ac_connected = false;
+
+    close_event = nullptr;
+    connect_event = nullptr;
+    disconnect_event = nullptr;
+}
+
+void Shutdown() {
+    ac_connected = false;
+
+    close_event = nullptr;
+    connect_event = nullptr;
+    disconnect_event = nullptr;
 }
 
 } // namespace AC
