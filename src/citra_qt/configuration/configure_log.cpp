@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include "citra_qt/configuration/configure_log.h"
 #include "core/settings.h"
+#include "ui_configure_log.h" 
 
 LogFilterModel::LogFilterModel(QObject* parent) : QAbstractItemModel(parent) {}
 
