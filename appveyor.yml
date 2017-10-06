@@ -20,8 +20,7 @@ platform:
 
 configuration:
   - Release
-
--
+  
   branches:
     only:
       - master
