@@ -46,8 +46,7 @@ public:
 std::vector<u8> EncryptSignCCM(const std::vector<u8>& pdata, const CCMNonce& nonce,
                                size_t slot_id) {
     if (!IsNormalKeyAvailable(slot_id)) {
-        //More fps, removable.
-        //LOG_ERROR(HW_AES, "Key slot %d not available. Will use zero key.", slot_id);
+        LOG_ERROR(HW_AES, "Key slot %d not available. Will use zero key.", slot_id);
     }
     const AESKey normal = GetNormalKey(slot_id);
     std::vector<u8> cipher(pdata.size() + CCM_MAC_SIZE);
