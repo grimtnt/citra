@@ -85,13 +85,6 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 static bool ValidateFilters(const u32 filters, const std::string& input) {
     bool valid = true;
     bool local_filter = true;
-    if ((filters & SWKBDFILTER_DIGITS) == SWKBDFILTER_DIGITS) {
-        valid &= local_filter =
-            std::all_of(input.begin(), input.end(), [](const char c) { return !std::isdigit(c); });
-        if (!local_filter) {
-            std::cout << "Input must not contain any digits" << std::endl;
-        }
-    }
     if ((filters & SWKBDFILTER_AT) == SWKBDFILTER_AT) {
         valid &= local_filter = input.find("@") == std::string::npos;
         if (!local_filter) {
@@ -204,6 +197,7 @@ void SoftwareKeyboard::Update() {
     }
     do {
         std::cout << "Enter the text you will send to the application:" << std::endl;
+        std::cout << "Please see this before: https://github.com/citra-emu/citra/issues/2994" << std::endl;
         std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
@@ -233,6 +227,7 @@ void SoftwareKeyboard::Update() {
     do {
         std::cout << "\nPlease type the number of the button you will press: \n"
                   << option_text << std::endl;
+        std::cout << "\n0: Cancel, 1: OK \n" << std::endl;   
         std::getline(std::cin, option);
     } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
 
