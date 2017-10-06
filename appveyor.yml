@@ -162,7 +162,7 @@ artifacts:
     
   branches:
     only:
-      - master
+      master
       
 deploy:
  - provider: Environment
