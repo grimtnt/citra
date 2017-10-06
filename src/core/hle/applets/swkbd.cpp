@@ -85,7 +85,6 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 static bool ValidateFilters(const u32 filters, const std::string& input) {
     bool valid = true;
     bool local_filter = true;
-
     if ((filters & SWKBDFILTER_AT) == SWKBDFILTER_AT) {
         valid &= local_filter = input.find("@") == std::string::npos;
         if (!local_filter) {
@@ -102,36 +101,6 @@ static bool ValidateFilters(const u32 filters, const std::string& input) {
         valid &= local_filter = input.find("\\") == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the \\ symbol" << std::endl;
-        }
-    }
-        if ((filters)) {
-        valid &= local_filter = input.find("¿") == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the ¿ symbol" << std::endl;
-        }
-    }
-        if ((filters)) {
-        valid &= local_filter = input.find("¡") == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the ¡ symbol" << std::endl;
-        }
-    }
-        if ((filters)) {
-        valid &= local_filter = input.find("´´´´") == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the ´´´´ symbol" << std::endl;
-        }
-    }
-        if ((filters)) {
-        valid &= local_filter = input.find("````") == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the ```` symbol" << std::endl;
-        }
-    }
-        if ((filters)) {
-        valid &= local_filter = input.find("¨") == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the ¨ symbol" << std::endl;
         }
     }
     if ((filters & SWKBDFILTER_PROFANITY) == SWKBDFILTER_PROFANITY) {
@@ -189,9 +158,7 @@ static bool ValidateInput(const SoftwareKeyboardConfig& config, const std::strin
         // TODO(jroweboy): What does hardware do in this case?
         LOG_CRITICAL(Service_APT, "Application requested unknown validation method. Method: %u",
                      static_cast<u32>(config.valid_input));
-        //UNREACHABLE();
-        std::cout << "Error" << std::endl;
-        break;
+        UNREACHABLE();
     }
 
     return valid;
@@ -230,6 +197,7 @@ void SoftwareKeyboard::Update() {
     }
     do {
         std::cout << "Enter the text you will send to the application:" << std::endl;
+        std::cout << "Please do not write ¿, ¡, ´´´´, ```` and ¨ or the game will crash!" << std::endl;
         std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
