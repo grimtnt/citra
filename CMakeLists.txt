@@ -94,6 +94,8 @@ if (NOT MSVC)
 
     if (MINGW)
         add_definitions(-DMINGW_HAS_SECURE_API)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse -msse4.1")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -msse4.1")
 
         if (MINGW_STATIC_BUILD)
             add_definitions(-DQT_STATICPLUGIN)
