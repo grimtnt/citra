@@ -197,7 +197,7 @@ void SoftwareKeyboard::Update() {
     }
     do {
         std::cout << "Enter the text you will send to the application:" << std::endl;
-        std::cout << "Please do not write ¿, ¡, ´´´´, ```` and ¨ or the game will crash!" << std::endl;
+        std::cout << "Please see this before: https://github.com/citra-emu/citra/issues/2994" << std::endl;
         std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
