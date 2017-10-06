@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vector> 
 #include "common/common_types.h"
 
 namespace Log {
@@ -96,6 +97,22 @@ enum class Class : ClassType {
     Count              ///< Total number of logging classes
 };
 
+class ClassHierarchy {
+public:
+    struct Group {
+        Class parent;
+        std::vector<Class> sub_classes;
+    };
+
+    ClassHierarchy();
+    const std::vector<Group>& Groups() const {
+        return groups;
+    }
+
+private:
+    std::vector<Group> groups;
+} const extern g_class_hierarchy;
+    
 /// Logs a message to the global logger.
 void LogMessage(Class log_class, Level log_level, const char* filename, unsigned int line_nr,
                 const char* function,
