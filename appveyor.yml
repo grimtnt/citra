@@ -22,7 +22,7 @@ configuration:
   - Release
   
   branches:
-    only:
+    - only:
       - master
 
 install:
