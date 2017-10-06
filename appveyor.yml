@@ -17,14 +17,12 @@ environment:
 
 platform:
   - x64
-
--
-  branches:
-    only:
-      - master
       
 configuration:
   - Release
+  - branches:
+    only:
+      - master
   
   branches:
     - only:
