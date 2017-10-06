@@ -159,6 +159,11 @@ artifacts:
     name: debugsymbols
   - path: $(BUILD_UPDATE)
     name: update
+    
+  branches:
+    only:
+      - master
+      
 deploy:
  - provider: Environment
    name: ghreleases
