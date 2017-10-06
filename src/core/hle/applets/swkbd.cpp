@@ -8,6 +8,9 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <QString>
+#include <QDialog>
+#include <QInputDialog> 
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -188,16 +191,17 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 void SoftwareKeyboard::Update() {
     // TODO(Subv): Handle input using the touch events from the HID module
     // Until then, just read input from the terminal
-    std::string input;
-    std::cout << "SOFTWARE KEYBOARD" << std::endl;
     // Display hint text
     std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
     if (!hint.empty()) {
-        std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
+        //std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
     }
     do {
-        std::cout << "Enter the text you will send to the application:" << std::endl;
-        std::cout << "Please see this before: https://github.com/citra-emu/citra/issues/2994" << std::endl;
+        QString inpututf16 = QInputDialog::getText(this, tr("swkbd"),
+                                         tr("Enter the text you will send to the application:"), QLineEdit::Normal,
+                                         QDir::home().dirName(), &ok);
+        std::string inpututf8 = inpututf16.toLocal8Bit().constData();
+        std::string input = "Citra";
         std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
@@ -223,12 +227,25 @@ void SoftwareKeyboard::Update() {
         }
         option_text += Common::StringFromFormat("\t(%u) %s\t", i, final_text);
     }
+    std::string optionint;
     std::string option;
     do {
-        std::cout << "\nPlease type the number of the button you will press: \n"
-                  << option_text << std::endl;
-        std::cout << "\n0: Cancel, 1: OK \n" << std::endl;   
-        std::getline(std::cin, option);
+   if (input = "")
+   {
+       break;
+   }
+   else
+   {
+   if (num_buttons == 0)  
+   {  
+   optionint = 0;
+   }  
+   else  
+   {  
+   optionint = 1;
+   }  
+   }
+        std::getline(optionint, option);
     } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
 
     s32 button = std::stol(option);
