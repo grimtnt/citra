@@ -21,6 +21,11 @@ platform:
 configuration:
   - Release
 
+-
+  branches:
+    only:
+      - master
+
 install:
   - git submodule update --init --recursive
   - ps: |
@@ -160,10 +165,6 @@ artifacts:
   - path: $(BUILD_UPDATE)
     name: update
     
-  branches:
-    - only:
-     - master
-      
 deploy:
  - provider: Environment
    name: ghreleases
