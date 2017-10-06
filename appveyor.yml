@@ -161,8 +161,8 @@ artifacts:
     name: update
     
   branches:
-    only:
-      master
+    - only:
+     - master
       
 deploy:
  - provider: Environment
