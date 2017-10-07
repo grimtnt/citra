@@ -223,17 +223,15 @@ void SoftwareKeyboard::Update() {
         option_text += Common::StringFromFormat("\t(%u) %s\t", i, final_text);
     }
     std::string option;
-    std::string optionint;
     do {
        if (num_buttons == 0)  
        {  
-       optionint = "0";
+       option = "0";
        }  
        else  
        {  
-       optionint = "1";
+       option = "1";
        }  
-       std::getline(optionint, option);
      } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
 
     s32 button = std::stol(option);
