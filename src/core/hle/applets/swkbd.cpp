@@ -19,7 +19,6 @@
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
 #include "video_core/video_core.h"
-#include "stdafx.h"
 #using <system.windows.forms.dll>
 #using <Microsoft.VisualBasic.dll>
 
