@@ -6,8 +6,10 @@
 #include <cctype>
 #include <cstring>
 #include <functional>
-#include <iostream>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <QMessageBox>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -19,10 +21,10 @@
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
 #include "video_core/video_core.h"
-#using <system.windows.forms.dll>
-#using <Microsoft.VisualBasic.dll>
-
-using namespace System;
+#using<system.dll>  
+using namespace System;  
+using namespace System::IO;  
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -198,8 +200,35 @@ void SoftwareKeyboard::Update() {
         //std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
     }
     do {
+        ofstream file("swkbd.txt");
+        if(!file.is_open())
+        {
+             char strCreate[6];
+             ofstream fs("swkbd.txt"); 
+
+             fs << "Citra" << endl;
+             fs.close();
+            
+             QMessageBox msgBox;
+             msgBox.setText("Citra");
+             msgBox.setInformativeText("Edit the software keyboard input in swkbd.txt.");
+             msgBox.setStandardButtons(QMessageBox::OK);
+             msgBox.setDefaultButton(QMessageBox::OK);
+             int ret = msgBox.exec();
+        }
+        
         std::string input = "Citra";
-        input = Microsoft::VisualBasic::Interaction::InputBox(L"Text:", L"swkbd", L"Citra", 500, 500);
+        String^ fileName = "swkbd.txt";  
+        
+        StreamReader^ din = File::OpenText(fileName);  
+  
+        String^ str;  
+        int count = 0;  
+        while ((str = din->ReadLine()) != nullptr)   
+        {  
+         count++;  
+         input = str;
+        }
     } while (!ValidateInput(config, input));
 
     std::string option_text;
