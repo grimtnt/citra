@@ -155,7 +155,7 @@ void HandleAssociationResponseFrame(const Network::WifiPacket& packet) {
                "Could not join network");
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
-        ASSERT(connection_status.status == static_cast<u32>(NetworkStatus::NotConnected));
+        ASSERT(connection_status.status == static_cast<u32>(NetworkStatus::Connecting));
     }
 
     // Send the EAPoL-Start packet to the server.
@@ -171,8 +171,9 @@ void HandleAssociationResponseFrame(const Network::WifiPacket& packet) {
 }
 
 static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
-    std::lock_guard<std::recursive_mutex> hle_lock(HLE::g_hle_lock);
-    std::lock_guard<std::mutex> lock(connection_status_mutex);
+    std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
+    std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
+    std::lock(hle_lock, lock);
 
     if (GetEAPoLFrameType(packet.data) == EAPoLStartMagic) {
         if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
@@ -220,7 +221,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         // The 3ds does this presumably to support spectators.
         connection_status_event->Signal();
     } else {
-        if (connection_status.status != static_cast<u32>(NetworkStatus::NotConnected)) {
+        if (connection_status.status != static_cast<u32>(NetworkStatus::Connecting)) {
             LOG_DEBUG(Service_NWM, "Connection sequence aborted, because connection status is %u",
                       connection_status.status);
             return;
@@ -249,15 +250,15 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         // Some games require ConnectToNetwork to block, for now it doesn't
         // If blocking is implemented this lock needs to be changed,
         // otherwise it might cause deadlocks
-        std::lock_guard<std::recursive_mutex> lock(HLE::g_hle_lock);
         connection_status_event->Signal();
     }
 }
 
 static void HandleSecureDataPacket(const Network::WifiPacket& packet) {
     auto secure_data = ParseSecureDataHeader(packet.data);
-    std::lock_guard<std::recursive_mutex> hle_lock(HLE::g_hle_lock);
-    std::lock_guard<std::mutex> lock(connection_status_mutex);
+    std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
+    std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
+    std::lock(hle_lock, lock);
 
     if (secure_data.src_node_id == connection_status.network_node_id) {
         // Ignore packets that came from ourselves.
@@ -315,7 +316,7 @@ void StartConnectionSequence(const MacAddress& server) {
     WifiPacket auth_request;
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
-        ASSERT(connection_status.status == static_cast<u32>(NetworkStatus::NotConnected));
+        ASSERT(connection_status.status == static_cast<u32>(NetworkStatus::Connecting));
 
         // TODO(Subv): Handle timeout.
 
@@ -773,8 +774,6 @@ static void BeginHostingNetwork(Interface* self) {
                 network_info.host_mac_address = {{0x0, 0x0, 0x0, 0x0, 0x0, 0x0}};
             }
         }
-
-        current_node.address = network_info.host_mac_address;
         node_info[0] = current_node;
 
         // If the game has a preferred channel, use that instead.
@@ -973,7 +972,8 @@ static void PullPacket(Interface* self) {
 
     if (data_size > max_out_buff_size) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-        rb.Push<u32>(0xE10113E9);
+        rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
+                           ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
     }
 
