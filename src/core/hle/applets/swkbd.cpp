@@ -6,10 +6,8 @@
 #include <cctype>
 #include <cstring>
 #include <functional>
-#include <string>
 #include <iostream>
-#include <fstream>
-#include <istream>
+#include <string>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -21,10 +19,6 @@
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
 #include "video_core/video_core.h"
-#using<system.dll>  
-using namespace System;  
-using namespace System::IO;  
-using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -194,35 +188,16 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 void SoftwareKeyboard::Update() {
     // TODO(Subv): Handle input using the touch events from the HID module
     // Until then, just read input from the terminal
+    std::string input;
+    std::cout << "SOFTWARE KEYBOARD" << std::endl;
     // Display hint text
     std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
     if (!hint.empty()) {
-        //std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
+        std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
     }
     do {
-        ofstream file("swkbd.txt");
-        if(!file.is_open())
-        {
-             char strCreate[6];
-             ofstream fs("swkbd.txt"); 
-
-             fs << "Citra" << endl;
-             fs.close();
-             std::cout << "Edit the software keyboard input in swkbd.txt." << std::endl;
-        }
-        
-        std::string input = "Citra";
-        String^ fileName = "swkbd.txt";  
-        
-        StreamReader^ din = File::OpenText(fileName);  
-  
-        String^ str;  
-        int count = 0;  
-        while ((str = din->ReadLine()) != nullptr)   
-        {  
-         count++;  
-         input = str;
-        }
+        std::cout << "Enter the text you will send to the application:" << std::endl;
+        std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
     std::string option_text;
@@ -247,24 +222,19 @@ void SoftwareKeyboard::Update() {
         }
         option_text += Common::StringFromFormat("\t(%u) %s\t", i, final_text);
     }
-    std::string optionint;
     std::string option;
+    std::string optionint;
     do {
-   if (input = "")
-   {
-       input = "Citra";
-   }
-
-   if (num_buttons == 0)  
-   {  
-   optionint = 0;
-   }  
-   else  
-   {  
-   optionint = 1;
-   }  
-      std::getline(optionint, option);
-    } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
+       if (num_buttons == 0)  
+       {  
+       optionint = "0";
+       }  
+       else  
+       {  
+       optionint = "1";
+       }  
+       std::getline(optionint, option);
+     } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
 
     s32 button = std::stol(option);
     switch (config.num_buttons_m1) {
