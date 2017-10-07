@@ -9,7 +9,6 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <QMessageBox>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -208,13 +207,7 @@ void SoftwareKeyboard::Update() {
 
              fs << "Citra" << endl;
              fs.close();
-            
-             QMessageBox msgBox;
-             msgBox.setText("Citra");
-             msgBox.setInformativeText("Edit the software keyboard input in swkbd.txt.");
-             msgBox.setStandardButtons(QMessageBox::OK);
-             msgBox.setDefaultButton(QMessageBox::OK);
-             int ret = msgBox.exec();
+             std::cout << "Edit the software keyboard input in swkbd.txt." << std::endl;
         }
         
         std::string input = "Citra";
