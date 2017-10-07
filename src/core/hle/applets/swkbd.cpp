@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <istream>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
