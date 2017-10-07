@@ -189,14 +189,13 @@ void SoftwareKeyboard::Update() {
     // TODO(Subv): Handle input using the touch events from the HID module
     // Until then, just read input from the terminal
     std::string input;
-    std::cout << "SOFTWARE KEYBOARD" << std::endl;
     // Display hint text
     std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
     if (!hint.empty()) {
         std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
     }
     do {
-        std::cout << "Enter the text you will send to the application:" << std::endl;
+        std::cout << "Text:" << std::endl;
         std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
