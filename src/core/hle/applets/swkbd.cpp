@@ -19,7 +19,11 @@
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
 #include "video_core/video_core.h"
-#include "Win32InputBox.h"
+#include "stdafx.h"
+#using <system.windows.forms.dll>
+#using <Microsoft.VisualBasic.dll>
+
+using namespace System;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -196,7 +200,7 @@ void SoftwareKeyboard::Update() {
     }
     do {
         std::string input = "Citra";
-        CWin32InputBox::InputBox("swkbd", "Text:", input, 100, false);
+        input = Microsoft::VisualBasic::Interaction::InputBox(L"Text:", L"swkbd", L"Citra", 500, 500);
     } while (!ValidateInput(config, input));
 
     std::string option_text;
