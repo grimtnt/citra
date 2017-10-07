@@ -8,6 +8,8 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <QString>
+#include <QWidget>
 #include <QDialog>
 #include <QInputDialog>
 #include "common/assert.h"
