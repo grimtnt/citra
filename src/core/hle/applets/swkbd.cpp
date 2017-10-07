@@ -10,7 +10,10 @@
 #include <string>
 #include <QString>
 #include <QDialog>
-#include <QInputDialog> 
+#include <QInputDialog>
+#include <QDesktopWidget>
+#include <QtGui>
+#include <QtWidgets>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -232,10 +235,9 @@ void SoftwareKeyboard::Update() {
     do {
    if (input = "")
    {
-       break;
+       input = "Citra";
    }
-   else
-   {
+
    if (num_buttons == 0)  
    {  
    optionint = 0;
@@ -244,8 +246,7 @@ void SoftwareKeyboard::Update() {
    {  
    optionint = 1;
    }  
-   }
-        std::getline(optionint, option);
+      std::getline(optionint, option);
     } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
 
     s32 button = std::stol(option);
