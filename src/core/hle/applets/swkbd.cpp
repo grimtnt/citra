@@ -8,12 +8,8 @@
 #include <functional>
 #include <iostream>
 #include <string>
-#include <QString>
 #include <QDialog>
 #include <QInputDialog>
-#include <QDesktopWidget>
-#include <QtGui>
-#include <QtWidgets>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -200,9 +196,7 @@ void SoftwareKeyboard::Update() {
         //std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
     }
     do {
-        QString inpututf16 = QInputDialog::getText(this, tr("swkbd"),
-                                         tr("Enter the text you will send to the application:"), QLineEdit::Normal,
-                                         QDir::home().dirName(), &ok);
+        std::u16string inpututf16 = QInputDialog::getText(this, tr("swkbd"), tr("Enter the text you will send to the application:"), QLineEdit::Normal, QDir::home().dirName(), &ok);
         std::string inpututf8 = inpututf16.toLocal8Bit().constData();
         std::string input = "Citra";
         std::getline(std::cin, input);
