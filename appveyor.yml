@@ -68,8 +68,9 @@ after_build:
           mkdir $RELEASE_DIST
           mkdir $RELEASE_DIST/platforms
 
-          # copy the compiled binaries and other release files to the release folder
+          # copy the compiled binaries and other release files to the release folder and rename citra-qt.exe to citra-qt-sse4.1.exe
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST
+          Rename-Item $RELEASE_DIST/citra-qt.exe citra-qt-sse4.1.exe
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
           # copy all the dll dependencies to the release folder
