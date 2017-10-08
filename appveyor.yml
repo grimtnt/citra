@@ -95,7 +95,6 @@ after_build:
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/platforms/qwindows.dll" -force -destination "$RELEASE_DIST/platforms"
 
           7z a -tzip $MINGW_BUILD_ZIP $RELEASE_DIST\*
-        }
 
 test_script:
   - cd %BUILD_TYPE%_build
