@@ -53,17 +53,9 @@ after_build:
         $GITDATE = $(git show -s --date=short --format='%ad') -replace "-",""
         $GITREV = $(git show -s --format='%h')
 
-        # Find out which kind of release we are producing by tag name
-        if ($env:APPVEYOR_REPO_TAG_NAME) {
-          $RELEASE_DIST, $RELEASE_VERSION = $env:APPVEYOR_REPO_TAG_NAME.split('-')
-        } else {
-          # There is no repo tag - make assumptions
-          $RELEASE_DIST = "head"
-        }
+          $RELEASE_DIST = "tomodachi"
 
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
-          # not going to bother adding separate debug symbols for mingw, so just upload a README for it
-          # if someone wants to add them, change mingw to compile with -g and use objdump and strip to separate the symbols from the binary
 
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
@@ -80,8 +72,6 @@ after_build:
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR/README.md" -destination $RELEASE_DIST
           # copy all the dll dependencies to the release folder
           # hardcoded list because we don't build static and determining the list of dlls from the binary is a pain.
           $MingwDLLs = "Qt5Core.dll","Qt5Widgets.dll","Qt5Gui.dll","Qt5OpenGL.dll",
