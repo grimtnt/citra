@@ -208,6 +208,15 @@ void GRenderWindow::closeEvent(QCloseEvent* event) {
 
 void GRenderWindow::keyPressEvent(QKeyEvent* event) {
     InputCommon::GetKeyboard()->PressKey(event->key());
+	
+     // Exit fullscreen in GMainWindow
+     if (event->key() == Qt::Key_Return) {
+         if (event->modifiers() && Qt::AltModifier) {
+             emit ExitFullscreen();
+         }
+     } else if (event->key() == Qt::Key_Escape) {
+         emit ExitFullscreen();
+     }
 }
 
 void GRenderWindow::keyReleaseEvent(QKeyEvent* event) {
