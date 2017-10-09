@@ -75,7 +75,6 @@ private:
 
     void ConnectWidgetEvents();
     void ConnectMenuEvents();
-    void ConnectToolbarEvents();
 
     bool LoadROM(const QString& filename);
     void BootGame(const QString& filename);
@@ -117,6 +116,8 @@ private slots:
     void OnStartGame();
     void OnPauseGame();
     void OnStopGame();
+    void OnDisplayFullscreen();
+    void OnExitFullscreen();
     /// Called whenever a user selects a game in the game list widget.
     void OnGameListLoadFile(QString game_path);
     void OnGameListOpenSaveFolder(u64 program_id);
@@ -172,6 +173,7 @@ protected:
     void dropEvent(QDropEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
+	void keyPressEvent(QKeyEvent* event) override;
 };
 
 #endif // _CITRA_QT_MAIN_HXX_

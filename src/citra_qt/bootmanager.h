@@ -146,6 +146,7 @@ public slots:
 signals:
     /// Emitted when the window is closed
     void Closed();
+	void ExitFullscreen();
 
 private:
     void OnMinimalClientAreaChangeRequest(

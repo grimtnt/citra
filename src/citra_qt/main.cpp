@@ -107,7 +107,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
 
     ConnectMenuEvents();
     ConnectWidgetEvents();
-    ConnectToolbarEvents(); 
     
     setWindowTitle(QString("Citra %1| %2-%3")
                        .arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
@@ -255,6 +254,7 @@ void GMainWindow::InitializeHotkeys() {
             SLOT(OnStartGame()));
     connect(GetHotkey("Main Window", "Swap Screens", render_window), SIGNAL(activated()), this,
             SLOT(OnSwapScreens()));
+	connect(render_window, &GRenderWindow::ExitFullscreen, this, &GMainWindow::OnExitFullscreen);
 }
 
 void GMainWindow::SetDefaultUIGeometry() {
@@ -328,58 +328,28 @@ void GMainWindow::ConnectMenuEvents() {
     ui.action_Show_Filter_Bar->setShortcut(tr("CTRL+F"));
     connect(ui.action_Show_Filter_Bar, &QAction::triggered, this, &GMainWindow::OnToggleFilterBar);
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
-}
-
-void GMainWindow::ConnectToolbarEvents(){
-    // File
-    connect(ui.action_Toolbar_Load_File, &QAction::triggered, this, &GMainWindow::OnMenuLoadFile);
-
-    // Toggle fullscreen
-    connect(ui.action_Toolbar_Toggle_Fullscreen, &QAction::triggered, this, [this] {
-        if (isFullScreen()) {
-            showNormal();
-            ui.action_Toolbar_Toggle_Fullscreen->setIcon(QIcon(":toolbar_icons/rc/fullscreen.png"));
-        } else {
-            showFullScreen();
-            ui.action_Toolbar_Toggle_Fullscreen->setIcon(QIcon(":toolbar_icons/rc/fullscreen_exit.png"));
-        }
-     } );
-
-    // Emulation
-    connect(ui.action_Toolbar_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
-    connect(ui.action_Toolbar_Start_Pause, &QAction::triggered, this, [this] {
-        if (emulation_running) {
-            OnPauseGame();
-            emulation_running = false;
-        } else {
-            OnStartGame();
-            emulation_running = true;
-        }
-    } );
-
-    // Configure
-    connect(ui.action_Toolbar_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
+	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::OnDisplayFullscreen);
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
-    QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
-
-    if (show) {
-        for (QDockWidget* widget : widgets) {
-            QWidget* old = widget->titleBarWidget();
-            widget->setTitleBarWidget(nullptr);
-            if (old != nullptr)
-                delete old;
-        }
-    } else {
-        for (QDockWidget* widget : widgets) {
-            QWidget* old = widget->titleBarWidget();
-            widget->setTitleBarWidget(new QWidget());
-            if (old != nullptr)
-                delete old;
-        }
-    }
-}
+     QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
+ 
+     if (show) {
+         for (QDockWidget* widget : widgets) {
+             QWidget* old = widget->titleBarWidget();
+             widget->setTitleBarWidget(nullptr);
+             if (old != nullptr)
+                 delete old;
+         }
+     } else {
+         for (QDockWidget* widget : widgets) {
+             QWidget* old = widget->titleBarWidget();
+             widget->setTitleBarWidget(new QWidget());
+             if (old != nullptr)
+                 delete old;
+         }
+     }
+ }
 
 bool GMainWindow::LoadROM(const QString& filename) {
     // Shutdown previous session if the emu thread is still active...
@@ -519,10 +489,6 @@ void GMainWindow::ShutdownGame() {
     disconnect(render_window, SIGNAL(Closed()), this, SLOT(OnStopGame()));
 
     // Update the GUI
-    ui.action_Toolbar_Start_Pause->setEnabled(false);
-    ui.action_Toolbar_Start_Pause->setIcon(QIcon(":toolbar_icons/rc/play.png"));
-    ui.action_Toolbar_Start_Pause->setToolTip(tr("Start"));
-    ui.action_Toolbar_Stop->setEnabled(false);
     ui.action_Start->setEnabled(false);
     ui.action_Start->setText(tr("Start"));
     ui.action_Pause->setEnabled(false);
@@ -648,10 +614,6 @@ void GMainWindow::OnStartGame() {
 
     ui.action_Start->setEnabled(false);
     ui.action_Start->setText(tr("Continue"));
-    ui.action_Toolbar_Start_Pause->setEnabled(true);
-    ui.action_Toolbar_Start_Pause->setIcon(QIcon(":toolbar_icons/rc/pause.png"));
-    ui.action_Toolbar_Start_Pause->setToolTip(tr("Pause"));
-    ui.action_Toolbar_Stop->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Pause->setEnabled(true);
     ui.action_Stop->setEnabled(true);
@@ -663,15 +625,26 @@ void GMainWindow::OnPauseGame() {
     ui.action_Start->setEnabled(true);
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(true);
-   
-    ui.action_Toolbar_Start_Pause->setIcon(QIcon(":toolbar_icons/rc/play.png"));
-    ui.action_Toolbar_Start_Pause->setToolTip(tr("Continue"));
 }
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
 }
 
+void GMainWindow::OnDisplayFullscreen() {
+     if (ui.action_Single_Window_Mode->isChecked()) {
+         ui.menubar->hide();
+         statusBar()->hide();
+         showFullScreen();
+     }
+ }
+ 
+ void GMainWindow::OnExitFullscreen() {
+     statusBar()->setVisible(ui.action_Show_Status_Bar->isChecked());
+     ui.menubar->show();
+     showMaximized();
+ }
+ 
 void GMainWindow::ToggleWindowMode() {
     if (ui.action_Single_Window_Mode->isChecked()) {
         // Render in the main window...
@@ -880,6 +853,17 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
     event->acceptProposedAction();
 }
 
+void GMainWindow::keyPressEvent(QKeyEvent* event) {
+ 
+     if (event->key() == Qt::Key_Return) {
+         if (event->modifiers() && Qt::AltModifier) {
+             OnExitFullscreen();
+         }
+     } else if (event->key() == Qt::Key_Escape) {
+         OnExitFullscreen();
+     }
+ }
+ 
 bool GMainWindow::ConfirmChangeGame() {
     if (emu_thread == nullptr)
         return true;
