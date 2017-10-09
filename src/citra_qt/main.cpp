@@ -331,7 +331,7 @@ void GMainWindow::ConnectMenuEvents() {
 	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::OnDisplayFullscreen);
 }
 
--void GMainWindow::OnDisplayTitleBars(bool show) {
+void GMainWindow::OnDisplayTitleBars(bool show) {
      QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
  
      if (show) {
