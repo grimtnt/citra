@@ -331,6 +331,26 @@ void GMainWindow::ConnectMenuEvents() {
 	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::OnDisplayFullscreen);
 }
 
+-void GMainWindow::OnDisplayTitleBars(bool show) {
+     QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
+ 
+     if (show) {
+         for (QDockWidget* widget : widgets) {
+             QWidget* old = widget->titleBarWidget();
+             widget->setTitleBarWidget(nullptr);
+             if (old != nullptr)
+                 delete old;
+         }
+     } else {
+         for (QDockWidget* widget : widgets) {
+             QWidget* old = widget->titleBarWidget();
+             widget->setTitleBarWidget(new QWidget());
+             if (old != nullptr)
+                 delete old;
+         }
+     }
+ }
+
 bool GMainWindow::LoadROM(const QString& filename) {
     // Shutdown previous session if the emu thread is still active...
     if (emu_thread != nullptr)
