@@ -17,7 +17,7 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
 
     ui->toggle_vsync->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 
-    ui->layoutBox->setEnabled(!Settings::values.custom_layout);
+    ui->layoutBox->setEnabled(!Settings::values.custom_checkbox);
     
     connect(ui->layout_bg, SIGNAL (released()), this, SLOT (showLayoutBackgroundDialog()));
 }
