@@ -868,7 +868,7 @@ void GMainWindow::keyPressEvent(QKeyEvent* event) {
 	
      if ((event->key() == Qt::Key_F2)) {
          OnStartGame();
-     } else if (event->key() == Qt::F4) {
+     } else if (event->key() == Qt::Key_F4) {
          OnPauseGame();
      }
  }
