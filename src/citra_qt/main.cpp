@@ -869,6 +869,7 @@ void GMainWindow::keyPressEvent(QKeyEvent* event) {
 if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
      }
+}
 
 bool GMainWindow::ConfirmChangeGame() {
     if (emu_thread == nullptr)
