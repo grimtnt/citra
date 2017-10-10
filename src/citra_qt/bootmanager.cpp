@@ -201,6 +201,10 @@ qreal GRenderWindow::windowPixelRatio() {
 #endif
 }
 
+void GRenderWindow::SeparateFromMainWindow(bool separate) {
+     separate_window = separate;
+}
+ 
 void GRenderWindow::closeEvent(QCloseEvent* event) {
     emit Closed();
     QWidget::closeEvent(event);
@@ -208,14 +212,25 @@ void GRenderWindow::closeEvent(QCloseEvent* event) {
 
 void GRenderWindow::keyPressEvent(QKeyEvent* event) {
     InputCommon::GetKeyboard()->PressKey(event->key());
-	
-     // Exit fullscreen in GMainWindow
-     if (event->key() == Qt::Key_Return) {
-         if (event->modifiers() && Qt::AltModifier) {
+
+    // Toggle screen
+    if ((event->key() == Qt::Key_Return) &&
+         ((event->modifiers() & Qt::AltModifier) == Qt::AltModifier)) {
+         if (separate_window) {
+             if (isFullScreen()) {
+                 showNormal();
+             } else {
+                 showFullScreen();
+             }
+         } else {
              emit ExitFullscreen();
          }
      } else if (event->key() == Qt::Key_Escape) {
-         emit ExitFullscreen();
+         if (separate_window) {
+             showNormal();
+         } else {
+             emit ExitFullscreen();
+         }
      }
 }
 

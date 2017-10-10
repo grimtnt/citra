@@ -136,6 +136,8 @@ public:
 
     void InitRenderTarget();
 
+    void SeparateFromMainWindow(bool separate);
+
 public slots:
     void moveContext(); // overridden
 
@@ -146,7 +148,8 @@ public slots:
 signals:
     /// Emitted when the window is closed
     void Closed();
-	void ExitFullscreen();
+	/// Emitted when clicking on shortcut
+    void ExitFullscreen();
 
 private:
     void OnMinimalClientAreaChangeRequest(
@@ -158,6 +161,8 @@ private:
 
     EmuThread* emu_thread;
 
+    bool separate_window;
+	
 protected:
     void showEvent(QShowEvent* event) override;
 };

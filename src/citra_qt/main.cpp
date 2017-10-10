@@ -636,12 +636,10 @@ void GMainWindow::OnStopGame() {
     ShutdownGame();
 }
 
-void GMainWindow::OnDisplayFullscreen() {
-     if (ui.action_Single_Window_Mode->isChecked()) {
-         ui.menubar->hide();
-         statusBar()->hide();
-         showFullScreen();
-     }
++void GMainWindow::OnDisplayFullscreen() {
+     ui.menubar->hide();
+     statusBar()->hide();
+     showFullScreen();
  }
  
  void GMainWindow::OnExitFullscreen() {
@@ -656,6 +654,7 @@ void GMainWindow::ToggleWindowMode() {
         render_window->BackupGeometry();
         ui.horizontalLayout->addWidget(render_window);
         render_window->setFocusPolicy(Qt::ClickFocus);
+		render_window->SeparateFromMainWindow(false);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->setFocus();
@@ -667,6 +666,7 @@ void GMainWindow::ToggleWindowMode() {
         ui.horizontalLayout->removeWidget(render_window);
         render_window->setParent(nullptr);
         render_window->setFocusPolicy(Qt::NoFocus);
+		render_window->SeparateFromMainWindow(true);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->RestoreGeometry();
@@ -859,11 +859,9 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
 }
 
 void GMainWindow::keyPressEvent(QKeyEvent* event) {
- 
-     if (event->key() == Qt::Key_Return) {
-         if (event->modifiers() && Qt::AltModifier) {
-             OnExitFullscreen();
-         }
+     if ((event->key() == Qt::Key_Return) &&
+         ((event->modifiers() & Qt::AltModifier) == Qt::AltModifier)) {
+         OnExitFullscreen();
      } else if (event->key() == Qt::Key_Escape) {
          OnExitFullscreen();
      }
