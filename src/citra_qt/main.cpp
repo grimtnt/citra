@@ -865,6 +865,12 @@ void GMainWindow::keyPressEvent(QKeyEvent* event) {
      } else if (event->key() == Qt::Key_Escape) {
          OnExitFullscreen();
      }
+	
+     if ((event->key() == Qt::Key_F2)) {
+         OnStartGame();
+     } else if (event->key() == Qt::Key_F4) {
+         OnPauseGame();
+     }
  }
  
 bool GMainWindow::ConfirmChangeGame() {
