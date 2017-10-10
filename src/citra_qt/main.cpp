@@ -866,9 +866,10 @@ void GMainWindow::keyPressEvent(QKeyEvent* event) {
          OnExitFullscreen();
      }
 	
-if (event->key() == Qt::Key_F4) {
+if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
      }
+}
  
 bool GMainWindow::ConfirmChangeGame() {
     if (emu_thread == nullptr)
