@@ -866,12 +866,9 @@ void GMainWindow::keyPressEvent(QKeyEvent* event) {
          OnExitFullscreen();
      }
 	
-     if ((event->key() == Qt::Key_F2)) {
-         OnStartGame();
-     } else if (event->key() == Qt::Key_F4) {
+if (event->key() == Qt::Key_F4) {
          OnPauseGame();
      }
- }
  
 bool GMainWindow::ConfirmChangeGame() {
     if (emu_thread == nullptr)
