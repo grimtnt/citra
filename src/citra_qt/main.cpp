@@ -636,7 +636,7 @@ void GMainWindow::OnStopGame() {
     ShutdownGame();
 }
 
-+void GMainWindow::OnDisplayFullscreen() {
+void GMainWindow::OnDisplayFullscreen() {
      ui.menubar->hide();
      statusBar()->hide();
      showFullScreen();
