@@ -71,6 +71,8 @@ private:
     void InitializeRecentFileMenuActions();
     void InitializeHotkeys();
 
+    void CreateShortcutKeys();
+
     void SetDefaultUIGeometry();
     void RestoreUIState();
 
@@ -131,6 +133,7 @@ private slots:
     void OnCheats();
     void OnToggleFilterBar();
     void OnDisplayTitleBars(bool);
+	void ToggleFullscreen();
     void ToggleWindowMode();
     void OnCreateGraphicsSurfaceViewer();
     void OnCoreError(Core::System::ResultStatus, std::string);
@@ -180,7 +183,6 @@ protected:
     void dropEvent(QDropEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
-	void keyPressEvent(QKeyEvent* event) override;
 };
 
 #endif // _CITRA_QT_MAIN_HXX_
