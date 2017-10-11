@@ -7,6 +7,7 @@ set(SRCS
             camera/still_image_camera.cpp 
             configuration/config.cpp
             configuration/configure_audio.cpp
+			configuration/configure_camera.cpp
             configuration/configure_debug.cpp
             configuration/configure_dialog.cpp
             configuration/configure_general.cpp
@@ -25,6 +26,7 @@ set(SRCS
             debugger/profiler.cpp
             debugger/registers.cpp
             debugger/wait_tree.cpp
+			droparea.cpp
             util/spinbox.cpp
             util/util.cpp
             bootmanager.cpp
@@ -41,6 +43,7 @@ set(HEADERS
             camera/still_image_camera.h 
             configuration/config.h
             configuration/configure_audio.h
+			configuration/configure_camera.h
             configuration/configure_debug.h
             configuration/configure_dialog.h
             configuration/configure_general.h
@@ -60,6 +63,7 @@ set(HEADERS
             debugger/profiler.h
             debugger/registers.h
             debugger/wait_tree.h
+			droparea.h
             util/spinbox.h
             util/util.h
             bootmanager.h
@@ -74,6 +78,7 @@ set(HEADERS
 set(UIS
             configuration/configure.ui
             configuration/configure_audio.ui
+			configuration/configure_camera.ui
             configuration/configure_debug.ui
             configuration/configure_general.ui
             configuration/configure_graphics.ui
