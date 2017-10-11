@@ -181,6 +181,7 @@ protected:
     void dropEvent(QDropEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 };
 
 #endif // _CITRA_QT_MAIN_HXX_
