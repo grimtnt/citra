@@ -474,7 +474,7 @@ void GMainWindow::BootGame(const QString& filename) {
 
     // Update the GUI
     registersWidget->OnDebugModeEntered();
-    if (ui.action_Single_Window_Mode->isChecked()f) {
+    if (ui.action_Single_Window_Mode->isChecked()) {
         game_list->hide();
     }
     status_bar_update_timer.start(2000);
@@ -883,13 +883,6 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
 }
 
 void GMainWindow::keyPressEvent(QKeyEvent* event) {
-     if ((event->key() == Qt::Key_Return) &&
-         ((event->modifiers() & Qt::AltModifier) == Qt::AltModifier)) {
-         OnExitFullscreen();
-     } else if (event->key() == Qt::Key_Escape) {
-         OnExitFullscreen();
-     }
-	
 if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
      }
