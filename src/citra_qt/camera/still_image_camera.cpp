@@ -77,20 +77,19 @@ std::vector<u16> StillImageCamera::ReceiveFrame() const {
                         pu = u;
                         pv = v;
                     }
-                    write = !write;
+                   write = !write;
                 }
             }
         }
-		return buffer;
-    }
-    return std::vector<u16>(width * height, output_rgb ? 0 : 0x8000);
+        return buffer;
     } else {
-         LOG_ERROR(Service_CAM, "Couldn't load image \"%s\"", camera_config.c_str());
-         return std::vector<u16>(width * height, output_rgb ? 0 : 0x8000);
+        LOG_ERROR(Service_CAM, "Couldn't load image \"%s\"", camera_config.c_str());
+        return std::vector<u16>(width * height, output_rgb ? 0 : 0x8000);
+    }
 }
 
 std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(int _camera_id) const {
-return std::make_unique<StillImageCamera>(_camera_id);
+    return std::make_unique<StillImageCamera>(_camera_id);
 }
 
 } // namespace Camera
