@@ -29,6 +29,11 @@ void ARM_DynCom::PageTableChanged() {
     ClearInstructionCache();
 }
 
+void ARM_DynCom::InvalidateCacheRange(u32, size_t) {
+     // Just clear the whole cache, we don't gain much from partial invalidations.
+     ClearInstructionCache();
+ }
+ 
 void ARM_DynCom::SetPC(u32 pc) {
     state->Reg[15] = pc;
 }
