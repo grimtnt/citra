@@ -117,8 +117,6 @@ private slots:
     void OnStartGame();
     void OnPauseGame();
     void OnStopGame();
-    void OnDisplayFullscreen();
-    void OnExitFullscreen();
     /// Called whenever a user selects a game in the game list widget.
     void OnGameListLoadFile(QString game_path);
     void OnGameListOpenSaveFolder(u64 program_id);
@@ -131,7 +129,7 @@ private slots:
     void OnCheats();
     void OnToggleFilterBar();
     void OnDisplayTitleBars(bool);
-	void ToggleFullscreen();
+    void ToggleFullscreen();
     void ToggleWindowMode();
     void OnCreateGraphicsSurfaceViewer();
     void OnCoreError(Core::System::ResultStatus, std::string);
