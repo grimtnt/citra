@@ -103,7 +103,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     InitializeDebugWidgets();
     InitializeRecentFileMenuActions();
     InitializeHotkeys();
-
+    	
     SetDefaultUIGeometry();
     RestoreUIState();
 
@@ -248,6 +248,8 @@ void GMainWindow::InitializeHotkeys() {
     RegisterHotkey("Main Window", "Load File", QKeySequence::Open);
     RegisterHotkey("Main Window", "Swap Screens", QKeySequence::NextChild);
     RegisterHotkey("Main Window", "Start Emulation");
+	RegisterHotkey("Main Window", "Fullscreen", QKeySequence::FullScreen);
+    RegisterHotkey("Main Window", "Exit Fullscreen", QKeySequence::Cancel, Qt::ApplicationShortcut);
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), SIGNAL(activated()), this,
@@ -256,9 +258,18 @@ void GMainWindow::InitializeHotkeys() {
             SLOT(OnStartGame()));
     connect(GetHotkey("Main Window", "Swap Screens", render_window), SIGNAL(activated()), this,
             SLOT(OnSwapScreens()));
-	connect(render_window, &GRenderWindow::ExitFullscreen, this, &GMainWindow::OnExitFullscreen);
-}
-
+    connect(GetHotkey("Main Window", "Fullscreen", render_window), &QShortcut::activated,
+             ui.action_Fullscreen, &QAction::trigger);
+    connect(GetHotkey("Main Window", "Fullscreen", render_window), &QShortcut::activatedAmbiguously,
+             ui.action_Fullscreen, &QAction::trigger);
+    connect(GetHotkey("Main Window", "Exit Fullscreen", this), &QShortcut::activated, this, [&] {
+         if (emulation_running) {
+             ui.action_Fullscreen->setChecked(false);
+             ToggleFullscreen();
+         }
+     });
+ }
+ 
 void GMainWindow::SetDefaultUIGeometry() {
     // geometry: 55% of the window contents are in the upper screen half, 45% in the lower half
     const QRect screenRect = QApplication::desktop()->screenGeometry(this);
@@ -333,7 +344,8 @@ void GMainWindow::ConnectMenuEvents() {
     ui.action_Show_Filter_Bar->setShortcut(tr("CTRL+F"));
     connect(ui.action_Show_Filter_Bar, &QAction::triggered, this, &GMainWindow::OnToggleFilterBar);
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
-	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::OnDisplayFullscreen);
+	ui.action_Fullscreen->setShortcut(GetHotkey("Main Window", "Fullscreen", this)->key());
+	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::ToggleFullscreen);
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
@@ -471,6 +483,7 @@ void GMainWindow::BootGame(const QString& filename) {
     render_window->setFocus();
 
     emulation_running = true;
+	ToggleFullscreen();
     OnStartGame();
 }
 
@@ -636,16 +649,27 @@ void GMainWindow::OnStopGame() {
     ShutdownGame();
 }
 
-void GMainWindow::OnDisplayFullscreen() {
-     ui.menubar->hide();
-     statusBar()->hide();
-     showFullScreen();
- }
- 
- void GMainWindow::OnExitFullscreen() {
-     statusBar()->setVisible(ui.action_Show_Status_Bar->isChecked());
-     ui.menubar->show();
-     showMaximized();
+void GMainWindow::ToggleFullscreen() {
+     if (!emulation_running) {
+         return;
+     }
+     if (ui.action_Fullscreen->isChecked()) {
+         if (ui.action_Single_Window_Mode->isChecked()) {
+             ui.menubar->hide();
+             statusBar()->hide();
+             showFullScreen();
+         } else {
+             render_window->showFullScreen();
+         }
+     } else {
+         if (ui.action_Single_Window_Mode->isChecked()) {
+             statusBar()->setVisible(ui.action_Show_Status_Bar->isChecked());
+             ui.menubar->show();
+             showNormal();
+         } else {
+             render_window->showNormal();
+         }
+     }
  }
  
 void GMainWindow::ToggleWindowMode() {
@@ -660,7 +684,6 @@ void GMainWindow::ToggleWindowMode() {
             render_window->setFocus();
             game_list->hide();
         }
-
     } else {
         // Render in a separate window...
         ui.horizontalLayout->removeWidget(render_window);
@@ -818,6 +841,7 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
     UISettings::values.microprofile_visible = microProfileDialog->isVisible();
 #endif
     UISettings::values.single_window_mode = ui.action_Single_Window_Mode->isChecked();
+	UISettings::values.fullscreen = ui.action_Fullscreen->isChecked();
     UISettings::values.display_titlebar = ui.action_Display_Dock_Widget_Headers->isChecked();
     UISettings::values.show_filter_bar = ui.action_Show_Filter_Bar->isChecked();
     UISettings::values.show_status_bar = ui.action_Show_Status_Bar->isChecked();
@@ -859,13 +883,6 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
 }
 
 void GMainWindow::keyPressEvent(QKeyEvent* event) {
-     if ((event->key() == Qt::Key_Return) &&
-         ((event->modifiers() & Qt::AltModifier) == Qt::AltModifier)) {
-         OnExitFullscreen();
-     } else if (event->key() == Qt::Key_Escape) {
-         OnExitFullscreen();
-     }
-	
 if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
      }
