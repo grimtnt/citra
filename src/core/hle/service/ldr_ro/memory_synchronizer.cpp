@@ -4,8 +4,6 @@
 
 #include <algorithm>
 #include "common/assert.h"
-#include "core/arm/arm_interface.h"
-#include "core/core.h"
 #include "core/hle/service/ldr_ro/memory_synchronizer.h"
 
 namespace Service {
