@@ -346,6 +346,11 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
 	ui.action_Fullscreen->setShortcut(GetHotkey("Main Window", "Fullscreen", this)->key());
 	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::ToggleFullscreen);
+	
+    // Help
+    connect(ui.action_About, &QAction::triggered, []() {
+        QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/"));
+    });
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
