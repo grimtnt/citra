@@ -178,7 +178,7 @@
   </action>
    <action name="action_Cheats">
      <property name="text">
-       <string>Cheats ...</string>
+       <string>Cheats...</string>
      </property>
    </action>
   <action name="action_Display_Dock_Widget_Headers">
