@@ -330,6 +330,16 @@ void GetProgramInfos(Service::Interface* self) {
     rb.Push(RESULT_SUCCESS);
 }
 
+    void GetPatchTitleInfos(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    u32 media_type = cmd_buff[1] & 0xFF;
+    u32 title_count = cmd_buff[2];
+    u64 title_id = Memory::Read64(cmd_buff[4]);
+    TitleInfo ti{ title_id, 12345, 120, 0, 1 };
+    Memory::WriteBlock(cmd_buff[6], &ti, sizeof ti);
+    LOG_WARNING(Service_AM, "(STUBBED) called, title_id=0x%16x", title_id);
+}
+
 void GetDataTitleInfos(Service::Interface* self) {
     GetProgramInfos(self);
 
