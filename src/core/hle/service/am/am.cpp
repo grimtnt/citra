@@ -57,6 +57,31 @@ struct TicketInfo {
 
 static_assert(sizeof(TicketInfo) == 0x18, "Ticket info structure size is wrong");
 
+    std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid) {
+    std::string content_path = GetTitlePath(media_type, tid) + "content/";
+
+    if (media_type == Service::FS::MediaType::GameCard) {
+        LOG_ERROR(Service_AM, "Invalid request for nonexistent gamecard title metadata!");
+        return "";
+    }
+
+    // The TMD ID is usually held in the title databases, which we don't implement.
+    // For now, just scan for any .tmd files which exist and use the first .tmd
+    // found (there should only really be one unless the directories are meddled with)
+    FileUtil::FSTEntry entries;
+    FileUtil::ScanDirectoryTree(content_path, entries);
+    for (const FileUtil::FSTEntry& entry : entries.children) {
+        std::string filename_filename, filename_extension;
+        Common::SplitPath(entry.virtualName, nullptr, &filename_filename, &filename_extension);
+
+        if (filename_extension == ".tmd")
+            return content_path + entry.virtualName;
+    }
+
+    // If we can't find an existing .tmd, return a path for one to be created.
+    return content_path + "00000000.tmd";
+}
+
 std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 index) {
     std::string content_path = GetTitlePath(media_type, tid) + "content/";
 
@@ -124,7 +149,7 @@ void ScanForTitles(Service::FS::MediaType media_type) {
     std::string title_path = GetMediaTitlePath(media_type);
 
     FileUtil::FSTEntry entries;
-    FileUtil::ScanDirectoryTree(title_path, entries, true);
+    FileUtil::ScanDirectoryTree(title_path, entries);
     for (const FileUtil::FSTEntry& tid_high : entries.children) {
         for (const FileUtil::FSTEntry& tid_low : tid_high.children) {
             std::string tid_string = tid_high.virtualName + tid_low.virtualName;
