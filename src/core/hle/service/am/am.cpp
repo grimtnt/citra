@@ -330,7 +330,7 @@ void GetProgramInfos(Service::Interface* self) {
     rb.Push(RESULT_SUCCESS);
 }
 
-    void GetPatchTitleInfos(Service::Interface* self) {
+void GetPatchTitleInfos(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     u32 media_type = cmd_buff[1] & 0xFF;
     u32 title_count = cmd_buff[2];
