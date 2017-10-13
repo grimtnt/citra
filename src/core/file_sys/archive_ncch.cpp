@@ -67,17 +67,16 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
     std::unique_ptr<FileBackend> file;
 
     // NCCH RomFS
-    if (static_cast<NCCHFilePathType>(openfile_path.filepath_type) == NCCHFilePathType::RomFS) {
+    NCCHFilePathType filepath_type = static_cast<NCCHFilePathType>(openfile_path.filepath_type);
+    if (filepath_type == NCCHFilePathType::RomFS) {
         std::shared_ptr<FileUtil::IOFile> romfs_file;
         u64 romfs_offset = 0;
         u64 romfs_size = 0;
 
         result = ncch_container.ReadRomFS(romfs_file, romfs_offset, romfs_size);
         file = std::make_unique<IVFCFile>(romfs_file, romfs_offset, romfs_size);
-    } else if (static_cast<NCCHFilePathType>(openfile_path.filepath_type) ==
-                   NCCHFilePathType::Code ||
-               static_cast<NCCHFilePathType>(openfile_path.filepath_type) ==
-                   NCCHFilePathType::ExeFS) {
+    } else if (filepath_type == NCCHFilePathType::Code ||
+               filepath_type == NCCHFilePathType::ExeFS) {
         std::vector<u8> buffer;
 
         // Load NCCH .code or icon/banner/logo
@@ -193,9 +192,11 @@ u64 NCCHArchive::GetFreeBytes() const {
 
 ResultVal<size_t> NCCHFile::Read(const u64 offset, const size_t length, u8* buffer) const {
     LOG_TRACE(Service_FS, "called offset=%" PRIu64 ", length=%zu", offset, length);
-    size_t read_length = static_cast<size_t>(std::min(length, data_size - offset));
+    size_t length_left = static_cast<size_t>(data_size - offset);
+    size_t read_length = static_cast<size_t>(std::min(length, length_left));
 
-    size_t copy_size = std::min(length, file_buffer.size() - offset);
+    size_t available_size = static_cast<size_t>(file_buffer.size() - offset);
+    size_t copy_size = std::min(length, available_size);
     memcpy(buffer, file_buffer.data() + offset, copy_size);
 
     return MakeResult<size_t>(copy_size);
