@@ -29,7 +29,7 @@ static std::array<std::vector<u64_le>, 3> am_title_list;
 
 struct TitleInfo {
     u64_le tid;
-    u64_be size;
+    u64_le size;
     u16_le version;
     u16_le unused;
     u32_le type;
@@ -57,11 +57,38 @@ struct TicketInfo {
 
 static_assert(sizeof(TicketInfo) == 0x18, "Ticket info structure size is wrong");
 
+    std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid) {
+    std::string content_path = GetTitlePath(media_type, tid) + "content/";
+
+    if (media_type == Service::FS::MediaType::GameCard) {
+        LOG_ERROR(Service_AM, "Invalid request for nonexistent gamecard title metadata!");
+        return "";
+    }
+
+    // The TMD ID is usually held in the title databases, which we don't implement.
+    // For now, just scan for any .tmd files which exist and use the first .tmd
+    // found (there should only really be one unless the directories are meddled with)
+    FileUtil::FSTEntry entries;
+    FileUtil::ScanDirectoryTree(content_path, entries);
+    for (const FileUtil::FSTEntry& entry : entries.children) {
+        std::string filename_filename, filename_extension;
+        Common::SplitPath(entry.virtualName, nullptr, &filename_filename, &filename_extension);
+
+        if (filename_extension == ".tmd")
+            return content_path + entry.virtualName;
+    }
+
+    // If we can't find an existing .tmd, return a path for one to be created.
+    return content_path + "00000000.tmd";
+}
+
 std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 index) {
     std::string content_path = GetTitlePath(media_type, tid) + "content/";
 
     if (media_type == Service::FS::MediaType::GameCard) {
         // TODO(shinyquagsire23): get current app file if TID matches?
+                LOG_ERROR(Service_AM, "Request for gamecard partition %u content path unimplemented!",
+                  static_cast<u32>(index));
         return "";
     }
 
@@ -79,7 +106,6 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
         if (tmd.GetContentCount() > 1 &&
             tmd.GetContentTypeByIndex(1) & FileSys::TMDContentTypeFlag::Optional) {
             content_path += "00000000/";
-            LOG_WARNING(Service_AM, "%s", content_path.c_str());
         }
     }
 
@@ -95,6 +121,7 @@ std::string GetTitlePath(Service::FS::MediaType media_type, u64 tid) {
                                         low);
     } else if (media_type == Service::FS::MediaType::GameCard) {
         // TODO(shinyquagsire23): get current app path if TID matches?
+        LOG_ERROR(Service_AM, "Request for gamecard title path unimplemented!");
         return "";
     }
 
@@ -111,6 +138,7 @@ std::string GetMediaTitlePath(Service::FS::MediaType media_type) {
                                         SDCARD_ID);
     } else if (media_type == Service::FS::MediaType::GameCard) {
         // TODO(shinyquagsire23): get current app parent folder if TID matches?
+        LOG_ERROR(Service_AM, "Request for gamecard parent path unimplemented!");
         return "";
     }
 }
@@ -121,7 +149,7 @@ void ScanForTitles(Service::FS::MediaType media_type) {
     std::string title_path = GetMediaTitlePath(media_type);
 
     FileUtil::FSTEntry entries;
-    FileUtil::ScanDirectoryTree(title_path, entries, true);
+    FileUtil::ScanDirectoryTree(title_path, entries);
     for (const FileUtil::FSTEntry& tid_high : entries.children) {
         for (const FileUtil::FSTEntry& tid_low : tid_high.children) {
             std::string tid_string = tid_high.virtualName + tid_low.virtualName;
@@ -145,13 +173,13 @@ void GetNumPrograms(Service::Interface* self) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(am_title_list[media_type].size());
+    rb.Push<u32>(am_title_list[media_type].size());
 }
 
 void FindContentInfos(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1002, 4, 2); // 0x10020104
 
-    Service::FS::MediaType media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
     u64 title_id = rp.Pop<u64>();
     u32 content_count = rp.Pop<u32>();
     VAddr content_requested_in = rp.PopMappedBuffer();
@@ -181,7 +209,8 @@ void FindContentInfos(Service::Interface* self) {
             content_info.size = tmd.GetContentSizeByIndex(content_requested[i]);
             content_info.romfs_size = romfs_size;
 
-            Memory::WriteBlock(content_info_out, &content_info, i * sizeof(ContentInfo));
+            Memory::WriteBlock(content_info_out, &content_info, sizeof(ContentInfo));
+            content_info_out += sizeof(ContentInfo);
             content_read++;
         }
     }
@@ -193,7 +222,7 @@ void FindContentInfos(Service::Interface* self) {
 void ListContentInfos(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1003, 5, 1); // 0x10030142
     u32 content_count = rp.Pop<u32>();
-    Service::FS::MediaType media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
     u64 title_id = rp.Pop<u64>();
     u32 start_index = rp.Pop<u32>();
     VAddr content_info_out = rp.PopMappedBuffer();
@@ -219,7 +248,8 @@ void ListContentInfos(Service::Interface* self) {
             content_info.size = tmd.GetContentSizeByIndex(i);
             content_info.romfs_size = romfs_size;
 
-            Memory::WriteBlock(content_info_out, &content_info, i * sizeof(ContentInfo));
+            Memory::WriteBlock(content_info_out, &content_info, sizeof(ContentInfo));
+            content_info_out += sizeof(ContentInfo);
         }
     }
 
@@ -251,8 +281,8 @@ void GetProgramList(Service::Interface* self) {
 
     if (!Memory::IsValidVirtualAddress(title_ids_output_pointer) || media_type > 2) {
         IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-        rb.Push(0xFFFFFFFF); // TODO(shinyquagsire23): Find the right error code
-        rb.Push(0U);
+        rb.Push<u32>(-1); // TODO(shinyquagsire23): Find the right error code
+        rb.Push<u32>(0);
         return;
     }
 
@@ -270,7 +300,7 @@ void GetProgramList(Service::Interface* self) {
 void GetProgramInfos(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 3, 2, 2); // 0x00030084
 
-    Service::FS::MediaType media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
     u32 title_count = rp.Pop<u32>();
     VAddr title_id_list_pointer = rp.PopMappedBuffer();
     VAddr title_info_out = rp.PopMappedBuffer();
@@ -292,7 +322,8 @@ void GetProgramInfos(Service::Interface* self) {
             title_info.version = tmd.GetTitleVersion();
             title_info.type = tmd.GetTitleType();
         }
-        Memory::WriteBlock(title_info_out, &title_info, i * sizeof(TitleInfo));
+        Memory::WriteBlock(title_info_out, &title_info, sizeof(TitleInfo));
+        title_info_out += sizeof(TitleInfo);
     }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -311,6 +342,7 @@ void ListDataTitleTicketInfos(Service::Interface* self) {
     u64 title_id = rp.Pop<u64>();
     u32 start_index = rp.Pop<u32>();
     VAddr ticket_info_out = rp.PopMappedBuffer();
+    VAddr ticket_info_write = ticket_info_out;
 
     for (u32 i = 0; i < ticket_count; i++) {
         TicketInfo ticket_info = {0};
@@ -318,7 +350,8 @@ void ListDataTitleTicketInfos(Service::Interface* self) {
         ticket_info.version = 0; // TODO
         ticket_info.size = 0;    // TODO
 
-        Memory::WriteBlock(ticket_info_out, &ticket_info, i * sizeof(TicketInfo));
+        Memory::WriteBlock(ticket_info_write, &ticket_info, sizeof(TicketInfo));
+        ticket_info_write += sizeof(TicketInfo);
     }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
@@ -332,7 +365,7 @@ void ListDataTitleTicketInfos(Service::Interface* self) {
 
 void GetNumContentInfos(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1001, 3, 0); // 0x100100C0
-    Service::FS::MediaType media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
     u64 title_id = rp.Pop<u64>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
@@ -342,9 +375,9 @@ void GetNumContentInfos(Service::Interface* self) {
 
     FileSys::TitleMetadata tmd(tmd_path);
     if (tmd.Load() == Loader::ResultStatus::Success)
-        rb.Push(tmd.GetContentCount());
+        rb.Push<u32>(tmd.GetContentCount());
     else {
-        rb.Push(1U); // Number of content infos plus one
+        rb.Push<u32>(1); // Number of content infos plus one
         LOG_WARNING(Service_AM, "(STUBBED) called media_type=%u, title_id=0x%016" PRIx64,
                     media_type, title_id);
     }

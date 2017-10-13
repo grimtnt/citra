@@ -52,7 +52,7 @@ void ScanForTitles(Service::FS::MediaType media_type);
 /**
  * Scans all storage mediums for titles for listing.
  */
-void ScanForAlltitles();
+void ScanForAllTitles();
 
 /**
  * AM::GetNumPrograms service function
