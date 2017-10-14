@@ -2,6 +2,6 @@ Por qué no agrego cheat search: pq se rompe mingw y hay q usar msvc, q está 20
 
 Lo hice yo solo?: no, me ayudó hojan :D
 
-¡Nintendogs + Cats se congela en la pantalla de carga!: también en el citra de hojan. #56
+¡Nintendogs + Cats se congela en la pantalla de carga!: el problema parece estar en streetpass. pronto se solucionará.
 
 ¡TL tiene bugs!: esperen.
