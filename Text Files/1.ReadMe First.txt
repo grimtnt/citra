@@ -1,3 +1,1 @@
-Known Issues:
-- Nintendogs + Cats: Crash on start
-- Tomodachi Life Bugs
+Issues: https://github.com/acnleditor2/citra/issues
