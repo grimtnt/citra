@@ -198,6 +198,8 @@ void GetNumTickets(Service::Interface* self);
  */
 void GetTicketList(Service::Interface* self);
 
+void GetPatchTitleInfos(Service::Interface* self);
+
 /**
  * AM::QueryAvailableTitleDatabase service function
  *  Inputs:

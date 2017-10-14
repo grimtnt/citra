@@ -21,7 +21,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x100A0000, nullptr, "IsExternalTitleDatabaseInitialized"},
     {0x100B00C0, nullptr, "GetNumExistingContentInfos"},
     {0x100C0142, nullptr, "ListExistingContentInfos"},
-    {0x100D0084, nullptr, "GetPatchTitleInfos"},
+    {0x100D0084, GetPatchTitleInfos, "GetPatchTitleInfos"},
 };
 
 AM_APP_Interface::AM_APP_Interface() {
