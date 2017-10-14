@@ -68,12 +68,12 @@ after_build:
           mkdir $RELEASE_DIST/platforms
 
           # copy citra and other release files to the release folder
-          Copy-Item -path "$CMAKE_BINARY_DIR/citra-qt.exe" -destination "$RELEASE_DIST/citra-qt-sse4.1.exe"
+          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST/citra-qt-sse4.1.exe
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
           # download custom readme
           Invoke-WebRequest "https://raw.githubusercontent.com/acnleditor2/citra/master/Text Files/1.ReadMe First.txt" -OutFile "$RELEASE_DIST/1.ReadMe First.txt"
           # copy the libcurl dll
-          Copy-Item "$CMAKE_BINARY_DIR/libcurl.dll" -destination "$RELEASE_DIST"
+          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
           # copy all the dll dependencies to the release folder
           # hardcoded list because we don't build static and determining the list of dlls from the binary is a pain.
           $MingwDLLs = "Qt5Core.dll","Qt5Widgets.dll","Qt5Gui.dll","Qt5OpenGL.dll",
