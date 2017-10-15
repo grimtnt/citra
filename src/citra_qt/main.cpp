@@ -349,8 +349,26 @@ void GMainWindow::ConnectMenuEvents() {
 	
     // Help
     connect(ui.action_About, &QAction::triggered, []() {
-        QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/"));
-    });
+    connect(ui.action_FAQ, &QAction::triggered,
+            []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
+    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog);
+}
+
+void GMainWindow::AboutDialog() {
+    QMessageBox AboutDialog(this);
+    AboutDialog.setText(
+        "Citra is a free and open source 3DS emulator licensed under GPLv2.0 or any later "
+        "version.<br/><br/>"
+        "This software should not be used to play games you have not legally obtained.<br/><br/>"
+        "For more information, please see the following: <ul>"
+        "<li><a href='https://citra-emu.org/'>Website</a></li>"
+        "<li><a href='https://community.citra-emu.org/'>Forums</a></li>"
+        "<li><a href='https://github.com/citra-emu'>Source Code</a></li>"
+        "<li><a href='https://github.com/citra-emu/citra/graphs/contributors'>Contributors</a></li>"
+        "<li><a href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></li>"
+        "</ul>");
+    AboutDialog.setIconPixmap(QPixmap(":/icons/logo.png"));
+    AboutDialog.exec();
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
