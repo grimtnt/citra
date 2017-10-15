@@ -344,14 +344,13 @@ void GMainWindow::ConnectMenuEvents() {
     ui.action_Show_Filter_Bar->setShortcut(tr("CTRL+F"));
     connect(ui.action_Show_Filter_Bar, &QAction::triggered, this, &GMainWindow::OnToggleFilterBar);
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
-	ui.action_Fullscreen->setShortcut(GetHotkey("Main Window", "Fullscreen", this)->key());
-	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::ToggleFullscreen);
+    ui.action_Fullscreen->setShortcut(GetHotkey("Main Window", "Fullscreen", this)->key());
+    connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::ToggleFullscreen);
 	
     // Help
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
-    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog);
-	});
+    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog); });
     }
 
 void GMainWindow::AboutDialog() {
