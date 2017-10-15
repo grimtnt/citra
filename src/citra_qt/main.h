@@ -128,6 +128,7 @@ private slots:
     void OnConfigure();
     void OnCheats();
     void OnToggleFilterBar();
+    void AboutDialog();
     void OnDisplayTitleBars(bool);
     void ToggleFullscreen();
     void ToggleWindowMode();
