@@ -348,7 +348,6 @@ void GMainWindow::ConnectMenuEvents() {
 	connect(ui.action_Fullscreen, &QAction::triggered, this, &GMainWindow::ToggleFullscreen);
 	
     // Help
-    connect(ui.action_About, &QAction::triggered, []() {
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog);
