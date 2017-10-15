@@ -351,8 +351,8 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog);
+	});
     }
-});
 
 void GMainWindow::AboutDialog() {
     QMessageBox AboutDialog(this);
