@@ -95,7 +95,7 @@
      <addaction name="action_Create_Pica_Surface_Viewer"/>
      <addaction name="separator"/>
     </widget>
-	<addaction name="action_Fullscreen"/>
+    <addaction name="action_Fullscreen"/>
     <addaction name="action_Single_Window_Mode"/>
     <addaction name="action_Display_Dock_Widget_Headers"/>
     <addaction name="action_Show_Filter_Bar"/>
@@ -106,6 +106,7 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="action_FAQ"/>
     <addaction name="action_About"/>
    </widget>
    <addaction name="menu_File"/>
@@ -156,6 +157,11 @@
    </property>
    <property name="text">
     <string>&amp;Stop</string>
+   </property>
+  </action>
+  <action name="action_FAQ">
+   <property name="text">
+    <string>FAQ</string>
    </property>
   </action>
   <action name="action_About">
