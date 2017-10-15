@@ -350,7 +350,7 @@ void GMainWindow::ConnectMenuEvents() {
     // Help
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
-    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog); });
+    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog);
     }
 
 void GMainWindow::AboutDialog() {
