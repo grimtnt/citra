@@ -34,6 +34,7 @@
 #include "core/hle/lock.h"
 #include "core/hle/result.h"
 #include "core/hle/service/service.h"
+#include "core/settings.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Namespace SVC
@@ -43,6 +44,8 @@ using Kernel::Handle;
 using Kernel::SharedPtr;
 
 namespace SVC {
+    static bool enable_higher_core_clock = false;
+    static bool enable_additional_cache = false;
 
 enum ControlMemoryOperation {
     MEMOP_FREE = 1,
@@ -177,8 +180,8 @@ static ResultCode MapMemoryBlock(Kernel::Handle handle, u32 addr, u32 permission
     case MemoryPermission::WriteExecute:
     case MemoryPermission::ReadWriteExecute:
     case MemoryPermission::DontCare:
-        return shared_memory->Map(Kernel::g_current_process.get(), addr, permissions_type,
-                                  static_cast<MemoryPermission>(other_permissions));
+    return shared_memory->Map(Kernel::g_current_process.get(), addr, permissions_type,
+    static_cast<MemoryPermission>(other_permissions));
     default:
         LOG_ERROR(Kernel_SVC, "unknown permissions=0x%08X", permissions);
     }
@@ -1319,6 +1322,50 @@ static ResultCode GetProcessInfo(s64* out, Kernel::Handle process_handle, u32 ty
     return RESULT_SUCCESS;
 }
 
+ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
+    const bool is_new_3ds = Settings::values.is_new_3ds;
+
+    switch (static_cast<KernelSetStateType>(type)) {
+    case KernelSetStateType::Type0:
+    case KernelSetStateType::Type1:
+    case KernelSetStateType::Type2:
+    case KernelSetStateType::Type3:
+    case KernelSetStateType::Type4:
+    case KernelSetStateType::Type5:
+    case KernelSetStateType::Type6:
+    case KernelSetStateType::Type7:
+    case KernelSetStateType::Type8:
+    case KernelSetStateType::Type9:
+        LOG_ERROR(Kernel_SVC, "unimplemented KernelSetState type=%u", type);
+        UNIMPLEMENTED();
+        break;
+    case KernelSetStateType::ConfigureNew3DSCPU:
+        enable_higher_core_clock = (is_new_3ds && param0 & 0x00000001);
+        enable_additional_cache = (is_new_3ds && (param0 >> 1) & 0x00000001);
+        LOG_WARNING(Kernel_SVC,
+                    "ConfigureNew3DSCPU  enables_higher_core_clock=%u, enables_additional_cache=%u",
+                    enable_higher_core_clock, enable_additional_cache);
+        break;
+    default:
+        return ResultCode( // 0xF8C007F4
+            ErrorDescription::InvalidEnumValue, ErrorModule::Kernel, ErrorSummary::InvalidArgument,
+            ErrorLevel::Permanent);
+        break;
+        LOG_WARNING(Kernel_SVC,
+                    "ConfigureNew3DSCPU  enables_higher_core_clock=%u, enables_additional_cache=%u",
+                    enable_higher_core_clock, enable_additional_cache);
+        break;
+
+        return ResultCode( // 0xF8C007F4
+            ErrorDescription::InvalidEnumValue, ErrorModule::Kernel, ErrorSummary::InvalidArgument,
+            ErrorLevel::Permanent);
+        break;
+    }
+
+    return RESULT_SUCCESS;
+
+}
+
 namespace {
 struct FunctionDef {
     using Func = void();
@@ -1327,6 +1374,7 @@ struct FunctionDef {
     Func* func;
     const char* name;
 };
+
 } // namespace
 
 static const FunctionDef SVC_Table[] = {
@@ -1454,7 +1502,7 @@ static const FunctionDef SVC_Table[] = {
     {0x79, nullptr, "SetResourceLimitValues"},
     {0x7A, nullptr, "AddCodeSegment"},
     {0x7B, nullptr, "Backdoor"},
-    {0x7C, nullptr, "KernelSetState"},
+    {0x7C, HLE::Wrap<KernelSetState>, "KernelSetState"},
     {0x7D, HLE::Wrap<QueryProcessMemory>, "QueryProcessMemory"},
 };
 
