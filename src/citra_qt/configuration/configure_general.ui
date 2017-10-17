@@ -85,6 +85,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="toggle_new3ds">
+            <property name="text">
+             <string>New 3DS Clock + L2</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>

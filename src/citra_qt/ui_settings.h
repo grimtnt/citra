@@ -31,7 +31,7 @@ struct Values {
     bool microprofile_visible;
 
     bool single_window_mode;
-	bool fullscreen;
+    bool fullscreen;
     bool display_titlebar;
     bool show_filter_bar;
     bool show_status_bar;
@@ -48,7 +48,7 @@ struct Values {
     QString gamedir;
     bool gamedir_deepscan;
     QStringList recent_files;
-	QString translation_file;
+    QString translation_file;
 
     QString theme;
 
