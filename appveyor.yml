@@ -59,20 +59,23 @@ after_build:
 
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
-
+          
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
           $CMAKE_BINARY_DIR = "$CMAKE_SOURCE_DIR/mingw_build"
-
+          
+          # store translations paths
+          $env:TRANSLATIONQM = "$CMAKE_BINARY_DIR/src/citra-qt/translation.qm"
+          $env:TRANSLATIONTS = "$CMAKE_SOURCE_DIR/src/citra-qt/translation.ts"
+          
           mkdir $RELEASE_DIST
           mkdir $RELEASE_DIST/platforms
 
           # copy citra and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST/citra-qt-sse4.1.exe
-          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "translation.qm" | Copy-Item -destination $RELEASE_DIST/translation.qm
+          Copy-Item -path "$CMAKE_SOURCE_DIR/Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST/1.ReadMe First.txt"
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
-          # download custom readme
-          Invoke-WebRequest "https://raw.githubusercontent.com/acnleditor2/citra/master/Text Files/1.ReadMe First.txt" -OutFile "$RELEASE_DIST/1.ReadMe First.txt"
+          
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
           # copy all the dll dependencies to the release folder
@@ -109,7 +112,11 @@ artifacts:
   - path: $(BUILD_ZIP)
     name: build
     type: zip
-    
+  - path: $(TRANSLATIONQM)
+    name: translation_qm
+  - path: $(TRANSLATIONTS)
+    name: translation_ts
+
 deploy:
  - provider: Environment
    name: ghreleases
