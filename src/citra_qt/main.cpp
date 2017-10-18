@@ -21,7 +21,7 @@
 #include "citra_qt/configuration/configure_dialog.h"
 #include "citra_qt/debugger/graphics/graphics.h"
 #include "citra_qt/debugger/graphics/graphics_breakpoints.h"
-#include "citra_qt/debugger/graphics/graphics_cmdlists.h"
+#include "citra_qt/debugger/graphics/graphics_cmdlists.h"F
 #include "citra_qt/debugger/graphics/graphics_surface.h"
 #include "citra_qt/debugger/graphics/graphics_tracing.h"
 #include "citra_qt/debugger/graphics/graphics_vertex_shader.h"
@@ -881,7 +881,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
 
         answer = QMessageBox::question(this, tr("System Archive Not Found"), message,
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = "System Archive Missing";
+        status_message = tr("System Archive Missing");
         break;
     }
 
@@ -890,7 +890,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
         message.append(common_message);
         answer = QMessageBox::question(this, tr("Shared Fonts Not Found"), message,
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = "Shared Font Missing";
+        status_message = tr("Shared Font Missing");
         break;
     }
 
@@ -903,7 +903,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
                "Upload the Log File</a>.<br/><br/>Would you like to quit back to the game list? "
                "Continuing emulation may result in crashes, corrupted save data, or other bugs."),
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = "Fatal Error encountered";
+        status_message = tr("Fatal Error Encountred");
         break;
     }
 
