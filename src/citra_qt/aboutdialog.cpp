@@ -36,13 +36,13 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
                 QStringLiteral("</p><br/>"));
     text.append(
         large +
-        QStringLiteral(tr(
+        QStringLiteral(
             "<a href='https://citra-emu.org/'>Website</a> | "
             "<a href='https://community.citra-emu.org/'>Forums</a> | "
             "<a href='https://github.com/citra-emu'>Source Code</a> | "
             "<a href='https://github.com/citra-emu/citra/graphs/contributors'>Contributors</a> | "
             "<a "
-            "href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></p>")));
+            "href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></p>"));
 
     QLabel* text_label = new QLabel(text);
     text_label->setTextInteractionFlags(Qt::TextBrowserInteraction);
