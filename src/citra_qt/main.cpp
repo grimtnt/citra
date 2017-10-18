@@ -21,7 +21,7 @@
 #include "citra_qt/configuration/configure_dialog.h"
 #include "citra_qt/debugger/graphics/graphics.h"
 #include "citra_qt/debugger/graphics/graphics_breakpoints.h"
-#include "citra_qt/debugger/graphics/graphics_cmdlists.h"F
+#include "citra_qt/debugger/graphics/graphics_cmdlists.h"
 #include "citra_qt/debugger/graphics/graphics_surface.h"
 #include "citra_qt/debugger/graphics/graphics_tracing.h"
 #include "citra_qt/debugger/graphics/graphics_vertex_shader.h"
