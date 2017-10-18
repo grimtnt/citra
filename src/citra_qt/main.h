@@ -26,6 +26,7 @@ class ProfilerWidget;
 class RegistersWidget;
 class Updater;
 class WaitTreeWidget;
+class AboutDialog;
 
 class GMainWindow : public QMainWindow {
     Q_OBJECT
@@ -132,7 +133,7 @@ private slots:
     void OnConfigure();
     void OnCheats();
     void OnToggleFilterBar();
-    void AboutDialog();
+    void ShowAboutDialog();
     void OnDisplayTitleBars(bool);
     void ToggleFullscreen();
     void ToggleWindowMode();

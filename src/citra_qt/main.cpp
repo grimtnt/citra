@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QtGui>
 #include <QtWidgets>
+#include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
 #include "citra_qt/camera/still_image_camera.h" 
 #include "citra_qt/cheat_gui.h"
@@ -371,24 +372,12 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnOpenUpdater);
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
-    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::AboutDialog);
-    }
+    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::ShowAboutDialog);
+}
 
-void GMainWindow::AboutDialog() {
-    QMessageBox AboutDialog(this);
-    AboutDialog.setText(
-        "Citra is a free and open source 3DS emulator licensed under GPLv2.0 or any later "
-        "version.<br/><br/>"
-        "This software should not be used to play games you have not legally obtained.<br/><br/>"
-        "For more information, please see the following: <ul>"
-        "<li><a href='https://citra-emu.org/'>Website</a></li>"
-        "<li><a href='https://community.citra-emu.org/'>Forums</a></li>"
-        "<li><a href='https://github.com/citra-emu'>Source Code</a></li>"
-        "<li><a href='https://github.com/citra-emu/citra/graphs/contributors'>Contributors</a></li>"
-        "<li><a href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></li>"
-        "</ul>");
-    AboutDialog.setIconPixmap(QPixmap(":/icons/logo.png"));
-    AboutDialog.exec();
+void GMainWindow::ShowAboutDialog() {
+    AboutDialog about{this};
+    about.exec();
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
