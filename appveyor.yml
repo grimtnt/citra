@@ -69,6 +69,7 @@ after_build:
 
           # copy citra and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST/citra-qt-sse4.1.exe
+          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "translation.qm" | Copy-Item -destination $RELEASE_DIST/translation.qm
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
           # download custom readme
           Invoke-WebRequest "https://raw.githubusercontent.com/acnleditor2/citra/master/Text Files/1.ReadMe First.txt" -OutFile "$RELEASE_DIST/1.ReadMe First.txt"
