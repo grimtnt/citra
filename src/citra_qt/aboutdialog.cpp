@@ -36,23 +36,22 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
                 QStringLiteral("</p><br/>"));
     text.append(
         large +
-        QStringLiteral(
+        QStringLiteral(tr(
             "<a href='https://citra-emu.org/'>Website</a> | "
             "<a href='https://community.citra-emu.org/'>Forums</a> | "
             "<a href='https://github.com/citra-emu'>Source Code</a> | "
             "<a href='https://github.com/citra-emu/citra/graphs/contributors'>Contributors</a> | "
             "<a "
-            "href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></p>"));
+            "href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></p>")));
 
     QLabel* text_label = new QLabel(text);
     text_label->setTextInteractionFlags(Qt::TextBrowserInteraction);
     text_label->setOpenExternalLinks(true);
 
-    QLabel* copyright =
-        new QLabel(small +
-                   tr("\"3DS\" is a "
-                      "trademarks of Nintendo. Citra is not affiliated with Nintendo in any way.") +
-                   QStringLiteral("</p>"));
+    QLabel* copyright = new QLabel(
+        small + tr("\"3DS\" is a "
+                   "trademark of Nintendo. Citra is not affiliated with Nintendo in any way.") +
+        QStringLiteral("</p>"));
 
     QLabel* logo = new QLabel();
     logo->setPixmap(QPixmap(":/icons/citra.png"));
