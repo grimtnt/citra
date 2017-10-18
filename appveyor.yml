@@ -54,14 +54,11 @@ after_build:
         $GITREV = $(git show -s --format='%h')
 
           $RELEASE_DIST = "tomodachi-mingw"
-          $TRANSLATION_FOLDER = "translation-en"
 
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
-          $TRANSLATION_ZIP = "citra-translation-en-$GITDATE.zip" -replace " ", ""
 
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
-          $env:TRANSLATION_QM = "translation.qm"
           $env:TRANSLATION_TS = "translation.ts"
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
@@ -76,7 +73,6 @@ after_build:
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
           
           # copy translation
-          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "translation.qm" | Copy-Item -destination $CMAKE_SOURCE_DIR
           Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $CMAKE_SOURCE_DIR
 
           # copy the libcurl dll
@@ -115,8 +111,6 @@ artifacts:
   - path: $(BUILD_ZIP)
     name: build
     type: zip
-  - path: $(TRANSLATION_QM)
-    name: translation-qm
   - path: $(TRANSLATION_TS)
     name: translation-ts
 
