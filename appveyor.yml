@@ -56,24 +56,27 @@ after_build:
           $RELEASE_DIST = "tomodachi-mingw"
 
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
-
+          $TR_ZIP = "citra-translation-en-$GITDATE.zip" -replace " ", ""
+          
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
+          $env:TRANSLATION_ZIP = $TR_ZIP
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
           $CMAKE_BINARY_DIR = "$CMAKE_SOURCE_DIR/mingw_build"
-          
-          # store translations paths
-          $env:TRANSLATIONQM = "$CMAKE_BINARY_DIR/src/citra-qt/translation.qm"
-          $env:TRANSLATIONTS = "$CMAKE_SOURCE_DIR/src/citra-qt/translation.ts"
-          
+
           mkdir $RELEASE_DIST
           mkdir $RELEASE_DIST/platforms
-
+          mkdir translation_en
+ 
           # copy citra and other release files to the release folder
           Copy-Item -path "$CMAKE_BINARY_DIR/src/citra-qt/citra-qt.exe" -destination "$RELEASE_DIST/citra-qt-sse4.1.exe"
           Copy-Item -path "$CMAKE_SOURCE_DIR/Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST/1.ReadMe First.txt"
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
+          
+          # copy translation
+          Copy-Item -path "$CMAKE_BINARY_DIR/src/citra-qt/translation.qm" -destination "translation_en/translation.qm"
+          Copy-Item -path "$CMAKE_SOURCE_DIR/src/citra-qt/translation.ts" -destination "translation_en/translation.ts"
           
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
@@ -100,6 +103,7 @@ after_build:
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/platforms/qwindows.dll" -force -destination "$RELEASE_DIST/platforms"
 
           7z a -tzip $MINGW_BUILD_ZIP $RELEASE_DIST\*
+          7z a -tzip $TR_ZIP translation_en\*
 
 test_script:
   - cd %BUILD_TYPE%_build
@@ -111,10 +115,9 @@ artifacts:
   - path: $(BUILD_ZIP)
     name: build
     type: zip
-  - path: $(TRANSLATIONQM)
-    name: translation_qm
-  - path: $(TRANSLATIONTS)
-    name: translation_ts
+  - path: $(TRANSLATION_ZIP)
+    name: translation_en
+    type: zip
 
 deploy:
  - provider: Environment
