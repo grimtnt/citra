@@ -59,7 +59,6 @@ after_build:
 
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
-          
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
           $CMAKE_BINARY_DIR = "$CMAKE_SOURCE_DIR/mingw_build"
