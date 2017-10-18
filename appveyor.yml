@@ -69,7 +69,6 @@ after_build:
 
           mkdir $RELEASE_DIST
           mkdir $RELEASE_DIST/platforms
-          mkdir $TRANSLATION_FOLDER
 
           # copy citra and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST/citra-qt-sse4.1.exe
@@ -105,7 +104,6 @@ after_build:
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/platforms/qwindows.dll" -force -destination "$RELEASE_DIST/platforms"
 
           7z a -tzip $MINGW_BUILD_ZIP $RELEASE_DIST\*
-          7z a -tzip $TRANSLATION_ZIP $TRANSLATION_FOLDER\*
 
 test_script:
   - cd %BUILD_TYPE%_build
@@ -119,7 +117,7 @@ artifacts:
     type: zip
   - path: $(TRANSLATION_QM)
     name: translation-qm
-  - path: $(TRANSLATION_TS=
+  - path: $(TRANSLATION_TS)
     name: translation-ts
 
 deploy:
