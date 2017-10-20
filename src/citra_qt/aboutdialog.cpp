@@ -34,24 +34,29 @@ AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
     text.append(large +
                 tr("This software should not be used to play games you do not legally own.") +
                 QStringLiteral("</p><br/>"));
-    text.append(
-        large +
-        QStringLiteral(
-            "<a href='https://citra-emu.org/'>Website</a> | "
-            "<a href='https://community.citra-emu.org/'>Forums</a> | "
-            "<a href='https://github.com/citra-emu'>Source Code</a> | "
-            "<a href='https://github.com/citra-emu/citra/graphs/contributors'>Contributors</a> | "
-            "<a "
-            "href='https://github.com/citra-emu/citra/blob/master/license.txt'>License</a></p>"));
+    text.append(large +
+                QStringLiteral(
+                    "<a href='https://citra-emu.org/'>%1</a> | "
+                    "<a href='https://community.citra-emu.org/'>%2</a> | "
+                    "<a href='https://github.com/citra-emu'>%3</a> | "
+                    "<a href='https://github.com/citra-emu/citra/graphs/contributors'>%4</a> | "
+                    "<a "
+                    "href='https://github.com/citra-emu/citra/blob/master/license.txt'>%5</a></p>")
+                    .arg(tr("Website"))
+                    .arg(tr("Forum"))
+                    .arg(tr("Source Code"))
+                    .arg(tr("Contributors"))
+                    .arg(tr("License")));
 
     QLabel* text_label = new QLabel(text);
     text_label->setTextInteractionFlags(Qt::TextBrowserInteraction);
     text_label->setOpenExternalLinks(true);
 
-    QLabel* copyright = new QLabel(
-        small + tr("\"3DS\" is a "
-                   "trademark of Nintendo. Citra is not affiliated with Nintendo in any way.") +
-        QStringLiteral("</p>"));
+    QLabel* copyright =
+        new QLabel(small +
+                   tr("\"3DS\" is a "
+                      "trademark of Nintendo. Citra is not affiliated with Nintendo in any way.") +
+                   QStringLiteral("</p>"));
 
     QLabel* logo = new QLabel();
     logo->setPixmap(QPixmap(":/icons/citra.png"));
