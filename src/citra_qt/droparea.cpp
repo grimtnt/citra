@@ -11,7 +11,7 @@ DropArea::DropArea(QWidget *parent) : QLabel(parent) {
     setAcceptDrops(true);
     Pal.setColor(QPalette::Background, Qt::cyan);
     setAutoFillBackground(true);
-    myWidget->setPalette(Pal);
+    setPalette(Pal);
     clear();
 }
 
