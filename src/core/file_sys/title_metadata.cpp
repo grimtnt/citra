@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <cinttypes>
+#include <streambuf>
 #include <cryptopp/sha.h>
 #include "common/alignment.h"
 #include "common/file_util.h"
@@ -14,6 +15,36 @@
 // FileSys namespace
 
 namespace FileSys {
+
+// Helper to help take our vector<u8> to an istream for reads
+struct BufStream : public std::basic_streambuf<char, std::char_traits<char>> {
+    BufStream(std::vector<u8>& vec, u64 offset) {
+        char* begin = reinterpret_cast<char*>(vec.data() + offset);
+        char* end = reinterpret_cast<char*>(vec.data() + vec.size());
+        this->setg(begin, begin, end);
+    }
+
+    pos_type seekoff(off_type off, std::ios_base::seekdir dir,
+                     std::ios_base::openmode which = std::ios_base::in) override {
+        switch (dir) {
+        case std::ios_base::cur:
+            gbump(off);
+            break;
+        case std::ios_base::end:
+            setg(eback(), egptr() + off, egptr());
+            break;
+        case std::ios_base::beg:
+            setg(eback(), eback() + off, egptr());
+            break;
+        }
+
+        return gptr() - eback();
+    }
+
+    pos_type seekpos(pos_type sp, std::ios_base::openmode which) override {
+        return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
+    }
+};
 
 static u32 GetSignatureSize(u32 signature_type) {
     switch (signature_type) {
@@ -29,38 +60,58 @@ static u32 GetSignatureSize(u32 signature_type) {
     case EcdsaSha256:
         return 0x3C;
     }
+
+    return 0;
 }
 
-Loader::ResultStatus TitleMetadata::Load() {
-    FileUtil::IOFile file(filepath, "rb");
+Loader::ResultStatus TitleMetadata::LoadFromFile(std::string& file_path) {
+    FileUtil::IOFile file(file_path, "rb");
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
 
-    if (!file.ReadBytes(&signature_type, sizeof(u32_be)))
+    std::vector<u8> file_data(file.GetSize());
+
+    if (!file.ReadBytes(file_data.data(), file.GetSize()))
+        return Loader::ResultStatus::Error;
+
+    Loader::ResultStatus result = Load(file_data);
+    if (result != Loader::ResultStatus::Success)
+        LOG_ERROR(Service_FS, "Failed to load TMD from file %s!", file_path.c_str());
+
+    return result;
+}
+
+Loader::ResultStatus TitleMetadata::Load(std::vector<u8> file_data, u64 offset) {
+    BufStream input_buffer(file_data, offset);
+    std::istream input_stream(&input_buffer);
+
+    input_stream.seekg(0, std::ios_base::beg);
+    if (!input_stream.readsome(reinterpret_cast<char*>(&signature_type), sizeof(u32_be)))
         return Loader::ResultStatus::Error;
 
     // Signature lengths are variable, and the body follows the signature
     u32 signature_size = GetSignatureSize(signature_type);
 
     tmd_signature.resize(signature_size);
-    if (!file.ReadBytes(&tmd_signature[0], signature_size))
+    if (!input_stream.readsome(reinterpret_cast<char*>(tmd_signature.data()), signature_size))
         return Loader::ResultStatus::Error;
 
     // The TMD body start position is rounded to the nearest 0x40 after the signature
     size_t body_start = Common::AlignUp(signature_size + sizeof(u32), 0x40);
-    file.Seek(body_start, SEEK_SET);
+    input_stream.seekg(body_start, std::ios_base::beg);
 
     // Read our TMD body, then load the amount of ContentChunks specified
-    if (file.ReadBytes(&tmd_body, sizeof(TitleMetadata::Body)) != sizeof(TitleMetadata::Body))
+    if (input_stream.readsome(reinterpret_cast<char*>(&tmd_body), sizeof(TitleMetadata::Body)) !=
+        sizeof(TitleMetadata::Body))
         return Loader::ResultStatus::Error;
 
     for (u16 i = 0; i < tmd_body.content_count; i++) {
         ContentChunk chunk;
-        if (file.ReadBytes(&chunk, sizeof(ContentChunk)) == sizeof(ContentChunk)) {
+        if (input_stream.readsome(reinterpret_cast<char*>(&chunk), sizeof(ContentChunk)) ==
+            sizeof(ContentChunk)) {
             tmd_chunks.push_back(chunk);
         } else {
-            LOG_ERROR(Service_FS, "Malformed TMD %s, failed to load content chunk index %u!",
-                      filepath.c_str(), i);
+            LOG_ERROR(Service_FS, "Malformed TMD, failed to load content chunk index %u!", i);
             return Loader::ResultStatus::ErrorInvalidFormat;
         }
     }
@@ -68,8 +119,8 @@ Loader::ResultStatus TitleMetadata::Load() {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus TitleMetadata::Save() {
-    FileUtil::IOFile file(filepath, "wb");
+Loader::ResultStatus TitleMetadata::SaveToFile(std::string& file_path) {
+    FileUtil::IOFile file(file_path, "wb");
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
 
@@ -186,8 +237,7 @@ void TitleMetadata::AddContentChunk(const ContentChunk& chunk) {
 }
 
 void TitleMetadata::Print() const {
-    LOG_DEBUG(Service_FS, "%s - %u chunks", filepath.c_str(),
-              static_cast<u32>(tmd_body.content_count));
+    LOG_DEBUG(Service_FS, "%u chunks", static_cast<u32>(tmd_body.content_count));
 
     // Content info describes ranges of content chunks
     LOG_DEBUG(Service_FS, "Content info:");

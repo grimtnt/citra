@@ -92,9 +92,9 @@ public:
 
 #pragma pack(pop)
 
-    explicit TitleMetadata(std::string& path) : filepath(std::move(path)) {}
-    Loader::ResultStatus Load();
-    Loader::ResultStatus Save();
+    Loader::ResultStatus LoadFromFile(std::string& file_path);
+    Loader::ResultStatus Load(std::vector<u8> file_data, u64 offset = 0);
+    Loader::ResultStatus SaveToFile(std::string& file_path);
 
     u64 GetTitleID() const;
     u32 GetTitleType() const;
@@ -121,8 +121,6 @@ private:
     u32_be signature_type;
     std::vector<u8> tmd_signature;
     std::vector<ContentChunk> tmd_chunks;
-
-    std::string filepath;
 };
 
 } // namespace FileSys
