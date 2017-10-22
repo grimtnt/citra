@@ -3,12 +3,15 @@
 #include "droparea.h"
 
 DropArea::DropArea(QWidget *parent) : QLabel(parent) {
+    QPalette Pal(palette());
     setMinimumSize(200, 120);
     setMaximumSize(200, 120);
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
     setAlignment(Qt::AlignCenter);
     setAcceptDrops(true);
+    Pal.setColor(QPalette::Background, Qt::cyan);
     setAutoFillBackground(true);
+    myWidget->setPalette(Pal);
     clear();
 }
 
