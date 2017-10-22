@@ -7,13 +7,14 @@ set(SRCS
             camera/still_image_camera.cpp 
             configuration/config.cpp
             configuration/configure_audio.cpp
-			configuration/configure_camera.cpp
+	    configuration/configure_camera.cpp
             configuration/configure_debug.cpp
             configuration/configure_dialog.cpp
             configuration/configure_general.cpp
             configuration/configure_graphics.cpp
             configuration/configure_log.cpp
             configuration/configure_input.cpp
+	    configuration/configure_input_widget.cpp
             configuration/configure_system.cpp
             configuration/configure_web.cpp
             debugger/graphics/graphics.cpp
@@ -45,13 +46,14 @@ set(HEADERS
             camera/still_image_camera.h 
             configuration/config.h
             configuration/configure_audio.h
-			configuration/configure_camera.h
+	    configuration/configure_camera.h
             configuration/configure_debug.h
             configuration/configure_dialog.h
             configuration/configure_general.h
             configuration/configure_graphics.h
             configuration/configure_log.h 
             configuration/configure_input.h
+	    configuration/configure_input_widget.h
             configuration/configure_system.h
             configuration/configure_web.h
             debugger/graphics/graphics.h
