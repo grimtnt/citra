@@ -18,7 +18,8 @@
 
 namespace FileSys {
 
-static constexpr size_t CIA_CONTENT_INDEX_COUNT = 0x2000;
+static constexpr size_t CIA_CONTENT_MAX_COUNT = 0x10000;
+static constexpr size_t CIA_CONTENT_BITS_SIZE = (CIA_CONTENT_MAX_COUNT / 8);
 static constexpr size_t CIA_HEADER_SIZE = 0x2020;
 static constexpr size_t CIA_DEPENDENCY_SIZE = 0x300;
 static constexpr size_t CIA_METADATA_SIZE = 0x400;
@@ -69,7 +70,7 @@ private:
         u32 tmd_size;
         u32 meta_size;
         u64 content_size;
-        std::array<u8, CIA_CONTENT_INDEX_COUNT> content_index;
+        std::array<u8, CIA_CONTENT_BITS_SIZE> content_present;
     };
 
     static_assert(sizeof(Header) == CIA_HEADER_SIZE, "CIA Header structure size is wrong");
