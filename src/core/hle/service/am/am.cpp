@@ -36,11 +36,16 @@ namespace AM {
 static bool lists_initialized = false;
 static std::array<std::vector<u64_le>, 3> am_title_list;
 
-// Current CIA install context
+// CIA installation context variables:
+// Loading state variables: Are we installing and what has been successfully loaded?
 static bool cia_is_installing = false;
 static bool cia_installing_update = false;
 static bool cia_installing_header_loaded = false;
 static bool cia_installing_tmd_loaded = false;
+
+// Writing state variables: How much has been written total, CIAContainer for the installing CIA,
+// buffer of all data prior to content data, how much of each content index has been written, and
+// where is the CIA being installed to?
 static u64 cia_installing_written = 0;
 static FileSys::CIAContainer cia_installing;
 static std::vector<u8> cia_installing_data;
