@@ -175,7 +175,11 @@ u64 CIAContainer::GetContentOffset(u16 index) const {
     u64 offset =
         Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, CIA_SECTION_ALIGNMENT);
     for (u16 i = 0; i < index; i++) {
-        offset += cia_tmd.GetContentSizeByIndex(i);
+        // The content_present is a bit array which defines which content in the TMD
+        // is included in the CIA, so check the bit for this index and add if set.
+        // The bits in the content index are arranged w/ index 0 as the MSB, 7 as the LSB, etc.
+        if (cia_header.content_present[i >> 3] & 0x80 >> (i & 7))
+            offset += cia_tmd.GetContentSizeByIndex(i);
     }
     return offset;
 }
@@ -192,11 +196,15 @@ u32 CIAContainer::GetTitleMetadataSize() const {
     return cia_header.tmd_size;
 }
 
-u32 CIAContainer::GetMetadataSize() const 
+u32 CIAContainer::GetMetadataSize() const {
     return cia_header.meta_size;
 }
 
 u64 CIAContainer::GetContentSize(u16 index) const {
+    // If the content doesn't exist in the CIA, it doesn't have a size.
+    if (!(cia_header.content_present[index >> 3] & 0x80 >> (index & 7)))
+        return 0;
+
     return cia_tmd.GetContentSizeByIndex(index);
 }
 
