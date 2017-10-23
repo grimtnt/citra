@@ -15,7 +15,9 @@
 
 namespace FileSys {
 
-Loader::ResultStatus CIAContainer::LoadFromFileBackend(FileBackend& backend) {
+static constexpr u32 CIA_SECTION_ALIGNMENT = 0x40;
+
+Loader::ResultStatus CIAContainer::Load(FileBackend& backend) {
     std::vector<u8> header_data(sizeof(Header));
 
     // Load the CIA Header
@@ -52,7 +54,7 @@ Loader::ResultStatus CIAContainer::LoadFromFileBackend(FileBackend& backend) {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadFromPath(std::string& filepath) {
+Loader::ResultStatus CIAContainer::Load(std::string& filepath) {
     FileUtil::IOFile file(filepath, "rb");
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
@@ -77,14 +79,16 @@ Loader::ResultStatus CIAContainer::LoadFromPath(std::string& filepath) {
         return result;
 
     // Load CIA Metadata
-    std::vector<u8> meta_data(sizeof(Metadata));
-    file.Seek(GetMetadataOffset(), SEEK_SET);
-    if (file.ReadBytes(meta_data.data(), sizeof(Metadata)) != sizeof(Metadata))
-        return Loader::ResultStatus::Error;
+    if (cia_header.meta_size) {
+        std::vector<u8> meta_data(sizeof(Metadata));
+        file.Seek(GetMetadataOffset(), SEEK_SET);
+        if (file.ReadBytes(meta_data.data(), sizeof(Metadata)) != sizeof(Metadata))
+            return Loader::ResultStatus::Error;
 
-    result = LoadMetadata(meta_data);
-    if (result != Loader::ResultStatus::Success)
-        return result;
+        result = LoadMetadata(meta_data);
+        if (result != Loader::ResultStatus::Success)
+            return result;
+    }
 
     return Loader::ResultStatus::Success;
 }
@@ -100,14 +104,16 @@ Loader::ResultStatus CIAContainer::Load(std::vector<u8>& file_data) {
         return result;
 
     // Load CIA Metadata
-    result = LoadMetadata(file_data, GetMetadataOffset());
-    if (result != Loader::ResultStatus::Success)
-        return result;
+    if (cia_header.meta_size) {
+        result = LoadMetadata(file_data, GetMetadataOffset());
+        if (result != Loader::ResultStatus::Success)
+            return result;
+    }
 
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadHeader(std::vector<u8>& header_data, u64 offset) {
+Loader::ResultStatus CIAContainer::LoadHeader(std::vector<u8>& header_data, size_t offset) {
     if (header_data.size() - offset < sizeof(Header))
         return Loader::ResultStatus::Error;
 
@@ -116,11 +122,11 @@ Loader::ResultStatus CIAContainer::LoadHeader(std::vector<u8>& header_data, u64 
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadTitleMetadata(std::vector<u8>& tmd_data, u64 offset) {
+Loader::ResultStatus CIAContainer::LoadTitleMetadata(std::vector<u8>& tmd_data, size_t offset) {
     return cia_tmd.Load(tmd_data, offset);
 }
 
-Loader::ResultStatus CIAContainer::LoadMetadata(std::vector<u8>& meta_data, u64 offset) {
+Loader::ResultStatus CIAContainer::LoadMetadata(std::vector<u8>& meta_data, size_t offset) {
     if (meta_data.size() - offset < sizeof(Metadata))
         return Loader::ResultStatus::Error;
 
@@ -137,24 +143,25 @@ std::array<u64, 0x30>& CIAContainer::GetDependencies() {
     return cia_metadata.dependencies;
 }
 
-u32 CIAContainer::GetCoreVersion() {
+u32 CIAContainer::GetCoreVersion() const {
     return cia_metadata.core_version;
 }
 
 u64 CIAContainer::GetCertificateOffset() const {
-    return Common::AlignUp(cia_header.header_size, 0x40);
+    return Common::AlignUp(cia_header.header_size, CIA_SECTION_ALIGNMENT);
 }
 
 u64 CIAContainer::GetTicketOffset() const {
-    return Common::AlignUp(GetCertificateOffset() + cia_header.cert_size, 0x40);
+    return Common::AlignUp(GetCertificateOffset() + cia_header.cert_size, CIA_SECTION_ALIGNMENT);
 }
 
 u64 CIAContainer::GetTitleMetadataOffset() const {
-    return Common::AlignUp(GetTicketOffset() + cia_header.tik_size, 0x40);
+    return Common::AlignUp(GetTicketOffset() + cia_header.tik_size, CIA_SECTION_ALIGNMENT);
 }
 
 u64 CIAContainer::GetMetadataOffset() const {
-    u64 offset = Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, 0x40);
+    u64 offset =
+        Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, CIA_SECTION_ALIGNMENT);
 
     // Meta exists after all content in the CIA
     for (u16 i = 0; i < cia_tmd.GetContentCount(); i++) {
@@ -165,7 +172,8 @@ u64 CIAContainer::GetMetadataOffset() const {
 }
 
 u64 CIAContainer::GetContentOffset(u16 index) const {
-    u64 offset = Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, 0x40);
+    u64 offset =
+        Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, CIA_SECTION_ALIGNMENT);
     for (u16 i = 0; i < index; i++) {
         offset += cia_tmd.GetContentSizeByIndex(i);
     }
@@ -184,7 +192,7 @@ u32 CIAContainer::GetTitleMetadataSize() const {
     return cia_header.tmd_size;
 }
 
-u32 CIAContainer::GetMetadataSize() const {
+u32 CIAContainer::GetMetadataSize() const 
     return cia_header.meta_size;
 }
 
@@ -196,10 +204,10 @@ void CIAContainer::Print() const {
     LOG_DEBUG(Service_FS, "Type:               %u", static_cast<u32>(cia_header.type));
     LOG_DEBUG(Service_FS, "Version:            %u\n", static_cast<u32>(cia_header.version));
 
-    LOG_DEBUG(Service_FS, "Certificate Size: 0x%08" PRIx64 " bytes", GetCertificateSize());
-    LOG_DEBUG(Service_FS, "Ticket Size:      0x%08" PRIx64 " bytes", GetTicketSize());
-    LOG_DEBUG(Service_FS, "TMD Size:         0x%08" PRIx64 " bytes", GetTitleMetadataSize());
-    LOG_DEBUG(Service_FS, "Meta Size:        0x%08" PRIx64 " bytes\n", GetMetadataSize());
+    LOG_DEBUG(Service_FS, "Certificate Size: 0x%08x bytes", GetCertificateSize());
+    LOG_DEBUG(Service_FS, "Ticket Size:      0x%08x bytes", GetTicketSize());
+    LOG_DEBUG(Service_FS, "TMD Size:         0x%08x bytes", GetTitleMetadataSize());
+    LOG_DEBUG(Service_FS, "Meta Size:        0x%08x bytes\n", GetMetadataSize());
 
     LOG_DEBUG(Service_FS, "Certificate Offset: 0x%08" PRIx64 " bytes", GetCertificateOffset());
     LOG_DEBUG(Service_FS, "Ticket Offset:      0x%08" PRIx64 " bytes", GetTicketOffset());
