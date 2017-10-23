@@ -35,7 +35,7 @@ enum TMDContentTypeFlag : u16 {
     Shared = 1 << 15
 };
 
-    enum TMDContentIndex { Main = 0, Manual = 1, DLP = 2 };
+enum TMDContentIndex { Main = 0, Manual = 1, DLP = 2 };
 
 /**
  * Helper which implements an interface to read and write Title Metadata (TMD) files.
@@ -92,9 +92,9 @@ public:
 
 #pragma pack(pop)
 
-    Loader::ResultStatus LoadFromFile(std::string& file_path);
+    Loader::ResultStatus Load(std::string& file_path);
     Loader::ResultStatus Load(std::vector<u8> file_data, u64 offset = 0);
-    Loader::ResultStatus SaveToFile(std::string& file_path);
+    Loader::ResultStatus Save(std::string& file_path);
 
     u64 GetTitleID() const;
     u32 GetTitleType() const;
@@ -107,7 +107,7 @@ public:
     u32 GetContentIDByIndex(u16 index) const;
     u16 GetContentTypeByIndex(u16 index) const;
     u64 GetContentSizeByIndex(u16 index) const;
-    
+
     void SetTitleID(u64 title_id);
     void SetTitleType(u32 type);
     void SetTitleVersion(u16 version);
