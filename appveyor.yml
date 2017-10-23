@@ -68,6 +68,7 @@ after_build:
           mkdir $RELEASE_DIST/platforms
 
           # copy citra and other release files to the release folder
+          Copy-Item $CMAKE_SOURCE_DIR\dlls\SDL2.dll -force -Destination $RELEASE_DIST
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST/citra-qt-sse4.1.exe
           Copy-Item -path "$CMAKE_SOURCE_DIR/Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST/1.ReadMe First.txt"
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
@@ -85,7 +86,7 @@ after_build:
                        "libfreetype-*.dll","libglib-*.dll","libgobject-*.dll","libgraphite2.dll","libiconv-*.dll",
                        "libharfbuzz-*.dll","libintl-*.dll","libpcre-*.dll","libpcre16-*.dll","libpng16-*.dll",
                        # Runtime/Other dependencies
-                       "libgcc_s_seh-*.dll","libstdc++-*.dll","libwinpthread-*.dll","SDL2.dll","zlib1.dll"
+                       "libgcc_s_seh-*.dll","libstdc++-*.dll","libwinpthread-*.dll","zlib1.dll"
           foreach ($file in $MingwDLLs) {
             Copy-Item -path "C:/msys64/mingw64/bin/$file" -force -destination "$RELEASE_DIST"
           }
