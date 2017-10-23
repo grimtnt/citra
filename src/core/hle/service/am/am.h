@@ -27,15 +27,25 @@ enum {
 };
 } // namespace ErrCodes
 
- /**
-  * Get the .tmd path for a title
-  * @param media_type the media the title exists on
-  * @param tid the title ID to get
-  * @param update set true if the incoming TMD should be used instead of the current TMD
-  * @returns string path to the .tmd file if it exists, otherwise a path to create one is given.
-  */
+enum CIAInstallState : u32 {
+    NotInstalling = 0,
+    InstallStarted,
+    HeaderLoaded,
+    CertLoaded,
+    TicketLoaded,
+    TMDLoaded,
+    ContentWritten,
+};
+
+/**
+ * Get the .tmd path for a title
+ * @param media_type the media the title exists on
+ * @param tid the title ID to get
+ * @param update set true if the incoming TMD should be used instead of the current TMD
+ * @returns string path to the .tmd file if it exists, otherwise a path to create one is given.
+ */
 std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid, bool update = false);
- 
+
 /**
  * Get the .app path for a title's installed content index.
  * @param media_type the media the title exists on
@@ -216,8 +226,6 @@ void GetNumTickets(Service::Interface* self);
  *      2 : Total TicketList
  */
 void GetTicketList(Service::Interface* self);
-
-void GetPatchTitleInfos(Service::Interface* self);
 
 /**
  * AM::QueryAvailableTitleDatabase service function
