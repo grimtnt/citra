@@ -18,6 +18,11 @@
 
 namespace FileSys {
 
+static constexpr size_t CIA_CONTENT_INDEX_COUNT = 0x2000;
+static constexpr size_t CIA_HEADER_SIZE = 0x2020;
+static constexpr size_t CIA_DEPENDENCY_SIZE = 0x300;
+static constexpr size_t CIA_METADATA_SIZE = 0x400;
+
 /**
  * Helper which implements an interface to read and write CTR Installable Archive (CIA) files.
  * Data can either be loaded from a FileBackend, a string path, or from a data array. Data can
@@ -27,18 +32,18 @@ namespace FileSys {
 class CIAContainer {
 public:
     // Load whole CIAs outright
-    Loader::ResultStatus LoadFromFileBackend(FileBackend& backend);
-    Loader::ResultStatus LoadFromPath(std::string& filepath);
+    Loader::ResultStatus Load(FileBackend& backend);
+    Loader::ResultStatus Load(std::string& filepath);
     Loader::ResultStatus Load(std::vector<u8>& header_data);
 
     // Load parts of CIAs (for CIAs streamed in)
-    Loader::ResultStatus LoadHeader(std::vector<u8>& header_data, u64 offset = 0);
-    Loader::ResultStatus LoadTitleMetadata(std::vector<u8>& tmd_data, u64 offset = 0);
-    Loader::ResultStatus LoadMetadata(std::vector<u8>& meta_data, u64 offset = 0);
+    Loader::ResultStatus LoadHeader(std::vector<u8>& header_data, size_t offset = 0);
+    Loader::ResultStatus LoadTitleMetadata(std::vector<u8>& tmd_data, size_t offset = 0);
+    Loader::ResultStatus LoadMetadata(std::vector<u8>& meta_data, size_t offset = 0);
 
     TitleMetadata& GetTitleMetadata();
     std::array<u64, 0x30>& GetDependencies();
-    u32 GetCoreVersion();
+    u32 GetCoreVersion() const;
 
     u64 GetCertificateOffset() const;
     u64 GetTicketOffset() const;
@@ -64,10 +69,10 @@ private:
         u32 tmd_size;
         u32 meta_size;
         u64 content_size;
-        u8 content_index[0x2000];
+        std::array<u8, CIA_CONTENT_INDEX_COUNT> content_index;
     };
 
-    static_assert(sizeof(Header) == 0x2020, "CIA Header structure size is wrong");
+    static_assert(sizeof(Header) == CIA_HEADER_SIZE, "CIA Header structure size is wrong");
 
     struct Metadata {
         std::array<u64, 0x30> dependencies;
@@ -76,7 +81,7 @@ private:
         std::array<u8, 0xfc> reserved_2;
     };
 
-    static_assert(sizeof(Metadata) == 0x400, "CIA Metadata structure size is wrong");
+    static_assert(sizeof(Metadata) == CIA_METADATA_SIZE, "CIA Metadata structure size is wrong");
 
     bool loaded = false;
     std::string filepath;
