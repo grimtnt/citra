@@ -37,11 +37,9 @@ static bool lists_initialized = false;
 static std::array<std::vector<u64_le>, 3> am_title_list;
 
 // CIA installation context variables:
-// Loading state variables: Are we installing and what has been successfully loaded?
-static bool cia_is_installing = false;
+// Loading state variables: Are we installing an update, and what step of installation are we at?
 static bool cia_installing_update = false;
-static bool cia_installing_header_loaded = false;
-static bool cia_installing_tmd_loaded = false;
+static CIAInstallState cia_install_state = NotInstalling;
 
 // Writing state variables: How much has been written total, CIAContainer for the installing CIA,
 // buffer of all data prior to content data, how much of each content index has been written, and
@@ -101,40 +99,47 @@ public:
         // Or does it just ignore offsets and assume a set sequence of incoming data?
 
         // The data in CIAs is always stored CIA Header > Cert > Ticket > TMD > Content > Meta.
-        // The CIA Header describes Cert, Ticket, TMD, Content sizes, and TMD is needed for
+        // The CIA Header describes Cert, Ticket, TMD, total content sizes, and TMD is needed for
         // content sizes so it ends up becoming a problem of keeping track of how  much has been
         // written and what we have been able to pick up.
-        if (!cia_installing_header_loaded) {
-            cia_installing_data.resize(std::min(offset + length, FileSys::CIA_HEADER_SIZE));
-            memcpy(cia_installing_data.data() + offset, buffer,
-                   std::min(length, static_cast<size_t>(FileSys::CIA_HEADER_SIZE)));
+        if (cia_install_state < HeaderLoaded) {
+            size_t buf_copy_size = std::min(length, static_cast<size_t>(FileSys::CIA_HEADER_SIZE));
+            size_t buf_max_size = std::min(offset + length, FileSys::CIA_HEADER_SIZE);
+            cia_installing_data.resize(buf_max_size);
+            memcpy(cia_installing_data.data() + offset, buffer, buf_copy_size);
 
             // We have enough data to load a CIA header and parse it.
             if (cia_installing_written >= FileSys::CIA_HEADER_SIZE) {
                 cia_installing.LoadHeader(cia_installing_data);
                 cia_installing.Print();
-                cia_installing_header_loaded = true;
+                cia_install_state = HeaderLoaded;
             }
         }
 
         // If we don't have a header yet, we can't pull offsets of other sections
-        if (!cia_installing_header_loaded)
+        if (cia_install_state < HeaderLoaded)
             return MakeResult<size_t>(length);
 
         // If we have been given data before (or including) .app content, pull it into
-        // our buffer to pull Cert, Tik, TMD data, but *only* up to the content offset.
+        // our buffer, but only pull *up to* the content offset, no further.
         if (offset < cia_installing.GetContentOffset()) {
-            cia_installing_data.resize(
-                std::min(offset + length, cia_installing.GetContentOffset()));
-            memcpy(
-                cia_installing_data.data() + offset, buffer,
-                std::min(length, static_cast<size_t>(cia_installing.GetContentOffset() - offset)));
+            size_t buf_loaded = cia_installing_data.size();
+            size_t copy_offset = std::max(offset, buf_loaded);
+            size_t buf_offset = buf_loaded - offset;
+            size_t buf_copy_size =
+                std::min(length, static_cast<size_t>(cia_installing.GetContentOffset() - offset)) -
+                buf_loaded;
+            size_t buf_max_size = std::min(offset + length, cia_installing.GetContentOffset());
+            cia_installing_data.resize(buf_max_size);
+            memcpy(cia_installing_data.data() + copy_offset, buffer + buf_offset, buf_copy_size);
         }
+
+        // TODO(shinyquagsire23): Write out .tik files to nand?
 
         // The end of our TMD is at the beginning of Content data, so ensure we have that much
         // buffered before trying to parse.
         if (cia_installing_written >= cia_installing.GetContentOffset() &&
-            !cia_installing_tmd_loaded) {
+            cia_install_state < TMDLoaded) {
             cia_installing.LoadTitleMetadata(cia_installing_data,
                                              cia_installing.GetTitleMetadataOffset());
             FileSys::TitleMetadata tmd = cia_installing.GetTitleMetadata();
@@ -167,13 +172,11 @@ public:
 
             cia_installing_content_written.resize(
                 cia_installing.GetTitleMetadata().GetContentCount());
-            cia_installing_tmd_loaded = true;
+            cia_install_state = TMDLoaded;
         }
 
-        // TODO(shinyquagsire23): Write out .tik files to nand?
-
         // Content data sizes can only be retrieved from TMD data
-        if (!cia_installing_tmd_loaded)
+        if (cia_install_state < TMDLoaded)
             return MakeResult<size_t>(length);
 
         // From this point forward, data will no longer be buffered in cia_installing_data,
@@ -662,7 +665,7 @@ void BeginImportProgram(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0402, 1, 0); // 0x04020040
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
 
-    if (cia_is_installing) {
+    if (cia_install_state != NotInstalling) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrCodes::CIACurrentlyInstalling, ErrorModule::AM,
                            ErrorSummary::InvalidState, ErrorLevel::Permanent));
@@ -680,12 +683,10 @@ void BeginImportProgram(Service::Interface* self) {
     cia_installing_content_written.clear();
     cia_installing_data.clear();
     cia_installing_media_type = media_type;
-    cia_installing_header_loaded = false;
-    cia_installing_tmd_loaded = false;
+    cia_install_state = InstallStarted;
     cia_installing_update = false;
     cia_installing_written = 0;
     cia_installing = FileSys::CIAContainer();
-    cia_is_installing = true;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 1);
     rb.Push(RESULT_SUCCESS); // No error
@@ -735,7 +736,7 @@ void EndImportProgram(Service::Interface* self) {
     }
     ScanForAllTitles();
 
-    cia_is_installing = false;
+    cia_install_state = NotInstalling;
 }
 
 ResultVal<std::shared_ptr<Service::FS::File>> GetFileFromHandle(Kernel::Handle handle) {
@@ -1039,7 +1040,15 @@ void Init() {
     ScanForAllTitles();
 }
 
-void Shutdown() {}
+void Shutdown() {
+    // Reset CIA install context
+    cia_installing_content_written.clear();
+    cia_installing_data.clear();
+    cia_install_state = NotInstalling;
+    cia_installing_update = false;
+    cia_installing_written = 0;
+    cia_installing = FileSys::CIAContainer();
+}
 
 } // namespace AM
 
