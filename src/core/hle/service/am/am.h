@@ -27,8 +27,8 @@ enum {
 };
 } // namespace ErrCodes
 
-enum CIAInstallState : u32 {
-    NotInstalling = 0,
+enum class CIAInstallState : u32 {
+    NotInstalling,
     InstallStarted,
     HeaderLoaded,
     CertLoaded,
