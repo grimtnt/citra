@@ -8,16 +8,15 @@
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "core/file_sys/cia_container.h"
-#include "core/file_sys/title_metadata.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // FileSys namespace
 
 namespace FileSys {
 
-static constexpr u32 CIA_SECTION_ALIGNMENT = 0x40;
+constexpr u32 CIA_SECTION_ALIGNMENT = 0x40;
 
-Loader::ResultStatus CIAContainer::Load(FileBackend& backend) {
+Loader::ResultStatus CIAContainer::Load(const FileBackend& backend) {
     std::vector<u8> header_data(sizeof(Header));
 
     // Load the CIA Header
@@ -54,7 +53,7 @@ Loader::ResultStatus CIAContainer::Load(FileBackend& backend) {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::Load(std::string& filepath) {
+Loader::ResultStatus CIAContainer::Load(const std::string& filepath) {
     FileUtil::IOFile file(filepath, "rb");
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
@@ -93,7 +92,7 @@ Loader::ResultStatus CIAContainer::Load(std::string& filepath) {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::Load(std::vector<u8>& file_data) {
+Loader::ResultStatus CIAContainer::Load(const std::vector<u8>& file_data) {
     Loader::ResultStatus result = LoadHeader(file_data);
     if (result != Loader::ResultStatus::Success)
         return result;
@@ -113,7 +112,7 @@ Loader::ResultStatus CIAContainer::Load(std::vector<u8>& file_data) {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadHeader(std::vector<u8>& header_data, size_t offset) {
+Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data, size_t offset) {
     if (header_data.size() - offset < sizeof(Header))
         return Loader::ResultStatus::Error;
 
@@ -122,11 +121,12 @@ Loader::ResultStatus CIAContainer::LoadHeader(std::vector<u8>& header_data, size
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadTitleMetadata(std::vector<u8>& tmd_data, size_t offset) {
+Loader::ResultStatus CIAContainer::LoadTitleMetadata(const std::vector<u8>& tmd_data,
+                                                     size_t offset) {
     return cia_tmd.Load(tmd_data, offset);
 }
 
-Loader::ResultStatus CIAContainer::LoadMetadata(std::vector<u8>& meta_data, size_t offset) {
+Loader::ResultStatus CIAContainer::LoadMetadata(const std::vector<u8>& meta_data, size_t offset) {
     if (meta_data.size() - offset < sizeof(Metadata))
         return Loader::ResultStatus::Error;
 
@@ -135,7 +135,7 @@ Loader::ResultStatus CIAContainer::LoadMetadata(std::vector<u8>& meta_data, size
     return Loader::ResultStatus::Success;
 }
 
-TitleMetadata& CIAContainer::GetTitleMetadata() {
+const TitleMetadata& CIAContainer::GetTitleMetadata() const {
     return cia_tmd;
 }
 
