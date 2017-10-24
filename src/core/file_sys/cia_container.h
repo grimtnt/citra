@@ -10,7 +10,6 @@
 #include "common/swap.h"
 #include "core/file_sys/file_backend.h"
 #include "core/file_sys/title_metadata.h"
-#include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,11 +17,11 @@
 
 namespace FileSys {
 
-static constexpr size_t CIA_CONTENT_MAX_COUNT = 0x10000;
-static constexpr size_t CIA_CONTENT_BITS_SIZE = (CIA_CONTENT_MAX_COUNT / 8);
-static constexpr size_t CIA_HEADER_SIZE = 0x2020;
-static constexpr size_t CIA_DEPENDENCY_SIZE = 0x300;
-static constexpr size_t CIA_METADATA_SIZE = 0x400;
+constexpr size_t CIA_CONTENT_MAX_COUNT = 0x10000;
+constexpr size_t CIA_CONTENT_BITS_SIZE = (CIA_CONTENT_MAX_COUNT / 8);
+constexpr size_t CIA_HEADER_SIZE = 0x2020;
+constexpr size_t CIA_DEPENDENCY_SIZE = 0x300;
+constexpr size_t CIA_METADATA_SIZE = 0x400;
 
 /**
  * Helper which implements an interface to read and write CTR Installable Archive (CIA) files.
@@ -33,16 +32,16 @@ static constexpr size_t CIA_METADATA_SIZE = 0x400;
 class CIAContainer {
 public:
     // Load whole CIAs outright
-    Loader::ResultStatus Load(FileBackend& backend);
-    Loader::ResultStatus Load(std::string& filepath);
-    Loader::ResultStatus Load(std::vector<u8>& header_data);
+    Loader::ResultStatus Load(const FileBackend& backend);
+    Loader::ResultStatus Load(const std::string& filepath);
+    Loader::ResultStatus Load(const std::vector<u8>& header_data);
 
     // Load parts of CIAs (for CIAs streamed in)
-    Loader::ResultStatus LoadHeader(std::vector<u8>& header_data, size_t offset = 0);
-    Loader::ResultStatus LoadTitleMetadata(std::vector<u8>& tmd_data, size_t offset = 0);
-    Loader::ResultStatus LoadMetadata(std::vector<u8>& meta_data, size_t offset = 0);
+    Loader::ResultStatus LoadHeader(const std::vector<u8>& header_data, size_t offset = 0);
+    Loader::ResultStatus LoadTitleMetadata(const std::vector<u8>& tmd_data, size_t offset = 0);
+    Loader::ResultStatus LoadMetadata(const std::vector<u8>& meta_data, size_t offset = 0);
 
-    TitleMetadata& GetTitleMetadata();
+    const TitleMetadata& GetTitleMetadata() const;
     std::array<u64, 0x30>& GetDependencies();
     u32 GetCoreVersion() const;
 
