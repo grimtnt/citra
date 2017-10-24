@@ -92,9 +92,9 @@ public:
 
 #pragma pack(pop)
 
-    Loader::ResultStatus Load(std::string& file_path);
-    Loader::ResultStatus Load(std::vector<u8> file_data, size_t offset = 0);
-    Loader::ResultStatus Save(std::string& file_path);
+    Loader::ResultStatus Load(const std::string& file_path);
+    Loader::ResultStatus Load(const std::vector<u8> file_data, size_t offset = 0);
+    Loader::ResultStatus Save(const std::string& file_path);
 
     u64 GetTitleID() const;
     u32 GetTitleType() const;
