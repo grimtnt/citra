@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <cinttypes>
-#include <streambuf>
 #include <cryptopp/sha.h>
 #include "common/alignment.h"
 #include "common/file_util.h"
@@ -34,7 +33,7 @@ static u32 GetSignatureSize(u32 signature_type) {
     return 0;
 }
 
-Loader::ResultStatus TitleMetadata::Load(std::string& file_path) {
+Loader::ResultStatus TitleMetadata::Load(const std::string& file_path) {
     FileUtil::IOFile file(file_path, "rb");
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
@@ -51,8 +50,9 @@ Loader::ResultStatus TitleMetadata::Load(std::string& file_path) {
     return result;
 }
 
-Loader::ResultStatus TitleMetadata::Load(std::vector<u8> file_data, size_t offset) {
-    if (file_data.size() - offset < sizeof(u32_be))
+Loader::ResultStatus TitleMetadata::Load(const std::vector<u8> file_data, size_t offset) {
+    size_t total_size = static_cast<size_t>(file_data.size() - offset);
+    if (total_size < sizeof(u32_be))
         return Loader::ResultStatus::Error;
 
     memcpy(&signature_type, &file_data[offset], sizeof(u32_be));
@@ -64,7 +64,7 @@ Loader::ResultStatus TitleMetadata::Load(std::vector<u8> file_data, size_t offse
     size_t body_start = Common::AlignUp(signature_size + sizeof(u32), 0x40);
     size_t body_end = body_start + sizeof(Body);
 
-    if (file_data.size() - offset < body_end)
+    if (total_size < body_end)
         return Loader::ResultStatus::Error;
 
     // Read signature + TMD body, then load the amount of ContentChunks specified
@@ -74,9 +74,9 @@ Loader::ResultStatus TitleMetadata::Load(std::vector<u8> file_data, size_t offse
 
     size_t expected_size =
         body_start + sizeof(Body) + tmd_body.content_count * sizeof(ContentChunk);
-    if (file_data.size() - offset < expected_size) {
+    if (total_size < expected_size) {
         LOG_ERROR(Service_FS, "Malformed TMD, expected size 0x%zx, got 0x%zx!", expected_size,
-                  file_data.size() - offset);
+                  total_size);
         return Loader::ResultStatus::ErrorInvalidFormat;
     }
 
@@ -91,7 +91,7 @@ Loader::ResultStatus TitleMetadata::Load(std::vector<u8> file_data, size_t offse
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus TitleMetadata::Save(std::string& file_path) {
+Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
     FileUtil::IOFile file(file_path, "wb");
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
