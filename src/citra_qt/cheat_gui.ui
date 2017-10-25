@@ -34,7 +34,7 @@
         </font>
       </property>
       <property name="text">
-        <string>Game Title - GameID</string>
+        <string>Dont Translate This</string>
       </property>
     </widget>
     <widget class="QWidget" name="horizontalLayoutWidget">

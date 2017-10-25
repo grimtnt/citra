@@ -23,9 +23,7 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->textDetails->setEnabled(false);
     ui->textNotes->setEnabled(false);
-    const auto game_id =
-        Common::StringFromFormat("%016llX", Kernel::g_current_process->codeset->program_id);
-    ui->labelTitle->setText(tr("Title ID: %1").arg(QString::fromStdString(game_id)));
+    ui->labelTitle->setText(tr("The cheats are for all games. Disable cheats for current game before changing game!"));
 
     connect(ui->buttonClose, &QPushButton::released, this, &CheatDialog::OnCancel);
     connect(ui->buttonNewCheat, &QPushButton::released, this, &CheatDialog::OnAddCheat);

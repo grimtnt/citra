@@ -69,7 +69,6 @@ after_build:
 
           # copy citra and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST/citra-qt-sse4.1.exe
-          Copy-Item $CMAKE_SOURCE_DIR\dlls\SDL2.dll -Destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST/1.ReadMe First.txt"
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
           
