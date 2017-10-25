@@ -43,6 +43,7 @@
 #include "common/scope_exit.h"
 #include "common/string_util.h"
 #include "core/core.h"
+#include "core/cheat_core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
 #include "core/gdbstub/gdbstub.h"
 #include "core/loader/loader.h"
@@ -581,9 +582,9 @@ void GMainWindow::BootGame(const QString& filename) {
 
     render_window->show();
     render_window->setFocus();
-
+    CheatCore::RefreshCheats();
     emulation_running = true;
-	ToggleFullscreen();
+    ToggleFullscreen();
     OnStartGame();
 }
 
@@ -622,7 +623,8 @@ void GMainWindow::ShutdownGame() {
     emu_speed_label->setVisible(false);
     game_fps_label->setVisible(false);
     emu_frametime_label->setVisible(false);
-
+    
+    CheatCore::Shutdown();
     emulation_running = false;
     
     if (defer_update_prompt) {
