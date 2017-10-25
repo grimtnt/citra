@@ -885,7 +885,9 @@ static ResultCode ReleaseMutex(Kernel::Handle handle) {
     if (mutex == nullptr)
         return ERR_INVALID_HANDLE;
 
-        return mutex->Release(Kernel::GetCurrentThread());
+    mutex->Release();
+
+    return RESULT_SUCCESS;
 }
 
 /// Get the ID of the specified process
