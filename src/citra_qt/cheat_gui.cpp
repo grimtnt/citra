@@ -22,7 +22,6 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->textDetails->setEnabled(false);
-    ui->textNotes->setEnabled(false);
     ui->labelTitle->setText(tr("The Cheats are for all Titles."));
 
     connect(ui->buttonClose, &QPushButton::released, this, &CheatDialog::OnCancel);
@@ -31,7 +30,6 @@ CheatDialog::CheatDialog(QWidget* parent)
     connect(ui->buttonDelete, &QPushButton::released, this, &CheatDialog::OnDelete);
     connect(ui->tableCheats, &QTableWidget::cellClicked, this, &CheatDialog::OnRowSelected);
     connect(ui->textDetails, &QPlainTextEdit::textChanged, this, &CheatDialog::OnDetailsChanged);
-    connect(ui->textNotes, &QPlainTextEdit::textChanged, this, &CheatDialog::OnNotesChanged);
 
     LoadCheats();
 }
@@ -73,20 +71,15 @@ void CheatDialog::OnCancel() {
 void CheatDialog::OnRowSelected(int row, int column) {
     selection_changing = true;
     if (row == -1) {
-        ui->textNotes->setPlainText("");
         ui->textDetails->setPlainText("");
         current_row = -1;
         selection_changing = false;
         ui->textDetails->setEnabled(false);
-        ui->textNotes->setEnabled(false);
         return;
     }
 
     ui->textDetails->setEnabled(true);
-    ui->textNotes->setEnabled(true);
     const auto& current_cheat = cheats[row];
-    ui->textNotes->setPlainText(
-        QString::fromStdString(Common::Join(current_cheat->GetNotes(), "\n")));
 
     std::vector<std::string> details;
     for (const auto& line : current_cheat->GetCheatLines())
@@ -96,15 +89,6 @@ void CheatDialog::OnRowSelected(int row, int column) {
     current_row = row;
 
     selection_changing = false;
-}
-
-void CheatDialog::OnNotesChanged() {
-    if (selection_changing)
-        return;
-    auto notes = ui->textNotes->toPlainText();
-    auto old_notes = cheats[current_row]->GetNotes();
-    Common::SplitString(notes.toStdString(), '\n', old_notes);
-    cheats[current_row]->SetNotes(old_notes);
 }
 
 void CheatDialog::OnDetailsChanged() {
