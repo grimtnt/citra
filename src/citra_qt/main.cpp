@@ -47,6 +47,7 @@
 #include "core/gdbstub/gdbstub.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
+#include "video_core/video_core.h"
 
 #ifdef QT_STATICPLUGIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
@@ -989,6 +990,16 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
 void GMainWindow::keyPressEvent(QKeyEvent* event) {
 if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
+     }
+if (event->key() == Qt::Key_F && emulation_running) {
+         if (VideoCore::g_toggle_framelimit_enabled)
+	 {
+             VideoCore::g_toggle_framelimit_enabled = false;
+	 }
+	 else
+	 {
+             VideoCore::g_toggle_framelimit_enabled = true;
+	 }
      }
 }
 
