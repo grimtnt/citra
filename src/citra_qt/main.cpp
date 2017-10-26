@@ -47,7 +47,6 @@
 #include "core/gdbstub/gdbstub.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
-#include "video_core/video_core.h"
 
 #ifdef QT_STATICPLUGIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
@@ -946,7 +945,7 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
     UISettings::values.microprofile_visible = microProfileDialog->isVisible();
 #endif
     UISettings::values.single_window_mode = ui.action_Single_Window_Mode->isChecked();
-	UISettings::values.fullscreen = ui.action_Fullscreen->isChecked();
+    UISettings::values.fullscreen = ui.action_Fullscreen->isChecked();
     UISettings::values.display_titlebar = ui.action_Display_Dock_Widget_Headers->isChecked();
     UISettings::values.show_filter_bar = ui.action_Show_Filter_Bar->isChecked();
     UISettings::values.show_status_bar = ui.action_Show_Status_Bar->isChecked();
@@ -991,14 +990,16 @@ void GMainWindow::keyPressEvent(QKeyEvent* event) {
 if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
      }
-if (event->key() == Qt::Key_F && emulation_running) {
-         if (VideoCore::g_toggle_framelimit_enabled)
+if (event->key() == Qt::Key_F) {
+         if (Settings::values.toggle_framelimit)
 	 {
-             VideoCore::g_toggle_framelimit_enabled = false;
+             Settings::values.toggle_framelimit = false;
+             Settings::Apply();
 	 }
 	 else
 	 {
-             VideoCore::g_toggle_framelimit_enabled = true;
+             Settings::values.toggle_framelimit = true;
+	     Settings::Apply();
 	 }
      }
 }
