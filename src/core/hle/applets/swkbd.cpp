@@ -182,17 +182,12 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
         (void)e;
         std::cout << "Input number is not valid." << std::endl;
     }
-    } catch (const std::range_error& e) {
-        (void)e;
-        std::cout << "Input is not valid." << std::endl;
-    }
     return valid;
 }
 
 void SoftwareKeyboard::Update() {
     // TODO(Subv): Handle input using the touch events from the HID module
     // Until then, just read input from the terminal
-    try {
     std::string input;
     // Display hint text
     std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
@@ -201,8 +196,9 @@ void SoftwareKeyboard::Update() {
     }
     do {
         std::cout << "Text:" << std::endl;
+        try {
         std::getline(std::cin, input);
-    } catch (const std::range_error& e) {
+        } catch (const std::range_error& e) {
         (void)e;
         std::cout << "Input is not valid." << std::endl;
     }
