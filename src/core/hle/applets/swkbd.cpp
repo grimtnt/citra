@@ -196,12 +196,7 @@ void SoftwareKeyboard::Update() {
     }
     do {
         std::cout << "Text:" << std::endl;
-        try {
         std::getline(std::cin, input);
-        } catch (const std::range_error& e) {
-        (void)e;
-        std::cout << "Input is not valid." << std::endl;
-    }
     } while (!ValidateInput(config, input));
 
     std::string option_text;
