@@ -989,19 +989,7 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
 void GMainWindow::keyPressEvent(QKeyEvent* event) {
 if (event->key() == Qt::Key_F4 && emulation_running) {
          OnPauseGame();
-     }
-if (event->key() == Qt::Key_F) {
-         if (Settings::values.toggle_framelimit)
-	 {
-             Settings::values.toggle_framelimit = false;
-             Settings::Apply();
-	 }
-	 else
-	 {
-             Settings::values.toggle_framelimit = true;
-	     Settings::Apply();
-	 }
-     }
+    }
 }
 
 bool GMainWindow::ConfirmChangeGame() {
