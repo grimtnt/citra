@@ -185,7 +185,7 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
     return valid;
 }
 
-void SoftwareKeyboard::Update() throw() {
+void SoftwareKeyboard::Update() {
     // TODO(Subv): Handle input using the touch events from the HID module
     // Until then, just read input from the terminal
     std::string input;
@@ -282,7 +282,7 @@ void SoftwareKeyboard::DrawScreenKeyboard() {
     Service::GSP::SetBufferSwap(1, info);
 }
 
-void SoftwareKeyboard::Finalize() throw() {
+void SoftwareKeyboard::Finalize() {
     // Let the application know that we're closing
     Service::APT::MessageParameter message;
     message.buffer.resize(sizeof(SoftwareKeyboardConfig));
