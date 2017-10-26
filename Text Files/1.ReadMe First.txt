@@ -1,1 +1,1 @@
-Issues: https://github.com/acnleditor2/citra/issues
+Issues: https://github.com/acnleditor2/citra/issues.
