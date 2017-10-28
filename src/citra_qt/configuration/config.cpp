@@ -68,7 +68,6 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
-    Settings::values.fix_ever_oasis = qt_config->value("fix_ever_oasis", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -88,14 +87,14 @@ void Config::ReadValues() {
         static_cast<Settings::LayoutOption>(qt_config->value("layout_option").toInt());
     Settings::values.swap_screen = qt_config->value("swap_screen", false).toBool();
     Settings::values.custom_checkbox = qt_config->value("custom_checkbox", false).toBool();
-     Settings::values.custom_top_left = qt_config->value("custom_top_left", 0).toInt();
-     Settings::values.custom_top_top = qt_config->value("custom_top_top", 0).toInt();
-     Settings::values.custom_top_right = qt_config->value("custom_top_right", 0).toInt();
-     Settings::values.custom_top_bottom = qt_config->value("custom_top_bottom", 0).toInt();
-     Settings::values.custom_bottom_left = qt_config->value("custom_bottom_left", 0).toInt();
-     Settings::values.custom_bottom_top = qt_config->value("custom_bottom_top", 0).toInt();
-     Settings::values.custom_bottom_right = qt_config->value("custom_bottom_right", 0).toInt();
-     Settings::values.custom_bottom_bottom = qt_config->value("custom_bottom_bottom", 0).toInt();
+    Settings::values.custom_top_left = qt_config->value("custom_top_left", 0).toInt();
+    Settings::values.custom_top_top = qt_config->value("custom_top_top", 0).toInt();
+    Settings::values.custom_top_right = qt_config->value("custom_top_right", 0).toInt();
+    Settings::values.custom_top_bottom = qt_config->value("custom_top_bottom", 0).toInt();
+    Settings::values.custom_bottom_left = qt_config->value("custom_bottom_left", 0).toInt();
+    Settings::values.custom_bottom_top = qt_config->value("custom_bottom_top", 0).toInt();
+    Settings::values.custom_bottom_right = qt_config->value("custom_bottom_right", 0).toInt();
+    Settings::values.custom_bottom_bottom = qt_config->value("custom_bottom_bottom", 0).toInt();
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");
@@ -233,7 +232,6 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
-    qt_config->setValue("fix_ever_oasis", Settings::values.fix_ever_oasis);
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
