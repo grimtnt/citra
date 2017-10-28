@@ -316,6 +316,8 @@ void GMainWindow::RestoreUIState() {
     ui.action_Single_Window_Mode->setChecked(UISettings::values.single_window_mode);
     ToggleWindowMode();
 
+    ui.action_Fullscreen->setChecked(UISettings::values.fullscreen);
+
     ui.action_Display_Dock_Widget_Headers->setChecked(UISettings::values.display_titlebar);
     OnDisplayTitleBars(ui.action_Display_Dock_Widget_Headers->isChecked());
 
@@ -583,7 +585,7 @@ void GMainWindow::BootGame(const QString& filename) {
     render_window->setFocus();
 
     emulation_running = true;
-	ToggleFullscreen();
+    ToggleFullscreen();
     OnStartGame();
 }
 
@@ -782,7 +784,7 @@ void GMainWindow::ToggleWindowMode() {
         render_window->BackupGeometry();
         ui.horizontalLayout->addWidget(render_window);
         render_window->setFocusPolicy(Qt::ClickFocus);
-		render_window->SeparateFromMainWindow(false);
+	render_window->SeparateFromMainWindow(false);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->setFocus();
@@ -793,7 +795,7 @@ void GMainWindow::ToggleWindowMode() {
         ui.horizontalLayout->removeWidget(render_window);
         render_window->setParent(nullptr);
         render_window->setFocusPolicy(Qt::NoFocus);
-		render_window->SeparateFromMainWindow(true);
+	render_window->SeparateFromMainWindow(true);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->RestoreGeometry();
