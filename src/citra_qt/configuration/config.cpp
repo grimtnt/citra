@@ -68,6 +68,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
+    Settings::values.fix_ever_oasis = qt_config->value("fix_ever_oasis", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -232,6 +233,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
+    qt_config->setValue("fix_ever_oasis", Settings::values.fix_ever_oasis);
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
