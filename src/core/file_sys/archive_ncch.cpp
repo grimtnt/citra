@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
+#include <cinttypes>
 #include <memory>
 #include <vector>
 #include "common/common_types.h"
@@ -63,6 +64,7 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
     std::string file_path =
         Service::AM::GetTitleContentPath(media_type, title_id, openfile_path.content_index);
     auto ncch_container = NCCHContainer(file_path);
+
     Loader::ResultStatus result;
     std::unique_ptr<FileBackend> file;
 
@@ -96,13 +98,14 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
         constexpr u32 mii_data = 0x00010202;
         constexpr u32 region_manifest = 0x00010402;
         constexpr u32 ng_word_list = 0x00010302;
+
         u32 high = static_cast<u32>(title_id >> 32);
         u32 low = static_cast<u32>(title_id & 0xFFFFFFFF);
 
         LOG_DEBUG(Service_FS, "Full Path: %s. Category: 0x%X. Path: 0x%X.", path.DebugStr().c_str(),
                   high, low);
-        
-        std::string archive_name; 
+
+        std::string archive_name;
         if (high == shared_data_archive) {
             if (low == mii_data)
                 archive_name = "Mii Data";
