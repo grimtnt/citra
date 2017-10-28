@@ -23,12 +23,12 @@ namespace ErrCodes {
 enum {
     CIACurrentlyInstalling = 4,
     EmptyCIA = 32,
+    InvalidTIDInList = 60,
     InvalidCIAHeader = 104,
 };
 } // namespace ErrCodes
 
 enum class CIAInstallState : u32 {
-    NotInstalling,
     InstallStarted,
     HeaderLoaded,
     CertLoaded,
@@ -160,8 +160,8 @@ void GetProgramList(Service::Interface* self);
 void GetProgramInfos(Service::Interface* self);
 
 /**
- * AM::GetDataTitleInfos service function
- * Wrapper for AM::GetProgramInfos
+ * AM::GetDLCTitleInfos service function
+ * Wrapper for AM::GetProgramInfos, explicitly checks that TID high value is 0004008C.
  *  Inputs:
  *      1 : u8 Mediatype
  *      2 : Total titles
@@ -170,7 +170,22 @@ void GetProgramInfos(Service::Interface* self);
  *  Outputs:
  *      1 : Result, 0 on success, otherwise error code
  */
-void GetDataTitleInfos(Service::Interface* self);
+void GetDLCTitleInfos(Service::Interface* self);
+
+/**
+ * AM::GetPatchTitleInfos service function
+ * Wrapper for AM::GetProgramInfos, explicitly checks that TID high value is 0004000E.
+ *  Inputs:
+ *      1 : u8 Mediatype
+ *      2 : Total titles
+ *      4 : TitleIDList input pointer
+ *      6 : TitleList output pointer
+ *  Outputs:
+ *      1 : Result, 0 on success, otherwise error code
+ *      2 : TitleIDList input pointer
+ *      4 : TitleList output pointer
+ */
+void GetPatchTitleInfos(Service::Interface* self);
 
 /**
  * AM::ListDataTitleTicketInfos service function
@@ -226,8 +241,6 @@ void GetNumTickets(Service::Interface* self);
  *      2 : Total TicketList
  */
 void GetTicketList(Service::Interface* self);
-
-void GetPatchTitleInfos(Service::Interface* self);
 
 /**
  * AM::QueryAvailableTitleDatabase service function
