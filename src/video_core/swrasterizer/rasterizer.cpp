@@ -416,10 +416,10 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
             Math::Vec4<u8> combiner_output;
             Math::Vec4<u8> combiner_buffer = {0, 0, 0, 0};
             Math::Vec4<u8> next_combiner_buffer =
-                Math::MakeVec((u8)regs.texturing.tev_combiner_buffer_color.r,
-                              (u8)regs.texturing.tev_combiner_buffer_color.g,
-                              (u8)regs.texturing.tev_combiner_buffer_color.b,
-                              (u8)regs.texturing.tev_combiner_buffer_color.a)
+                Math::MakeVec(regs.texturing.tev_combiner_buffer_color.r.Value(),
+                              regs.texturing.tev_combiner_buffer_color.g.Value(),
+                              regs.texturing.tev_combiner_buffer_color.b.Value(),
+                              regs.texturing.tev_combiner_buffer_color.a.Value())
                     .Cast<u8>();
 
             Math::Vec4<u8> primary_fragment_color = {0, 0, 0, 0};
@@ -477,6 +477,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                         return Math::MakeVec(tev_stage.const_r.Value(), tev_stage.const_g.Value(),
                                              tev_stage.const_b.Value(), tev_stage.const_a.Value())
                             .Cast<u8>();
+
                     case Source::Previous:
                         return combiner_output;
 
@@ -744,9 +745,10 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                     DEBUG_ASSERT(channel < 4);
 
                     const Math::Vec4<u8> blend_const =
-                        Math::MakeVec(
-                            (u8)output_merger.blend_const.r, (u8)output_merger.blend_const.g,
-                            (u8)output_merger.blend_const.b, (u8)output_merger.blend_const.a)
+                        Math::MakeVec(output_merger.blend_const.r.Value(),
+                                      output_merger.blend_const.g.Value(),
+                                      output_merger.blend_const.b.Value(),
+                                      output_merger.blend_const.a.Value())
                             .Cast<u8>();
 
                     switch (factor) {
