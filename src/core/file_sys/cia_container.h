@@ -4,18 +4,23 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "common/common_types.h"
 #include "common/swap.h"
-#include "core/file_sys/file_backend.h"
 #include "core/file_sys/title_metadata.h"
-#include "core/loader/loader.h"
+
+namespace Loader {
+enum class ResultStatus;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // FileSys namespace
 
 namespace FileSys {
+
+class FileBackend;
 
 constexpr size_t CIA_CONTENT_MAX_COUNT = 0x10000;
 constexpr size_t CIA_CONTENT_BITS_SIZE = (CIA_CONTENT_MAX_COUNT / 8);
