@@ -2,18 +2,13 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "common/bit_field.h"
 #include "common/logging/log.h"
-#include "common/scope_exit.h"
 #include "common/string_util.h"
 #include "core/file_sys/archive_systemsavedata.h"
-#include "core/file_sys/directory_backend.h"
-#include "core/file_sys/errors.h"
 #include "core/file_sys/file_backend.h"
 #include "core/hle/ipc.h"
-#include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/event.h"
-#include "core/hle/kernel/process.h"
+#include "core/hle/kernel/handle_table.h"
 #include "core/hle/result.h"
 #include "core/hle/service/cecd/cecd.h"
 #include "core/hle/service/cecd/cecd_ndm.h"
@@ -21,12 +16,12 @@
 #include "core/hle/service/cecd/cecd_u.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/service.h"
+#include "core/file_sys/errors.h"
 
 namespace Service {
 namespace CECD {
 
 enum class SaveDataType {
-    Invalid = 0,
     MBoxList = 1,
     MBoxInfo = 2,
     InBoxInfo = 3,
@@ -39,17 +34,7 @@ enum class SaveDataType {
     InBoxDir = 12,
     OutBoxDir = 13,
     MBoxDataStart = 100,
-    MBoxDataProgramId = 150,
     MBoxDataEnd = 199
-};
-
-union FileOption {
-    u32 raw;
-    BitField<1, 1, u32> read;
-    BitField<2, 1, u32> write;
-    BitField<3, 1, u32> make_dir;
-    BitField<4, 1, u32> no_check;
-    BitField<30, 1, u32> dump;
 };
 
 static Kernel::SharedPtr<Kernel::Event> cecinfo_event;
@@ -94,34 +79,34 @@ static std::string GetSaveDataPath(SaveDataType type, u32 title_id,
                                    const std::vector<u8>& message_id = std::vector<u8>()) {
     switch (type) {
     case SaveDataType::MBoxList:
-        return "/CEC/MBoxList____";
+        return "CEC/MBoxList____";
     case SaveDataType::MBoxInfo:
-        return Common::StringFromFormat("/CEC/%08x/MBoxInfo____", title_id);
+        return Common::StringFromFormat("CEC/%08x/MBoxInfo____", title_id);
     case SaveDataType::InBoxInfo:
-        return Common::StringFromFormat("/CEC/%08x/InBox___/BoxInfo_____", title_id);
+        return Common::StringFromFormat("CEC/%08x/InBox___/BoxInfo_____", title_id);
     case SaveDataType::OutBoxInfo:
-        return Common::StringFromFormat("/CEC/%08x/OutBox__/BoxInfo_____", title_id);
+        return Common::StringFromFormat("CEC/%08x/OutBox__/BoxInfo_____", title_id);
     case SaveDataType::OutBoxIndex:
-        return Common::StringFromFormat("/CEC/%08x/OutBox__/OBIndex_____", title_id);
+        return Common::StringFromFormat("CEC/%08x/OutBox__/OBIndex_____", title_id);
     case SaveDataType::InBoxMessage:
-        return Common::StringFromFormat("/CEC/%08x/InBox___/_%s", title_id,
+        return Common::StringFromFormat("CEC/%08x/InBox___/_%s", title_id,
                                         EncodeMessageId(message_id).data());
     case SaveDataType::OutBoxMessage:
-        return Common::StringFromFormat("/CEC/%08x/OutBox__/_%s", title_id,
+        return Common::StringFromFormat("CEC/%08x/OutBox__/_%s", title_id,
                                         EncodeMessageId(message_id).data());
     case SaveDataType::RootDir:
-        return "/CEC";
+        return "CEC";
     case SaveDataType::MBoxDir:
-        return Common::StringFromFormat("/CEC/%08x", title_id);
+        return Common::StringFromFormat("CEC/%08x", title_id);
     case SaveDataType::InBoxDir:
-        return Common::StringFromFormat("/CEC/%08x/InBox___", title_id);
+        return Common::StringFromFormat("CEC/%08x/InBox___", title_id);
     case SaveDataType::OutBoxDir:
-        return Common::StringFromFormat("/CEC/%08x/OutBox__", title_id);
+        return Common::StringFromFormat("CEC/%08x/OutBox__", title_id);
     }
 
     int index = static_cast<int>(type) - 100;
     if (index > 0 && index < 100) {
-        return Common::StringFromFormat("/CEC/%08x/MBoxData.%03d", title_id, index);
+        return Common::StringFromFormat("CEC/%08x/MBoxData.%03d", title_id, index);
     }
 
     UNREACHABLE();
@@ -139,222 +124,65 @@ static bool IsSaveDataDir(SaveDataType type) {
     }
 }
 
-static u32 current_title_id = 0;
-static SaveDataType current_save_data_type = SaveDataType::Invalid;
-static FileOption current_option{};
-
-ResultCode Write(const std::vector<u8>& data, u32 title_id = 0,
-                 SaveDataType save_data_type = SaveDataType::Invalid, FileOption option = {}) {
-    if (title_id == 0 && save_data_type == SaveDataType::Invalid && option.raw == 0) {
-        if (current_title_id == 0 && current_save_data_type == SaveDataType::Invalid) {
-            return ResultCode(ErrorDescription::NotInitialized, ErrorModule::CEC,
-                              ErrorSummary::NotFound, ErrorLevel::Usage);
-        }
-        title_id = current_title_id;
-        save_data_type = current_save_data_type;
-    }
-
-    switch (save_data_type) {
-    case SaveDataType::MBoxList: {
-        // TODO
-    }
-    case SaveDataType::MBoxInfo: {
-        ASSERT(data.size() == 0x60);
-        u16_le magic;
-        u32_le in_title_id;
-        memcpy(&magic, &data[0], sizeof(u16));
-        memcpy(&in_title_id, &data[4], sizeof(u32));
-        if (magic != 0x6363 || title_id != in_title_id) {
-            return ResultCode(106, ErrorModule::CEC, ErrorSummary::InvalidArgument,
-                              ErrorLevel::Status);
-        }
-        break;
-    }
-    case SaveDataType::InBoxInfo:
-    case SaveDataType::OutBoxInfo:
-    // TODO
-    case SaveDataType::OutBoxIndex:
-        break;
-    default:
-        if (save_data_type >= SaveDataType::MBoxDataStart &&
-            save_data_type <= SaveDataType::MBoxDataEnd) {
-            break;
-        }
-    // Fall through
-    case SaveDataType::InBoxMessage:
-    case SaveDataType::OutBoxMessage:
-    case SaveDataType::MBoxDir:
-    case SaveDataType::InBoxDir:
-    case SaveDataType::OutBoxDir:
-        current_title_id = 0;
-        current_save_data_type = SaveDataType::Invalid;
-        return RESULT_SUCCESS;
-    }
-
-    FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
-    FileSys::Mode mode{};
-    mode.create_flag.Assign(1);
-    mode.write_flag.Assign(1);
-    CASCADE_RESULT(auto file, FS::OpenFileFromArchive(cec_system_save_data_archive, path, mode));
-    SCOPE_EXIT({ file->backend->Close(); });
-
-    ResultCode result = file->backend->Write(0, data.size(), true, data.data()).Code();
-    if (result.IsSuccess()) {
-        current_title_id = 0;
-        current_save_data_type = SaveDataType::Invalid;
-    }
-}
-
-ResultVal<u32> Open(u32 title_id, SaveDataType save_data_type, FileOption option) {
-    u32 size = 0;
-    if (IsSaveDataDir(save_data_type)) {
-        if (option.make_dir) {
-            FileSys::Path root_path(GetSaveDataPath(SaveDataType::RootDir, title_id).data());
-            auto root_dir = FS::OpenDirectoryFromArchive(cec_system_save_data_archive, root_path);
-            if (root_dir.Failed()) {
-                CASCADE_CODE(
-                    FS::CreateDirectoryFromArchive(cec_system_save_data_archive, root_path));
-                // TODO: SetData5
-            } else {
-                root_dir->get()->backend->Close();
-            }
-
-            if (save_data_type != SaveDataType::RootDir) {
-                FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
-                auto dir = FS::OpenDirectoryFromArchive(cec_system_save_data_archive, path);
-                if (dir.Failed()) {
-                    CASCADE_CODE(
-                        FS::CreateDirectoryFromArchive(cec_system_save_data_archive, path));
-                } else {
-                    dir->get()->backend->Close();
-                }
-            }
-        }
-        FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
-        CASCADE_RESULT(auto dir, FS::OpenDirectoryFromArchive(cec_system_save_data_archive, path));
-        dir->backend->Close();
-    } else {
-        if (!option.dump && !option.no_check) {
-            FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
-            FileSys::Mode mode{};
-            mode.read_flag.Assign(1);
-            mode.write_flag.Assign(1);
-            auto file_result = FS::OpenFileFromArchive(cec_system_save_data_archive, path, mode);
-            if (file_result.Failed()) {
-                if (!option.write) {
-                    return file_result.Code();
-                }
-            } else {
-                auto file = std::move(file_result).Unwrap();
-                size = static_cast<u32>(file->backend->GetSize());
-                file->backend->Close();
-            }
-        }
-    }
-
-    current_title_id = title_id;
-    current_save_data_type = save_data_type;
-    current_option.raw = option.raw;
-
-    return MakeResult(size);
-}
-
-ResultVal<std::vector<u8>> Read(u32 size, u32 title_id = 0,
-                                SaveDataType save_data_type = SaveDataType::Invalid,
-                                FileOption option = {}) {
-    if (title_id == 0 && save_data_type == SaveDataType::Invalid && option.raw == 0) {
-        if (current_title_id == 0 && current_save_data_type == SaveDataType::Invalid) {
-            return ResultCode(ErrorDescription::NotInitialized, ErrorModule::CEC,
-                              ErrorSummary::NotFound, ErrorLevel::Usage);
-        }
-        title_id = current_title_id;
-        save_data_type = current_save_data_type;
-    }
-    if (IsSaveDataDir(save_data_type)) {
-        return ResultCode(ErrorDescription::NotAuthorized, ErrorModule::CEC, ErrorSummary::NotFound,
-                          ErrorLevel::Status);
-    }
-
-    FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
-    FileSys::Mode mode{};
-    mode.read_flag.Assign(1);
-    CASCADE_RESULT(auto file, FS::OpenFileFromArchive(cec_system_save_data_archive, path, mode));
-    SCOPE_EXIT({ file->backend->Close(); });
-
-    std::vector<u8> buffer(size);
-    CASCADE_RESULT(auto read_size, file->backend->Read(0, size, buffer.data()));
-
-    buffer.resize(read_size);
-
-    if (save_data_type == SaveDataType::InBoxInfo) {
-        // TODO
-    } else if (save_data_type == SaveDataType::OutBoxInfo) {
-        // TODO
-    }
-
-    current_title_id = 0;
-    current_save_data_type = SaveDataType::Invalid;
-
-    return MakeResult(buffer);
-}
-
 void Open(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x01, 3, 2);
-    u32 title_id = rp.Pop<u32>();
-    auto save_data_type = static_cast<SaveDataType>(rp.Pop<u32>());
-    FileOption option{rp.Pop<u32>()};
-    // rp.PopPID();
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    u32 title_id = cmd_buff[1];
+    SaveDataType save_data_type = static_cast<SaveDataType>(cmd_buff[2]);
+    u32 option = cmd_buff[3];
 
     LOG_CRITICAL(Service_CECD,
                  "(STUBBED) called. title_id = 0x%08X, save_data_type = %d, option = 0x%08X",
                  title_id, save_data_type, option);
 
-    auto result = Open(title_id, save_data_type, option);
-    if (result.Succeeded()) {
-        if ((option.make_dir && save_data_type == SaveDataType::MBoxDir) ||
-            (option.no_check && save_data_type == SaveDataType::MBoxDataProgramId)) {
-            FileOption new_option{};
-            new_option.write.Assign(1);
-            if (Open(title_id, SaveDataType::MBoxDataProgramId, new_option).Succeeded()) {
-                std::vector<u8> program_id_data(8);
-                u64_le program_id = Kernel::g_current_process->codeset->program_id;
-                std::memcpy(program_id_data.data(), &program_id, sizeof(u64));
-                Write(program_id_data);
-            }
+    FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
+
+    if (!IsSaveDataDir(save_data_type)) {
+        FileSys::Mode mode = {};
+        if ((option & 7) == 2) {
+            mode.read_flag.Assign(1);
+        } else if ((option & 7) == 4) {
+            mode.write_flag.Assign(1);
+            mode.create_flag.Assign(1);
+        } else if ((option & 7) == 6) {
+            mode.read_flag.Assign(1);
+            mode.write_flag.Assign(1);
+        } else {
+            UNREACHABLE();
         }
+
+        auto open_result =
+            Service::FS::OpenFileFromArchive(cec_system_save_data_archive, path, mode);
+        if (!open_result.Succeeded()) {
+            LOG_CRITICAL(Service_CECD, "failed");
+            cmd_buff[1] = open_result.Code().raw;
+            cmd_buff[2] = 0;
+            return;
+        }
+
+        auto file = open_result.Unwrap();
+        cmd_buff[2] = file->backend->GetSize();
     } else {
-        if (option.read && save_data_type == SaveDataType::MBoxInfo) {
-            // TODO ???
-        }
+        /*!*/ cmd_buff[1] =
+            Service::FS::CreateDirectoryFromArchive(cec_system_save_data_archive, path).raw;
+        return;
+        // ASSERT_MSG(false, "folder");
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(result.Code());
-    rb.Push(result.ValueOr(0));
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 }
 
 void Read(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x02, 1, 2);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    u32 size = rp.Pop<u32>();
-    size_t buffer_size;
-    IPC::MappedBufferPermissions perm;
-    VAddr buffer_address = rp.PopMappedBuffer(&buffer_size, &perm);
-    ASSERT(buffer_size == size && perm == IPC::W);
+    u32 size = cmd_buff[1];
+    ASSERT(IPC::MappedBufferDesc(size, IPC::W) == cmd_buff[2]);
+    VAddr buffer_address = cmd_buff[3];
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
     LOG_CRITICAL(Service_CECD, "(STUBBED) called. buffer_address = 0x%08X, size = 0x%X",
                  buffer_address, size);
-
-    auto result = Read(size);
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
-    rb.Push(result.Code());
-    rb.Push<u32>(result.ValueOr(std::vector<u8>{}).size());
-    rb.PushMappedBuffer(buffer_address, buffer_size, perm);
-    if (result.Succeeded()) {
-        auto data = std::move(result).Unwrap();
-        Memory::WriteBlock(buffer_address, data.data(), data.size());
-    }
 }
 
 void ReadMessage(Service::Interface* self) {
@@ -365,7 +193,7 @@ void ReadMessage(Service::Interface* self) {
     LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
-void ReadMessageWithHMAC(Service::Interface* self) {
+void ReadMessageAlt(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
@@ -374,24 +202,11 @@ void ReadMessageWithHMAC(Service::Interface* self) {
 }
 
 void Write(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x05, 1, 2);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    u32 size = rp.Pop<u32>();
-    size_t buffer_size;
-    IPC::MappedBufferPermissions perm;
-    VAddr buffer_address = rp.PopMappedBuffer(&buffer_size, &perm);
-    ASSERT(buffer_size == size && perm == IPC::R);
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
-    LOG_CRITICAL(Service_CECD, "(STUBBED) called. buffer_address = 0x%08X, size = 0x%X",
-                 buffer_address, size);
-
-    std::vector<u8> buffer(size);
-    Memory::ReadBlock(buffer_address, buffer.data(), size);
-    ResultCode result = Write(buffer);
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
-    rb.Push(result);
-    rb.PushMappedBuffer(buffer_address, buffer_size, perm);
+    LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
 void WriteMessage(Service::Interface* self) {
@@ -402,7 +217,7 @@ void WriteMessage(Service::Interface* self) {
     LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
-void WriteMessageWithHMAC(Service::Interface* self) {
+void WriteMessageAlt(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 title_id = cmd_buff[1];
@@ -482,7 +297,7 @@ void GetSystemInfo(Service::Interface* self) {
             cmd_buff[1] = 0xC8810BEF;
         } else {
             // TODO read from cfg
-            Memory::Write16(info_addr, 0xFFFF);
+            Memory::Write16(info_addr, 1);
             cmd_buff[1] = RESULT_SUCCESS.raw;
         }
         break;
@@ -554,7 +369,7 @@ void GetChangeStateEventHandle(Service::Interface* self) {
 }
 
 void OpenAndWrite(Service::Interface* self) {
-    /*u32* cmd_buff = Kernel::GetCommandBuffer();
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 size = cmd_buff[1];
     u32 title_id = cmd_buff[2];
@@ -591,7 +406,7 @@ void OpenAndWrite(Service::Interface* self) {
         return;
     }
 
-    auto file = open_result.MoveFrom();
+    auto file = open_result.Unwrap();
     std::vector<u8> buffer(size);
     Memory::ReadBlock(buffer_address, buffer.data(), size);
     size_t written_size = *(file->backend->Write(0, size, true, buffer.data()));
@@ -599,54 +414,54 @@ void OpenAndWrite(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
     cmd_buff[2] = written_size;
 
-    LOG_CRITICAL(Service_CECD, "written %X", written_size);*/
+    LOG_CRITICAL(Service_CECD, "written %X", written_size);
 }
 
 void OpenAndRead(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x12, 4, 4);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    u32 size = rp.Pop<u32>();
-    u32 title_id = rp.Pop<u32>();
-    auto save_data_type = static_cast<SaveDataType>(rp.Pop<u32>());
-    FileOption option{rp.Pop<u32>()};
-    rp.Skip(2, false); // PID
-    size_t buffer_size;
-    IPC::MappedBufferPermissions perm;
-    VAddr buffer_address = rp.PopMappedBuffer(&buffer_size, &perm);
-    ASSERT(buffer_size == size && perm == IPC::W);
+    u32 size = cmd_buff[1];
+    u32 title_id = cmd_buff[2];
+    SaveDataType save_data_type = static_cast<SaveDataType>(cmd_buff[3]);
+    u32 option = cmd_buff[4];
+    ASSERT(IPC::MappedBufferDesc(size, IPC::W) == cmd_buff[7]);
+    VAddr buffer_address = cmd_buff[8];
 
     LOG_CRITICAL(Service_CECD, "(STUBBED) called. title_id = 0x%08X, save_data_type = %d, option = "
                                "0x%08X, buffer_address = 0x%08X, size = 0x%X",
                  title_id, save_data_type, option, buffer_address, size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
-
-    bool failed = false;
-    auto open_result = Open(title_id, save_data_type, option);
-    if (open_result.ValueOr(0) == 0 && !option.no_check) {
-        rb.Push(ResultCode(ErrorDescription::NoData, ErrorModule::CEC, ErrorSummary::NotFound,
-                           ErrorLevel::Status));
-        rb.Push<u32>(0);
-        failed = true;
+    FileSys::Mode mode = {};
+    if ((option & 7) == 2) {
+        mode.read_flag.Assign(1);
+    } else if ((option & 7) == 4) {
+        mode.write_flag.Assign(1);
+        mode.create_flag.Assign(1);
+    } else if ((option & 7) == 6) {
+        mode.read_flag.Assign(1);
+        mode.write_flag.Assign(1);
     } else {
-        auto read_result = Read(size, title_id, save_data_type, option);
-        rb.Push(read_result.Code());
-        rb.Push<u32>(read_result.ValueOr(std::vector<u8>{}).size());
-        if (read_result.Succeeded()) {
-            auto data = std::move(read_result).Unwrap();
-            Memory::WriteBlock(buffer_address, data.data(), data.size());
-        } else {
-            failed = true;
-        }
+        UNREACHABLE();
     }
 
-    if (failed) {
-        if (option.read && save_data_type == SaveDataType::MBoxInfo) {
-            // TODO ???
-        }
+    FileSys::Path path(GetSaveDataPath(save_data_type, title_id).data());
+    auto open_result = Service::FS::OpenFileFromArchive(cec_system_save_data_archive, path, mode);
+    if (!open_result.Succeeded()) {
+        LOG_CRITICAL(Service_CECD, "failed");
+        cmd_buff[1] = open_result.Code().raw;
+        cmd_buff[2] = 0;
+        return;
     }
 
-    rb.PushMappedBuffer(buffer_address, buffer_size, perm);
+    auto file = open_result.Unwrap();
+    std::vector<u8> buffer(size);
+    size_t read_size = *(file->backend->Read(0, size, buffer.data()));
+    Memory::WriteBlock(buffer_address, buffer.data(), read_size);
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = read_size;
+
+    LOG_CRITICAL(Service_CECD, "read %X", read_size);
 }
 
 void Init() {
