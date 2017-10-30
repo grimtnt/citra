@@ -70,7 +70,7 @@ after_build:
 
         if ($env:BUILD_TYPE -eq 'msvc') {
           # Where are these spaces coming from? Regardless, let's remove them
-          $MSVC_BUILD_ZIP = "citra-windows-msvc-speed-$GITDATE-$GITREV.zip" -replace " ", ""
+          $MSVC_BUILD_ZIP = "citra-windows-msvc-$GITDATE-$GITREV.zip" -replace " ", ""
 
           # set the build names as env vars so the artifacts can upload them
           $env:BUILD_ZIP = $MSVC_BUILD_ZIP
