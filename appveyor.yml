@@ -39,10 +39,6 @@ install:
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-SDL2-2.0.5-2-any.pkg.tar.xz" 2> $null
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S $dependencies" 2> $null
         }
-        else
-        {
-          git merge msvc_optimizations
-        }
 
 before_build:
   - mkdir %BUILD_TYPE%_build
@@ -83,7 +79,7 @@ after_build:
 
           mkdir $RELEASE_DIST
           Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse -Exclude "citra.exe"
-          Copy-Item .\license.txt" -Destination $RELEASE_DIST\2.license.txt
+          Copy-Item .\license.txt -Destination $RELEASE_DIST\2.license.txt
           Copy-Item ".\Text Files\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
         } else {
