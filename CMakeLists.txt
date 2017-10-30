@@ -234,7 +234,7 @@ if (ENABLE_QT)
 
     find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL ${QT_PREFIX_HINT})
 	
-     if (GENERATE_QT_TRANSLATION)
+     if (GENERATE_QT_TRANSLATION AND MINGW)
          find_package(Qt5 REQUIRED COMPONENTS LinguistTools ${QT_PREFIX_HINT})
      endif()
 endif()

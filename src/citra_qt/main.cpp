@@ -47,6 +47,7 @@
 #include "core/gdbstub/gdbstub.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
+#include "audio_core/hle/mixers.h"
 
 #ifdef QT_STATICPLUGIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
@@ -310,7 +311,7 @@ void GMainWindow::RestoreUIState() {
     microProfileDialog->setVisible(UISettings::values.microprofile_visible);
 #endif
 
-    ui.action_Cheats->setEnabled(false);
+    ui.action_Cheats->setEnabled(false); 
     game_list->LoadInterfaceLayout();
 
     ui.action_Single_Window_Mode->setChecked(UISettings::values.single_window_mode);
@@ -345,7 +346,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Load_File, &QAction::triggered, this, &GMainWindow::OnMenuLoadFile);
     connect(ui.action_Select_Game_List_Root, &QAction::triggered, this,
             &GMainWindow::OnMenuSelectGameListRoot);
-	connect(ui.action_Load_Translation, &QAction::triggered, this, &GMainWindow::OnLoadTranslation);
+    connect(ui.action_Load_Translation, &QAction::triggered, this, &GMainWindow::OnLoadTranslation);
     connect(ui.action_Unload_Translation, &QAction::triggered, this,
              &GMainWindow::OnUnloadTranslation);
     connect(ui.action_Exit, &QAction::triggered, this, &QMainWindow::close);
@@ -784,6 +785,7 @@ void GMainWindow::ToggleWindowMode() {
         render_window->BackupGeometry();
         ui.horizontalLayout->addWidget(render_window);
         render_window->setFocusPolicy(Qt::ClickFocus);
+	    
 	render_window->SeparateFromMainWindow(false);
         if (emulation_running) {
             render_window->setVisible(true);
@@ -1071,7 +1073,7 @@ void GMainWindow::OnLoadTranslation() {
      setWindowTitle(QString("Citra %1| %2-%3")
                         .arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
  }
- 
+
 #ifdef main
 #undef main
 #endif

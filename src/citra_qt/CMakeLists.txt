@@ -110,7 +110,7 @@ else()
     qt4_wrap_ui(UI_HDRS ${UIS})
 endif()
 
-if (GENERATE_QT_TRANSLATION)
+if (GENERATE_QT_TRANSLATION AND MINGW)
      qt5_create_translation(QM_FILES ${SRCS} ${HEADERS} ${UIS} translation.ts)
      add_custom_target(translation ALL DEPENDS ${QM_FILES})
 endif()

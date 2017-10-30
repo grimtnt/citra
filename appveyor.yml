@@ -73,7 +73,7 @@ after_build:
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
           
           # copy translation
-          Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $CMAKE_SOURCE_DIR
+          Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
 
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
@@ -111,8 +111,6 @@ artifacts:
   - path: $(BUILD_ZIP)
     name: build
     type: zip
-  - path: $(TRANSLATION_TS)
-    name: translation-ts
 
 deploy:
  - provider: Environment
