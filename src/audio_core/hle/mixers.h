@@ -18,7 +18,7 @@ public:
     }
 
     void Reset();
-    
+
     DspStatus Tick(DspConfiguration& config, const IntermediateMixSamples& read_samples,
                    IntermediateMixSamples& write_samples, const std::array<QuadFrame32, 3>& input);
 
