@@ -50,8 +50,9 @@
         </item>
        </layout>
       </item>
-      <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+     </layout>
+    </widget>
+   </item>
    <item>
     <spacer>
      <property name="orientation">
@@ -66,4 +67,7 @@
     </spacer>
    </item>
   </layout>
+ </widget>
+ <resources />
+ <connections />
 </ui>
