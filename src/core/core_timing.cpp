@@ -2,6 +2,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <iostream>
+#include <fstream>
 #include <atomic>
 #include <cinttypes>
 #include <mutex>
@@ -66,6 +68,9 @@ static std::recursive_mutex external_event_section;
 using AdvanceCallback = void(int cycles_executed);
 static AdvanceCallback* advance_callback = nullptr;
 static std::vector<MHzChangeCallback> mhz_change_callbacks;
+
+std::fstream ExistsFixes("Fixes");
+static bool bFixes = ExistsFixes.good();
 
 static void FireMhzChange() {
     for (auto callback : mhz_change_callbacks)
@@ -189,7 +194,12 @@ void Shutdown() {
 }
 
 void AddTicks(u64 ticks) {
-    down_count -= ticks;
+    if (bFixes) {
+        down_count -= 4000;
+    }
+    else {
+        down_count -= ticks;
+    }
     if (down_count < 0) {
         Advance();
     }
