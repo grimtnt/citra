@@ -95,7 +95,7 @@ after_build:
           mkdir $RELEASE_DIST/platforms
 
           # copy the citra to the release folder
-          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST\citra-qt-sse4.1
+          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST\citra-qt-sse4.1.exe
                     
           # copy translation
           Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
