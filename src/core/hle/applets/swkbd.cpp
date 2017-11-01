@@ -189,13 +189,14 @@ void SoftwareKeyboard::Update() {
     // TODO(Subv): Handle input using the touch events from the HID module
     // Until then, just read input from the terminal
     std::string input;
+    std::cout << "SOFTWARE KEYBOARD" << std::endl;
     // Display hint text
     std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
     if (!hint.empty()) {
         std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
     }
     do {
-        std::cout << "Text:" << std::endl;
+        std::cout << "Enter the text you will send to the application:" << std::endl;
         std::getline(std::cin, input);
     } while (!ValidateInput(config, input));
 
@@ -223,15 +224,10 @@ void SoftwareKeyboard::Update() {
     }
     std::string option;
     do {
-       if (num_buttons == 0)  
-       {  
-       option = "0";
-       }  
-       else  
-       {  
-       option = "1";
-       }  
-     } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
+        std::cout << "\nPlease type the number of the button you will press: \n"
+                  << option_text << std::endl;
+        std::getline(std::cin, option);
+    } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
 
     s32 button = std::stol(option);
     switch (config.num_buttons_m1) {
