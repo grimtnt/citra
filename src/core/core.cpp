@@ -27,6 +27,8 @@
 #include "network/network.h"
 #include "video_core/video_core.h"
 
+using namespace std;
+
 namespace Core {
 
 /*static*/ System System::s_instance;
