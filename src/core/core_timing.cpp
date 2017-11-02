@@ -68,7 +68,7 @@ using AdvanceCallback = void(int cycles_executed);
 static AdvanceCallback* advance_callback = nullptr;
 static std::vector<MHzChangeCallback> mhz_change_callbacks;
 
-static bool bFixes = FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"));
+static bool bFixes = FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes");
 
 static void FireMhzChange() {
     for (auto callback : mhz_change_callbacks)
