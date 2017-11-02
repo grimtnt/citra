@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <utility>
+#include "common/file_util.h"
 #include "audio_core/audio_core.h"
 #include "common/logging/log.h"
 #include "core/arm/arm_interface.h"
@@ -169,6 +170,13 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     GetAndResetPerfStats();
     perf_stats.BeginSystemFrame();
 
+    if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf" && Common::StringFromFormat("%016llX", Kernel::g_current_process->codeset->program_id) == 00040000001A0400)) {
+        FileUtil::WriteStringToFile(true, FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220", "");
+        FileUtil::WriteStringToFile(true, FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course219", "");
+        FileUtil::WriteStringToFile(true, FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course218", "");
+        FileUtil::WriteStringToFile(true, FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course217", "");
+        FileUtil::WriteStringToFile(true, FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course216", "");
+    }
     return ResultStatus::Success;
 }
 
