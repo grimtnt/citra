@@ -40,6 +40,16 @@
           </item>
          </layout>
         </item>
+          <item>
+           <widget class="QCheckBox" name="toggle_fixes">
+            <property name="toolTip">
+             <string>Restart Citra</string>
+            </property>
+            <property name="text">
+             <string>Enable Experimental Fixes</string>
+            </property>
+           </widget>
+          </item>
        </layout>
       </widget>
      </item>
@@ -89,13 +99,6 @@
            <widget class="QCheckBox" name="toggle_new3ds">
             <property name="text">
              <string>New 3DS Clock + L2</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="toggle_fixes">
-            <property name="text">
-             <string>Enable Experimental Fixes</string>
             </property>
            </widget>
           </item>
