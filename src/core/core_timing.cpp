@@ -2,8 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <iostream>
-#include <fstream>
 #include <atomic>
 #include <cinttypes>
 #include <mutex>
@@ -14,6 +12,7 @@
 #include "core/arm/arm_interface.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "common/file_util.h"
 
 int g_clock_rate_arm11 = BASE_CLOCK_RATE_ARM11;
 
@@ -69,8 +68,7 @@ using AdvanceCallback = void(int cycles_executed);
 static AdvanceCallback* advance_callback = nullptr;
 static std::vector<MHzChangeCallback> mhz_change_callbacks;
 
-std::fstream ExistsFixes("Fixes");
-static bool bFixes = ExistsFixes.good();
+static bool beef = FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef");
 
 static void FireMhzChange() {
     for (auto callback : mhz_change_callbacks)
@@ -194,7 +192,7 @@ void Shutdown() {
 }
 
 void AddTicks(u64 ticks) {
-    if (bFixes) {
+    if (beef) {
         down_count -= 4000;
     }
     else {
