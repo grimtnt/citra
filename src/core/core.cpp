@@ -2,6 +2,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <iostream>
+#include <fstream>
 #include <memory>
 #include <utility>
 #include "common/file_util.h"
@@ -170,12 +172,23 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     GetAndResetPerfStats();
     perf_stats.BeginSystemFrame();
 
-    if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf")) {
-        FileUtil::WriteStringToFile(true, "".c_str(), FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220".c_str());
-        FileUtil::WriteStringToFile(true, "".c_str(), FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course219".c_str());
-        FileUtil::WriteStringToFile(true, "".c_str(), FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course218".c_str());
-        FileUtil::WriteStringToFile(true, "".c_str(), FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course217".c_str());
-        FileUtil::WriteStringToFile(true, "".c_str(), FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course216".c_str());
+    if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf") && FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220")) {
+        ofstream writer;
+        writer.open(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220");
+        writer << ".";
+        writer.close();
+        writer.open(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course219");
+        writer << ".";
+        writer.close();
+        writer.open(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course218");
+        writer << ".";
+        writer.close();
+        writer.open(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course217");
+        writer << ".";
+        writer.close();
+        writer.open(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course216");
+        writer << ".";
+        writer.close();
     }
     return ResultStatus::Success;
 }
