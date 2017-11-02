@@ -57,17 +57,13 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::values.is_new_3ds = ui->toggle_new3ds->isChecked();
     Settings::Apply();
     if (ui->toggle_fixes->isChecked()) {
-        if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef")) {
+        if (!FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef")) {
+            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef");
+            }
         }
         else {
-            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef");
-        }
-    }
-    else {
             if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef")) {
             FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef");
-            }
-            else {
             }
     }
 }
