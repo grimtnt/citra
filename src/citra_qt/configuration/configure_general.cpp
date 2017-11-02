@@ -40,7 +40,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->region_combobox->setCurrentIndex(Settings::values.region_value + 1);
 
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
-    ui->toggle_fixes->setChecked(FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"));
+    ui->toggle_fixes->setChecked(FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "EnableExperimentalFixes"));
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -57,15 +57,15 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::values.is_new_3ds = ui->toggle_new3ds->isChecked();
     Settings::Apply();
     if (ui->toggle_fixes->isChecked()) {
-        if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes")) {
+        if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "EnableExperimentalFixes")) {
         }
         else {
-            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes");
+            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "EnableExperimentalFixes");
         }
     }
     else {
-            if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes")) {
-            FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes");
+            if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "EnableExperimentalFixes")) {
+            FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "EnableExperimentalFixes");
             }
             else {
             }
