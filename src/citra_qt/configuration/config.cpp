@@ -103,8 +103,6 @@ void Config::ReadValues() {
         qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
-    Settings::values.volume =
-        qt_config->value("volume", 5).toInt();
     qt_config->endGroup();
 
     using namespace Service::CAM;
@@ -269,7 +267,6 @@ void Config::SaveValues() {
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
-    qt_config->setValue("volume", Settings::values.volume);
     qt_config->endGroup();
 
     using namespace Service::CAM;
@@ -340,7 +337,7 @@ void Config::SaveValues() {
     qt_config->setValue("gameListRootDir", UISettings::values.gamedir);
     qt_config->setValue("gameListDeepScan", UISettings::values.gamedir_deepscan);
     qt_config->setValue("recentFiles", UISettings::values.recent_files);
-	qt_config->setValue("translationFile", UISettings::values.translation_file);
+    qt_config->setValue("translationFile", UISettings::values.translation_file);
     qt_config->endGroup();
 
     qt_config->beginGroup("Shortcuts");
@@ -351,7 +348,7 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->setValue("singleWindowMode", UISettings::values.single_window_mode);
-	qt_config->setValue("fullscreen", UISettings::values.fullscreen);
+    qt_config->setValue("fullscreen", UISettings::values.fullscreen);
     qt_config->setValue("displayTitleBars", UISettings::values.display_titlebar);
     qt_config->setValue("showFilterBar", UISettings::values.show_filter_bar);
     qt_config->setValue("showStatusBar", UISettings::values.show_status_bar);
