@@ -151,6 +151,8 @@ void Config::ReadValues() {
 
     // Miscellaneous
     Settings::values.log_filter = sdl2_config->Get("Miscellaneous", "log_filter", "*:Info");
+    Settings::values.enable_experimental_fixes = sdl2_config->GetBoolean("Miscellaneous", "enable_experimental_fixes", false);
+    Settings::values.enable_smm_fix = sdl2_config->GetBoolean("Miscellaneous", "enable_smm_fix", false);
 
     // Debugging
     Settings::values.use_gdbstub = sdl2_config->GetBoolean("Debugging", "use_gdbstub", false);

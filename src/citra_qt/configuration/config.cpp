@@ -135,6 +135,8 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Miscellaneous");
     Settings::values.log_filter = qt_config->value("log_filter", "*:Info").toString().toStdString();
+    Settings::values.enable_experimental_fixes = qt_config->value("enable_experimental_fixes", false).toBool();
+    Settings::values.enable_smm_fix = qt_config->value("enable_smm_fix", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Debugging");
@@ -184,7 +186,7 @@ void Config::ReadValues() {
     UISettings::values.gamedir = qt_config->value("gameListRootDir", ".").toString();
     UISettings::values.gamedir_deepscan = qt_config->value("gameListDeepScan", false).toBool();
     UISettings::values.recent_files = qt_config->value("recentFiles").toStringList();
-	UISettings::values.translation_file = qt_config->value("translationFile", "").toString();
+    UISettings::values.translation_file = qt_config->value("translationFile", "").toString();
     qt_config->endGroup();
 
     qt_config->beginGroup("Shortcuts");
@@ -207,7 +209,7 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     UISettings::values.single_window_mode = qt_config->value("singleWindowMode", true).toBool();
-	UISettings::values.fullscreen = qt_config->value("fullscreen", false).toBool();
+    UISettings::values.fullscreen = qt_config->value("fullscreen", false).toBool();
     UISettings::values.display_titlebar = qt_config->value("displayTitleBars", true).toBool();
     UISettings::values.show_filter_bar = qt_config->value("showFilterBar", true).toBool();
     UISettings::values.show_status_bar = qt_config->value("showStatusBar", true).toBool();
@@ -297,6 +299,8 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Miscellaneous");
     qt_config->setValue("log_filter", QString::fromStdString(Settings::values.log_filter));
+    qt_config->setValue("enable_experimental_fixes", Settings::values.enable_experimental_fixes);
+    qt_config->setValue("enable_smm_fix", Settings::values.enable_smm_fix);
     qt_config->endGroup();
 
     qt_config->beginGroup("Debugging");

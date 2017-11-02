@@ -177,6 +177,10 @@ camera_inner_config =
 # Examples: *:Debug Kernel.SVC:Trace Service.*:Critical
 log_filter = *:Info
 
+# Fixes
+enable_experimental_fixes =
+enable_smm_fix =
+
 [Debugging]
 # Port for listening to GDB connections.
 use_gdbstub=false

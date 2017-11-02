@@ -12,7 +12,7 @@
 #include "core/arm/arm_interface.h"
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "common/file_util.h"
+#include "core/settings.h"
 
 int g_clock_rate_arm11 = BASE_CLOCK_RATE_ARM11;
 
@@ -67,8 +67,6 @@ static std::recursive_mutex external_event_section;
 using AdvanceCallback = void(int cycles_executed);
 static AdvanceCallback* advance_callback = nullptr;
 static std::vector<MHzChangeCallback> mhz_change_callbacks;
-
-static bool beef = FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef");
 
 static void FireMhzChange() {
     for (auto callback : mhz_change_callbacks)
@@ -192,7 +190,7 @@ void Shutdown() {
 }
 
 void AddTicks(u64 ticks) {
-    if (beef) {
+    if (Settings::values.enable_experimental_fixes) {
         down_count -= 4000;
     }
     else {

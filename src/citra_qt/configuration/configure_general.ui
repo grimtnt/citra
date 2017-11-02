@@ -38,28 +38,22 @@
             </property>
            </widget>
           </item>
-         </layout>
-        </item>
-          <item>
-           <widget class="QCheckBox" name="toggle_fixes">
-            <property name="toolTip">
-             <string>Restart Citra</string>
-            </property>
+         <item>
+           <widget class="QCheckBox" name="enable_experimental_fixes">
             <property name="text">
              <string>Enable Experimental Fixes</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="toggle_smm_fix">
-            <property name="toolTip">
-             <string>Restart the game</string>
-            </property>
+           <widget class="QCheckBox" name="enable_smm_fix">
             <property name="text">
              <string>Enable SMM 3DS Fix</string>
             </property>
            </widget>
           </item>
+         </layout>
+        </item>
        </layout>
       </widget>
      </item>
