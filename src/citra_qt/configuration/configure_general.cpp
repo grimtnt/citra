@@ -7,6 +7,7 @@
 #include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_general.h"
+#include "common/file_util.h"
 
 ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     : QWidget(parent), ui(new Ui::ConfigureGeneral) {
@@ -39,6 +40,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->region_combobox->setCurrentIndex(Settings::values.region_value + 1);
 
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
+    ui->toggle_fixes->setChecked(FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"));
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -54,4 +56,20 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
     Settings::values.is_new_3ds = ui->toggle_new3ds->isChecked();
     Settings::Apply();
+    if (ui->toggle_fixes->isChecked()) {
+        if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes")) {
+            break;
+        }
+        else {
+            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"));
+        }
+    }
+    else {
+            if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes")) {
+            FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"))
+            }
+            else {
+            break;
+            }
+    }
 }
