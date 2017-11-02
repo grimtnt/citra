@@ -50,6 +50,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="toggle_smm_fix">
+            <property name="toolTip">
+             <string>Restart the game</string>
+            </property>
+            <property name="text">
+             <string>Enable SMM 3DS Fix</string>
+            </property>
+           </widget>
+          </item>
        </layout>
       </widget>
      </item>

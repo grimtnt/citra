@@ -22,6 +22,7 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new3ds->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->toggle_smm_fix->setEnabled(FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220"));
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
@@ -41,6 +42,7 @@ void ConfigureGeneral::setConfiguration() {
 
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->toggle_fixes->setChecked(FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef"));
+    ui->toggle_smm_fix->setChecked(FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf"));
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -64,6 +66,16 @@ void ConfigureGeneral::applyConfiguration() {
         else {
             if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef")) {
             FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "beef");
+            }
+    }
+    if (ui->toggle_smm_fix->isChecked()) {
+        if (!FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf")) {
+            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf");
+            }
+        }
+        else {
+            if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf")) {
+            FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "besmmf");
             }
     }
 }
