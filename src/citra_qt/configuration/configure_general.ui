@@ -92,6 +92,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="toggle_fixes">
+            <property name="text">
+             <string>Enable Experimental Fixes</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
