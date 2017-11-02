@@ -58,7 +58,6 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::Apply();
     if (ui->toggle_fixes->isChecked()) {
         if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes")) {
-            break;
         }
         else {
             FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes");
