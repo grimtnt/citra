@@ -61,15 +61,14 @@ void ConfigureGeneral::applyConfiguration() {
             break;
         }
         else {
-            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"));
+            FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes");
         }
     }
     else {
             if (FileUtil::Exists(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes")) {
-            FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes"))
+            FileUtil::Delete(FileUtil::GetUserPath(D_CONFIG_IDX) + "Fixes");
             }
             else {
-            break;
             }
     }
 }
