@@ -176,7 +176,7 @@ public:
 
         // The data in CIAs is always stored CIA Header > Cert > Ticket > TMD > Content > Meta.
         // The CIA Header describes Cert, Ticket, TMD, total content sizes, and TMD is needed for
-        // content sizes so it ends up becoming a problem of keeping track of how  much has been
+        // content sizes so it ends up becoming a problem of keeping track of how much has been
         // written and what we have been able to pick up.
         if (install_state == CIAInstallState::InstallStarted) {
             size_t buf_copy_size = std::min(length, FileSys::CIA_HEADER_SIZE);
@@ -249,13 +249,13 @@ public:
     void Flush() const override {}
 
 private:
-    // Are we installing an update, and what step of installation are we at?
+    // Whether it's installing an update, and what step of installation it is at
     bool is_update = false;
     CIAInstallState install_state = CIAInstallState::InstallStarted;
 
     // How much has been written total, CIAContainer for the installing CIA, buffer of all data
-    // prior to content data, how much of each content index has been written, and where is the
-    // CIA being installed to?
+    // prior to content data, how much of each content index has been written, and where the CIA
+    // is being installed to
     u64 written = 0;
     FileSys::CIAContainer container;
     std::vector<u8> data;
@@ -922,7 +922,8 @@ void GetSystemMenuDataFromCia(Service::Interface* self) {
     }
 
     size_t output_buffer_size;
-    VAddr output_buffer = rp.PopMappedBuffer(&output_buffer_size);
+    IPC::MappedBufferPermissions output_buffer_perms;
+    VAddr output_buffer = rp.PopMappedBuffer(&output_buffer_size, &output_buffer_perms);
     output_buffer_size = std::min(output_buffer_size, sizeof(Loader::SMDH));
 
     auto file = file_res.Unwrap();
@@ -948,7 +949,8 @@ void GetSystemMenuDataFromCia(Service::Interface* self) {
 
     Memory::WriteBlock(output_buffer, temp.data(), output_buffer_size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    rb.PushMappedBuffer(output_buffer, output_buffer_size, output_buffer_perms);
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -964,7 +966,7 @@ void GetDependencyListFromCia(Service::Interface* self) {
     }
 
     size_t output_buffer_size;
-    VAddr output_buffer = rp.PopStaticBuffer(&output_buffer_size);
+    VAddr output_buffer = rp.PeekStaticBuffer(0, &output_buffer_size);
     output_buffer_size = std::min(output_buffer_size, FileSys::CIA_DEPENDENCY_SIZE);
 
     auto file = file_res.Unwrap();
@@ -978,8 +980,9 @@ void GetDependencyListFromCia(Service::Interface* self) {
 
     Memory::WriteBlock(output_buffer, container.GetDependencies().data(), output_buffer_size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
+    rb.PushStaticBuffer(output_buffer, output_buffer_size, 0);
 }
 
 void GetTransferSizeFromCia(Service::Interface* self) {
@@ -1090,7 +1093,7 @@ void GetMetaSizeFromCia(Service::Interface* self) {
 void GetMetaDataFromCia(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0414, 0, 2); // 0x04140044
 
-    u32 output_buffer_size = rp.Pop<u32>();
+    u32 output_size = rp.Pop<u32>();
 
     // Get a File from our Handle
     auto file_res = GetFileFromHandle(rp.PopHandle());
@@ -1100,7 +1103,11 @@ void GetMetaDataFromCia(Service::Interface* self) {
         return;
     }
 
-    VAddr output_buffer = rp.PopStaticBuffer();
+    size_t output_buffer_size;
+    VAddr output_buffer = rp.PeekStaticBuffer(0, &output_buffer_size);
+
+    // Don't write beyond the actual static buffer size.
+    output_size = std::min(static_cast<u32>(output_buffer_size), output_size);
 
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
@@ -1112,19 +1119,19 @@ void GetMetaDataFromCia(Service::Interface* self) {
     }
 
     //  Read from the Meta offset for the specified size
-    std::vector<u8> temp(output_buffer_size);
-    auto read_result =
-        file->backend->Read(container.GetMetadataOffset(), output_buffer_size, temp.data());
-    if (read_result.Failed() || *read_result != output_buffer_size) {
+    std::vector<u8> temp(output_size);
+    auto read_result = file->backend->Read(container.GetMetadataOffset(), output_size, temp.data());
+    if (read_result.Failed() || *read_result != output_size) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
     }
 
-    Memory::WriteBlock(output_buffer, temp.data(), output_buffer_size);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    Memory::WriteBlock(output_buffer, temp.data(), output_size);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
+    rb.PushStaticBuffer(output_buffer, output_buffer_size, 0);
 }
 
 void Init() {
