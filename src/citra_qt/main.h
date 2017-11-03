@@ -133,12 +133,13 @@ private slots:
     void OnConfigure();
     void OnCheats();
     void OnToggleFilterBar();
-    void ShowAboutDialog();
     void OnDisplayTitleBars(bool);
     void ToggleFullscreen();
     void ToggleWindowMode();
     void OnCreateGraphicsSurfaceViewer();
     void OnCoreError(Core::System::ResultStatus, std::string);
+    /// Called whenever a user selects Help->About Citra
+    void OnMenuAboutCitra();
     void OnLoadTranslation();
     void OnUnloadTranslation();
     void OnUpdateFound(bool found, bool error);
