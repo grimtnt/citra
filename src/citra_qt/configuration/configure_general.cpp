@@ -27,7 +27,7 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     ui->enable_smm_fix->setVisible(true);
     } else if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220")) {
     ui->enable_smm_fix->setVisible(true);
-    } else if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220")) {
+    } else if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course220")) {
     ui->enable_smm_fix->setVisible(true);
     }
     ui->updateBox->setVisible(UISettings::values.updater_found);
