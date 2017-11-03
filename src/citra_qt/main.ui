@@ -140,7 +140,7 @@
     <string>&amp;Start</string>
    </property>
     <property name="shortcut">
-     <string>F4</string>
+     <string>Pause</string>
     </property>
   </action>
   <action name="action_Pause">
@@ -151,7 +151,7 @@
     <string>&amp;Pause</string>
    </property>
     <property name="shortcut">
-     <string>F4</string>
+     <string>Pause</string>
     </property>
   </action>
   <action name="action_Stop">

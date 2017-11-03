@@ -991,7 +991,7 @@ void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
 }
 
 void GMainWindow::keyPressEvent(QKeyEvent* event) {
-if (event->key() == Qt::Key_F4 && emulation_running) {
+if (event->key() == Qt::Key_Pause && emulation_running) {
          OnPauseGame();
     }
 }
