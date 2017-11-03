@@ -91,6 +91,7 @@ set(UIS
             configuration/configure_system.ui
             configuration/configure_web.ui
             debugger/registers.ui
+	    aboutdialog.ui
             cheat_gui.ui
             hotkeys.ui
             main.ui
