@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cstring>
 #include <list>
 #include <mutex>
@@ -27,6 +28,12 @@
 namespace Service {
 namespace NWM {
 
+namespace ErrCodes {
+enum {
+    NotInitialized = 2,
+};
+} // namespace ErrCodes
+
 // Event that is signaled every time the connection status changes.
 static Kernel::SharedPtr<Kernel::Event> connection_status_event;
 
@@ -36,6 +43,8 @@ static Kernel::SharedPtr<Kernel::SharedMemory> recv_buffer_memory;
 
 // Connection status of this 3DS.
 static ConnectionStatus connection_status{};
+
+static std::atomic<bool> initialized(false);
 
 /* Node information about the current network.
  * The amount of elements in this vector is always the maximum number
@@ -86,6 +95,12 @@ static std::list<Network::WifiPacket> received_beacons;
 
 // Network node id used when a SecureData packet is addressed to every connected node.
 constexpr u16 BroadcastNetworkNodeId = 0xFFFF;
+
+// The maximum number of bind nodes
+constexpr size_t max_bind_nodes = 16;
+
+// the minimum size for recv buffer used in Bind
+constexpr u32 min_recv_buffer_size = 0x5F4;
 
 /**
  * Returns a list of received 802.11 beacon frames from the specified sender since the last call.
@@ -316,7 +331,7 @@ void StartConnectionSequence(const MacAddress& server) {
     WifiPacket auth_request;
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
-        ASSERT(connection_status.status == static_cast<u32>(NetworkStatus::Connecting));
+        connection_status.status = static_cast<u32>(NetworkStatus::Connecting);
 
         // TODO(Subv): Handle timeout.
 
@@ -547,6 +562,8 @@ static void InitializeWithVersion(Interface* self) {
 
     recv_buffer_memory = Kernel::g_handle_table.Get<Kernel::SharedMemory>(sharedmem_handle);
 
+    initialized = true;
+
     ASSERT_MSG(recv_buffer_memory->size == sharedmem_size, "Invalid shared memory size.");
 
     {
@@ -615,8 +632,12 @@ static void GetNodeInformation(Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xD, 1, 0);
     u16 network_node_id = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(11, 0);
-    rb.Push(RESULT_SUCCESS);
+    if (!initialized) {
+        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        rb.Push(ResultCode(ErrorDescription::NotInitialized, ErrorModule::UDS,
+                           ErrorSummary::StatusChanged, ErrorLevel::Status));
+        return;
+    }
 
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
@@ -624,7 +645,15 @@ static void GetNodeInformation(Interface* self) {
                                 [network_node_id](const NodeInfo& node) {
                                     return node.network_node_id == network_node_id;
                                 });
-        ASSERT(itr != node_info.end());
+        if (itr == node_info.end()) {
+            IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+            rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
+                               ErrorSummary::WrongArgument, ErrorLevel::Status));
+            return;
+        }
+
+        IPC::RequestBuilder rb = rp.MakeBuilder(11, 0);
+        rb.Push(RESULT_SUCCESS);
         rb.PushRaw<NodeInfo>(*itr);
     }
     LOG_DEBUG(Service_NWM, "called");
@@ -654,9 +683,23 @@ static void Bind(Interface* self) {
 
     LOG_DEBUG(Service_NWM, "called");
 
-    if (data_channel == 0) {
+    if (data_channel == 0 || bind_node_id == 0) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
+                           ErrorSummary::WrongArgument, ErrorLevel::Usage));
+        return;
+    }
+
+    if (channel_data.size() >= max_bind_nodes) {
+        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
+                           ErrorSummary::OutOfResource, ErrorLevel::Status));
+        return;
+    }
+
+    if (recv_buffer_size < min_recv_buffer_size) {
+        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
     }
@@ -688,6 +731,12 @@ static void Unbind(Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x12, 1, 0);
 
     u32 bind_node_id = rp.Pop<u32>();
+    if (bind_node_id == 0) {
+        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
+                           ErrorSummary::WrongArgument, ErrorLevel::Usage));
+        return;
+    }
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
 
@@ -700,8 +749,13 @@ static void Unbind(Interface* self) {
         channel_data.erase(itr);
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
     rb.Push(RESULT_SUCCESS);
+    rb.Push(bind_node_id);
+    // TODO(B3N30): Find out what the other return values are
+    rb.Push<u32>(0);
+    rb.Push<u32>(0);
+    rb.Push<u32>(0);
 }
 
 /**
@@ -942,6 +996,14 @@ static void PullPacket(Interface* self) {
     ASSERT(desc_size == max_out_buff_size);
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
+    if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost) &&
+        connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsClient) &&
+        connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsSpectator)) {
+        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
+                           ErrorSummary::InvalidState, ErrorLevel::Status));
+        return;
+    }
 
     auto channel =
         std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
@@ -950,8 +1012,8 @@ static void PullPacket(Interface* self) {
 
     if (channel == channel_data.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-        // TODO(B3N30): Find the right error code
-        rb.Push<u32>(-1);
+        rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
+                           ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
     }
 
@@ -1239,6 +1301,7 @@ NWM_UDS::~NWM_UDS() {
     channel_data.clear();
     connection_status_event = nullptr;
     recv_buffer_memory = nullptr;
+    initialized = false;
 
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
