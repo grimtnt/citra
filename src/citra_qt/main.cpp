@@ -379,11 +379,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
 }
 
-void GMainWindow::OnMenuAboutCitra() {
-    AboutDialog about{this};
-    about.exec();
-}
-
 void GMainWindow::OnDisplayTitleBars(bool show) {
      QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
  
@@ -923,6 +918,11 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
             message_label->setVisible(true);
         }
     }
+}
+
+void GMainWindow::OnMenuAboutCitra() {
+    AboutDialog about{this};
+    about.exec();
 }
 
 bool GMainWindow::ConfirmClose() {
