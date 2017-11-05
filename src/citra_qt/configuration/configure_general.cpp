@@ -50,7 +50,6 @@ void ConfigureGeneral::setConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->enable_experimental_fixes->setChecked(Settings::values.enable_experimental_fixes);
     ui->enable_smm_fix->setChecked(Settings::values.enable_smm_fix);
-    ui->ignore_hle_ipc_crashes->setChecked(Settings::values.ignore_hle_ipc_crashes);
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -67,6 +66,5 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::values.is_new_3ds = ui->toggle_new3ds->isChecked();
     Settings::values.enable_experimental_fixes = ui->enable_experimental_fixes->isChecked();
     Settings::values.enable_smm_fix = ui->enable_smm_fix->isChecked();
-    Settings::values.ignore_hle_ipc_crashes = ui->ignore_hle_ipc_crashes->isChecked();
     Settings::Apply();
 }

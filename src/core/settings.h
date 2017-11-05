@@ -117,7 +117,6 @@ struct Values {
 
     bool enable_experimental_fixes;
     bool enable_smm_fix;
-    bool ignore_hle_ipc_crashes;
     std::string log_filter;
 
     // Audio
