@@ -55,6 +55,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="ignore_hle_ipc_crashes">
+            <property name="toolTip">
+             <string>Required for Tomodachi Life</string>
+            </property>
+            <property name="text">
+             <string>Ignore HLE IPC Crashes</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
