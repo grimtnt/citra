@@ -6,6 +6,7 @@
 
 #include <array>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 #include <boost/container/small_vector.hpp>
 #include "common/common_types.h"
@@ -119,6 +120,18 @@ public:
      */
     void ClearIncomingObjects();
 
+    /**
+     * Retrieves the static buffer identified by the input buffer_id. The static buffer *must* have
+     * been created in PopulateFromIncomingCommandBuffer by way of an input StaticBuffer descriptor.
+     */
+    const std::vector<u8>& GetStaticBuffer(u8 buffer_id) const;
+
+    /**
+     * Sets up a static buffer that will be copied to the target process when the request is
+     * translated.
+     */
+    void AddStaticBuffer(u8 buffer_id, const std::vector<u8>& data);
+
     /// Populates this context with data from the requesting process/thread.
     ResultCode PopulateFromIncomingCommandBuffer(const u32_le* src_cmdbuf, Process& src_process,
                                                  HandleTable& src_table);
@@ -131,6 +144,8 @@ private:
     SharedPtr<ServerSession> session;
     // TODO(yuriks): Check common usage of this and optimize size accordingly
     boost::container::small_vector<SharedPtr<Object>, 8> request_handles;
+    // The static buffers will be created when the IPC request is translated.
+    std::unordered_map<u8, std::vector<u8>> static_buffers;
 };
 
 } // namespace Kernel
