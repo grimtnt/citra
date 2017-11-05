@@ -174,9 +174,6 @@ camera_inner_config =
 # Examples: *:Debug Kernel.SVC:Trace Service.*:Critical
 log_filter = *:Info
 
-# Ignore HLE IPC Crashes
-ignore_hle_ipc_crashes =
-
 # Fixes
 enable_experimental_fixes =
 enable_smm_fix =
