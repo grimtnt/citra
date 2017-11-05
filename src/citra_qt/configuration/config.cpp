@@ -136,6 +136,7 @@ void Config::ReadValues() {
     Settings::values.log_filter = qt_config->value("log_filter", "*:Info").toString().toStdString();
     Settings::values.enable_experimental_fixes = qt_config->value("enable_experimental_fixes", false).toBool();
     Settings::values.enable_smm_fix = qt_config->value("enable_smm_fix", false).toBool();
+    Settings::values.ignore_hle_ipc_crashes = qt_config->value("ignore_hle_ipc_crashes", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Debugging");
@@ -317,6 +318,7 @@ void Config::SaveValues() {
     qt_config->setValue("log_filter", QString::fromStdString(Settings::values.log_filter));
     qt_config->setValue("enable_experimental_fixes", Settings::values.enable_experimental_fixes);
     qt_config->setValue("enable_smm_fix", Settings::values.enable_smm_fix);
+    qt_config->setValue("ignore_hle_ipc_crashes", Settings::values.ignore_hle_ipc_crashes);
     qt_config->endGroup();
 
     qt_config->beginGroup("Debugging");

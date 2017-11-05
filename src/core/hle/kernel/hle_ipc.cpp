@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <boost/range/algorithm_ext/erase.hpp>
+#include "core/settings.h"
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "core/hle/kernel/handle_table.h"
@@ -31,7 +32,9 @@ HLERequestContext::HLERequestContext(SharedPtr<ServerSession> session)
 HLERequestContext::~HLERequestContext() = default;
 
 SharedPtr<Object> HLERequestContext::GetIncomingHandle(u32 id_from_cmdbuf) const {
-    ASSERT(id_from_cmdbuf < request_handles.size());
+    if (!Settings::values.ignore_hle_ipc_crashes) {
+        ASSERT(id_from_cmdbuf < request_handles.size());
+    }
     return request_handles[id_from_cmdbuf];
 }
 
@@ -51,7 +54,10 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
 
     size_t untranslated_size = 1u + header.normal_params_size;
     size_t command_size = untranslated_size + header.translate_params_size;
-    ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH); // TODO(yuriks): Return error
+
+    if (!Settings::values.ignore_hle_ipc_crashes) {
+         ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH); // TODO(yuriks): Return error
+    }
 
     std::copy_n(src_cmdbuf, untranslated_size, cmd_buf.begin());
 
@@ -64,13 +70,21 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
         case IPC::DescriptorType::CopyHandle:
         case IPC::DescriptorType::MoveHandle: {
             u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
-            ASSERT(i + num_handles <= command_size); // TODO(yuriks): Return error
+
+            if (!Settings::values.ignore_hle_ipc_crashes) {
+                 ASSERT(i + num_handles <= command_size); // TODO(yuriks): Return error
+            }
+
             for (u32 j = 0; j < num_handles; ++j) {
                 Handle handle = src_cmdbuf[i];
                 SharedPtr<Object> object = nullptr;
                 if (handle != 0) {
                     object = src_table.GetGeneric(handle);
-                    ASSERT(object != nullptr); // TODO(yuriks): Return error
+
+                    if (!Settings::values.ignore_hle_ipc_crashes) {
+                         ASSERT(object != nullptr); // TODO(yuriks): Return error
+                    }
+
                     if (descriptor == IPC::DescriptorType::MoveHandle) {
                         src_table.Close(handle);
                     }
@@ -85,7 +99,9 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
             break;
         }
         default:
-            UNIMPLEMENTED_MSG("Unsupported handle translation: 0x%08X", descriptor);
+            if (!Settings::values.ignore_hle_ipc_crashes) {
+                 UNIMPLEMENTED_MSG("Unsupported handle translation: 0x%08X", descriptor);
+            }
         }
     }
 
@@ -98,7 +114,10 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
 
     size_t untranslated_size = 1u + header.normal_params_size;
     size_t command_size = untranslated_size + header.translate_params_size;
-    ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH);
+
+    if (!Settings::values.ignore_hle_ipc_crashes) {
+         ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH);
+    }
 
     std::copy_n(cmd_buf.begin(), untranslated_size, dst_cmdbuf);
 
@@ -112,7 +131,11 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
         case IPC::DescriptorType::MoveHandle: {
             // HLE services don't use handles, so we treat both CopyHandle and MoveHandle equally
             u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
-            ASSERT(i + num_handles <= command_size);
+            
+            if (!Settings::values.ignore_hle_ipc_crashes) {
+                ASSERT(i + num_handles <= command_size);
+            }
+
             for (u32 j = 0; j < num_handles; ++j) {
                 SharedPtr<Object> object = GetIncomingHandle(cmd_buf[i]);
                 Handle handle = 0;
@@ -125,7 +148,9 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
             break;
         }
         default:
-            UNIMPLEMENTED_MSG("Unsupported handle translation: 0x%08X", descriptor);
+            if (!Settings::values.ignore_hle_ipc_crashes) {
+                UNIMPLEMENTED_MSG("Unsupported handle translation: 0x%08X", descriptor);
+            }
         }
     }
 
