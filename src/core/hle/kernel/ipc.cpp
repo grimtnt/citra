@@ -4,19 +4,23 @@
 
 #include "core/hle/ipc.h"
 #include "core/hle/kernel/handle_table.h"
+#include "core/hle/kernel/ipc.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/thread.h"
+#include "core/memory.h"
 
-namespace IPC {
+namespace Kernel {
 
-ResultCode TranslateCommandBuffer(Kernel::SharedPtr<Kernel::Thread> src_thread,
-                                  Kernel::SharedPtr<Kernel::Thread> dst_thread, VAddr src_address,
-                                  VAddr dst_address) {
+ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread> dst_thread,
+                                  VAddr src_address, VAddr dst_address) {
+
+    auto& src_process = src_thread->owner_process;
+
     IPC::Header header;
     // TODO(Subv): Replace by Memory::Read32 when possible.
-    Memory::ReadBlock(*src_thread->owner_process, src_address, &header.raw, sizeof(header.raw));
+    Memory::ReadBlock(*src_process, src_address, &header.raw, sizeof(header.raw));
 
     size_t untranslated_size = 1u + header.normal_params_size;
     size_t command_size = untranslated_size + header.translate_params_size;
@@ -24,9 +28,8 @@ ResultCode TranslateCommandBuffer(Kernel::SharedPtr<Kernel::Thread> src_thread,
     // Note: The real kernel does not check that the command length fits into the IPC buffer area.
     ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH);
 
-    std::vector<u32> cmd_buf(command_size);
-    Memory::ReadBlock(*src_thread->owner_process, src_address, cmd_buf.data(),
-                      command_size * sizeof(u32));
+    std::array<u32, IPC::COMMAND_BUFFER_LENGTH> cmd_buf;
+    Memory::ReadBlock(*src_process, src_address, cmd_buf.data(), command_size * sizeof(u32));
 
     size_t i = untranslated_size;
     while (i < command_size) {
@@ -45,19 +48,19 @@ ResultCode TranslateCommandBuffer(Kernel::SharedPtr<Kernel::Thread> src_thread,
             }
 
             for (u32 j = 0; j < num_handles; ++j) {
-                Kernel::Handle handle = cmd_buf[i];
-                Kernel::SharedPtr<Kernel::Object> object = nullptr;
+                Handle handle = cmd_buf[i];
+                SharedPtr<Object> object = nullptr;
                 // Perform pseudo-handle detection here because by the time this function is called,
                 // the current thread and process are no longer the ones which created this IPC
                 // request, but the ones that are handling it.
-                if (handle == Kernel::CurrentThread) {
+                if (handle == CurrentThread) {
                     object = src_thread;
-                } else if (handle == Kernel::CurrentProcess) {
-                    object = src_thread->owner_process;
+                } else if (handle == CurrentProcess) {
+                    object = src_process;
                 } else if (handle != 0) {
-                    object = Kernel::g_handle_table.GetGeneric(handle);
+                    object = g_handle_table.GetGeneric(handle);
                     if (descriptor == IPC::DescriptorType::MoveHandle) {
-                        Kernel::g_handle_table.Close(handle);
+                        g_handle_table.Close(handle);
                     }
                 }
 
@@ -68,17 +71,13 @@ ResultCode TranslateCommandBuffer(Kernel::SharedPtr<Kernel::Thread> src_thread,
                     continue;
                 }
 
-                Kernel::Handle translated_handle = 0;
-                auto result = Kernel::g_handle_table.Create(std::move(object));
-                if (result.Succeeded()) {
-                    translated_handle = result.Unwrap();
-                }
-                cmd_buf[i++] = translated_handle;
+                auto result = g_handle_table.Create(std::move(object));
+                cmd_buf[i++] = result.ValueOr(0);
             }
             break;
         }
         case IPC::DescriptorType::CallingPid: {
-            cmd_buf[i++] = src_thread->owner_process->process_id;
+            cmd_buf[i++] = src_process->process_id;
             break;
         }
         default:
@@ -91,4 +90,4 @@ ResultCode TranslateCommandBuffer(Kernel::SharedPtr<Kernel::Thread> src_thread,
 
     return RESULT_SUCCESS;
 }
-} // namespace IPC
+} // namespace Kernel

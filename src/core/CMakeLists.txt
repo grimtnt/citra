@@ -1,6 +1,6 @@
 set(SRCS
             announce_multiplayer_session.cpp
-			arm/dynarmic/arm_dynarmic.cpp
+	    arm/dynarmic/arm_dynarmic.cpp
             arm/dynarmic/arm_dynarmic_cp15.cpp
             arm/dyncom/arm_dyncom.cpp
             arm/dyncom/arm_dyncom_dec.cpp
@@ -64,7 +64,7 @@ set(SRCS
             hle/kernel/timer.cpp
             hle/kernel/vm_manager.cpp
             hle/kernel/wait_object.cpp
-            hle/ipc.cpp
+	    hle/kernel/ipc.cpp
             hle/lock.cpp
             hle/romfs.cpp
             hle/service/ac/ac.cpp
@@ -253,6 +253,7 @@ set(HEADERS
             hle/kernel/event.h
             hle/kernel/handle_table.h
             hle/kernel/hle_ipc.h
+	    hle/kernel/ipc.h
             hle/kernel/kernel.h
             hle/kernel/memory.h
             hle/kernel/mutex.h

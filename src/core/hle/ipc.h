@@ -44,12 +44,6 @@ inline u32* GetStaticBuffers(const int offset = 0) {
 
 namespace IPC {
 
-namespace ErrCodes {
-enum {
-    CommandTooLarge = 54,
-};
-} // namespace ErrCodes
-
 /// Size of the command buffer area, in 32-bit words.
 constexpr size_t COMMAND_BUFFER_LENGTH = 0x100 / sizeof(u32);
 
@@ -191,10 +185,5 @@ inline DescriptorType GetDescriptorType(u32 descriptor) {
 
     return StaticBuffer;
 }
-
-/// Performs IPC command buffer translation from one process to another.
-ResultCode TranslateCommandBuffer(Kernel::SharedPtr<Kernel::Thread> src_thread,
-                                  Kernel::SharedPtr<Kernel::Thread> dst_thread, VAddr src_address,
-                                  VAddr dst_address);
 
 } // namespace IPC
