@@ -115,9 +115,8 @@ struct Values {
     float bg_green;
     float bg_blue;
 
-    bool enable_experimental_fixes;
-    bool enable_smm_fix;
     std::string log_filter;
+    bool enable_experimental_fixes;
 
     // Audio
     std::string sink_id;

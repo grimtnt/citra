@@ -22,14 +22,6 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new3ds->setEnabled(!Core::System::GetInstance().IsPoweredOn());
-        
-    if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course220")) {
-    ui->enable_smm_fix->setVisible(true);
-    } else if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220")) {
-    ui->enable_smm_fix->setVisible(true);
-    } else if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course220")) {
-    ui->enable_smm_fix->setVisible(true);
-    }
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
@@ -46,10 +38,8 @@ void ConfigureGeneral::setConfiguration() {
 
     // The first item is "auto-select" with actual value -1, so plus one here will do the trick
     ui->region_combobox->setCurrentIndex(Settings::values.region_value + 1);
-
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->enable_experimental_fixes->setChecked(Settings::values.enable_experimental_fixes);
-    ui->enable_smm_fix->setChecked(Settings::values.enable_smm_fix);
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -65,6 +55,5 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
     Settings::values.is_new_3ds = ui->toggle_new3ds->isChecked();
     Settings::values.enable_experimental_fixes = ui->enable_experimental_fixes->isChecked();
-    Settings::values.enable_smm_fix = ui->enable_smm_fix->isChecked();
     Settings::Apply();
 }

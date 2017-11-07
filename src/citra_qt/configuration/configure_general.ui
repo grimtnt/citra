@@ -45,16 +45,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QCheckBox" name="enable_smm_fix">
-            <property name="visible">
-             <bool>false</bool>
-            </property>  
-            <property name="text">
-             <string>Enable Super Mario Maker for Nintendo 3DS Fix</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
        </layout>

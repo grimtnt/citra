@@ -176,7 +176,6 @@ log_filter = *:Info
 
 # Fixes
 enable_experimental_fixes =
-enable_smm_fix =
 
 [Debugging]
 # Port for listening to GDB connections.
