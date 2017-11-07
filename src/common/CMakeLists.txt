@@ -77,7 +77,6 @@ set(HEADERS
             synchronized_wrapper.h
             telemetry.h
             thread.h
-            thread_pool.h
             thread_queue_list.h
             timer.h
             vector_math.h
