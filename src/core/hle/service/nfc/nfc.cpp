@@ -16,9 +16,6 @@ static Kernel::SharedPtr<Kernel::Event> tag_in_range_event;
 static Kernel::SharedPtr<Kernel::Event> tag_out_of_range_event;
 static TagState nfc_tag_state = TagState::NotInitialized;
 static CommunicationStatus nfc_status = CommunicationStatus::NfcInitialized;
-static TagInfo tag_info{};
-static AmiiboConfig amiibo_config{};
-static AmiiboSettings amiibo_settings{};
 
 void Initialize(Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
@@ -117,7 +114,7 @@ void GetTagState(Interface* self) {
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
     cmd_buff[2] = static_cast<u8>(nfc_tag_state);
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
+    LOG_DEBUG(Service_NFC, "(STUBBED) called");
 }
 
 void CommunicationGetStatus(Interface* self) {
@@ -125,46 +122,7 @@ void CommunicationGetStatus(Interface* self) {
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
     cmd_buff[2] = static_cast<u8>(nfc_status);
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
-}
-
-void GetTagInfo(Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    tag_info.len = 7;
-    tag_info.unknown1 = 0;
-    tag_info.unknown2 = 2;
-    // TODO (mailwl): find tags
-    // std::memcpy(tag_info.id_data, "1234567", 7);
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    std::memcpy(cmd_buff + 2, &tag_info, sizeof(TagInfo));
-
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
-}
-
-void GetAmiiboSettings(Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    amiibo_settings.setup_date = {2016, 12, 12};
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    std::memcpy(cmd_buff + 2, &amiibo_settings, sizeof(AmiiboSettings));
-
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
-}
-
-void GetAmiiboConfig(Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    amiibo_config.last_write_date = {2017, 1, 20};
-    amiibo_config.write_count = 1;
-    amiibo_config.appdata_size = 0xD8;
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    std::memcpy(cmd_buff + 2, &amiibo_config, sizeof(AmiiboConfig));
-
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
+    LOG_DEBUG(Service_NFC, "(STUBBED) called");
 }
 
 void Init() {
@@ -174,7 +132,7 @@ void Init() {
     tag_in_range_event =
         Kernel::Event::Create(Kernel::ResetType::OneShot, "NFC::tag_in_range_event");
     tag_out_of_range_event =
-        Kernel::Event::Create(Kernel::ResetType::OneShot, "NFC::tag_out_of_range_event");
+        Kernel::Event::Create(Kernel::ResetType::OneShot, "NFC::tag_out_range_event");
     nfc_tag_state = TagState::NotInitialized;
 }
 
