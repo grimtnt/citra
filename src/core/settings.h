@@ -117,6 +117,7 @@ struct Values {
 
     std::string log_filter;
     bool enable_experimental_fixes;
+    bool sr_delay;
 
     // Audio
     std::string sink_id;

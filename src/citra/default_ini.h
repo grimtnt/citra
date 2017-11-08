@@ -174,6 +174,9 @@ camera_inner_config =
 # Examples: *:Debug Kernel.SVC:Trace Service.*:Critical
 log_filter = *:Info
 
+# Sync Request Delay
+sr_delay =
+
 # Fixes
 enable_experimental_fixes =
 
