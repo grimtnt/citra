@@ -12,7 +12,6 @@
 #include "core/arm/arm_interface.h"
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "core/settings.h"
 
 int g_clock_rate_arm11 = BASE_CLOCK_RATE_ARM11;
 
@@ -190,12 +189,7 @@ void Shutdown() {
 }
 
 void AddTicks(u64 ticks) {
-    if (Settings::values.enable_experimental_fixes) {
-        down_count -= 4000;
-    }
-    else {
-        down_count -= ticks;
-    }
+    down_count -= ticks;
     if (down_count < 0) {
         Advance();
     }

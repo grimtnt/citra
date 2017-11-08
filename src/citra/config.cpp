@@ -150,7 +150,6 @@ void Config::ReadValues() {
 
     // Miscellaneous
     Settings::values.log_filter = sdl2_config->Get("Miscellaneous", "log_filter", "*:Info");
-    Settings::values.enable_experimental_fixes = sdl2_config->GetBoolean("Miscellaneous", "enable_experimental_fixes", false);
     Settings::values.sr_delay = sdl2_config->GetBoolean("Miscellaneous", "sr_delay", true);
 
     // Debugging

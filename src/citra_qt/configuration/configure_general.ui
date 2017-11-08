@@ -39,13 +39,6 @@
            </widget>
           </item>
          <item>
-           <widget class="QCheckBox" name="enable_experimental_fixes">
-            <property name="text">
-             <string>Enable Experimental Fixes</string>
-            </property>
-           </widget>
-          </item>
-         <item>
            <widget class="QCheckBox" name="sr_delay">
             <property name="text">
              <string>Enable Sync Request Delay</string>

@@ -116,7 +116,6 @@ struct Values {
     float bg_blue;
 
     std::string log_filter;
-    bool enable_experimental_fixes;
     bool sr_delay;
 
     // Audio

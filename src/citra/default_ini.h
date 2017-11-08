@@ -177,9 +177,6 @@ log_filter = *:Info
 # Sync Request Delay
 sr_delay =
 
-# Fixes
-enable_experimental_fixes =
-
 [Debugging]
 # Port for listening to GDB connections.
 use_gdbstub=false
