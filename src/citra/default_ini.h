@@ -174,9 +174,6 @@ camera_inner_config =
 # Examples: *:Debug Kernel.SVC:Trace Service.*:Critical
 log_filter = *:Info
 
-# Sync Request Delay
-sr_delay =
-
 [Debugging]
 # Port for listening to GDB connections.
 use_gdbstub=false

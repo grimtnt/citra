@@ -22,7 +22,6 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new3ds->setEnabled(!Core::System::GetInstance().IsPoweredOn());
-    ui->sr_delay->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
@@ -40,7 +39,6 @@ void ConfigureGeneral::setConfiguration() {
     // The first item is "auto-select" with actual value -1, so plus one here will do the trick
     ui->region_combobox->setCurrentIndex(Settings::values.region_value + 1);
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
-    ui->sr_delay->setChecked(Settings::values.sr_delay);
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -55,6 +53,5 @@ void ConfigureGeneral::applyConfiguration() {
     Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
     Settings::values.is_new_3ds = ui->toggle_new3ds->isChecked();
-    Settings::values.sr_delay = ui->sr_delay->isChecked();
     Settings::Apply();
 }
