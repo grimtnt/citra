@@ -373,7 +373,7 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(this, SIGNAL(EmulationStopping()), render_window, SLOT(OnEmulationStopping()));
 
     connect(&status_bar_update_timer, &QTimer::timeout, this, &GMainWindow::UpdateStatusBar);
-	connect(network_status, &ClickableLabel::clicked, this, &GMainWindow::OnOpenNetworkRoom);
+    connect(network_status, &ClickableLabel::clicked, this, &GMainWindow::OnOpenNetworkRoom);
 }
 
 void GMainWindow::ConnectMenuEvents() {
