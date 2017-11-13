@@ -134,7 +134,7 @@ void ARM_Dynarmic::ExecuteInstructions(int num_instructions) {
     ZeroUpperAVX();
     std::size_t ticks_executed = jit->Run(static_cast<unsigned>(num_instructions));
 
-    CoreTiming::AddTicks(4000);
+    CoreTiming::AddTicks(ticks_executed);
 }
 
 void ARM_Dynarmic::SaveContext(ARM_Interface::ThreadContext& ctx) {
