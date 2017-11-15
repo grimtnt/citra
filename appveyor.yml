@@ -68,7 +68,13 @@ after_build:
         $GITDATE = $(git show -s --date=short --format='%ad') -replace "-",""
         $GITREV = $(git show -s --format='%h')
 
-        $RELEASE_DIST = "tomodachi"
+        # Find out which kind of release we are producing by tag name
+        if ($env:APPVEYOR_REPO_TAG_NAME) {
+          $RELEASE_DIST, $RELEASE_VERSION = $env:APPVEYOR_REPO_TAG_NAME.split('-')
+        } else {
+          # There is no repo tag - make assumptions
+          $RELEASE_DIST = "head"
+        }
 
         if ($env:BUILD_TYPE -eq 'msvc') {
           # Where are these spaces coming from? Regardless, let's remove them
@@ -80,7 +86,7 @@ after_build:
           rm .\msvc_build\bin\release\*.pdb
 
           mkdir $RELEASE_DIST
-          Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse -Exclude "citra.exe"
+          Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse
           Copy-Item .\license.txt -Destination $RELEASE_DIST\2.license.txt
           Copy-Item ".\Text Files\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
@@ -97,7 +103,7 @@ after_build:
           mkdir $RELEASE_DIST/platforms
 
           # copy citra and citra-room to the release folder
-          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-qt.exe" | Copy-Item -destination $RELEASE_DIST\citra-qt-sse4.1.exe
+          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-room.exe" | Copy-Item -destination $RELEASE_DIST
                     
           # copy translation
