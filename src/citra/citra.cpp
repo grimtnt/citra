@@ -27,6 +27,7 @@
 
 #include "citra/config.h"
 #include "citra/emu_window/emu_window_sdl2.h"
+#include "common/file_util.h"
 #include "common/logging/backend.h"
 #include "common/logging/filter.h"
 #include "common/logging/log.h"
@@ -34,7 +35,9 @@
 #include "common/scope_exit.h"
 #include "common/string_util.h"
 #include "core/core.h"
+#include "core/file_sys/cia_container.h"
 #include "core/gdbstub/gdbstub.h"
+#include "core/hle/service/am/am.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
 #include "network/network.h"
@@ -43,6 +46,7 @@ static void PrintHelp(const char* argv0) {
     std::cout << "Usage: " << argv0
               << " [options] <filename>\n"
                  "-g, --gdbport=NUMBER Enable gdb stub on port NUMBER\n"
+                 "-i, --install=FILE    Installs a specified CIA file\n"
                  "-m, --multiplayer=nick:password@address:port"
                  " Nickname, password, address and port for multiplayer\n"
                  "-h, --help           Display this help and exit\n"
@@ -51,6 +55,47 @@ static void PrintHelp(const char* argv0) {
 
 static void PrintVersion() {
     std::cout << "Citra " << Common::g_scm_branch << " " << Common::g_scm_desc << std::endl;
+}
+
+static bool InstallCIA(const std::string& path) {
+    LOG_INFO(Frontend, "Installing %s...", path.c_str());
+
+    if (!FileUtil::Exists(path)) {
+        LOG_ERROR(Frontend, "File %s does not exist!", path.c_str());
+        return false;
+    }
+
+    FileSys::CIAContainer container;
+    if (container.Load(path) == Loader::ResultStatus::Success) {
+        Service::AM::CIAFile installFile(
+            Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID()));
+
+        FileUtil::IOFile file(path, "rb");
+        if (!file.IsOpen())
+            return false;
+
+        std::array<u8, 0x10000> buffer;
+        size_t total_bytes_read = 0;
+        while (total_bytes_read != file.GetSize()) {
+            size_t bytes_read = file.ReadBytes(buffer.data(), buffer.size());
+            auto result = installFile.Write(static_cast<u64>(total_bytes_read), bytes_read, true,
+                                            static_cast<u8*>(buffer.data()));
+
+            if (result.Failed()) {
+                LOG_ERROR(Frontend, "CIA file installation aborted with error code %08x",
+                          result.Code());
+                return false;
+            }
+            total_bytes_read += bytes_read;
+        }
+        installFile.Close();
+
+        LOG_INFO(Frontend, "Installed %s successfully.", path.c_str());
+        return true;
+    }
+
+    LOG_ERROR(Frontend, "CIA file %s is invalid!", path.c_str());
+    return false;
 }
 
 static void OnStateChanged(const Network::RoomMember::State& state) {
@@ -122,6 +167,7 @@ int main(int argc, char** argv) {
 
     static struct option long_options[] = {
         {"gdbport", required_argument, 0, 'g'},
+        {"install", required_argument, 0, 'i'},
         {"multiplayer", required_argument, 0, 'm'},
         {"help", no_argument, 0, 'h'},
         {"version", no_argument, 0, 'v'},
@@ -129,7 +175,7 @@ int main(int argc, char** argv) {
     };
 
     while (optind < argc) {
-        char arg = getopt_long(argc, argv, "g:m:hv", long_options, &option_index);
+        char arg = getopt_long(argc, argv, "g:i:m:hv", long_options, &option_index);
         if (arg != -1) {
             switch (arg) {
             case 'g':
@@ -142,6 +188,12 @@ int main(int argc, char** argv) {
                     perror("--gdbport");
                     exit(1);
                 }
+                break;
+            case 'i':
+                if (!InstallCIA(std::string(optarg)))
+                    errno = EINVAL;
+                if (errno != 0)
+                    exit(1);
                 break;
             case 'm': {
                 use_multiplayer = true;
