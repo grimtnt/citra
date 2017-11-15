@@ -142,7 +142,7 @@ ResultVal<size_t> CIAFile::WriteContentData(u64 offset, size_t length, const u8*
             // to get the content paths to write to.
             FileSys::TitleMetadata tmd = container.GetTitleMetadata();
             FileUtil::IOFile file(GetTitleContentPath(media_type, tmd.GetTitleID(), i, is_update),
-                                  content_written[i] ? "a" : "w");
+                                  content_written[i] ? "ab" : "wb");
 
             if (!file.IsOpen())
                 return FileSys::ERROR_INSUFFICIENT_SPACE;
