@@ -166,7 +166,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Updater");
     UISettings::values.check_for_update_on_start =
-    qt_config->value("check_for_update_on_start", true).toBool();
+        qt_config->value("check_for_update_on_start", true).toBool();
     UISettings::values.update_on_close = qt_config->value("update_on_close", false).toBool();
     qt_config->endGroup();
 

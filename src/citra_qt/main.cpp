@@ -413,34 +413,34 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Chat, &QAction::triggered, this, &GMainWindow::OnOpenNetworkRoom);
 
     // Help
+    connect(ui.action_FAQ, &QAction::triggered,
+            []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
+    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
     connect(ui.action_Check_For_Updates, &QAction::triggered, this,
             &GMainWindow::OnCheckForUpdates);
     connect(ui.action_Open_Maintenance_Tool, &QAction::triggered, this,
             &GMainWindow::OnOpenUpdater);
-    connect(ui.action_FAQ, &QAction::triggered,
-            []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
-    connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
-     QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
- 
-     if (show) {
-         for (QDockWidget* widget : widgets) {
-             QWidget* old = widget->titleBarWidget();
-             widget->setTitleBarWidget(nullptr);
-             if (old != nullptr)
-                 delete old;
-         }
-     } else {
-         for (QDockWidget* widget : widgets) {
-             QWidget* old = widget->titleBarWidget();
-             widget->setTitleBarWidget(new QWidget());
-             if (old != nullptr)
-                 delete old;
-         }
-     }
- }
+    QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
+
+    if (show) {
+        for (QDockWidget* widget : widgets) {
+            QWidget* old = widget->titleBarWidget();
+            widget->setTitleBarWidget(nullptr);
+            if (old != nullptr)
+                delete old;
+        }
+    } else {
+        for (QDockWidget* widget : widgets) {
+            QWidget* old = widget->titleBarWidget();
+            widget->setTitleBarWidget(new QWidget());
+            if (old != nullptr)
+                delete old;
+        }
+    }
+}
 
 void GMainWindow::OnCheckForUpdates() {
     explicit_update_check = true;
@@ -665,7 +665,7 @@ void GMainWindow::ShutdownGame() {
     emu_frametime_label->setVisible(false);
 
     emulation_running = false;
-    
+
     if (defer_update_prompt) {
         ShowUpdatePrompt();
     }
