@@ -77,7 +77,6 @@ struct TicketInfo {
 
 static_assert(sizeof(TicketInfo) == 0x18, "Ticket info structure size is wrong");
 
-// A file handled returned for CIAs to be written into and subsequently installed.
 ResultVal<size_t> CIAFile::Read(u64 offset, size_t length, u8* buffer) const {
     UNIMPLEMENTED();
     return MakeResult<size_t>(length);
@@ -236,7 +235,7 @@ bool CIAFile::SetSize(u64 size) const {
 
 bool CIAFile::Close() const {
     bool complete = true;
-    for (int i = 0; i < container.GetTitleMetadata().GetContentCount(); i++) {
+    for (size_t i = 0; i < container.GetTitleMetadata().GetContentCount(); i++) {
         if (content_written[i] < container.GetContentSize(i))
             complete = false;
     }
@@ -283,6 +282,49 @@ bool CIAFile::Close() const {
 }
 
 void CIAFile::Flush() const {}
+
+bool InstallCIA(const std::string& path, std::function<ProgressCallback>&& update_callback) {
+    LOG_INFO(Service_AM, "Installing %s...", path.c_str());
+
+    if (!FileUtil::Exists(path)) {
+        LOG_ERROR(Service_AM, "File %s does not exist!", path.c_str());
+        return false;
+    }
+
+    FileSys::CIAContainer container;
+    if (container.Load(path) == Loader::ResultStatus::Success) {
+        Service::AM::CIAFile installFile(
+            Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID()));
+
+        FileUtil::IOFile file(path, "rb");
+        if (!file.IsOpen())
+            return false;
+
+        std::array<u8, 0x10000> buffer;
+        size_t total_bytes_read = 0;
+        while (total_bytes_read != file.GetSize()) {
+            size_t bytes_read = file.ReadBytes(buffer.data(), buffer.size());
+            auto result = installFile.Write(static_cast<u64>(total_bytes_read), bytes_read, true,
+                                            static_cast<u8*>(buffer.data()));
+
+            if (update_callback)
+                update_callback(total_bytes_read, file.GetSize());
+            if (result.Failed()) {
+                LOG_ERROR(Service_AM, "CIA file installation aborted with error code %08x",
+                          result.Code());
+                return false;
+            }
+            total_bytes_read += bytes_read;
+        }
+        installFile.Close();
+
+        LOG_INFO(Service_AM, "Installed %s successfully.", path.c_str());
+        return true;
+    }
+
+    LOG_ERROR(Service_AM, "CIA file %s is invalid!", path.c_str());
+    return false;
+}
 
 Service::FS::MediaType GetTitleMediaType(u64 titleId) {
     u16 platform = static_cast<u16>(titleId >> 48);

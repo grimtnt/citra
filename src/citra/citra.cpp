@@ -57,47 +57,6 @@ static void PrintVersion() {
     std::cout << "Citra " << Common::g_scm_branch << " " << Common::g_scm_desc << std::endl;
 }
 
-static bool InstallCIA(const std::string& path) {
-    LOG_INFO(Frontend, "Installing %s...", path.c_str());
-
-    if (!FileUtil::Exists(path)) {
-        LOG_ERROR(Frontend, "File %s does not exist!", path.c_str());
-        return false;
-    }
-
-    FileSys::CIAContainer container;
-    if (container.Load(path) == Loader::ResultStatus::Success) {
-        Service::AM::CIAFile installFile(
-            Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID()));
-
-        FileUtil::IOFile file(path, "rb");
-        if (!file.IsOpen())
-            return false;
-
-        std::array<u8, 0x10000> buffer;
-        size_t total_bytes_read = 0;
-        while (total_bytes_read != file.GetSize()) {
-            size_t bytes_read = file.ReadBytes(buffer.data(), buffer.size());
-            auto result = installFile.Write(static_cast<u64>(total_bytes_read), bytes_read, true,
-                                            static_cast<u8*>(buffer.data()));
-
-            if (result.Failed()) {
-                LOG_ERROR(Frontend, "CIA file installation aborted with error code %08x",
-                          result.Code());
-                return false;
-            }
-            total_bytes_read += bytes_read;
-        }
-        installFile.Close();
-
-        LOG_INFO(Frontend, "Installed %s successfully.", path.c_str());
-        return true;
-    }
-
-    LOG_ERROR(Frontend, "CIA file %s is invalid!", path.c_str());
-    return false;
-}
-
 static void OnStateChanged(const Network::RoomMember::State& state) {
     switch (state) {
     case Network::RoomMember::State::Idle:
@@ -189,12 +148,16 @@ int main(int argc, char** argv) {
                     exit(1);
                 }
                 break;
-            case 'i':
-                if (!InstallCIA(std::string(optarg)))
+            case 'i': {
+                const auto cia_progress = [](size_t written, size_t total) {
+                    LOG_INFO(Frontend, "%02zu%%", (written * 100 / total));
+                };
+                if (!Service::AM::InstallCIA(std::string(optarg), cia_progress))
                     errno = EINVAL;
                 if (errno != 0)
                     exit(1);
                 break;
+            }
             case 'm': {
                 use_multiplayer = true;
                 std::string str_arg(optarg);
