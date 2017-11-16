@@ -44,7 +44,7 @@ set(SRCS
 
 set(HEADERS
             alignment.h
-			announce_multiplayer_room.h
+            announce_multiplayer_room.h
             assert.h
             avx_utils.h
             bit_field.h
@@ -56,6 +56,7 @@ set(HEADERS
             common_funcs.h
             common_paths.h
             common_types.h
+	    fifo_queue.h
             file_util.h
             hash.h
             linear_disk_cache.h

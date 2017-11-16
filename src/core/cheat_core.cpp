@@ -11,11 +11,11 @@
 #include "core/hle/service/hid/hid.h"
 
 namespace CheatCore {
-    constexpr u64 frame_ticks = 268123480ull / 60;
-    static int tick_event;
+    constexpr s64 frame_ticks = 268123480ull / 60;
+    static const CoreTiming::EventType* tick_event;
     static std::unique_ptr<CheatEngine::CheatEngine> cheat_engine;
 
-    static void CheatTickCallback(u64, int cycles_late) {
+    static void CheatTickCallback(s64, int cycles_late) {
         if (cheat_engine == nullptr)
             cheat_engine = std::make_unique<CheatEngine::CheatEngine>();
         cheat_engine->Run();
