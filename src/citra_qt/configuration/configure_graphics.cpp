@@ -15,10 +15,8 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     ui->setupUi(this);
     this->setConfiguration();
 
-    ui->toggle_vsync->setEnabled(!Core::System::GetInstance().IsPoweredOn());
-
     ui->layoutBox->setEnabled(!Settings::values.custom_checkbox);
-    
+
     connect(ui->layout_bg, SIGNAL (released()), this, SLOT (showLayoutBackgroundDialog()));
 }
 
@@ -107,7 +105,6 @@ void ConfigureGraphics::setConfiguration() {
     ui->toggle_shader_jit->setChecked(Settings::values.use_shader_jit);
     ui->resolution_factor_combobox->setCurrentIndex(
         static_cast<int>(FromResolutionFactor(Settings::values.resolution_factor)));
-    ui->toggle_vsync->setChecked(Settings::values.use_vsync);
     {
         bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue);
         ui->layout_bg->setStyleSheet("QPushButton { background-color: " + bg_color.name() + ";}");
@@ -115,15 +112,15 @@ void ConfigureGraphics::setConfiguration() {
     ui->toggle_framelimit->setChecked(Settings::values.toggle_framelimit);
     ui->layout_combobox->setCurrentIndex(static_cast<int>(Settings::values.layout_option));
     ui->swap_screen->setChecked(Settings::values.swap_screen);
-	    ui->custom_checkbox->setChecked(Settings::values.custom_checkbox);
-     ui->custom_top_left_spinbox->setValue(Settings::values.custom_top_left);
-     ui->custom_top_top_spinbox->setValue(Settings::values.custom_top_top);
-     ui->custom_top_right_spinbox->setValue(Settings::values.custom_top_right);
-     ui->custom_top_bottom_spinbox->setValue(Settings::values.custom_top_bottom);
-     ui->custom_bottom_left_spinbox->setValue(Settings::values.custom_bottom_left);
-     ui->custom_bottom_top_spinbox->setValue(Settings::values.custom_bottom_top);
-     ui->custom_bottom_right_spinbox->setValue(Settings::values.custom_bottom_right);
-     ui->custom_bottom_bottom_spinbox->setValue(Settings::values.custom_bottom_bottom);
+    ui->custom_checkbox->setChecked(Settings::values.custom_checkbox);
+    ui->custom_top_left_spinbox->setValue(Settings::values.custom_top_left);
+    ui->custom_top_top_spinbox->setValue(Settings::values.custom_top_top);
+    ui->custom_top_right_spinbox->setValue(Settings::values.custom_top_right);
+    ui->custom_top_bottom_spinbox->setValue(Settings::values.custom_top_bottom);
+    ui->custom_bottom_left_spinbox->setValue(Settings::values.custom_bottom_left);
+    ui->custom_bottom_top_spinbox->setValue(Settings::values.custom_bottom_top);
+    ui->custom_bottom_right_spinbox->setValue(Settings::values.custom_bottom_right);
+    ui->custom_bottom_bottom_spinbox->setValue(Settings::values.custom_bottom_bottom);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -131,7 +128,6 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.use_shader_jit = ui->toggle_shader_jit->isChecked();
     Settings::values.resolution_factor =
         ToResolutionFactor(static_cast<Resolution>(ui->resolution_factor_combobox->currentIndex()));
-    Settings::values.use_vsync = ui->toggle_vsync->isChecked();
     Settings::values.bg_red = bg_color.redF();
     Settings::values.bg_green = bg_color.greenF();
     Settings::values.bg_blue = bg_color.blueF();
@@ -139,14 +135,14 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
-	    Settings::values.custom_checkbox = ui->custom_checkbox->isChecked();
-     Settings::values.custom_top_left = ui->custom_top_left_spinbox->value();
-     Settings::values.custom_top_top = ui->custom_top_top_spinbox->value();
-     Settings::values.custom_top_right = ui->custom_top_right_spinbox->value();
-     Settings::values.custom_top_bottom = ui->custom_top_bottom_spinbox->value();
-     Settings::values.custom_bottom_left = ui->custom_bottom_left_spinbox->value();
-     Settings::values.custom_bottom_top = ui->custom_bottom_top_spinbox->value();
-     Settings::values.custom_bottom_right = ui->custom_bottom_right_spinbox->value();
-     Settings::values.custom_bottom_bottom = ui->custom_bottom_bottom_spinbox->value();
+    Settings::values.custom_checkbox = ui->custom_checkbox->isChecked();
+    Settings::values.custom_top_left = ui->custom_top_left_spinbox->value();
+    Settings::values.custom_top_top = ui->custom_top_top_spinbox->value();
+    Settings::values.custom_top_right = ui->custom_top_right_spinbox->value();
+    Settings::values.custom_top_bottom = ui->custom_top_bottom_spinbox->value();
+    Settings::values.custom_bottom_left = ui->custom_bottom_left_spinbox->value();
+    Settings::values.custom_bottom_top = ui->custom_bottom_top_spinbox->value();
+    Settings::values.custom_bottom_right = ui->custom_bottom_right_spinbox->value();
+    Settings::values.custom_bottom_bottom = ui->custom_bottom_bottom_spinbox->value();
     Settings::Apply();
 }
