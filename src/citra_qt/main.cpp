@@ -53,7 +53,6 @@
 #include "core/gdbstub/gdbstub.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
-#include "audio_core/hle/mixers.h"
 
 #ifdef QT_STATICPLUGIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
@@ -102,7 +101,7 @@ void GMainWindow::ShowCallouts() {
 
 GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     LoadTranslation();
- 
+
     Pica::g_debug_context = Pica::DebugContext::Construct();
     setAcceptDrops(true);
     ui.setupUi(this);
@@ -113,13 +112,13 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     InitializeRecentFileMenuActions();
     InitializeHotkeys();
     ShowUpdaterWidgets();
-	
+
     SetDefaultUIGeometry();
     RestoreUIState();
 
     ConnectMenuEvents();
     ConnectWidgetEvents();
-    
+
     Network::Init();
 
     if (auto member = Network::GetRoomMember().lock()) {
