@@ -20,13 +20,13 @@ enum class CecStateAbbreviated {
                                 /// OVER_BOSS and those listed here
 };
 
-void Open(Service::Interface* self);
-void Read(Service::Interface* self);
+void OpenRawFile(Service::Interface* self);
+void ReadRawFile(Service::Interface* self);
 void ReadMessage(Service::Interface* self);
-void ReadMessageAlt(Service::Interface* self);
-void Write(Service::Interface* self);
+void ReadMessageWithHMAC(Service::Interface* self);
+void WriteRawFile(Service::Interface* self);
 void WriteMessage(Service::Interface* self);
-void WriteMessageAlt(Service::Interface* self);
+void WriteMessageWithHMAC(Service::Interface* self);
 void Delete(Service::Interface* self);
 
 void cecd9(Service::Interface* self);

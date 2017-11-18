@@ -124,7 +124,7 @@ static bool IsSaveDataDir(SaveDataType type) {
     }
 }
 
-void Open(Service::Interface* self) {
+void OpenRawFile(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 title_id = cmd_buff[1];
@@ -172,7 +172,7 @@ void Open(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 }
 
-void Read(Service::Interface* self) {
+void ReadRawFile(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 size = cmd_buff[1];
@@ -193,7 +193,7 @@ void ReadMessage(Service::Interface* self) {
     LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
-void ReadMessageAlt(Service::Interface* self) {
+void ReadMessageWithHMAC(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
@@ -201,7 +201,7 @@ void ReadMessageAlt(Service::Interface* self) {
     LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
-void Write(Service::Interface* self) {
+void WriteRawFile(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
@@ -217,7 +217,7 @@ void WriteMessage(Service::Interface* self) {
     LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
-void WriteMessageAlt(Service::Interface* self) {
+void WriteMessageWithHMAC(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     u32 title_id = cmd_buff[1];

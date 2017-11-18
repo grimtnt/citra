@@ -9,13 +9,13 @@ namespace Service {
 namespace CECD {
 
 static const Interface::FunctionInfo FunctionTable[] = {
-    {0x000100C2, Open, "Open"},
-    {0x00020042, Read, "Read"},
+    {0x000100C2, OpenRawFile, "OpenRawFile"},
+    {0x00020042, ReadRawFile, "ReadRawFile"},
     {0x00030104, ReadMessage, "ReadMessage"},
-    {0x00040106, ReadMessageAlt, "ReadMessageAlt"},
-    {0x00050042, Write, "Write"},
+    {0x00040106, ReadMessageWithHMAC, "ReadMessageWithHMAC"},
+    {0x00050042, WriteRawFile, "WriteRawFile"},
     {0x00060104, WriteMessage, "WriteMessage"},
-    {0x00070106, WriteMessageAlt, "WriteMessageAlt"},
+    {0x00070106, WriteMessageWithHMAC, "WriteMessageWithHMAC"},
     {0x00080102, Delete, "Delete"},
     {0x000900C2, cecd9, "cecd9"},
     {0x000A00C4, GetSystemInfo, "GetSystemInfo"},
