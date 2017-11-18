@@ -148,7 +148,7 @@ public slots:
 signals:
     /// Emitted when the window is closed
     void Closed();
-	/// Emitted when clicking on shortcut
+    /// Emitted when clicking on shortcut
     void ExitFullscreen();
 
 private:
