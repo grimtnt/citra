@@ -181,8 +181,8 @@ static ResultCode MapMemoryBlock(Kernel::Handle handle, u32 addr, u32 permission
     case MemoryPermission::WriteExecute:
     case MemoryPermission::ReadWriteExecute:
     case MemoryPermission::DontCare:
-    return shared_memory->Map(Kernel::g_current_process.get(), addr, permissions_type,
-    static_cast<MemoryPermission>(other_permissions));
+        return shared_memory->Map(Kernel::g_current_process.get(), addr, permissions_type,
+                                  static_cast<MemoryPermission>(other_permissions));
     default:
         LOG_ERROR(Kernel_SVC, "unknown permissions=0x%08X", permissions);
     }
@@ -309,12 +309,11 @@ static ResultCode WaitSynchronization1(Kernel::Handle handle, s64 nano_seconds) 
 }
 
 /// Wait for the given handles to synchronize, timeout after the specified nanoseconds
-static ResultCode WaitSynchronizationN(s32* out, Kernel::Handle* handles, s32 handle_count,
+static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 handle_count,
                                        bool wait_all, s64 nano_seconds) {
     Kernel::Thread* thread = Kernel::GetCurrentThread();
 
-    // Check if 'handles' is invalid
-    if (handles == nullptr)
+    if (!Memory::IsValidVirtualAddress(handles_address))
         return Kernel::ERR_INVALID_POINTER;
 
     // NOTE: on real hardware, there is no nullptr check for 'out' (tested with firmware 4.4). If
@@ -329,7 +328,8 @@ static ResultCode WaitSynchronizationN(s32* out, Kernel::Handle* handles, s32 ha
     std::vector<ObjectPtr> objects(handle_count);
 
     for (int i = 0; i < handle_count; ++i) {
-        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handles[i]);
+        Kernel::Handle handle = Memory::Read32(handles_address + i * sizeof(Kernel::Handle));
+        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handle);
         if (object == nullptr)
             return ERR_INVALID_HANDLE;
         objects[i] = object;
@@ -485,10 +485,9 @@ static ResultCode ReceiveIPCRequest(Kernel::SharedPtr<Kernel::ServerSession> ser
 }
 
 /// In a single operation, sends a IPC reply and waits for a new request.
-static ResultCode ReplyAndReceive(s32* index, Kernel::Handle* handles, s32 handle_count,
+static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_count,
                                   Kernel::Handle reply_target) {
-    // 'handles' has to be a valid pointer even if 'handle_count' is 0.
-    if (handles == nullptr)
+    if (!Memory::IsValidVirtualAddress(handles_address))
         return Kernel::ERR_INVALID_POINTER;
 
     // Check if 'handle_count' is invalid
@@ -499,7 +498,8 @@ static ResultCode ReplyAndReceive(s32* index, Kernel::Handle* handles, s32 handl
     std::vector<ObjectPtr> objects(handle_count);
 
     for (int i = 0; i < handle_count; ++i) {
-        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handles[i]);
+        Kernel::Handle handle = Memory::Read32(handles_address + i * sizeof(Kernel::Handle));
+        auto object = Kernel::g_handle_table.Get<Kernel::WaitObject>(handle);
         if (object == nullptr)
             return ERR_INVALID_HANDLE;
         objects[i] = object;
@@ -663,8 +663,10 @@ static void Break(u8 break_reason) {
 }
 
 /// Used to output a message on a debug hardware unit - does nothing on a retail unit
-static void OutputDebugString(const char* string, int len) {
-    LOG_DEBUG(Debug_Emulated, "%.*s", len, string);
+static void OutputDebugString(VAddr address, int len) {
+    std::vector<char> string(len);
+    Memory::ReadBlock(address, string.data(), len);
+    LOG_DEBUG(Debug_Emulated, "%.*s", len, string.data());
 }
 
 /// Get resource limit
@@ -1341,7 +1343,6 @@ struct FunctionDef {
     Func* func;
     const char* name;
 };
-
 } // namespace
 
 static const FunctionDef SVC_Table[] = {
