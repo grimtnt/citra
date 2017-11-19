@@ -119,7 +119,6 @@ public:
     void PushCurrentPIDHandle();
 
     [[deprecated]] void PushStaticBuffer(VAddr buffer_vaddr, size_t size, u8 buffer_id);
-
     void PushStaticBuffer(const std::vector<u8>& buffer, u8 buffer_id);
 
     void PushMappedBuffer(VAddr buffer_vaddr, size_t size, MappedBufferPermissions perms);
@@ -203,7 +202,7 @@ inline void RequestBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 b
 
     Push(StaticBufferDesc(buffer.size(), buffer_id));
     // This address will be replaced by the correct static buffer address during IPC translation.
-    Push<VAddr>(0);
+    Push<VAddr>(0xDEADC0DE);
 
     context->AddStaticBuffer(buffer_id, buffer);
 }
@@ -483,8 +482,8 @@ inline const std::vector<u8>& RequestParser::PopStaticBuffer() {
     // Pop the address from the incoming request buffer
     Pop<VAddr>();
 
-    StaticBufferDescInfo bufferInfo{sbuffer_descriptor};
-    return context->GetStaticBuffer(bufferInfo.buffer_id);
+    StaticBufferDescInfo buffer_info{sbuffer_descriptor};
+    return context->GetStaticBuffer(buffer_info.buffer_id);
 }
 
 inline VAddr RequestParser::PopMappedBuffer(size_t* data_size,

@@ -46,13 +46,13 @@ void HLERequestContext::ClearIncomingObjects() {
 }
 
 const std::vector<u8>& HLERequestContext::GetStaticBuffer(u8 buffer_id) const {
-    auto itr = static_buffers.find(buffer_id);
-    ASSERT_MSG(itr != static_buffers.end(), "Unknown static buffer id!");
-    return itr->second;
+    ASSERT_MSG(!static_buffers[buffer_id].empty(), "Empty static buffer!");
+    return static_buffers[buffer_id];
 }
 
-void HLERequestContext::AddStaticBuffer(u8 buffer_id, const std::vector<u8>& data) {
-    static_buffers[buffer_id] = data;
+void HLERequestContext::AddStaticBuffer(u8 buffer_id, std::vector<u8> data) {
+    ASSERT(static_buffers[buffer_id].empty() && !data.empty());
+    static_buffers[buffer_id] = std::move(data);
 }
 
 ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* src_cmdbuf,
@@ -97,13 +97,13 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
         }
         case IPC::DescriptorType::StaticBuffer: {
             VAddr source_address = src_cmdbuf[i];
-            IPC::StaticBufferDescInfo bufferInfo{descriptor};
+            IPC::StaticBufferDescInfo buffer_info{descriptor};
 
             // Copy the input buffer into our own vector and store it.
-            std::vector<u8> data(bufferInfo.size);
-            Memory::ReadBlock(source_address, data.data(), data.size());
+            std::vector<u8> data(buffer_info.size);
+            Memory::ReadBlock(src_process, source_address, data.data(), data.size());
 
-            static_buffers[bufferInfo.buffer_id] = std::move(data);
+            AddStaticBuffer(buffer_info.buffer_id, std::move(data));
             cmd_buf[i++] = source_address;
             break;
         }
@@ -148,21 +148,20 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
             break;
         }
         case IPC::DescriptorType::StaticBuffer: {
-            IPC::StaticBufferDescInfo bufferInfo{descriptor};
+            IPC::StaticBufferDescInfo buffer_info{descriptor};
 
-            const auto& data = GetStaticBuffer(bufferInfo.buffer_id);
+            const auto& data = GetStaticBuffer(buffer_info.buffer_id);
 
             // Grab the address that the target thread set up to receive the response static buffer
             // and write our data there. The static buffers area is located right after the command
             // buffer area.
-            IPC::StaticBufferDescInfo target_descriptor{
-                dst_cmdbuf[IPC::COMMAND_BUFFER_LENGTH + 2 * bufferInfo.buffer_id]};
-            VAddr target_address =
-                dst_cmdbuf[IPC::COMMAND_BUFFER_LENGTH + 2 * bufferInfo.buffer_id + 1];
+            size_t static_buffer_offset = IPC::COMMAND_BUFFER_LENGTH + 2 * buffer_info.buffer_id;
+            IPC::StaticBufferDescInfo target_descriptor{dst_cmdbuf[static_buffer_offset]};
+            VAddr target_address = dst_cmdbuf[static_buffer_offset + 1];
 
             ASSERT_MSG(target_descriptor.size >= data.size(), "Static buffer data is too big");
 
-            Memory::WriteBlock(target_address, data.data(), data.size());
+            Memory::WriteBlock(dst_process, target_address, data.data(), data.size());
 
             dst_cmdbuf[i++] = target_address;
             break;
