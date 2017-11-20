@@ -121,6 +121,7 @@ struct Values {
     std::string sink_id;
     bool enable_audio_stretching;
     std::string audio_device_id;
+    u32 headphones_connected;
     
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;
