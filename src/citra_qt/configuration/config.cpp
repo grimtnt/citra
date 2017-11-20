@@ -105,7 +105,7 @@ void Config::ReadValues() {
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
     Settings::values.headphones_connected =
-        static_cast<u32>(qt_config->value("headphones_connected").toInt());
+        static_cast<u32>(qt_config->value("headphones_connected", 0).toInt());
     qt_config->endGroup();
 
     using namespace Service::CAM;
