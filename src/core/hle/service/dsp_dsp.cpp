@@ -15,7 +15,6 @@
 #include "core/hle/result.h"
 #include "core/hle/service/dsp_dsp.h"
 #include "core/memory.h"
-#include "core/settings.h"
 
 using DspPipe = DSP::HLE::DspPipe;
 
@@ -484,7 +483,9 @@ static void GetHeadphoneStatus(Service::Interface* self) {
 
     cmd_buff[0] = IPC::MakeHeader(0x1F, 2, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = Settings::values.headphones_connected; // Read from settings
+    cmd_buff[2] = 0;                  // Not using headphones
+
+    LOG_DEBUG(Service_DSP, "called");
 }
 
 /**

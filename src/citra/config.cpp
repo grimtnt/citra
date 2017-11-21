@@ -123,8 +123,6 @@ void Config::ReadValues() {
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");
-    Settings::values.headphones_connected =
-        static_cast<u32>(sdl2_config->GetInteger("Audio", "headphones_connected", 0));
     
     // Data Storage
     Settings::values.use_virtual_sd =

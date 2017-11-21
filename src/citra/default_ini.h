@@ -135,10 +135,6 @@ output_engine =
 # 0: No, 1 (default): Yes
 enable_audio_stretching =
 
-# Headphones connected
-# 0: No (default), 1: Yes
-headphones_connected =
-
 # Which audio device to use.
 # auto (default): Auto-select
 output_device =
