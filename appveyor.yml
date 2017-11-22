@@ -107,8 +107,9 @@ after_build:
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-room.exe" | Copy-Item -destination $RELEASE_DIST
                     
-          # copy translation
+          # copy translation and wip updater
           Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
+          Copy-Item -path "$CMAKE_SOURCE_DIR/updater-mingw.ps1" -destination "$RELEASE_DIST/updater.ps1"
 
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
