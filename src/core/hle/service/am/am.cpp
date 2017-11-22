@@ -283,12 +283,13 @@ bool CIAFile::Close() const {
 
 void CIAFile::Flush() const {}
 
-bool InstallCIA(const std::string& path, std::function<ProgressCallback>&& update_callback) {
+InstallStatus InstallCIA(const std::string& path,
+                         std::function<ProgressCallback>&& update_callback) {
     LOG_INFO(Service_AM, "Installing %s...", path.c_str());
 
     if (!FileUtil::Exists(path)) {
         LOG_ERROR(Service_AM, "File %s does not exist!", path.c_str());
-        return false;
+        return InstallStatus::ErrorFileNotFound;
     }
 
     FileSys::CIAContainer container;
@@ -296,9 +297,17 @@ bool InstallCIA(const std::string& path, std::function<ProgressCallback>&& updat
         Service::AM::CIAFile installFile(
             Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID()));
 
+        for (size_t i = 0; i < container.GetTitleMetadata().GetContentCount(); i++) {
+            if (container.GetTitleMetadata().GetContentTypeByIndex(i) &
+                FileSys::TMDContentTypeFlag::Encrypted) {
+                LOG_ERROR(Service_AM, "File %s is encrypted! Aborting...", path.c_str());
+                return InstallStatus::ErrorEncrypted;
+            }
+        }
+
         FileUtil::IOFile file(path, "rb");
         if (!file.IsOpen())
-            return false;
+            return InstallStatus::ErrorFailedToOpenFile;
 
         std::array<u8, 0x10000> buffer;
         size_t total_bytes_read = 0;
@@ -312,18 +321,18 @@ bool InstallCIA(const std::string& path, std::function<ProgressCallback>&& updat
             if (result.Failed()) {
                 LOG_ERROR(Service_AM, "CIA file installation aborted with error code %08x",
                           result.Code());
-                return false;
+                return InstallStatus::ErrorAborted;
             }
             total_bytes_read += bytes_read;
         }
         installFile.Close();
 
         LOG_INFO(Service_AM, "Installed %s successfully.", path.c_str());
-        return true;
+        return InstallStatus::Success;
     }
 
     LOG_ERROR(Service_AM, "CIA file %s is invalid!", path.c_str());
-    return false;
+    return InstallStatus::ErrorInvalid;
 }
 
 Service::FS::MediaType GetTitleMediaType(u64 titleId) {

@@ -36,15 +36,15 @@ inline s64 msToCycles(int ms) {
 }
 
 inline s64 msToCycles(float ms) {
-    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * ms * (0.001f));
+    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * (0.001f) * ms);
 }
 
 inline s64 msToCycles(double ms) {
-    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * ms * (0.001));
+    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * (0.001) * ms);
 }
 
 inline s64 usToCycles(float us) {
-    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * us * (0.000001f));
+    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * (0.000001f) * us);
 }
 
 inline s64 usToCycles(int us) {
@@ -60,7 +60,7 @@ inline s64 usToCycles(s64 us) {
         LOG_DEBUG(Core_Timing, "Time very big, do rounding");
         return BASE_CLOCK_RATE_ARM11 * (us / 1000000);
     }
-    return BASE_CLOCK_RATE_ARM11 * us / 1000000;
+    return (BASE_CLOCK_RATE_ARM11 * us) / 1000000;
 }
 
 inline s64 usToCycles(u64 us) {
@@ -72,11 +72,11 @@ inline s64 usToCycles(u64 us) {
         LOG_DEBUG(Core_Timing, "Time very big, do rounding");
         return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us / 1000000);
     }
-    return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us) / 1000000;
+    return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(us)) / 1000000;
 }
 
 inline s64 nsToCycles(float ns) {
-    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * ns * 0.000000001f);
+    return static_cast<s64>(BASE_CLOCK_RATE_ARM11 * (0.000000001f) * ns);
 }
 
 inline s64 nsToCycles(int ns) {
@@ -92,7 +92,7 @@ inline s64 nsToCycles(s64 ns) {
         LOG_DEBUG(Core_Timing, "Time very big, do rounding");
         return BASE_CLOCK_RATE_ARM11 * (ns / 1000000000);
     }
-    return BASE_CLOCK_RATE_ARM11 * ns / 1000000000;
+    return (BASE_CLOCK_RATE_ARM11 * ns) / 1000000000;
 }
 
 inline s64 nsToCycles(u64 ns) {
@@ -104,7 +104,7 @@ inline s64 nsToCycles(u64 ns) {
         LOG_DEBUG(Core_Timing, "Time very big, do rounding");
         return BASE_CLOCK_RATE_ARM11 * (static_cast<s64>(ns) / 1000000000);
     }
-    return BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns) / 1000000000;
+    return (BASE_CLOCK_RATE_ARM11 * static_cast<s64>(ns)) / 1000000000;
 }
 
 inline u64 cyclesToNs(s64 cycles) {
@@ -141,8 +141,7 @@ void AddTicks(u64 ticks);
 struct EventType;
 
 /**
- * Returns the event_type identifier. if name is not unique, an existing event_type will be
- * discarded.
+ * Returns the event_type identifier. if name is not unique, it will assert.
  */
 EventType* RegisterEvent(const std::string& name, TimedCallback callback);
 void UnregisterAllEvents();
@@ -166,7 +165,7 @@ void UnscheduleEvent(const EventType* event_type, u64 userdata);
 
 /// We only permit one event of each type in the queue at a time.
 void RemoveEvent(const EventType* event_type);
-void RemoveAllEvents(const EventType* event_type);
+void RemoveNormalAndThreadsafeEvent(const EventType* event_type);
 
 /** Advance must be called at the beginning of dispatcher loops, not the end. Advance() ends
  * the previous timing slice and begins the next one, you must Advance from the previous

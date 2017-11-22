@@ -12,9 +12,9 @@
 #include <unordered_map>
 #include <vector>
 #include "common/assert.h"
-#include "common/fifo_queue.h"
 #include "common/logging/log.h"
 #include "common/thread.h"
+#include "common/threadsafe_queue.h"
 
 namespace CoreTiming {
 
@@ -53,14 +53,17 @@ static std::unordered_map<std::string, EventType> event_types;
 // by the standard adaptor class.
 static std::vector<Event> event_queue;
 static u64 event_fifo_id;
-static std::mutex ts_write_lock;
-static Common::FifoQueue<Event, false> ts_queue;
+// the queue for storing the events from other threads threadsafe until they will be added
+// to the event_queue by the emu thread
+static Common::MPSCQueue<Event, false> ts_queue;
 
 static constexpr int MAX_SLICE_LENGTH = 20000;
 
 static s64 idled_cycles;
 
 // Are we in a function that has been called from Advance()
+// If events are sheduled from a function that gets called from Advance(),
+// don't change slice_length and downcount.
 static bool is_global_timer_sane;
 
 static EventType* ev_lost = nullptr;
@@ -103,7 +106,6 @@ void Init() {
 }
 
 void Shutdown() {
-    std::lock_guard<std::mutex> lock(ts_write_lock);
     MoveEvents();
     ClearPendingEvents();
     UnregisterAllEvents();
@@ -132,7 +134,7 @@ void ClearPendingEvents() {
 }
 
 void ScheduleEvent(s64 cycles_into_future, const EventType* event_type, u64 userdata) {
-    ASSERT_MSG(event_type, "Event type is nullptr, will crash now.");
+    ASSERT(event_type != nullptr);
     s64 timeout = GetTicks() + cycles_into_future;
 
     // If this event needs to be scheduled before the next advance(), force one early
@@ -144,7 +146,6 @@ void ScheduleEvent(s64 cycles_into_future, const EventType* event_type, u64 user
 }
 
 void ScheduleEventThreadsafe(s64 cycles_into_future, const EventType* event_type, u64 userdata) {
-    std::lock_guard<std::mutex> lock(ts_write_lock);
     ts_queue.Push(Event{global_timer + cycles_into_future, 0, userdata, event_type});
 }
 
@@ -171,7 +172,7 @@ void RemoveEvent(const EventType* event_type) {
     }
 }
 
-void RemoveAllEvents(const EventType* event_type) {
+void RemoveNormalAndThreadsafeEvent(const EventType* event_type) {
     MoveEvents();
     RemoveEvent(event_type);
 }

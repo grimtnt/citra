@@ -10,51 +10,51 @@
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
-
+#include <mutex>
 #include "common/common_types.h"
 
 namespace Common {
 template <typename T, bool NeedSize = true>
-class FifoQueue {
+class SPSCQueue {
 public:
-    FifoQueue() : m_size(0) {
-        m_write_ptr = m_read_ptr = new ElementPtr();
+    SPSCQueue() : size(0) {
+        write_ptr = read_ptr = new ElementPtr();
     }
-    ~FifoQueue() {
+    ~SPSCQueue() {
         // this will empty out the whole queue
-        delete m_read_ptr;
+        delete read_ptr;
     }
 
     u32 Size() const {
         static_assert(NeedSize, "using Size() on FifoQueue without NeedSize");
-        return m_size.load();
+        return size.load();
     }
 
     bool Empty() const {
-        return !m_read_ptr->next.load();
+        return !read_ptr->next.load();
     }
     T& Front() const {
-        return m_read_ptr->current;
+        return read_ptr->current;
     }
     template <typename Arg>
     void Push(Arg&& t) {
         // create the element, add it to the queue
-        m_write_ptr->current = std::forward<Arg>(t);
+        write_ptr->current = std::forward<Arg>(t);
         // set the next pointer to a new element ptr
         // then advance the write pointer
         ElementPtr* new_ptr = new ElementPtr();
-        m_write_ptr->next.store(new_ptr, std::memory_order_release);
-        m_write_ptr = new_ptr;
+        write_ptr->next.store(new_ptr, std::memory_order_release);
+        write_ptr = new_ptr;
         if (NeedSize)
-            m_size++;
+            size++;
     }
 
     void Pop() {
         if (NeedSize)
-            m_size--;
-        ElementPtr* tmpptr = m_read_ptr;
+            size--;
+        ElementPtr* tmpptr = read_ptr;
         // advance the read pointer
-        m_read_ptr = tmpptr->next.load();
+        read_ptr = tmpptr->next.load();
         // set the next element to nullptr to stop the recursive deletion
         tmpptr->next.store(nullptr);
         delete tmpptr; // this also deletes the element
@@ -65,10 +65,10 @@ public:
             return false;
 
         if (NeedSize)
-            m_size--;
+            size--;
 
-        ElementPtr* tmpptr = m_read_ptr;
-        m_read_ptr = tmpptr->next.load(std::memory_order_acquire);
+        ElementPtr* tmpptr = read_ptr;
+        read_ptr = tmpptr->next.load(std::memory_order_acquire);
         t = std::move(tmpptr->current);
         tmpptr->next.store(nullptr);
         delete tmpptr;
@@ -77,9 +77,9 @@ public:
 
     // not thread-safe
     void Clear() {
-        m_size.store(0);
-        delete m_read_ptr;
-        m_write_ptr = m_read_ptr = new ElementPtr();
+        size.store(0);
+        delete read_ptr;
+        write_ptr = read_ptr = new ElementPtr();
     }
 
 private:
@@ -99,8 +99,24 @@ private:
         std::atomic<ElementPtr*> next;
     };
 
-    ElementPtr* m_write_ptr;
-    ElementPtr* m_read_ptr;
-    std::atomic<u32> m_size;
+    ElementPtr* write_ptr;
+    ElementPtr* read_ptr;
+    std::atomic<u32> size;
+};
+
+// a simple thread-safe,
+// single reader, multiple writer queue
+
+template <typename T, bool NeedSize = true>
+class MPSCQueue : public SPSCQueue<T, NeedSize> {
+public:
+    template <typename Arg>
+    void Push(Arg&& t) {
+        std::lock_guard<std::mutex> lock(write_lock);
+        SPSCQueue<T, NeedSize>::Push(t);
+    }
+
+private:
+    std::mutex write_lock;
 };
 } // namespace Common
