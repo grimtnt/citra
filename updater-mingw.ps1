@@ -1,3 +1,4 @@
+Write-Host WIP
 $releases = "https://api.github.com/repos/acnleditor2/citra/releases"
 $tag = (Invoke-WebRequest $releases | ConvertFrom-Json)[0].tag_name
 $assets = (Invoke-WebRequest $releases | ConvertFrom-Json)[0].assets_url
