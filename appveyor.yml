@@ -89,6 +89,7 @@ after_build:
           mkdir $RELEASE_DIST
           Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse
           Copy-Item .\license.txt -Destination $RELEASE_DIST\2.license.txt
+          Copy-Item .\updater-msvc.ps1 -Destination $RELEASE_DIST/updater.ps1
           Copy-Item ".\Text Files\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
         } else {
