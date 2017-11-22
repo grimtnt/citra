@@ -136,8 +136,6 @@ public:
 
     void InitRenderTarget();
 
-    void SeparateFromMainWindow(bool separate);
-
 public slots:
     void moveContext(); // overridden
 
@@ -148,8 +146,6 @@ public slots:
 signals:
     /// Emitted when the window is closed
     void Closed();
-    /// Emitted when clicking on shortcut
-    void ExitFullscreen();
 
 private:
     void OnMinimalClientAreaChangeRequest(

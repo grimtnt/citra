@@ -305,17 +305,17 @@ void GMainWindow::InitializeHotkeys() {
     connect(GetHotkey("Main Window", "Swap Screens", render_window), SIGNAL(activated()), this,
             SLOT(OnSwapScreens()));
     connect(GetHotkey("Main Window", "Fullscreen", render_window), &QShortcut::activated,
-             ui.action_Fullscreen, &QAction::trigger);
+            ui.action_Fullscreen, &QAction::trigger);
     connect(GetHotkey("Main Window", "Fullscreen", render_window), &QShortcut::activatedAmbiguously,
-             ui.action_Fullscreen, &QAction::trigger);
+            ui.action_Fullscreen, &QAction::trigger);
     connect(GetHotkey("Main Window", "Exit Fullscreen", this), &QShortcut::activated, this, [&] {
-         if (emulation_running) {
-             ui.action_Fullscreen->setChecked(false);
-             ToggleFullscreen();
-         }
-     });
- }
- 
+        if (emulation_running) {
+            ui.action_Fullscreen->setChecked(false);
+            ToggleFullscreen();
+        }
+    });
+}
+
 void GMainWindow::ShowUpdaterWidgets() {
     ui.action_Check_For_Updates->setVisible(UISettings::values.updater_found);
     ui.action_Open_Maintenance_Tool->setVisible(UISettings::values.updater_found);
@@ -815,28 +815,28 @@ void GMainWindow::OnStopGame() {
 }
 
 void GMainWindow::ToggleFullscreen() {
-     if (!emulation_running) {
-         return;
-     }
-     if (ui.action_Fullscreen->isChecked()) {
-         if (ui.action_Single_Window_Mode->isChecked()) {
-             ui.menubar->hide();
-             statusBar()->hide();
-             showFullScreen();
-         } else {
-             render_window->showFullScreen();
-         }
-     } else {
-         if (ui.action_Single_Window_Mode->isChecked()) {
-             statusBar()->setVisible(ui.action_Show_Status_Bar->isChecked());
-             ui.menubar->show();
-             showNormal();
-         } else {
-             render_window->showNormal();
-         }
-     }
- }
- 
+    if (!emulation_running) {
+        return;
+    }
+    if (ui.action_Fullscreen->isChecked()) {
+        if (ui.action_Single_Window_Mode->isChecked()) {
+            ui.menubar->hide();
+            statusBar()->hide();
+            showFullScreen();
+        } else {
+            render_window->showFullScreen();
+        }
+    } else {
+        if (ui.action_Single_Window_Mode->isChecked()) {
+            statusBar()->setVisible(ui.action_Show_Status_Bar->isChecked());
+            ui.menubar->show();
+            showNormal();
+        } else {
+            render_window->showNormal();
+        }
+    }
+}
+
 void GMainWindow::ToggleWindowMode() {
     if (ui.action_Single_Window_Mode->isChecked()) {
         // Render in the main window...
@@ -844,7 +844,6 @@ void GMainWindow::ToggleWindowMode() {
         ui.horizontalLayout->addWidget(render_window);
         render_window->setFocusPolicy(Qt::ClickFocus);
 	    
-	render_window->SeparateFromMainWindow(false);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->setFocus();
@@ -855,7 +854,6 @@ void GMainWindow::ToggleWindowMode() {
         ui.horizontalLayout->removeWidget(render_window);
         render_window->setParent(nullptr);
         render_window->setFocusPolicy(Qt::NoFocus);
-	render_window->SeparateFromMainWindow(true);
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->RestoreGeometry();
@@ -1019,7 +1017,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
                "Upload the Log File</a>.<br/><br/>Would you like to quit back to the game list? "
                "Continuing emulation may result in crashes, corrupted save data, or other bugs."),
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = tr("Fatal Error Encountred");
+        status_message = tr("Fatal Error encountered");
         break;
     }
 
@@ -1114,12 +1112,6 @@ void GMainWindow::dragEnterEvent(QDragEnterEvent* event) {
 
 void GMainWindow::dragMoveEvent(QDragMoveEvent* event) {
     event->acceptProposedAction();
-}
-
-void GMainWindow::keyPressEvent(QKeyEvent* event) {
-if (event->key() == Qt::Key_Pause && emulation_running) {
-         OnPauseGame();
-    }
 }
 
 bool GMainWindow::ConfirmChangeGame() {

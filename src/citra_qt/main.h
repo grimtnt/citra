@@ -98,7 +98,7 @@ private:
     void InitializeDebugWidgets();
     void InitializeRecentFileMenuActions();
     void InitializeHotkeys();
-	
+
     void SetDefaultUIGeometry();
     void RestoreUIState();
 
@@ -174,12 +174,12 @@ private slots:
     void OnUpdateFound(bool found, bool error);
     void OnCheckForUpdates();
     void OnOpenUpdater();
- 
+
 private:
     void UpdateStatusBar();
     void LoadTranslation();
     void SetupUIStrings();
-	
+
     Ui::MainWindow ui;
 
     GRenderWindow* render_window;
@@ -232,7 +232,6 @@ protected:
     void dropEvent(QDropEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
-    void keyPressEvent(QKeyEvent* event) override;
 };
 
 Q_DECLARE_METATYPE(Common::WebResult);

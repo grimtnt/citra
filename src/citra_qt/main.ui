@@ -154,9 +154,6 @@
    <property name="text">
     <string>&amp;Start</string>
    </property>
-    <property name="shortcut">
-     <string>Pause</string>
-    </property>
   </action>
   <action name="action_Pause">
    <property name="enabled">
@@ -165,9 +162,6 @@
    <property name="text">
     <string>&amp;Pause</string>
    </property>
-    <property name="shortcut">
-     <string>Pause</string>
-    </property>
   </action>
   <action name="action_Stop">
    <property name="enabled">
@@ -279,7 +273,15 @@
     <string>Chat</string>
    </property>
   </action>
-    <action name="action_Open_Maintenance_Tool">
+  <action name="action_Fullscreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fullscreen</string>
+   </property>
+  </action>
+  <action name="action_Open_Maintenance_Tool">
    <property name="text">
     <string>Modify Citra Install</string>
    </property>
@@ -302,15 +304,6 @@
       <string>Load Translation File...</string>
      </property>
     </action>
-   <action name="action_Fullscreen">
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>Fullscreen</string>
-    </property>
-   </action>
  </widget>
  <resources/>
- <connections/>
 </ui>
