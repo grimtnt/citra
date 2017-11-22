@@ -31,6 +31,7 @@ class RegistersWidget;
 class Updater;
 class WaitTreeWidget;
 class AboutDialog;
+class CheatDialog;
 
 // Multiplayer forward declarations
 class Lobby;
@@ -222,7 +223,7 @@ private:
 
     Network::RoomMember::CallbackHandle<Network::RoomMember::State> state_callback_handle;
 
-    std::shared_ptr<class CheatDialog> cheatWindow;
+    std::shared_ptr<CheatDialog> cheatWindow;
 
     QAction* actions_recent_files[max_recent_files_item];
 
