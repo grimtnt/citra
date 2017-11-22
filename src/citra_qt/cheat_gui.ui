@@ -19,7 +19,7 @@
     <property name="windowTitle">
       <string>Cheats</string>
     </property>
-    <widget class="QLabel" name="labelInfoTitle">
+    <widget class="QLabel" name="labelInfoTitles">
       <property name="geometry">
         <rect>
           <x>10</x>
@@ -34,7 +34,7 @@
         </font>
       </property>
       <property name="text">
-        <string>The Cheats are for all Titles.</string>
+        <string>labelInfoTitles</string>
       </property>
     </widget>
     <widget class="QLabel" name="labelInfoApply">
@@ -52,7 +52,7 @@
         </font>
       </property>
       <property name="text">
-        <string>Restart game to apply.</string>
+        <string>labelInfoApply</string>
       </property>
     </widget>
     <widget class="QWidget" name="horizontalLayoutWidget">
