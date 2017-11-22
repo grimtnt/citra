@@ -40,8 +40,8 @@
     <widget class="QLabel" name="labelInfoApply">
       <property name="geometry">
         <rect>
-          <x>20</x>
-          <y>20</y>
+          <x>10</x>
+          <y>25</y>
           <width>300</width>
           <height>31</height>
         </rect>
