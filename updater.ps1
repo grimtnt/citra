@@ -54,6 +54,10 @@ Remove-Item "citra" -Force -Recurse
 Remove-Item "citra.zip" -Force
 start citra-qt.exe
 } catch {
-  Write-Host $error[0]
+  if ($error[0].ToString().Contains("API rate limit exceeded")) {
+      Write-Host "Bandwidth limit (60MB) exceeded, wait." -ForegroundColor Red
+  } else {
+      Write-Host $error[0] -ForegroundColor Red
+  }
   Pause
 }
