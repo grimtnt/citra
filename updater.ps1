@@ -1,5 +1,7 @@
 $progressPreference = 'silentlyContinue'
+Write-Host "Updating to latest unstable version..."
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/acnleditor2/citra/master/updater.ps1" -OutFile "updater.ps1"
+cls
 if (-not (Test-Path updater.cfg)) {
     Add-Content updater.cfg 0
     Add-Content updater.cfg 0
