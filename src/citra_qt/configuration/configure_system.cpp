@@ -74,7 +74,7 @@ void ConfigureSystem::ReadSystemSettings() {
 
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
-    country_index = ui->country_spinbox->value;
+    country_index = ui->spinbox_country->value;
     ui->spinbox_country->setValue(country_index);
 
     // set sound output mode
@@ -121,7 +121,7 @@ void ConfigureSystem::applyConfiguration() {
     // apply country
     int new_country = ui->spinbox_country->value();
     if (country_index != new_country) {
-        Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value()));
+        Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value());
         modified = true;
     }
 
