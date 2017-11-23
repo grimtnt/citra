@@ -89,7 +89,9 @@ after_build:
           mkdir $RELEASE_DIST
           Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse
           Copy-Item .\license.txt -Destination $RELEASE_DIST\2.license.txt
-          Copy-Item .\updater-msvc.ps1 -Destination $RELEASE_DIST/updater.ps1
+          Copy-Item .\updater.ps1 -Destination $RELEASE_DIST\updater.ps1
+          Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
+          Add-Content -Path $RELEASE_DIST\updater.cfg -Value 1
           Copy-Item ".\Text Files\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
         } else {
@@ -108,14 +110,16 @@ after_build:
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-room.exe" | Copy-Item -destination $RELEASE_DIST
                     
-          # copy translation and wip updater
+          # copy translation and updater
           Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR/updater-mingw.ps1" -destination "$RELEASE_DIST/updater.ps1"
 
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR/Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST/1.ReadMe First.txt"
-          Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination "$RELEASE_DIST/2.license.txt"
+          Copy-Item -path "$CMAKE_SOURCE_DIR\Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST\1.ReadMe First.txt"
+          Copy-Item -path "$CMAKE_SOURCE_DIR\license.txt" -destination "$RELEASE_DIST\2.license.txt"
+          Copy-Item -path "$CMAKE_SOURCE_DIR\updater.ps1" -destination "$RELEASE_DIST\updater.ps1"
+          Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
+          Add-Content -Path $RELEASE_DIST\updater.cfg -Value 0
           # copy all the dll dependencies to the release folder
           # hardcoded list because we don't build static and determining the list of dlls from the binary is a pain.
           $MingwDLLs = "Qt5Core.dll","Qt5Widgets.dll","Qt5Gui.dll","Qt5OpenGL.dll",
