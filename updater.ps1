@@ -3,8 +3,8 @@ Write-Host "Updating to latest unstable version..."
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/acnleditor2/citra/master/updater.ps1" -OutFile "updater.ps1"
 cls
 if (-not (Test-Path updater.cfg)) {
-    Add-Content updater.cfg 0
-    Add-Content updater.cfg 0
+    Add-Content -Path updater.cfg -Value 0
+    Add-Content -Path updater.cfg -Value 0
 }
 try {
 cls
@@ -13,26 +13,28 @@ $type = (Get-Content updater.cfg)[1]
 if ($type -cgt 1) {
     throw "Invalid build type option"
 }
+$releases = "https://api.github.com/repos/acnleditor2/citra/releases"
+$latest_release = (Invoke-WebRequest $releases | ConvertFrom-Json)[0]
 $local_commit = (Get-Content updater.cfg)[0]
+$latest_commit = $latest_release.target_commitish.Remove(7, 33)
 if ($local_commit -eq $latest_commit) {
 if (Test-Path citra-qt.exe) {
     start citra-qt.exe
 }
     Break
 }
-$releases = "https://api.github.com/repos/acnleditor2/citra/releases"
-$latest_release = (Invoke-WebRequest $releases | ConvertFrom-Json)[0]
-$latest_commit = $latest_release.target_commitish.Remove(7, 33)
 $tag = $latest_release.tag_name
-$assets = $latest_release.assets_url
+$assets = (Invoke-WebRequest $latest_release.assets_url | ConvertFrom-Json)
 if ($type -eq 0) {
-    $file = (Invoke-WebRequest $assets | ConvertFrom-Json)[0].name
+    $file = $assets[0].name
+    $size = [math]::round($assets[0].size / 1Mb, 0)
 } elseif ($type -eq 1) {
-    $file = (Invoke-WebRequest $assets | ConvertFrom-Json)[1].name
+    $file = $assets[1].name
+    $size = [math]::round($assets[1].size / 1Mb, 0)
 }
 $download = "https://github.com/acnleditor2/citra/releases/download/$tag/$file"
 cls
-Write-Host "Downloading Citra..."
+Write-Host "Downloading Citra (Size: $size MB)..."
 Invoke-WebRequest $download -Out "citra.zip"
 cls
 Write-Host "Extracting Citra..."
