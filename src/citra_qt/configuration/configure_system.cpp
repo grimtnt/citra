@@ -72,6 +72,11 @@ void ConfigureSystem::ReadSystemSettings() {
     language_index = Service::CFG::GetSystemLanguage();
     ui->combo_language->setCurrentIndex(language_index);
 
+    // set country
+    std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
+    country_index = ui->country_spinbox->value;
+    ui->spinbox_country->setValue(country_index);
+
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
     ui->combo_sound->setCurrentIndex(sound_index);
@@ -110,6 +115,13 @@ void ConfigureSystem::applyConfiguration() {
     int new_language = ui->combo_language->currentIndex();
     if (language_index != new_language) {
         Service::CFG::SetSystemLanguage(static_cast<Service::CFG::SystemLanguage>(new_language));
+        modified = true;
+    }
+
+    // apply country
+    int new_country = ui->spinbox_country->value();
+    if (country_index != new_country) {
+        Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value()));
         modified = true;
     }
 
