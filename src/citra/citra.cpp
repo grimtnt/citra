@@ -43,14 +43,13 @@
 #include "network/network.h"
 
 static void PrintHelp(const char* argv0) {
-    std::cout << "Usage: " << argv0
-              << " [options] <filename>\n"
-                 "-g, --gdbport=NUMBER Enable gdb stub on port NUMBER\n"
-                 "-i, --install=FILE    Installs a specified CIA file\n"
-                 "-m, --multiplayer=nick:password@address:port"
-                 " Nickname, password, address and port for multiplayer\n"
-                 "-h, --help           Display this help and exit\n"
-                 "-v, --version        Output version information and exit\n";
+    std::cout << "Usage: " << argv0 << " [options] <filename>\n"
+                                       "-g, --gdbport=NUMBER Enable gdb stub on port NUMBER\n"
+                                       "-i, --install=FILE    Installs a specified CIA file\n"
+                                       "-m, --multiplayer=nick:password@address:port"
+                                       " Nickname, password, address and port for multiplayer\n"
+                                       "-h, --help           Display this help and exit\n"
+                                       "-v, --version        Output version information and exit\n";
 }
 
 static void PrintVersion() {
@@ -60,35 +59,39 @@ static void PrintVersion() {
 static void OnStateChanged(const Network::RoomMember::State& state) {
     switch (state) {
     case Network::RoomMember::State::Idle:
-        LOG_INFO(Network, "State: Idle");
+        LOG_DEBUG(Network, "Network is idle");
         break;
     case Network::RoomMember::State::Joining:
-        LOG_INFO(Network, "State: Joining");
+        LOG_DEBUG(Network, "Connection sequence to room started");
         break;
     case Network::RoomMember::State::Joined:
-        LOG_INFO(Network, "State: Joined");
+        LOG_DEBUG(Network, "Successfully joined to the room");
         break;
     case Network::RoomMember::State::LostConnection:
-        LOG_INFO(Network, "State: LostConnection");
+        LOG_DEBUG(Network, "Lost connection to the room");
         break;
     case Network::RoomMember::State::CouldNotConnect:
-        LOG_INFO(Network, "State: CouldNotConnect");
+        LOG_DEBUG(Network, "State: CouldNotConnect");
         exit(1);
         break;
     case Network::RoomMember::State::NameCollision:
-        LOG_INFO(Network, "State: NameCollision");
+        LOG_DEBUG(
+            Network,
+            "You tried to use the same nickname then another user that is connected to the Room");
         exit(1);
         break;
     case Network::RoomMember::State::MacCollision:
-        LOG_INFO(Network, "State: MacCollision");
+        LOG_DEBUG(Network, "You tried to use the same MAC-Address then another user that is "
+                           "connected to the Room");
         exit(1);
         break;
     case Network::RoomMember::State::WrongPassword:
-        LOG_INFO(Network, "State: WrongPassword");
+        LOG_DEBUG(Network, "Room replied with: Wrong password");
         exit(1);
         break;
     case Network::RoomMember::State::WrongVersion:
-        LOG_INFO(Network, "State: WrongVersion");
+        LOG_DEBUG(Network,
+                  "You are using a different version then the room you are trying to connect to");
         exit(1);
         break;
     default:
@@ -118,19 +121,16 @@ int main(int argc, char** argv) {
 #endif
     std::string filepath;
 
-    bool use_multiplayer(false);
+    bool use_multiplayer = false;
     std::string nickname{};
     std::string password{};
     std::string address{};
     u16 port = Network::DefaultRoomPort;
 
     static struct option long_options[] = {
-        {"gdbport", required_argument, 0, 'g'},
-        {"install", required_argument, 0, 'i'},
-        {"multiplayer", required_argument, 0, 'm'},
-        {"help", no_argument, 0, 'h'},
-        {"version", no_argument, 0, 'v'},
-        {0, 0, 0, 0},
+        {"gdbport", required_argument, 0, 'g'},     {"install", required_argument, 0, 'i'},
+        {"multiplayer", required_argument, 0, 'm'}, {"help", no_argument, 0, 'h'},
+        {"version", no_argument, 0, 'v'},           {0, 0, 0, 0},
     };
 
     while (optind < argc) {
@@ -157,30 +157,26 @@ int main(int argc, char** argv) {
                     errno = EINVAL;
                 if (errno != 0)
                     exit(1);
-                break;
             }
             case 'm': {
                 use_multiplayer = true;
                 std::string str_arg(optarg);
-                std::regex re("^([^:\n]+)(?:(.+))?@(.+)(?:([0-9]+))?$");
+                // regex to check if the format is nickname:password@ip:port
+                // with optional :password
+                std::regex re("^([^:]+)(?::(.+))?@([^:]+)(?::([0-9]+))?$");
                 if (!std::regex_match(str_arg, re)) {
                     std::cout << "Wrong format for option --multiplayer\n";
                     PrintHelp(argv[0]);
                     return 0;
                 }
-                std::string sub_str1 = str_arg.substr(0, str_arg.find("@"));
-                std::string sub_str2 =
-                    str_arg.substr(sub_str1.size() + 1, str_arg.size() - sub_str1.size());
-                nickname = sub_str1.substr(0, sub_str1.find(":"));
-                if (nickname.size() != sub_str1.size()) {
-                    password =
-                        sub_str1.substr(nickname.size() + 1, sub_str1.size() - nickname.size());
-                }
-                address = sub_str2.substr(0, sub_str2.find(":"));
-                if (address.size() != sub_str2.size()) {
-                    port = std::stoi(
-                        sub_str2.substr(address.size() + 1, sub_str2.size() - address.size()));
-                }
+
+                std::smatch match;
+                std::regex_search(str_arg, match, re);
+                ASSERT(match.size() == 5);
+                nickname = match[1];
+                password = match[2];
+                address = match[3];
+                port = std::stoi(match[4]);
                 std::regex nickname_re("^[a-zA-Z0-9._- ]+$");
                 if (!std::regex_match(nickname, nickname_re)) {
                     std::cout
@@ -279,8 +275,8 @@ int main(int argc, char** argv) {
         if (auto member = Network::GetRoomMember().lock()) {
             member->BindOnChatMessageRecieved(OnMessageReceived);
             member->BindOnStateChanged(OnStateChanged);
-            LOG_INFO(Network, "Start connection to %s:%u with nickname %s", address.c_str(), port,
-                     nickname.c_str());
+            LOG_DEBUG(Network, "Start connection to %s:%u with nickname %s", address.c_str(), port,
+                      nickname.c_str());
             member->Join(nickname, address.c_str(), port, 0, Network::NoPreferredMac, password);
         } else {
             LOG_ERROR(Network, "Could not access RoomMember");
