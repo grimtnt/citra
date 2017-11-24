@@ -21,7 +21,8 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureSystem::updateBirthdayComboBox);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
-    connect(ui->spinbox_country, qOverload<int>(&QSpinBox::valueChanged), this,
+    connect(ui->spinbox_country,
+            static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
             &ConfigureSystem::checkCountry);
 
     this->setConfiguration();
