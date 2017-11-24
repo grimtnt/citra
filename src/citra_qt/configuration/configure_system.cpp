@@ -21,6 +21,9 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureSystem::updateBirthdayComboBox);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
+    connect(ui->spinbox_country,
+            static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+            &ConfigureSystem::OnCountryChanged);
 
     this->setConfiguration();
 }
@@ -121,7 +124,13 @@ void ConfigureSystem::applyConfiguration() {
     }
 
     // apply country
-    checkCountry();
+    if (!isValidCountry()) {
+        ui->spinbox_country->setValue(1);
+        QString invalid_country_text = tr("Invalid country id, changed to 1.");
+        QMessageBox::critical(this, tr("Warning"), invalid_country_text,
+                                    QMessageBox::Ok);
+    }
+
     int new_country = ui->spinbox_country->value();
     if (country_index != new_country) {
         Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value());
@@ -183,20 +192,35 @@ void ConfigureSystem::refreshConsoleID() {
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
 }
 
-void ConfigureSystem::checkCountry() {
+bool ConfigureSystem::ValidateCountry() {
      if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
-         InvalidCountry();
+         return false;
      } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
-         InvalidCountry();
+         return false;
      } else if (ui->spinbox_country->value() > 121 && ui->spinbox_country->value() < 128) {
-         InvalidCountry();
+         return false;
+     } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
+         return false;
+     } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
+         return false;
+     } else if (ui->spinbox_country->value() > 144 && ui->spinbox_country->value() < 152) {
+         return false;
+     } else if (ui->spinbox_country->value() > 156 && ui->spinbox_country->value() < 160) {
+         return false;
      } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
-         InvalidCountry();
+         return false;
+     } else if (ui->spinbox_country->value() > 177 && ui->spinbox_country->value() < 184) {
+         return false;
      }
+
+     return true;
 }
 
-void ConfigureSystem::InvalidCountry() {
-         QMessageBox::critical(this, tr("Error"), tr("Invalid country id, view country codes, setted to 1."),
-                                      QMessageBox::Ok);
-         ui->spinbox_country->setValue(1);
+void ConfigureSystem::OnCountryChanged() {
+     if (ValidateCountry()) {
+         // TODO(acnleditor2): show country code
+         ui->label_country_name->setText(tr("Valid"));
+     } else {
+         ui->label_country_name->setText(tr("Invalid"));
+     }
 }
