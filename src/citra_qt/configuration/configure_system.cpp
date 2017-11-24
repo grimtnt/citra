@@ -36,6 +36,7 @@ void ConfigureSystem::setConfiguration() {
     if (!enabled) {
         ReadSystemSettings();
         ui->group_system_settings->setEnabled(false);
+        ui->link_country_codes->hide();
     } else {
         // This tab is enabled only when game is not running (i.e. all service are not initialized).
         // Temporarily register archive types and load the config savegame file to memory.
@@ -55,7 +56,6 @@ void ConfigureSystem::setConfiguration() {
         ui->link_country_codes->setText(tr("<a "
                                          "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
         ui->label_disable_info->hide();
-        ui->link_country_codes->hide();
     }
 }
 
