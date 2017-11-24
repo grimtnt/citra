@@ -21,7 +21,8 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureSystem::updateBirthdayComboBox);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
-
+    connect(ui->spinbox_country, &QSpinBox::valueChanged, this,
+            &ConfigureSystem::checkCountry);
     this->setConfiguration();
 }
 
@@ -180,4 +181,22 @@ void ConfigureSystem::refreshConsoleID() {
     Service::CFG::SetConsoleUniqueId(random_number, console_id);
     Service::CFG::UpdateConfigNANDSavegame();
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
+}
+
+void ConfigureSystem::checkCountry() {
+     if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
+         InvalidCountry();
+     } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
+         InvalidCountry();
+     } else if (ui->spinbox_country->value() > 121 && ui->spinbox_country->value() < 128) {
+         InvalidCountry();
+     } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
+         InvalidCountry();
+     }
+}
+
+void ConfigureSystem::InvalidCountry() {
+         QMessageBox::critical(this, tr("Error"), tr("Invalid country id, view country codes"),
+                                      QMessageBox::Ok);
+         ui->spinbox_country->setValue(1);
 }
