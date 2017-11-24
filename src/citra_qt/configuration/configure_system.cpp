@@ -4,6 +4,7 @@
 
 #include <QMessageBox>
 #include "citra_qt/configuration/configure_system.h"
+#include "citra_qt/util/clickable_label.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
 #include "core/country.h"
@@ -25,6 +26,7 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
     connect(ui->spinbox_country,
             static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
             &ConfigureSystem::OnCountryChanged);
+    connect(ui->cl_country, &ClickableLabel::clicked, this, &ConfigureSystem::ShowSelectedCountryCodeString);
 
     this->setConfiguration();
 }
@@ -84,13 +86,6 @@ void ConfigureSystem::ReadSystemSettings() {
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
 
-    if (ValidateCountry()) {
-        ui->label_country_name->setText(
-            QString::fromStdString(Country::GetName(country_index)));
-    } else {
-        ui->label_country_name->setText(tr("Invalid"));
-    }
-
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
     ui->combo_sound->setCurrentIndex(sound_index);
@@ -135,8 +130,8 @@ void ConfigureSystem::applyConfiguration() {
     // apply country
     if (!ValidateCountry()) {
         ui->spinbox_country->setValue(1);
-        QString invalid_country_text = tr("Invalid country id, changed to 1.");
-        QMessageBox::critical(this, tr("Warning"), invalid_country_text,
+        QString error_text = tr("Invalid country id, changed to 1.");
+        QMessageBox::critical(this, tr("Error"), error_text,
                                     QMessageBox::Ok);
     }
 
@@ -201,31 +196,19 @@ void ConfigureSystem::refreshConsoleID() {
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
 }
 
-bool ConfigureSystem::ValidateCountry() {
-     if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
-         return false;
-     } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
-         return false;
-     } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
-         return false;
-     } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
-         return false;
-     } else if (ui->spinbox_country->value() > 155 && ui->spinbox_country->value() < 160) {
-         return false;
-     } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
-         return false;
-     } else if (ui->spinbox_country->value() > 177 && ui->spinbox_country->value() < 184) {
-         return false;
-     }
-
-     return true;
+QString ConfigureSystem::GetSelectedCountryCodeString() {
+     return QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
 }
 
-void ConfigureSystem::OnCountryChanged() {
-     if (ValidateCountry()) {
-         ui->label_country_name->setText(
-             QString::fromStdString(Country::GetName(ui->spinbox_country->value())));
+bool ConfigureSystem::ValidateCountry() {
+     if (GetSelectedCountryCodeString() == "Invalid") {
+         return false;
      } else {
-         ui->label_country_name->setText(tr("Invalid"));
+         return true;
      }
+}
+
+void ConfigureSystem::ShowSelectedCountryCodeString() {
+     QMessageBox::information(this, tr("Country Code String"),
+                              GetSelectedCountryCodeString(), QMessageBox::Ok);
 }
