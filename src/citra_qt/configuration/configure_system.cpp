@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <QMessageBox>
+#include "citra_qt/configuration/country.h"
 #include "citra_qt/configuration/configure_system.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
@@ -84,7 +85,7 @@ void ConfigureSystem::ReadSystemSettings() {
     ui->spinbox_country->setValue(country_index);
 
     if (ValidateCountry()) {
-        ui->label_country_name->setText(tr("Valid"));
+        ui->label_country_name->setText(Country::GetName(country_index));
     } else {
         ui->label_country_name->setText(tr("Invalid"));
     }
@@ -221,7 +222,7 @@ bool ConfigureSystem::ValidateCountry() {
 
 void ConfigureSystem::OnCountryChanged() {
      if (ValidateCountry()) {
-         ui->label_country_name->setText(tr("Valid"));
+         ui->label_country_name->setText(Country::GetName(country_index));
      } else {
          ui->label_country_name->setText(tr("Invalid"));
      }
