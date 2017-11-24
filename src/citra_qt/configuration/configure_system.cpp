@@ -23,6 +23,7 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureSystem::refreshConsoleID);
     connect(ui->spinbox_country, &QSpinBox::valueChanged, this,
             &ConfigureSystem::checkCountry);
+
     this->setConfiguration();
 }
 
