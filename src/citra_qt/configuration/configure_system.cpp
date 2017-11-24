@@ -84,7 +84,7 @@ void ConfigureSystem::ReadSystemSettings() {
     ui->spinbox_country->setValue(country_index);
 
     if (ValidateCountry()) {
-        ui->label_country_name->setText(Service::CFG::country_codes[ui->spinbox_country->value()]);
+        ui->label_country_name->setText(Service::CFG.country_codes[ui->spinbox_country->value()]);
     } else {
         ui->label_country_name->setText(tr("Invalid"));
     }
@@ -221,7 +221,7 @@ bool ConfigureSystem::ValidateCountry() {
 
 void ConfigureSystem::OnCountryChanged() {
      if (ValidateCountry()) {
-         ui->label_country_name->setText(Service::CFG::country_codes[ui->spinbox_country->value()]);
+         ui->label_country_name->setText(Service::CFG.country_codes[ui->spinbox_country->value()]);
      } else {
          ui->label_country_name->setText(tr("Invalid"));
      }
