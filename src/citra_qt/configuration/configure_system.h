@@ -20,6 +20,7 @@ public:
 
     void applyConfiguration();
     void setConfiguration();
+    void checkCountry();
 
 public slots:
     void updateBirthdayComboBox(int birthmonth_index);
