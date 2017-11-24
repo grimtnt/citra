@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <string>
-using namespace std;
 
 namespace Country {
 
