@@ -4,8 +4,6 @@
 
 #include <string>
 
-namespace Country {
-
 std::string Country::GetName(int id) {
  if (id == 1) {
        return "Japan";
@@ -275,4 +273,3 @@ std::string Country::GetName(int id) {
        return "Bermuda";
 }
 }
-} // namespace Country
