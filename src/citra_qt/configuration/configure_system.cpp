@@ -21,9 +21,6 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureSystem::updateBirthdayComboBox);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
-    connect(ui->spinbox_country,
-            static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
-            &ConfigureSystem::checkCountry);
 
     this->setConfiguration();
 }
@@ -53,7 +50,7 @@ void ConfigureSystem::setConfiguration() {
         ReadSystemSettings();
         ui->link_country_codes->setOpenExternalLinks(true);
         ui->link_country_codes->setText(tr("<a "
-                                         "href='http://wiibrew.org/wiki/Country_Codes'>Country Codes</a>"));
+                                         "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
         ui->label_disable_info->hide();
     }
 }
@@ -124,6 +121,7 @@ void ConfigureSystem::applyConfiguration() {
     }
 
     // apply country
+    checkCountry();
     int new_country = ui->spinbox_country->value();
     if (country_index != new_country) {
         Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value());
@@ -198,7 +196,7 @@ void ConfigureSystem::checkCountry() {
 }
 
 void ConfigureSystem::InvalidCountry() {
-         QMessageBox::critical(this, tr("Error"), tr("Invalid country id, view country codes"),
+         QMessageBox::critical(this, tr("Error"), tr("Invalid country id, view country codes, setted to 1."),
                                       QMessageBox::Ok);
          ui->spinbox_country->setValue(1);
 }
