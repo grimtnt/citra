@@ -7,272 +7,273 @@
 namespace Country {
 
 std::string Country::GetName(int id) {
- if (id == 1) {
+if (id == 1) {
        return "Japan";
- } else if (id == 8) {
+} else if (id == 8) {
        return "Anguilla";
- } else if (id == 9) {
+} else if (id == 9) {
        return "Antigua and Barbuda";
- } else if (id == 10) {
+} else if (id == 10) {
        return "Argentina";
- } else if (id == 11) {
+} else if (id == 11) {
        return "Aruba";
- } else if (id == 12) {
+} else if (id == 12) {
        return "Bahamas";
- } else if (id == 13) {
+} else if (id == 13) {
        return "Barbados";
- } else if (id == 14) {
+} else if (id == 14) {
        return "Belize";
- } else if (id == 15) {
+} else if (id == 15) {
        return "Bolivia";
- } else if (id == 16) {
+} else if (id == 16) {
        return "Brazil";
- } else if (id == 17) {
+} else if (id == 17) {
        return "British Virgin Islands";
- } else if (id == 18) {
+} else if (id == 18) {
        return "Canada";
- } else if (id == 19) {
+} else if (id == 19) {
        return "Cayman Islands";
- } else if (id == 20) {
+} else if (id == 20) {
        return "Chile";
- } else if (id == 21) {
+} else if (id == 21) {
        return "Colombia";
- } else if (id == 22) {
+} else if (id == 22) {
        return "Costa Rica";
- } else if (id == 23) {
+} else if (id == 23) {
        return "Dominica";
- } else if (id == 24) {
+} else if (id == 24) {
        return "Dominican Republic";
- } else if (id == 25) {
+} else if (id == 25) {
        return "Ecuador";
- } else if (id == 26) {
+} else if (id == 26) {
        return "El Salvador";
- } else if (id == 27) {
+} else if (id == 27) {
        return "French Guiana";
- } else if (id == 28) {
+} else if (id == 28) {
        return "Grenada";
- } else if (id == 29) {
+} else if (id == 29) {
        return "Guadeloupe";
- } else if (id == 30) {
+} else if (id == 30) {
        return "Guatemala";
- } else if (id == 31) {
+} else if (id == 31) {
        return "Guyana";
- } else if (id == 32) {
+} else if (id == 32) {
        return "Haiti";
- } else if (id == 33) {
+} else if (id == 33) {
        return "Honduras";
- } else if (id == 34) {
+} else if (id == 34) {
        return "Jamaica";
- } else if (id == 35) {
+} else if (id == 35) {
        return "Martinique";
- } else if (id == 36) {
+} else if (id == 36) {
        return "Mexico";
- } else if (id == 37) {
+} else if (id == 37) {
        return "Montserrat";
- } else if (id == 38) {
+} else if (id == 38) {
        return "Netherlands Antilles";
- } else if (id == 39) {
+} else if (id == 39) {
        return "Nicaragua";
- } else if (id == 40) {
+} else if (id == 40) {
        return "Panama";
- } else if (id == 41) {
+} else if (id == 41) {
        return "Paraguay";
- } else if (id == 42) {
+} else if (id == 42) {
        return "Peru";
- } else if (id == 43) {
+} else if (id == 43) {
        return "Saint Kitts and Nevis";
- } else if (id == 44) {
+} else if (id == 44) {
        return "Saint Lucia";
- } else if (id == 45) {
+} else if (id == 45) {
        return "Saint Vincent and the Grenadines";
- } else if (id == 46) {
+} else if (id == 46) {
        return "Suriname";
- } else if (id == 47) {
+} else if (id == 47) {
        return "Trinidad and Tobago";
- } else if (id == 48) {
+} else if (id == 48) {
        return "Turks and Caicos Islands";
- } else if (id == 49) {
+} else if (id == 49) {
        return "United States";
- } else if (id == 50) {
+} else if (id == 50) {
        return "Uruguay";
- } else if (id == 51) {
+} else if (id == 51) {
        return "US Virgin Islands";
- } else if (id == 52) {
+} else if (id == 52) {
        return "Venezuela";
- } else if (id == 64) {
+} else if (id == 64) {
        return "Albania";
- } else if (id == 65) {
+} else if (id == 65) {
        return "Australia";
- } else if (id == 66) {
+} else if (id == 66) {
        return "Austria";
- } else if (id == 67) {
+} else if (id == 67) {
        return "Belgium";
- } else if (id == 68) {
+} else if (id == 68) {
        return "Bosnia and Herzegovina";
- } else if (id == 69) {
+} else if (id == 69) {
        return "Botswana";
- } else if (id == 70) {
+} else if (id == 70) {
        return "Bulgaria";
- } else if (id == 71) {
+} else if (id == 71) {
        return "Croatia";
- } else if (id == 72) {
+} else if (id == 72) {
        return "Cyprus";
- } else if (id == 73) {
+} else if (id == 73) {
        return "Czech Republic";
- } else if (id == 74) {
+} else if (id == 74) {
        return "Denmark";
- } else if (id == 75) {
+} else if (id == 75) {
        return "Estonia";
- } else if (id == 76) {
+} else if (id == 76) {
        return "Finland";
- } else if (id == 77) {
+} else if (id == 77) {
        return "France";
- } else if (id == 78) {
+} else if (id == 78) {
        return "Germany";
- } else if (id == 79) {
+} else if (id == 79) {
        return "Greece";
- } else if (id == 80) {
+} else if (id == 80) {
        return "Hungary";
- } else if (id == 81) {
+} else if (id == 81) {
        return "Iceland";
- } else if (id == 82) {
+} else if (id == 82) {
        return "Ireland";
- } else if (id == 83) {
+} else if (id == 83) {
        return "Italy";
- } else if (id == 84) {
+} else if (id == 84) {
        return "Latvia";
- } else if (id == 85) {
+} else if (id == 85) {
        return "Lesotho";
- } else if (id == 86) {
+} else if (id == 86) {
        return "Liechtenstein";
- } else if (id == 87) {
+} else if (id == 87) {
        return "Lithuania";
- } else if (id == 88) {
+} else if (id == 88) {
        return "Luxembourg";
- } else if (id == 89) {
+} else if (id == 89) {
        return "Macedonia";
- } else if (id == 90) {
+} else if (id == 90) {
        return "Malta";
- } else if (id == 91) {
+} else if (id == 91) {
        return "Montenegro";
- } else if (id == 92) {
+} else if (id == 92) {
        return "Mozambique";
- } else if (id == 93) {
+} else if (id == 93) {
        return "Namibia";
- } else if (id == 94) {
+} else if (id == 94) {
        return "Netherlands";
- } else if (id == 95) {
+} else if (id == 95) {
        return "New Zealand";
- } else if (id == 96) {
+} else if (id == 96) {
        return "Norway";
- } else if (id == 97) {
+} else if (id == 97) {
        return "Poland";
- } else if (id == 98) {
+} else if (id == 98) {
        return "Portugal";
- } else if (id == 99) {
+} else if (id == 99) {
        return "Romania";
- } else if (id == 100) {
+} else if (id == 100) {
        return "Russia";
- } else if (id == 101) {
+} else if (id == 101) {
        return "Serbia";
- } else if (id == 102) {
+} else if (id == 102) {
        return "Slovakia";
- } else if (id == 103) {
+} else if (id == 103) {
        return "Slovenia";
- } else if (id == 104) {
+} else if (id == 104) {
        return "South Africa";
- } else if (id == 105) {
+} else if (id == 105) {
        return "Spain";
- } else if (id == 106) {
+} else if (id == 106) {
        return "Swaziland";
- } else if (id == 107) {
+} else if (id == 107) {
        return "Sweden";
- } else if (id == 108) {
+} else if (id == 108) {
        return "Switzerland";
- } else if (id == 109) {
+} else if (id == 109) {
        return "Turkey";
- } else if (id == 110) {
+} else if (id == 110) {
        return "United Kingdom";
- } else if (id == 111) {
+} else if (id == 111) {
        return "Zambia";
- } else if (id == 112) {
+} else if (id == 112) {
        return "Zimbabwe";
- } else if (id == 113) {
+} else if (id == 113) {
        return "Azerbaijan";
- } else if (id == 114) {
+} else if (id == 114) {
        return "Mauritania";
- } else if (id == 115) {
+} else if (id == 115) {
        return "Mali";
- } else if (id == 116) {
+} else if (id == 116) {
        return "Niger";
- } else if (id == 117) {
+} else if (id == 117) {
        return "Chad";
- } else if (id == 118) {
+} else if (id == 118) {
        return "Sudan";
- } else if (id == 119) {
+} else if (id == 119) {
        return "Eritrea";
- } else if (id == 120) {
+} else if (id == 120) {
        return "Djibouti";
- } else if (id == 121) {
+} else if (id == 121) {
        return "Somalia";
- } else if (id == 122) {
+} else if (id == 122) {
        return "Andorra";
- } else if (id == 123) {
+} else if (id == 123) {
        return "Gibraltar";
- } else if (id == 124) {
+} else if (id == 124) {
        return "Guernsey";
- } else if (id == 125) {
+} else if (id == 125) {
        return "Isle of Man";
- } else if (id == 126) {
+} else if (id == 126) {
        return "Jersey";
- } else if (id == 127) {
+} else if (id == 127) {
        return "Monaco";
- } else if (id == 128) {
+} else if (id == 128) {
        return "Taiwan";
- } else if (id == 136) {
+} else if (id == 136) {
        return "South Korea";
- } else if (id == 144) {
+} else if (id == 144) {
        return "Hong Kong";
- } else if (id == 145) {
+} else if (id == 145) {
        return "Macau";
- } else if (id == 152) {
+} else if (id == 152) {
        return "Indonesia";
- } else if (id == 153) {
+} else if (id == 153) {
        return "Singapore";
- } else if (id == 154) {
+} else if (id == 154) {
        return "Thailand";
- } else if (id == 155) {
+} else if (id == 155) {
        return "Philippines";
- } else if (id == 156) {
+} else if (id == 156) {
        return "Malaysia";
- } else if (id == 160) {
+} else if (id == 160) {
        return "China";
- } else if (id == 168) {
+} else if (id == 168) {
        return "United Arab Emirates";
- } else if (id == 169) {
+} else if (id == 169) {
        return "India";
- } else if (id == 170) {
+} else if (id == 170) {
        return "Egypt";
- } else if (id == 171) {
+} else if (id == 171) {
        return "Oman";
- } else if (id == 172) {
+} else if (id == 172) {
        return "Qatar";
- } else if (id == 173) {
+} else if (id == 173) {
        return "Kuwait";
- } else if (id == 174) {
+} else if (id == 174) {
        return "Saudi Arabia";
- } else if (id == 175) {
+} else if (id == 175) {
        return "Syria";
- } else if (id == 176) {
+} else if (id == 176) {
        return "Bahrain";
- } else if (id == 177) {
+} else if (id == 177) {
        return "Jordan";
- } else if (id == 184) {
+} else if (id == 184) {
        return "San Marino";
- } else if (id == 185) {
+} else if (id == 185) {
        return "Vatican City";
- } else if (id == 186) {
+} else if (id == 186) {
        return "Bermuda";
 }
+       return "Invalid";
 }
 } // namespace Country
