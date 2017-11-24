@@ -55,6 +55,7 @@ void ConfigureSystem::setConfiguration() {
         ui->link_country_codes->setText(tr("<a "
                                          "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
         ui->label_disable_info->hide();
+        ui->link_country_codes->hide();
     }
 }
 
@@ -81,6 +82,12 @@ void ConfigureSystem::ReadSystemSettings() {
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
+
+    if (ValidateCountry()) {
+        ui->label_country_name->setText(Service::CFG::country_codes[ui->spinbox_country->value()]);
+    } else {
+        ui->label_country_name->setText(tr("Invalid"));
+    }
 
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
