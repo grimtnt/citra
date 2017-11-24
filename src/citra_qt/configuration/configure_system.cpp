@@ -197,15 +197,11 @@ bool ConfigureSystem::ValidateCountry() {
          return false;
      } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
          return false;
-     } else if (ui->spinbox_country->value() > 121 && ui->spinbox_country->value() < 128) {
-         return false;
      } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
          return false;
      } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
          return false;
-     } else if (ui->spinbox_country->value() > 144 && ui->spinbox_country->value() < 152) {
-         return false;
-     } else if (ui->spinbox_country->value() > 156 && ui->spinbox_country->value() < 160) {
+     } else if (ui->spinbox_country->value() > 155 && ui->spinbox_country->value() < 160) {
          return false;
      } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
          return false;
