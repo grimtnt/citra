@@ -20,11 +20,11 @@ public:
 
     void applyConfiguration();
     void setConfiguration();
-    void checkCountry();
 
 public slots:
     void updateBirthdayComboBox(int birthmonth_index);
     void refreshConsoleID();
+    void checkCountry();
 
 private:
     void ReadSystemSettings();
