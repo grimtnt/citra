@@ -3,10 +3,11 @@
 // Refer to the license.txt file included.
 
 #include <string>
+#include "core/country.h"
 
 namespace Country {
 
-std::string Country::GetName(int id) {
+std::string GetName(int id) {
 if (id == 1) {
        return "Japan";
 } else if (id == 8) {
