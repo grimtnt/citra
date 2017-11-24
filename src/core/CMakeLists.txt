@@ -16,7 +16,6 @@ set(SRCS
             cheat_core.cpp
             core.cpp
             core_timing.cpp
-	    country.cpp
             file_sys/archive_backend.cpp
             file_sys/archive_extsavedata.cpp
             file_sys/archive_ncch.cpp
@@ -214,7 +213,6 @@ set(HEADERS
             cheat_core.h
             core.h
             core_timing.h
-	    country.h
             file_sys/archive_backend.h
             file_sys/archive_extsavedata.h
             file_sys/archive_ncch.h
