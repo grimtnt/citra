@@ -124,7 +124,7 @@ void ConfigureSystem::applyConfiguration() {
     }
 
     // apply country
-    if (!isValidCountry()) {
+    if (!ValidateCountry()) {
         ui->spinbox_country->setValue(1);
         QString invalid_country_text = tr("Invalid country id, changed to 1.");
         QMessageBox::critical(this, tr("Warning"), invalid_country_text,
