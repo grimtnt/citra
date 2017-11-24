@@ -85,7 +85,8 @@ void ConfigureSystem::ReadSystemSettings() {
     ui->spinbox_country->setValue(country_index);
 
     if (ValidateCountry()) {
-        ui->label_country_name->setText(Country::GetName(country_index));
+        ui->label_country_name->setText(
+            QString::fromStdString(Country::GetName(country_index)));
     } else {
         ui->label_country_name->setText(tr("Invalid"));
     }
@@ -222,7 +223,8 @@ bool ConfigureSystem::ValidateCountry() {
 
 void ConfigureSystem::OnCountryChanged() {
      if (ValidateCountry()) {
-         ui->label_country_name->setText(Country::GetName(ui->spinbox_country->value()));
+         ui->label_country_name->setText(
+             QString::fromStdString(Country::GetName(ui->spinbox_country->value())));
      } else {
          ui->label_country_name->setText(tr("Invalid"));
      }
