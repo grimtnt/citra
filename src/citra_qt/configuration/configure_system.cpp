@@ -218,8 +218,7 @@ bool ConfigureSystem::ValidateCountry() {
 
 void ConfigureSystem::OnCountryChanged() {
      if (ValidateCountry()) {
-         // TODO(acnleditor2): show country code
-         ui->label_country_name->setText(tr("Valid"));
+         ui->label_country_name->setText(Service::CFG::country_codes[ui->spinbox_country->value()]);
      } else {
          ui->label_country_name->setText(tr("Invalid"));
      }
