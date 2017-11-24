@@ -7,8 +7,6 @@ using namespace std;
 
 namespace Country {
 
-Country::~Country() {}
-
 std::string Country::GetName(int id) {
  if (id == 1) {
        return "Japan";
