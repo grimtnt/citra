@@ -24,11 +24,9 @@ public:
 public slots:
     void updateBirthdayComboBox(int birthmonth_index);
     void refreshConsoleID();
-    void OnCountryChanged();
 
 private:
     void ReadSystemSettings();
-    QString GetSelectedCountryCodeString();
     bool ValidateCountry();
 
     std::unique_ptr<Ui::ConfigureSystem> ui;
