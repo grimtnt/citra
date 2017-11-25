@@ -195,7 +195,7 @@
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="ClickableLabel" name="cl_country" native="true">
+         <widget class="QLabel" name="label_country">
           <property name="text">
            <string>Country</string>
           </property>
@@ -297,14 +297,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>ClickableLabel</class>
-   <extends>QWidget</extends>
-   <header>../util/clickable_label.h</header>
-   <container>1</container>
-  </customwidget>
-</customwidgets>
  <resources/>
  <connections/>
 </ui>
