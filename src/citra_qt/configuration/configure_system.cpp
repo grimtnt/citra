@@ -195,25 +195,18 @@ void ConfigureSystem::refreshConsoleID() {
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
 }
 
-void ConfigureSystem::GetSelectedCountryCodeString(QString out) {
-     out = QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
+QString ConfigureSystem::GetSelectedCountryCodeString() {
+     return QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
 }
 
 void ConfigureSystem::OnCountryChanged() {
-     std::string sccs;
-     GetSelectedCountryCodeString(sccs);
-     ui->label_country->setToolTip(sccs);
-     delete sccs;
+     ui->label_country->setToolTip(GetSelectedCountryCodeString());
 }
 
 bool ConfigureSystem::ValidateCountry() {
-     std::string sccs;
-     GetSelectedCountryCodeString(sccs);
-     if (country_str == "Invalid") {
-         delete sccs;
+     if (GetSelectedCountryCodeString() == "Invalid") {
          return false;
      } else {
-         delete sccs;
          return true;
      }
 }
