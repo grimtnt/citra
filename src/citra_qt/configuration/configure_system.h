@@ -28,6 +28,7 @@ public slots:
 
 private:
     void ReadSystemSettings();
+    void GetSelectedCountryCodeString();
     bool ValidateCountry();
 
     std::unique_ptr<Ui::ConfigureSystem> ui;
