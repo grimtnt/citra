@@ -4,7 +4,6 @@
 
 #include <QMessageBox>
 #include "citra_qt/configuration/configure_system.h"
-#include "citra_qt/util/clickable_label.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
 #include "core/country.h"
@@ -26,7 +25,6 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
     connect(ui->spinbox_country,
             static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
             &ConfigureSystem::OnCountryChanged);
-    connect(ui->cl_country, &ClickableLabel::clicked, this, &ConfigureSystem::ShowSelectedCountryCodeString);
 
     this->setConfiguration();
 }
@@ -85,6 +83,7 @@ void ConfigureSystem::ReadSystemSettings() {
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
+    ui->label_country->setTooltip(GetSelectedCountryCodeString());
 
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
@@ -200,15 +199,14 @@ QString ConfigureSystem::GetSelectedCountryCodeString() {
      return QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
 }
 
+void ConfigureSystem::OnCountryChanged() {
+     ui->label_country->setToolTip(GetSelectedCountryCodeString());
+}
+
 bool ConfigureSystem::ValidateCountry() {
      if (GetSelectedCountryCodeString() == "Invalid") {
          return false;
      } else {
          return true;
      }
-}
-
-void ConfigureSystem::ShowSelectedCountryCodeString() {
-     QMessageBox::information(this, tr("Country Code String"),
-                              GetSelectedCountryCodeString(), QMessageBox::Ok);
 }
