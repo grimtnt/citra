@@ -16,6 +16,7 @@ set(SRCS
             cheat_core.cpp
             core.cpp
             core_timing.cpp
+	    country.cpp
             file_sys/archive_backend.cpp
             file_sys/archive_extsavedata.cpp
             file_sys/archive_ncch.cpp
@@ -194,7 +195,7 @@ set(SRCS
 
 set(HEADERS
             3ds.h
-			announce_multiplayer_session.h
+	    announce_multiplayer_session.h
             arm/arm_interface.h
             arm/dynarmic/arm_dynarmic.h
             arm/dynarmic/arm_dynarmic_cp15.h
@@ -213,6 +214,7 @@ set(HEADERS
             cheat_core.h
             core.h
             core_timing.h
+	    country.h
             file_sys/archive_backend.h
             file_sys/archive_extsavedata.h
             file_sys/archive_ncch.h
