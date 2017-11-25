@@ -83,7 +83,7 @@ void ConfigureSystem::ReadSystemSettings() {
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
-    ui->label_country->setToolTip(GetSelectedCountryCodeString());
+    ui->label_country_name->setText(GetSelectedCountryCodeString());
 
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
@@ -200,7 +200,7 @@ QString ConfigureSystem::GetSelectedCountryCodeString() {
 }
 
 void ConfigureSystem::OnCountryChanged() {
-     ui->label_country->setToolTip(GetSelectedCountryCodeString());
+     ui->label_country_name->setText(GetSelectedCountryCodeString());
 }
 
 bool ConfigureSystem::ValidateCountry() {
