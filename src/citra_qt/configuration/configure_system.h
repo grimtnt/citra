@@ -27,6 +27,7 @@ public slots:
 
 private:
     void ReadSystemSettings();
+    bool ValidateCountry();
 
     std::unique_ptr<Ui::ConfigureSystem> ui;
     bool enabled;
@@ -34,5 +35,7 @@ private:
     std::u16string username;
     int birthmonth, birthday;
     int language_index;
+    unsigned char* unknown;
+    int country_index;
     int sound_index;
 };

@@ -33,6 +33,7 @@ void ConfigureSystem::setConfiguration() {
     if (!enabled) {
         ReadSystemSettings();
         ui->group_system_settings->setEnabled(false);
+        ui->link_country_codes->hide();
     } else {
         // This tab is enabled only when game is not running (i.e. all service are not initialized).
         // Temporarily register archive types and load the config savegame file to memory.
@@ -48,6 +49,9 @@ void ConfigureSystem::setConfiguration() {
         }
 
         ReadSystemSettings();
+        ui->link_country_codes->setOpenExternalLinks(true);
+        ui->link_country_codes->setText(tr("<a "
+                                         "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
         ui->label_disable_info->hide();
     }
 }
@@ -71,6 +75,10 @@ void ConfigureSystem::ReadSystemSettings() {
     // set system language
     language_index = Service::CFG::GetSystemLanguage();
     ui->combo_language->setCurrentIndex(language_index);
+
+    // set country
+    std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
+    ui->spinbox_country->setValue(country_index);
 
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
@@ -110,6 +118,20 @@ void ConfigureSystem::applyConfiguration() {
     int new_language = ui->combo_language->currentIndex();
     if (language_index != new_language) {
         Service::CFG::SetSystemLanguage(static_cast<Service::CFG::SystemLanguage>(new_language));
+        modified = true;
+    }
+
+    // apply country
+    if (!ValidateCountry()) {
+        ui->spinbox_country->setValue(1);
+        QString error_text = tr("Invalid country id, changed to 1.");
+        QMessageBox::critical(this, tr("Error"), error_text,
+                                    QMessageBox::Ok);
+    }
+
+    int new_country = ui->spinbox_country->value();
+    if (country_index != new_country) {
+        Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value());
         modified = true;
     }
 
@@ -166,4 +188,24 @@ void ConfigureSystem::refreshConsoleID() {
     Service::CFG::SetConsoleUniqueId(random_number, console_id);
     Service::CFG::UpdateConfigNANDSavegame();
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
+}
+
+bool ConfigureSystem::ValidateCountry() {
+     if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
+         return false;
+     } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
+         return false;
+     } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
+         return false;
+     } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
+         return false;
+     } else if (ui->spinbox_country->value() > 155 && ui->spinbox_country->value() < 160) {
+         return false;
+     } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
+         return false;
+     } else if (ui->spinbox_country->value() > 177 && ui->spinbox_country->value() < 184) {
+         return false;
+     }
+
+     return true;
 }
