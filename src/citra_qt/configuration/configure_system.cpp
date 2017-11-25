@@ -6,7 +6,6 @@
 #include "citra_qt/configuration/configure_system.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
-#include "core/country.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
 #include "ui_configure_system.h"
@@ -22,9 +21,6 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureSystem::updateBirthdayComboBox);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
-    connect(ui->spinbox_country,
-            static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
-            &ConfigureSystem::OnCountryChanged);
 
     this->setConfiguration();
 }
@@ -83,7 +79,6 @@ void ConfigureSystem::ReadSystemSettings() {
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
-    ui->label_country_name->setText(GetSelectedCountryCodeString());
 
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
@@ -195,18 +190,22 @@ void ConfigureSystem::refreshConsoleID() {
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
 }
 
-QString ConfigureSystem::GetSelectedCountryCodeString() {
-     return QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
-}
-
-void ConfigureSystem::OnCountryChanged() {
-     ui->label_country_name->setText(GetSelectedCountryCodeString());
-}
-
 bool ConfigureSystem::ValidateCountry() {
-     if (GetSelectedCountryCodeString() == "Invalid") {
+     if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
          return false;
-     } else {
-         return true;
+     } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
+         return false;
+     } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
+         return false;
+     } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
+         return false;
+     } else if (ui->spinbox_country->value() > 155 && ui->spinbox_country->value() < 160) {
+         return false;
+     } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
+         return false;
+     } else if (ui->spinbox_country->value() > 177 && ui->spinbox_country->value() < 184) {
+         return false;
      }
+
+     return true;
 }
