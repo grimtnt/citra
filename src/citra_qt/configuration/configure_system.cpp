@@ -83,7 +83,7 @@ void ConfigureSystem::ReadSystemSettings() {
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
-    ui->label_country->setTooltip(GetSelectedCountryCodeString());
+    ui->label_country->setToolTip(GetSelectedCountryCodeString());
 
     // set sound output mode
     sound_index = Service::CFG::GetSoundOutputMode();
@@ -195,18 +195,25 @@ void ConfigureSystem::refreshConsoleID() {
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
 }
 
-QString ConfigureSystem::GetSelectedCountryCodeString() {
-     return QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
+void ConfigureSystem::GetSelectedCountryCodeString(QString out) {
+     out = QString::fromStdString(Country::GetName(ui->spinbox_country->value()));
 }
 
 void ConfigureSystem::OnCountryChanged() {
-     ui->label_country->setToolTip(GetSelectedCountryCodeString());
+     std::string sccs;
+     GetSelectedCountryCodeString(sccs);
+     ui->label_country->setToolTip(sccs);
+     delete sccs;
 }
 
 bool ConfigureSystem::ValidateCountry() {
-     if (GetSelectedCountryCodeString() == "Invalid") {
+     std::string sccs;
+     GetSelectedCountryCodeString(sccs);
+     if (country_str == "Invalid") {
+         delete sccs;
          return false;
      } else {
+         delete sccs;
          return true;
      }
 }
