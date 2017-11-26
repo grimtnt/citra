@@ -50,9 +50,9 @@ void ConfigureSystem::setConfiguration() {
 
         ReadSystemSettings();
         ui->link_country_codes->setOpenExternalLinks(true);
-        ui->link_country_codes->setText(tr("<a "
-                                         "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
-        ui->label_disable_info->hide();
+        ui->link_country_codes->setText(
+        tr("<a "
+           "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
     }
 }
 
@@ -191,21 +191,27 @@ void ConfigureSystem::refreshConsoleID() {
 }
 
 bool ConfigureSystem::ValidateCountry() {
-     if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
-         return false;
-     } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
-         return false;
-     } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
-         return false;
-     } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
-         return false;
-     } else if (ui->spinbox_country->value() > 155 && ui->spinbox_country->value() < 160) {
-         return false;
-     } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
-         return false;
-     } else if (ui->spinbox_country->value() > 177 && ui->spinbox_country->value() < 184) {
-         return false;
-     }
+  if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
+    return false;
+  } else if (ui->spinbox_country->value() > 52 &&
+             ui->spinbox_country->value() < 64) {
+    return false;
+  } else if (ui->spinbox_country->value() > 128 &&
+             ui->spinbox_country->value() < 136) {
+    return false;
+  } else if (ui->spinbox_country->value() > 136 &&
+             ui->spinbox_country->value() < 144) {
+    return false;
+  } else if (ui->spinbox_country->value() > 155 &&
+             ui->spinbox_country->value() < 160) {
+    return false;
+  } else if (ui->spinbox_country->value() > 160 &&
+             ui->spinbox_country->value() < 168) {
+    return false;
+  } else if (ui->spinbox_country->value() > 177 &&
+             ui->spinbox_country->value() < 184) {
+    return false;
+  }
 
-     return true;
+  return true;
 }
