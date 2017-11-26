@@ -9,6 +9,7 @@ namespace Service {
 namespace CECD {
 
 static const Interface::FunctionInfo FunctionTable[] = {
+    // cecd:u shared commands
     {0x000100C2, OpenRawFile, "OpenRawFile"},
     {0x00020042, ReadRawFile, "ReadRawFile"},
     {0x00030104, ReadMessage, "ReadMessage"},
