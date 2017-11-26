@@ -205,7 +205,7 @@ ResultCode Write(const std::vector<u8>& data, u32 title_id = 0,
     }
 }
 
-ResultVal<u32> OpenRawFile(u32 title_id, SaveDataType save_data_type, FileOption option) {
+ResultVal<u32> Open(u32 title_id, SaveDataType save_data_type, FileOption option) {
     u32 size = 0;
     if (IsSaveDataDir(save_data_type)) {
         if (option.make_dir) {
@@ -259,7 +259,7 @@ ResultVal<u32> OpenRawFile(u32 title_id, SaveDataType save_data_type, FileOption
     return MakeResult(size);
 }
 
-ResultVal<std::vector<u8>> ReadRawFile(u32 size, u32 title_id = 0,
+ResultVal<std::vector<u8>> Read(u32 size, u32 title_id = 0,
                                 SaveDataType save_data_type = SaveDataType::Invalid,
                                 FileOption option = {}) {
     if (title_id == 0 && save_data_type == SaveDataType::Invalid && option.raw == 0) {
@@ -373,7 +373,7 @@ void ReadMessageWithHMAC(Service::Interface* self) {
     LOG_CRITICAL(Service_CECD, "(STUBBED) called");
 }
 
-void WriteRawFile(Service::Interface* self) {
+void Write(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x05, 1, 2);
 
     u32 size = rp.Pop<u32>();
