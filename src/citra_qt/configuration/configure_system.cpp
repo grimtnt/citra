@@ -49,6 +49,7 @@ void ConfigureSystem::setConfiguration() {
         }
 
         ReadSystemSettings();
+        ui->label_disable_info->hide();
         ui->link_country_codes->setOpenExternalLinks(true);
         ui->link_country_codes->setText(
         tr("<a "
