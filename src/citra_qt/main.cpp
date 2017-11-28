@@ -843,12 +843,12 @@ void GMainWindow::ToggleWindowMode() {
         render_window->BackupGeometry();
         ui.horizontalLayout->addWidget(render_window);
         render_window->setFocusPolicy(Qt::ClickFocus);
-	    
         if (emulation_running) {
             render_window->setVisible(true);
             render_window->setFocus();
             game_list->hide();
         }
+
     } else {
         // Render in a separate window...
         ui.horizontalLayout->removeWidget(render_window);
