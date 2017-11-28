@@ -1,6 +1,6 @@
 $progressPreference = 'silentlyContinue'
 Write-Host "Updating to latest unstable version..."
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/acnleditor2/citra/master/updater.ps1" -OutFile "updater.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valentinvanelslande/citra/master/updater.ps1" -OutFile "updater.ps1"
 cls
 if (-not (Test-Path updater.cfg)) {
     Add-Content -Path updater.cfg -Value 0
@@ -13,7 +13,7 @@ $type = (Get-Content updater.cfg)[1]
 if ($type -cgt 1) {
     throw "Invalid build type option"
 }
-$releases = "https://api.github.com/repos/acnleditor2/citra/releases"
+$releases = "https://api.github.com/repos/valentinvanelslande/citra/releases"
 $latest_release = (Invoke-WebRequest $releases | ConvertFrom-Json)[0]
 $local_commit = (Get-Content updater.cfg)[0]
 $latest_commit = $latest_release.target_commitish.Remove(7, 33)
@@ -32,7 +32,7 @@ if ($type -eq 0) {
     $file = $assets[1].name
     $size = [math]::round($assets[1].size / 1Mb, 0)
 }
-$download = "https://github.com/acnleditor2/citra/releases/download/$tag/$file"
+$download = "https://github.com/valentinvanelslande/citra/releases/download/$tag/$file"
 cls
 Write-Host "Downloading Citra (Size: $size MB)..."
 Invoke-WebRequest $download -Out "citra.zip"
