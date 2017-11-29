@@ -2,6 +2,6 @@ Por qué no agrego cheat search: pq se rompe mingw y hay q usar msvc, q está 20
 
 Lo hice yo solo?: no, me ayudó hojan :D
 
-¡Nintendogs + Cats se congela en la pantalla de carga!: el problema parece estar en streetpass. pronto se solucionará.
+¡No aparece el teclado!: vayan a cmd.
 
 ¡TL tiene bugs!: esperen.
