@@ -11,26 +11,30 @@
 #include "common/announce_multiplayer_room.h"
 #include <QTranslator>
 #include "core/core.h"
+#include "core/hle/service/am/am.h"
 #include "network/network.h"
 #include "ui_main.h"
 
+class AboutDialog;
 class Config;
 class ClickableLabel;
 class EmuThread;
 class GameList;
 class GImageInfo;
-class GPUCommandStreamWidget;
 class GPUCommandListWidget;
+class GPUCommandStreamWidget;
 class GraphicsBreakPointsWidget;
 class GraphicsTracingWidget;
 class GraphicsVertexShaderWidget;
 class GRenderWindow;
 class MicroProfileDialog;
 class ProfilerWidget;
+template <typename>
+class QFutureWatcher;
+class QProgressBar;
 class RegistersWidget;
 class Updater;
 class WaitTreeWidget;
-class AboutDialog;
 class CheatDialog;
 
 // Multiplayer forward declarations
@@ -83,6 +87,7 @@ signals:
      * system emulation handles and memory are still valid, but are about become invalid.
      */
     void EmulationStopping();
+    void UpdateProgress(size_t written, size_t total);
 
     void NetworkStateChanged(const Network::RoomMember::State&);
     void AnnounceFailed(const Common::WebResult&);
@@ -154,6 +159,9 @@ private slots:
     void OnGameListLoadFile(QString game_path);
     void OnGameListOpenSaveFolder(u64 program_id);
     void OnMenuLoadFile();
+    void OnMenuInstallCIA();
+    void OnUpdateProgress(size_t written, size_t total);
+    void OnCIAInstallFinished();
     /// Called whenever a user selects the "File->Select Game List Root" menu item
     void OnMenuSelectGameListRoot();
     void OnMenuRecentFile();
@@ -186,8 +194,10 @@ private:
     Ui::MainWindow ui;
 
     GRenderWindow* render_window;
+    QFutureWatcher<Service::AM::InstallStatus>* watcher = nullptr;
 
     // Status bar elements
+    QProgressBar* progress_bar = nullptr;
     QLabel* message_label = nullptr;
     QLabel* emu_speed_label = nullptr;
     QLabel* game_fps_label = nullptr;
@@ -237,4 +247,5 @@ protected:
     void dragMoveEvent(QDragMoveEvent* event) override;
 };
 
+Q_DECLARE_METATYPE(size_t);
 Q_DECLARE_METATYPE(Common::WebResult);
