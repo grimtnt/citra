@@ -766,7 +766,7 @@ void GMainWindow::OnMenuSelectGameListRoot() {
 void GMainWindow::OnMenuInstallCIA() {
     QString filepath = QFileDialog::getOpenFileName(
         this, tr("Load File"), UISettings::values.roms_path,
-        tr("CTR Installable Archive (*.CIA*)") + ";;" + tr("All Files (*.*)"));
+        tr("CTR Importable Archive (*.CIA*)") + ";;" + tr("All Files (*.*)"));
     if (filepath.isEmpty())
         return;
 
