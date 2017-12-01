@@ -794,7 +794,7 @@ void GMainWindow::OnCIAInstallFinished() {
     progress_bar->setValue(0);
     switch (watcher->future()) {
     case Service::AM::InstallStatus::Success:
-        this->statusBar()->showMessage(tr("The file has been installed successfully."));
+        this->statusBar()->showMessage(tr("Installed"));
         break;
     case Service::AM::InstallStatus::ErrorFailedToOpenFile:
         QMessageBox::critical(this, tr("Unable to open File"),
