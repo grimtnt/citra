@@ -24,11 +24,11 @@ environment:
 
 platform:
   - x64
-     
+
 branches:
   only:
     - master
-    
+
 configuration:
   - Release
 
@@ -44,7 +44,7 @@ install:
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-SDL2-2.0.5-2-any.pkg.tar.xz" 2> $null
           C:\msys64\usr\bin\bash -lc "pacman --noconfirm -S $dependencies" 2> $null
           # stick to cmake 3.9.6 since on lower versions it could happen that cmake generates a Makefile that links against gcc_eh
-          C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-cmake-3.9.6-1-any.pkg.tar.xz" 2> $nul
+          C:\msys64\usr\bin\bash -lc "pacman --noconfirm -U http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-cmake-3.9.6-1-any.pkg.tar.xz" 2> $null
         }
 
 before_build:
@@ -81,13 +81,61 @@ after_build:
           $RELEASE_DIST = "head"
         }
 
+        # Generate pdb files for mingw
+        if ($env:BUILD_TYPE -eq 'mingw') {
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/MerryMage/ext-windows-bin/master/cv2pdb/cv2pdb.exe -OutFile cv2pdb.exe
+          foreach ($exe in Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe") {
+            .\cv2pdb $exe.FullName
+          }
+        }
+
+        # Specify source locations in pdb via srcsrv.ini
+        $srcsrv = "SRCSRV: ini ------------------------------------------------`r`n"
+        $srcsrv += "VERSION=2`r`n"
+        $srcsrv += "VERCTRL=http`r`n"
+        $srcsrv += "SRCSRV: variables ------------------------------------------`r`n"
+        $srcsrv += "SRCSRVTRG=https://raw.githubusercontent.com/%var2%/%var3%/%var4%`r`n"
+        $srcsrv += "SRCSRV: source files ---------------------------------------`r`n"
+        foreach ($repo in @{
+          "citra-emu/citra" = ""
+          "citra-emu/ext-boost" = "externals/boost"
+          "citra-emu/ext-soundtouch" = "externals/soundtouch"
+          "fmtlib/fmt" = "externals/fmt"
+          "herumi/xbyak" = "externals/xbyak"
+          "lsalzman/enet" = "externals/enet"
+          "MerryMage/dynarmic" = "externals/dynarmic"
+          "neobrain/nihstro" = "externals/nihstro"
+          "svn2github/inih" = "externals/inih/inih"
+          "weidai11/cryptopp" = "externals/cryptopp/cryptopp"
+          "whoshuu/cpr" = "externals/cpr"
+        }.GetEnumerator()) {
+          pushd
+          cd $repo.Value
+          $rev = git rev-parse HEAD
+          $files = git ls-tree --name-only --full-tree -r HEAD
+          foreach ($file in $files) {
+            $srcsrv += "$(pwd)\$($file -replace '/','\')*$($repo.Name)*$rev*$file`r`n"
+          }
+          popd
+        }
+        $srcsrv += "SRCSRV: end ------------------------------------------------`r`n"
+        Set-Content -Path srcsrv.ini -Value $srcsrv
+        foreach ($pdb in Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "*.pdb") {
+          & "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\srcsrv\pdbstr.exe" -w -i:srcsrv.ini -p:$pdb.FullName -s:srcsrv
+        }
+
         if ($env:BUILD_TYPE -eq 'msvc') {
           # Where are these spaces coming from? Regardless, let's remove them
           $MSVC_BUILD_ZIP = "citra-windows-msvc-$GITDATE-$GITREV.zip" -replace " ", ""
+          $MSVC_BUILD_PDB = "citra-windows-msvc-$GITDATE-$GITREV-debugsymbols.zip" -replace " ", ""
+          $MSVC_SEVENZIP = "citra-windows-msvc-$GITDATE-$GITREV.7z" -replace " ", ""
 
           # set the build names as env vars so the artifacts can upload them
           $env:BUILD_ZIP = $MSVC_BUILD_ZIP
+          $env:BUILD_SYMBOLS = $MSVC_BUILD_PDB
+          $env:BUILD_UPDATE = $MSVC_SEVENZIP
 
+          7z a -tzip $MSVC_BUILD_PDB .\msvc_build\bin\release\*.pdb
           rm .\msvc_build\bin\release\*.pdb
 
           mkdir $RELEASE_DIST
@@ -98,25 +146,31 @@ after_build:
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value 1
           Copy-Item ".\Text Files\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
+          7z a $MSVC_SEVENZIP $RELEASE_DIST
         } else {
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
+          $MINGW_BUILD_PDB = "citra-windows-mingw-$GITDATE-$GITREV-debugsymbols.zip" -replace " ", ""
+          $MINGW_SEVENZIP = "citra-windows-mingw-$GITDATE-$GITREV.7z" -replace " ", ""
+          # not going to bother adding separate debug symbols for mingw, so just upload a README for it
+          # if someone wants to add them, change mingw to compile with -g and use objdump and strip to separate the symbols from the binary
+
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
+          $env:BUILD_SYMBOLS = $MINGW_BUILD_PDB
+          $env:BUILD_UPDATE = $MINGW_SEVENZIP
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
           $CMAKE_BINARY_DIR = "$CMAKE_SOURCE_DIR/mingw_build"
           $RELEASE_DIST = $RELEASE_DIST + "-mingw"
 
+          7z a -tzip $MINGW_BUILD_PDB (Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "*.pdb" | Select -ExpandProperty FullName)
+
           mkdir $RELEASE_DIST
           mkdir $RELEASE_DIST/platforms
 
-          # copy citra and citra-room to the release folder
+          # copy the compiled binaries and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
-          Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra-room.exe" | Copy-Item -destination $RELEASE_DIST
-                    
-          # copy translation and updater
           Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
-
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR\Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST\1.ReadMe First.txt"
@@ -147,15 +201,16 @@ after_build:
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/platforms/qwindows.dll" -force -destination "$RELEASE_DIST/platforms"
 
           7z a -tzip $MINGW_BUILD_ZIP $RELEASE_DIST\*
+          7z a $MINGW_SEVENZIP $RELEASE_DIST
         }
 
 test_script:
   - cd %BUILD_TYPE%_build
   - ps: |
         if ($env:BUILD_TYPE -eq 'msvc') {
-           ctest -VV -C Release
+          ctest -VV -C Release
         } else {
-           C:\msys64\usr\bin\bash.exe -lc "ctest -VV -C Release"
+          C:\msys64\usr\bin\bash.exe -lc "ctest -VV -C Release"
         }
   - cd ..
 
@@ -163,6 +218,10 @@ artifacts:
   - path: $(BUILD_ZIP)
     name: build
     type: zip
+  - path: $(BUILD_SYMBOLS)
+    name: debugsymbols
+  - path: $(BUILD_UPDATE)
+    name: update
 
 deploy:
  - provider: Environment
