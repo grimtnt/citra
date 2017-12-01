@@ -44,9 +44,7 @@ set(SRCS
 
 set(HEADERS
             alignment.h
-            announce_multiplayer_room.h
             assert.h
-            avx_utils.h
             bit_field.h
             bit_set.h
             break_points.h
@@ -78,7 +76,7 @@ set(HEADERS
             telemetry.h
             thread.h
             thread_queue_list.h
-	    threadsafe_queue.h
+            threadsafe_queue.h
             timer.h
             vector_math.h
             )
