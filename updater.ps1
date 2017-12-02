@@ -27,10 +27,10 @@ $tag = $latest_release.tag_name
 $assets = (Invoke-WebRequest $latest_release.assets_url | ConvertFrom-Json)
 if ($type -eq 0) {
     $file = $assets[1].name
-    $size = [math]::round($assets[1].size / 1Mb, 0)
+    $size = $assets[1].size / 1Mb
 } elseif ($type -eq 1) {
     $file = $assets[3].name
-    $size = [math]::round($assets[3].size / 1Mb, 0)
+    $size = $assets[3].size / 1Mb
 }
 $download = "https://github.com/valentinvanelslande/citra/releases/download/$tag/$file"
 cls
