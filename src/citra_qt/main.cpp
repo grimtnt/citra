@@ -635,9 +635,7 @@ void GMainWindow::BootGame(const QString& filename) {
     render_window->setFocus();
 
     emulation_running = true;
-    if (ui.action_Fullscreen->isChecked()) {
-        ShowFullscreen();
-    }
+    ToggleFullscreen();
     OnStartGame();
 }
 
