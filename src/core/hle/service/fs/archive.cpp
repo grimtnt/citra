@@ -206,7 +206,8 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
     ClientConnected(std::get<SharedPtr<ServerSession>>(sessions));
 
     rb.Push(RESULT_SUCCESS);
-    rb.PushObjects(std::get<SharedPtr<ClientSession>>(sessions));
+    // TODO: confirm that this is Move, not Copy
+    rb.PushMoveObjects(std::get<SharedPtr<ClientSession>>(sessions));
 }
 
 File::~File() {}
