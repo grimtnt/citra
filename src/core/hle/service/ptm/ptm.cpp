@@ -14,6 +14,7 @@
 #include "core/hle/service/ptm/ptm_sysm.h"
 #include "core/hle/service/ptm/ptm_u.h"
 #include "core/hle/service/service.h"
+#include "core/hle/svc.h"
 #include "core/settings.h"
 
 namespace Service {
@@ -128,11 +129,22 @@ void CheckNew3DS(IPC::RequestBuilder& rb) {
         LOG_CRITICAL(Service_PTM, "The option 'is_new_3ds' is enabled as part of the 'System' "
                                   "settings. Citra does not fully support New 3DS emulation yet!");
     }
-
+    
+    IPC::MakeHeader(0x40A, 0x2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(is_new_3ds);
+    rb.Push<u32>(is_new_3ds ? 1 : 0);
 
     LOG_WARNING(Service_PTM, "(STUBBED) called isNew3DS = 0x%08x", static_cast<u32>(is_new_3ds));
+}
+
+void ConfigureNew3DSCPU(Interface* self) {
+    u32* Push = Kernel::GetCommandBuffer();
+    u32 value = Push[1] & 0xF;
+    IPC::MakeHeader(0x818, 0x1, 0);
+    SVC::KernelSetState(static_cast<u32>(SVC::KernelSetStateType::ConfigureNew3DSCPU),
+    value, 0, 0)
+    .raw;
+    LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 
 void CheckNew3DS(Interface* self) {
