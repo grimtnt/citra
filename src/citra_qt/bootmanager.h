@@ -157,8 +157,6 @@ private:
 
     EmuThread* emu_thread;
 
-    bool separate_window;
-	
 protected:
     void showEvent(QShowEvent* event) override;
 };

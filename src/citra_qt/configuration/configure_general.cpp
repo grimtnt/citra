@@ -7,7 +7,6 @@
 #include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_general.h"
-#include "common/file_util.h"
 
 ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     : QWidget(parent), ui(new Ui::ConfigureGeneral) {
@@ -47,7 +46,7 @@ void ConfigureGeneral::applyConfiguration() {
     UISettings::values.confirm_before_closing = ui->toggle_check_exit->isChecked();
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
-    
+
     UISettings::values.check_for_update_on_start = ui->toggle_update_check->isChecked();
     UISettings::values.update_on_close = ui->toggle_auto_update->isChecked();
 

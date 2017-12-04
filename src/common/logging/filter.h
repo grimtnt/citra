@@ -25,7 +25,7 @@ public:
     void ResetAll(Level level);
     /// Sets the minimum level of `log_class` (and not of its subclasses) to `level`.
     void SetClassLevel(Class log_class, Level level);
-    
+
     /**
      * Parses a filter string and applies it to this filter.
      *

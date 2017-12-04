@@ -198,7 +198,7 @@ qreal GRenderWindow::windowPixelRatio() {
     return 1.0f;
 #endif
 }
- 
+
 void GRenderWindow::closeEvent(QCloseEvent* event) {
     emit Closed();
     QWidget::closeEvent(event);

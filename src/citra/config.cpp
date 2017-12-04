@@ -92,6 +92,7 @@ void Config::ReadValues() {
     Settings::values.use_vsync = sdl2_config->GetBoolean("Renderer", "use_vsync", false);
     Settings::values.toggle_framelimit =
         sdl2_config->GetBoolean("Renderer", "toggle_framelimit", true);
+
     Settings::values.bg_red = (float)sdl2_config->GetReal("Renderer", "bg_red", 0.0);
     Settings::values.bg_green = (float)sdl2_config->GetReal("Renderer", "bg_green", 0.0);
     Settings::values.bg_blue = (float)sdl2_config->GetReal("Renderer", "bg_blue", 0.0);
@@ -100,30 +101,30 @@ void Config::ReadValues() {
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(sdl2_config->GetInteger("Layout", "layout_option", 0));
     Settings::values.swap_screen = sdl2_config->GetBoolean("Layout", "swap_screen", false);
-    Settings::values.custom_checkbox = sdl2_config->GetBoolean("Layout", "custom_checkbox", false);
-     Settings::values.custom_top_left =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_left", 0));
-     Settings::values.custom_top_top =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_top", 0));
-     Settings::values.custom_top_right =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_right", 0));
-     Settings::values.custom_top_bottom =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_bottom", 0));
-     Settings::values.custom_bottom_left =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_left", 0));
-     Settings::values.custom_bottom_top =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_top", 0));
-     Settings::values.custom_bottom_right =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_right", 0));
-     Settings::values.custom_bottom_bottom =
-         static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_bottom", 0));
- 
+    Settings::values.custom_layout = sdl2_config->GetBoolean("Layout", "custom_layout", false);
+    Settings::values.custom_top_left =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_left", 0));
+    Settings::values.custom_top_top =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_top", 0));
+    Settings::values.custom_top_right =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_right", 400));
+    Settings::values.custom_top_bottom =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_top_bottom", 240));
+    Settings::values.custom_bottom_left =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_left", 40));
+    Settings::values.custom_bottom_top =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_top", 240));
+    Settings::values.custom_bottom_right =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_right", 360));
+    Settings::values.custom_bottom_bottom =
+        static_cast<u16>(sdl2_config->GetInteger("Layout", "custom_bottom_bottom", 480));
+
     // Audio
     Settings::values.sink_id = sdl2_config->Get("Audio", "output_engine", "auto");
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");
-    
+
     // Data Storage
     Settings::values.use_virtual_sd =
         sdl2_config->GetBoolean("Data Storage", "use_virtual_sd", true);

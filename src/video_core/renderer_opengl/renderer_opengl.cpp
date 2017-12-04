@@ -234,7 +234,6 @@ void RendererOpenGL::LoadColorToActiveGLTexture(u8 color_r, u8 color_g, u8 color
  * Initializes the OpenGL state and creates persistent objects.
  */
 void RendererOpenGL::InitOpenGLObjects() {
-    
     // Link shaders and get variable locations
     shader.Create(vertex_shader, fragment_shader);
     state.draw.shader_program = shader.handle;

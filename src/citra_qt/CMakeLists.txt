@@ -13,7 +13,6 @@ set(SRCS
             configuration/configure_general.cpp
             configuration/configure_graphics.cpp
             configuration/configure_input.cpp
-	    configuration/configure_input_widget.cpp
             configuration/configure_system.cpp
             configuration/configure_web.cpp
             debugger/graphics/graphics.cpp
@@ -26,14 +25,14 @@ set(SRCS
             debugger/profiler.cpp
             debugger/registers.cpp
             debugger/wait_tree.cpp
-	    updater/updater.cpp
+	    droparea.cpp
             multiplayer/chat_room.cpp
             multiplayer/client_room.cpp
             multiplayer/direct_connect.cpp
             multiplayer/host_room.cpp
             multiplayer/lobby.cpp
             multiplayer/message.cpp
-	    droparea.cpp
+            updater/updater.cpp
             util/spinbox.cpp
 	    util/clickable_label.cpp
             util/util.cpp
@@ -58,7 +57,6 @@ set(HEADERS
             configuration/configure_general.h
             configuration/configure_graphics.h
             configuration/configure_input.h
-	    configuration/configure_input_widget.h
             configuration/configure_system.h
             configuration/configure_web.h
             debugger/graphics/graphics.h
@@ -72,8 +70,7 @@ set(HEADERS
             debugger/profiler.h
             debugger/registers.h
             debugger/wait_tree.h
-            updater/updater.h
-            updater/updater_p.h
+	    droparea.h
             multiplayer/chat_room.h
             multiplayer/client_room.h
             multiplayer/direct_connect.h
@@ -82,8 +79,9 @@ set(HEADERS
             multiplayer/lobby_p.h
             multiplayer/message.h
             multiplayer/validation.h
-	    util/clickable_label.h
-	    droparea.h
+            updater/updater.h
+            updater/updater_p.h
+            util/clickable_label.h
             util/spinbox.h
             util/util.h
 	    aboutdialog.h

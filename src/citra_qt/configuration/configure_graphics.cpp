@@ -15,9 +15,10 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     ui->setupUi(this);
     this->setConfiguration();
 
-    ui->layoutBox->setEnabled(!Settings::values.custom_checkbox);
+    ui->layout_combobox->setDisabled(Settings::values.custom_layout);
+    ui->swap_screen->setDisabled(Settings::values.custom_layout);
 
-    connect(ui->layout_bg, SIGNAL (released()), this, SLOT (showLayoutBackgroundDialog()));
+    connect(ui->layout_bg, SIGNAL(released()), this, SLOT(showLayoutBackgroundDialog()));
 }
 
 ConfigureGraphics::~ConfigureGraphics() {}
@@ -112,7 +113,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->toggle_framelimit->setChecked(Settings::values.toggle_framelimit);
     ui->layout_combobox->setCurrentIndex(static_cast<int>(Settings::values.layout_option));
     ui->swap_screen->setChecked(Settings::values.swap_screen);
-    ui->custom_checkbox->setChecked(Settings::values.custom_checkbox);
+    ui->custom_layout->setChecked(Settings::values.custom_layout);
     ui->custom_top_left_spinbox->setValue(Settings::values.custom_top_left);
     ui->custom_top_top_spinbox->setValue(Settings::values.custom_top_top);
     ui->custom_top_right_spinbox->setValue(Settings::values.custom_top_right);
@@ -121,6 +122,14 @@ void ConfigureGraphics::setConfiguration() {
     ui->custom_bottom_top_spinbox->setValue(Settings::values.custom_bottom_top);
     ui->custom_bottom_right_spinbox->setValue(Settings::values.custom_bottom_right);
     ui->custom_bottom_bottom_spinbox->setValue(Settings::values.custom_bottom_bottom);
+    ui->custom_top_left_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_top_top_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_top_right_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_top_bottom_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_bottom_left_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_bottom_top_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_bottom_right_spinbox->setEnabled(Settings::values.custom_layout);
+    ui->custom_bottom_bottom_spinbox->setEnabled(Settings::values.custom_layout);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -135,7 +144,7 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
-    Settings::values.custom_checkbox = ui->custom_checkbox->isChecked();
+    Settings::values.custom_layout = ui->custom_layout->isChecked();
     Settings::values.custom_top_left = ui->custom_top_left_spinbox->value();
     Settings::values.custom_top_top = ui->custom_top_top_spinbox->value();
     Settings::values.custom_top_right = ui->custom_top_right_spinbox->value();

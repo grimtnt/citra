@@ -219,7 +219,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QCheckBox" name="custom_checkbox">
+             <widget class="QCheckBox" name="custom_layout">
               <property name="text">
                <string>Use Custom Layout</string>
               </property>
@@ -383,55 +383,67 @@
    <slot>setEnabled(bool)</slot>
   </connection>
     <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
+    <signal>toggled(bool)</signal>
+    <receiver>layout_combobox</receiver>
+    <slot>setDisabled(bool)</slot>
+   </connection>
+    <connection>
+    <sender>custom_layout</sender>
+    <signal>toggled(bool)</signal>
+    <receiver>swap_screen</receiver>
+    <slot>setDisabled(bool)</slot>
+   </connection>
+    <connection>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>groupBox2</receiver>
     <slot>setDisabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_top_left_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_top_top_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_top_right_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_top_bottom_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_bottom_left_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_bottom_top_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_bottom_right_spinbox</receiver>
     <slot>setEnabled(bool)</slot>
    </connection>
    <connection>
-    <sender>custom_checkbox</sender>
+    <sender>custom_layout</sender>
     <signal>toggled(bool)</signal>
     <receiver>custom_bottom_bottom_spinbox</receiver>
     <slot>setEnabled(bool)</slot>

@@ -68,5 +68,6 @@ struct Values {
     QString host_type;
     qulonglong game_id;
 };
+
 extern Values values;
 } // namespace UISettings

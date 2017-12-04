@@ -140,7 +140,7 @@ static Filter* filter = nullptr;
 void SetFilter(Filter* new_filter) {
     filter = new_filter;
 }
-    
+
 void LogMessage(Class log_class, Level log_level, const char* filename, unsigned int line_nr,
                 const char* function, const char* format, ...) {
     if (filter != nullptr && !filter->CheckMessage(log_class, log_level))

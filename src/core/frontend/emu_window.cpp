@@ -109,8 +109,8 @@ void EmuWindow::TouchMoved(unsigned framebuffer_x, unsigned framebuffer_y) {
 
 void EmuWindow::UpdateCurrentFramebufferLayout(unsigned width, unsigned height) {
     Layout::FramebufferLayout layout;
-    if (Settings::values.custom_checkbox == true) {
-	   layout = Layout::CustomFrameLayout(width, height);
+    if (Settings::values.custom_layout == true) {
+	    layout = Layout::CustomFrameLayout(width, height);
     } else {
         switch (Settings::values.layout_option) {
         case Settings::LayoutOption::SingleScreen:

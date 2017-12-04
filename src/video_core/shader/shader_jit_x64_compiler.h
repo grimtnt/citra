@@ -110,8 +110,8 @@ private:
      * Emits data and code for utility functions.
      */
     void CompilePrelude();
-    void CompilePrelude_Log2();
-    void CompilePrelude_Exp2();
+    Xbyak::Label CompilePrelude_Log2();
+    Xbyak::Label CompilePrelude_Exp2();
 
     const std::array<u32, MAX_PROGRAM_CODE_LENGTH>* program_code = nullptr;
     const std::array<u32, MAX_SWIZZLE_DATA_LENGTH>* swizzle_data = nullptr;
@@ -128,8 +128,8 @@ private:
     using CompiledShader = void(const void* setup, void* state, const u8* start_addr);
     CompiledShader* program = nullptr;
 
-    const void* log2_subroutine;
-    const void* exp2_subroutine;
+    Xbyak::Label log2_subroutine;
+    Xbyak::Label exp2_subroutine;
 };
 
 } // Shader

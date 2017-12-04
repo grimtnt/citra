@@ -101,7 +101,7 @@ struct Values {
 
     LayoutOption layout_option;
     bool swap_screen;
-    bool custom_checkbox;
+    bool custom_layout;
     u16 custom_top_left;
     u16 custom_top_top;
     u16 custom_top_right;
@@ -121,7 +121,7 @@ struct Values {
     std::string sink_id;
     bool enable_audio_stretching;
     std::string audio_device_id;
-    
+
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;
     std::array<std::string, Service::CAM::NumCameras> camera_config;
@@ -134,7 +134,7 @@ struct Values {
     bool enable_telemetry;
     std::string telemetry_endpoint_url;
     std::string verify_endpoint_url;
-	std::string announce_multiplayer_room_endpoint_url;
+    std::string announce_multiplayer_room_endpoint_url;
     std::string citra_username;
     std::string citra_token;
 } extern values;

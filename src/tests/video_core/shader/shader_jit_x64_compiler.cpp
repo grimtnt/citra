@@ -2,8 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#ifdef ARCHITECTURE_x86_64
-
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -35,61 +33,59 @@ static std::unique_ptr<JitShader> CompileShader(std::initializer_list<nihstro::I
     return shader;
 }
 
+class ShaderTest {
+public:
+    explicit ShaderTest(std::initializer_list<nihstro::InlineAsm> code)
+        : shader(CompileShader(code)) {}
+
+    float Run(float input) {
+        Pica::Shader::ShaderSetup shader_setup;
+        Pica::Shader::UnitState shader_unit;
+
+        shader_unit.registers.input[0].x = float24::FromFloat32(input);
+        shader->Run(shader_setup, shader_unit, 0);
+        return shader_unit.registers.output[0].x.ToFloat32();
+    }
+
+public:
+    std::unique_ptr<JitShader> shader;
+};
+
 TEST_CASE("LG2", "[video_core][shader][shader_jit]") {
     const auto sh_input = SourceRegister::MakeInput(0);
     const auto sh_output = DestRegister::MakeOutput(0);
 
-    auto shader = CompileShader({
+    auto shader = ShaderTest({
         // clang-format off
         {OpCode::Id::LG2, sh_output, sh_input},
         {OpCode::Id::END},
         // clang-format on
     });
 
-    const auto run = [&](float input) {
-        Pica::Shader::ShaderSetup shader_setup;
-        Pica::Shader::UnitState shader_unit;
-
-        shader_unit.registers.input[0].x = float24::FromFloat32(input);
-        shader->Run(shader_setup, shader_unit, 0);
-        return shader_unit.registers.output[0].x.ToFloat32();
-    };
-
-    REQUIRE(std::isnan(run(NAN)));
-    REQUIRE(std::isnan(run(-1.f)));
-    REQUIRE(std::isinf(run(0.f)));
-    REQUIRE(run(4.f) == Approx(2.f));
-    REQUIRE(run(64.f) == Approx(6.f));
-    REQUIRE(run(1.e24f) == Approx(79.7262742773f));
+    REQUIRE(std::isnan(shader.Run(NAN)));
+    REQUIRE(std::isnan(shader.Run(-1.f)));
+    REQUIRE(std::isinf(shader.Run(0.f)));
+    REQUIRE(shader.Run(4.f) == Approx(2.f));
+    REQUIRE(shader.Run(64.f) == Approx(6.f));
+    REQUIRE(shader.Run(1.e24f) == Approx(79.7262742773f));
 }
 
 TEST_CASE("EX2", "[video_core][shader][shader_jit]") {
     const auto sh_input = SourceRegister::MakeInput(0);
     const auto sh_output = DestRegister::MakeOutput(0);
 
-    auto shader = CompileShader({
+    auto shader = ShaderTest({
         // clang-format off
         {OpCode::Id::EX2, sh_output, sh_input},
         {OpCode::Id::END},
         // clang-format on
     });
 
-    const auto run = [&](float input) {
-        Pica::Shader::ShaderSetup shader_setup;
-        Pica::Shader::UnitState shader_unit;
-
-        shader_unit.registers.input[0].x = float24::FromFloat32(input);
-        shader->Run(shader_setup, shader_unit, 0);
-        return shader_unit.registers.output[0].x.ToFloat32();
-    };
-
-    REQUIRE(std::isnan(run(NAN)));
-    REQUIRE(run(-800.f) == Approx(0.f));
-    REQUIRE(run(0.f) == Approx(1.f));
-    REQUIRE(run(2.f) == Approx(4.f));
-    REQUIRE(run(6.f) == Approx(64.f));
-    REQUIRE(run(79.7262742773f) == Approx(1.e24f));
-    REQUIRE(std::isinf(run(800.f)));
+    REQUIRE(std::isnan(shader.Run(NAN)));
+    REQUIRE(shader.Run(-800.f) == Approx(0.f));
+    REQUIRE(shader.Run(0.f) == Approx(1.f));
+    REQUIRE(shader.Run(2.f) == Approx(4.f));
+    REQUIRE(shader.Run(6.f) == Approx(64.f));
+    REQUIRE(shader.Run(79.7262742773f) == Approx(1.e24f));
+    REQUIRE(std::isinf(shader.Run(800.f)));
 }
-
-#endif // ARCHITECTURE_x86_64

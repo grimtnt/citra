@@ -25,7 +25,7 @@ void Module::Interface::CreateDefaultConfig(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
-    rb.PushStaticBuffer(buffer, 0);
+    rb.PushStaticBuffer(std::move(buffer), 0);
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
@@ -123,7 +123,7 @@ void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
-    rb.PushStaticBuffer(ac_config, 0);
+    rb.PushStaticBuffer(std::move(ac_config), 0);
 
     LOG_WARNING(Service_AC, "(STUBBED) called, major=%u, minor=%u", major, minor);
 }

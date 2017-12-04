@@ -780,9 +780,6 @@ void JitShader::Compile_EMIT(Instruction instr) {
     mov(ABI_PARAM2, STATE);
     add(ABI_PARAM2, static_cast<Xbyak::uint32>(offsetof(UnitState, registers.output)));
     CallFarFunction(*this, Emit);
-    if (Common::GetCPUCaps().avx) {
-        vzeroupper();
-    }
     ABI_PopRegistersAndAdjustStack(*this, PersistentCallerSavedRegs(), 0);
     L(end);
 }
@@ -882,11 +879,6 @@ void JitShader::Compile(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>* program_
     // Find all `CALL` instructions and identify return locations
     FindReturnOffsets();
 
-    // An AVX-SSE transition may happen here as we emit only SSE instructions.
-    if (Common::GetCPUCaps().avx) {
-        vzeroupper();
-    }
-
     // The stack pointer is 8 modulo 16 at the entry of a procedure
     // We reserve 16 bytes and assign a dummy value to the first 8 bytes, to catch any potential
     // return checks (see Compile_Return) that happen in shader main routine.
@@ -934,11 +926,13 @@ JitShader::JitShader() : Xbyak::CodeGenerator(MAX_SHADER_SIZE) {
 }
 
 void JitShader::CompilePrelude() {
-    CompilePrelude_Log2();
-    CompilePrelude_Exp2();
+    log2_subroutine = CompilePrelude_Log2();
+    exp2_subroutine = CompilePrelude_Exp2();
 }
 
-void JitShader::CompilePrelude_Log2() {
+Xbyak::Label JitShader::CompilePrelude_Log2() {
+    Xbyak::Label subroutine;
+
     // SSE does not have a log instruction, thus we must approximate.
     // We perform this approximation first performaing a range reduction into the range [1.0, 2.0).
     // A minimax polynomial which was fit for the function log2(x) / (x - 1) is then evaluated.
@@ -974,8 +968,6 @@ void JitShader::CompilePrelude_Log2() {
     Xbyak::Label input_is_nan, input_is_zero, input_out_of_range;
 
     align(16);
-    L(input_is_nan);
-    ret();
     L(input_out_of_range);
     je(input_is_zero);
     movaps(SRC1, xword[rip + default_qnan_vector]);
@@ -985,7 +977,7 @@ void JitShader::CompilePrelude_Log2() {
     ret();
 
     align(16);
-    log2_subroutine = getCurr();
+    L(subroutine);
 
     // Here we handle edge cases: input in {NaN, 0, -Inf, Negative}.
     xorps(SCRATCH, SCRATCH);
@@ -1023,12 +1015,17 @@ void JitShader::CompilePrelude_Log2() {
     // Duplicate result across vector
     xorps(SRC1, SRC1); // break dependency chain
     movss(SRC1, SCRATCH2);
+    L(input_is_nan);
     shufps(SRC1, SRC1, _MM_SHUFFLE(0, 0, 0, 0));
 
     ret();
+
+    return subroutine;
 }
 
-void JitShader::CompilePrelude_Exp2() {
+Xbyak::Label JitShader::CompilePrelude_Exp2() {
+    Xbyak::Label subroutine;
+
     // SSE does not have a exp instruction, thus we must approximate.
     // We perform this approximation first performaing a range reduction into the range [-0.5, 0.5).
     // A minimax polynomial which was fit for the function exp2(x) is then evaluated.
@@ -1055,11 +1052,7 @@ void JitShader::CompilePrelude_Exp2() {
     Xbyak::Label ret_label;
 
     align(16);
-    L(ret_label);
-    ret();
-
-    align(16);
-    exp2_subroutine = getCurr();
+    L(subroutine);
 
     // Handle edge cases
     ucomiss(SRC1, SRC1);
@@ -1094,9 +1087,12 @@ void JitShader::CompilePrelude_Exp2() {
     mulss(SRC1, SCRATCH);
 
     // Duplicate result across vector
+    L(ret_label);
     shufps(SRC1, SRC1, _MM_SHUFFLE(0, 0, 0, 0));
 
     ret();
+
+    return subroutine;
 }
 
 } // namespace Shader
