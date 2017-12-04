@@ -114,7 +114,6 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
                   (*session)->GetObjectId());
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
         rb.Push(session.Code());
-        // TODO: confirm that this is Move, not Copy
         rb.PushMoveObjects(std::move(session).Unwrap());
     } else if (session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED && wait_until_available) {
         LOG_WARNING(Service_SRV, "called service=%s -> ERR_MAX_CONNECTIONS_REACHED", name.c_str());
@@ -205,7 +204,6 @@ void SRV::RegisterService(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
-    // TODO: confirm that this is Move, not Copy
     rb.PushMoveObjects(port.Unwrap());
 }
 
