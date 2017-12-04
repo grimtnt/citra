@@ -9,6 +9,7 @@
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
+#include "core/settings.h"
 #include "core/hle/service/dsp_dsp.h"
 
 namespace DSP {
@@ -162,8 +163,13 @@ void PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer) {
         return;
     }
     case DspPipe::Binary:
-        std::copy(buffer.begin(), buffer.end(), std::back_inserter(pipe_data[static_cast<size_t>(DspPipe::Binary)]));
-        return;
+        if (!Settings::values.enable_pipe3)
+          return;
+        else
+          std::copy(
+              buffer.begin(), buffer.end(),
+              std::back_inserter(pipe_data[static_cast<size_t>(DspPipe::Binary)]));
+          return;
     default:
         LOG_CRITICAL(Audio_DSP, "pipe_number = %zu unimplemented",
                      static_cast<size_t>(pipe_number));

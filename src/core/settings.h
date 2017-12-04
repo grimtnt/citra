@@ -120,6 +120,7 @@ struct Values {
     // Audio
     std::string sink_id;
     bool enable_audio_stretching;
+    bool enable_pipe3;
     std::string audio_device_id;
 
     // Camera

@@ -135,6 +135,9 @@ output_engine =
 # 0: No, 1 (default): Yes
 enable_audio_stretching =
 
+# Enable Pipe 2 Channel 3 (Binary Pipe)
+enable_pipe3 =
+
 # Which audio device to use.
 # auto (default): Auto-select
 output_device =

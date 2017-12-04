@@ -123,6 +123,8 @@ void Config::ReadValues() {
     Settings::values.sink_id = sdl2_config->Get("Audio", "output_engine", "auto");
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
+    Settings::values.enable_pipe3 =
+        sdl2_config->GetBoolean("Audio", "enable_pipe3", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");
 
     // Data Storage

@@ -38,6 +38,7 @@ void ConfigureAudio::setConfiguration() {
     ui->output_sink_combo_box->setCurrentIndex(new_sink_index);
 
     ui->toggle_audio_stretching->setChecked(Settings::values.enable_audio_stretching);
+    ui->toggle_pipe3->setChecked(Settings::values.enable_pipe3);
 
     // The device list cannot be pre-populated (nor listed) until the output sink is known.
     updateAudioDevices(new_sink_index);
@@ -58,6 +59,7 @@ void ConfigureAudio::applyConfiguration() {
         ui->output_sink_combo_box->itemText(ui->output_sink_combo_box->currentIndex())
             .toStdString();
     Settings::values.enable_audio_stretching = ui->toggle_audio_stretching->isChecked();
+    Settings::values.enable_pipe3 = ui->toggle_pipe3->isChecked();
     Settings::values.audio_device_id =
         ui->audio_device_combo_box->itemText(ui->audio_device_combo_box->currentIndex())
             .toStdString();
