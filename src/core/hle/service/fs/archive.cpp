@@ -130,7 +130,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
 }
 
 void File::Write(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0803, 3, 2);
+    IPC::RequestParser rp(ctx, 0x0803, 4, 2);
     u64 offset = rp.Pop<u64>();
     u32 length = rp.Pop<u32>();
     u32 flush = rp.Pop<u32>();
