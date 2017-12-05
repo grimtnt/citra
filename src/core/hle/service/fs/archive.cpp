@@ -117,7 +117,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
     u32 length = rp.Pop<u32>();
     u32 flush = rp.Pop<u32>();
     auto& buffer = rp.PopMappedBuffer();
-    LOG_TRACE(Service_FS, "Write %s: offset=0x%llx length=%d, flush=0x%x", GetName().c_str(),
+    LOG_TRACE(Service_FS, "Write %s: offset=0x%" PRIx64 " length=%d, flush=0x%x", GetName().c_str(),
               offset, length, flush);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
