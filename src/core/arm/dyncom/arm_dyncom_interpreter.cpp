@@ -1404,7 +1404,6 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
     cpu->VFlag = (cpu->Cpsr >> 28) & 1;                                                            \
     cpu->TFlag = (cpu->Cpsr >> 5) & 1;
 
-#define CurrentModeHasSPSR (cpu->Mode != SYSTEM32MODE) && (cpu->Mode != USER32MODE)
 #define PC (cpu->Reg[15])
 
 // GCC and Clang have a C++ extension to support a lookup table of labels. Otherwise, fallback
@@ -1670,7 +1669,7 @@ ADC_INST : {
         RD = AddWithCarry(rn_val, SHIFTER_OPERAND, cpu->CFlag, &carry, &overflow);
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -1702,7 +1701,7 @@ ADD_INST : {
         RD = AddWithCarry(rn_val, SHIFTER_OPERAND, 0, &carry, &overflow);
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Cpsr & 0x1F);
                 LOAD_NZCVT;
@@ -1736,7 +1735,7 @@ AND_INST : {
         RD = lop & rop;
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Cpsr & 0x1F);
                 LOAD_NZCVT;
@@ -1780,7 +1779,7 @@ BIC_INST : {
         u32 rop = SHIFTER_OPERAND;
         RD = lop & (~rop);
         if ((inst_cream->S) && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -1996,7 +1995,7 @@ EOR_INST : {
         u32 rop = SHIFTER_OPERAND;
         RD = lop ^ rop;
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -2076,7 +2075,7 @@ LDM_INST : {
                 }
             }
 
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Cpsr & 0x1F);
                 LOAD_NZCVT;
@@ -2405,7 +2404,7 @@ MOV_INST : {
 
         RD = SHIFTER_OPERAND;
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -2511,7 +2510,7 @@ MSR_INST : {
             cpu->ChangePrivilegeMode(cpu->Cpsr & 0x1F);
             LOAD_NZCVT;
         } else {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 mask = byte_mask & (UserMask | PrivMask | StateMask);
                 cpu->Spsr_copy = (cpu->Spsr_copy & ~mask) | (operand & mask);
             }
@@ -2546,7 +2545,7 @@ MVN_INST : {
         RD = ~SHIFTER_OPERAND;
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -2579,7 +2578,7 @@ ORR_INST : {
         RD = lop | rop;
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -2833,7 +2832,7 @@ RSB_INST : {
         RD = AddWithCarry(~rn_val, SHIFTER_OPERAND, 1, &carry, &overflow);
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -2867,7 +2866,7 @@ RSC_INST : {
         RD = AddWithCarry(~rn_val, SHIFTER_OPERAND, cpu->CFlag, &carry, &overflow);
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -3009,7 +3008,7 @@ SBC_INST : {
         RD = AddWithCarry(rn_val, ~SHIFTER_OPERAND, cpu->CFlag, &carry, &overflow);
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
@@ -3836,7 +3835,7 @@ SUB_INST : {
         RD = AddWithCarry(rn_val, ~SHIFTER_OPERAND, 1, &carry, &overflow);
 
         if (inst_cream->S && (inst_cream->Rd == 15)) {
-            if (CurrentModeHasSPSR) {
+            if (cpu->CurrentModeHasSPSR()) {
                 cpu->Cpsr = cpu->Spsr_copy;
                 cpu->ChangePrivilegeMode(cpu->Spsr_copy & 0x1F);
                 LOAD_NZCVT;
