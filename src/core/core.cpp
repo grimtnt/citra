@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <utility>
-#include "common/file_util.h"
 #include "audio_core/audio_core.h"
 #include "common/logging/log.h"
 #include "core/arm/arm_interface.h"
@@ -24,8 +23,6 @@
 #include "core/settings.h"
 #include "network/network.h"
 #include "video_core/video_core.h"
-
-using namespace std;
 
 namespace Core {
 
