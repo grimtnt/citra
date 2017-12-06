@@ -371,7 +371,7 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
         }
     }
 
-    Core::CPU().ClearInstructionCache();
+    Core::CPU().InvalidateCacheRange(cro_address, cro_size);
 
     LOG_INFO(Service_LDR, "CRO \"%s\" loaded at 0x%08X, fixed_end=0x%08X", cro.ModuleName().data(),
              cro_address, cro_address + fix_size);
@@ -451,7 +451,7 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
         slot.memory_synchronizer.RemoveMemoryBlock(cro_address, cro_buffer_ptr);
     }
 
-    Core::CPU().ClearInstructionCache();
+    Core::CPU().InvalidateCacheRange(cro_address, fixed_size);
 
     rb.Push(result);
 }
@@ -496,7 +496,6 @@ void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
     }
 
     slot.memory_synchronizer.SynchronizeOriginalMemory(*process);
-    Core::CPU().ClearInstructionCache();
 
     rb.Push(result);
 }
@@ -541,7 +540,6 @@ void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
     }
 
     slot.memory_synchronizer.SynchronizeOriginalMemory(*process);
-    Core::CPU().ClearInstructionCache();
 
     rb.Push(result);
 }
