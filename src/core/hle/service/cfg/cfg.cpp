@@ -231,6 +231,10 @@ void GetSystemModel(Service::Interface* self) {
     cmd_buff[2] = data & 0xFF;
 }
 
+void GetSystemModelId(u32 out) {
+    Service::CFG::GetConfigInfoBlock(0x000F0004, 4, 0x8, reinterpret_cast<u8*>(&out));
+}
+
 void GetModelNintendo2DS(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
     u32 data;
