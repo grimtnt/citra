@@ -102,8 +102,6 @@ void Config::ReadValues() {
     Settings::values.sink_id = qt_config->value("output_engine", "auto").toString().toStdString();
     Settings::values.enable_audio_stretching =
         qt_config->value("enable_audio_stretching", true).toBool();
-    Settings::values.enable_pipe3 =
-        qt_config->value("enable_pipe3", true).toBool();
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
     qt_config->endGroup();
@@ -161,6 +159,10 @@ void Config::ReadValues() {
             .toStdString();
     Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
     Settings::values.citra_token = qt_config->value("citra_token").toString().toStdString();
+    qt_config->endGroup();
+    
+    qt_config->beginGroup("Hacks");
+    Settings::values.enable_pipe3 = qt_config->value("enable_pipe3", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");
@@ -334,6 +336,10 @@ void Config::SaveValues() {
         QString::fromStdString(Settings::values.announce_multiplayer_room_endpoint_url));
     qt_config->setValue("citra_username", QString::fromStdString(Settings::values.citra_username));
     qt_config->setValue("citra_token", QString::fromStdString(Settings::values.citra_token));
+    qt_config->endGroup();
+
+    qt_config->beginGroup("Hacks");
+    qt_config->setValue("enable_pipe3", Settings::values.enable_pipe3);
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");

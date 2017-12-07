@@ -123,8 +123,6 @@ void Config::ReadValues() {
     Settings::values.sink_id = sdl2_config->Get("Audio", "output_engine", "auto");
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
-    Settings::values.enable_pipe3 =
-        sdl2_config->GetBoolean("Audio", "enable_pipe3", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");
 
     // Data Storage
@@ -171,6 +169,9 @@ void Config::ReadValues() {
                          "https://services.citra-emu.org/api/multiplayer/rooms");
     Settings::values.citra_username = sdl2_config->Get("WebService", "citra_username", "");
     Settings::values.citra_token = sdl2_config->Get("WebService", "citra_token", "");
+    
+    // Hacks
+    Settings::values.enable_pipe3 = sdl2_config->GetBoolean("Hacks", "enable_pipe3", true);
 }
 
 void Config::Reload() {

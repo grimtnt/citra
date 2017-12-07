@@ -135,9 +135,6 @@ output_engine =
 # 0: No, 1 (default): Yes
 enable_audio_stretching =
 
-# Enable Pipe 2 Channel 3 (Binary Pipe)
-enable_pipe3 =
-
 # Which audio device to use.
 # auto (default): Auto-select
 output_device =
@@ -196,5 +193,9 @@ announce_multiplayer_room_endpoint_url = https://services.citra-emu.org/api/mult
 # See https://services.citra-emu.org/ for more info
 citra_username =
 citra_token =
+
+[Hacks]
+# Enable Pipe 2 Channel 3 (Binary Pipe)
+enable_pipe3 =
 )";
 }

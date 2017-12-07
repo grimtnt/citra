@@ -25,5 +25,6 @@ void ConfigureDialog::applyConfiguration() {
     ui->cameraTab->applyConfiguration();
     ui->debugTab->applyConfiguration();
     ui->webTab->applyConfiguration();
+    ui->hacksTab->applyConfiguration();
     Settings::Apply();
 }

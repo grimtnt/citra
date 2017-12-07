@@ -120,7 +120,6 @@ struct Values {
     // Audio
     std::string sink_id;
     bool enable_audio_stretching;
-    bool enable_pipe3;
     std::string audio_device_id;
 
     // Camera
@@ -138,6 +137,9 @@ struct Values {
     std::string announce_multiplayer_room_endpoint_url;
     std::string citra_username;
     std::string citra_token;
+
+    // Hacks
+    bool enable_pipe3;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region

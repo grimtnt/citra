@@ -59,6 +59,11 @@
        <string>Web</string>
       </attribute>
      </widget>
+     <widget class="ConfigureHacks" name="hacksTab">
+      <attribute name="title">
+       <string>Hacks</string>
+      </attribute>
+     </widget>
     </widget>
    </item>
    <item>
@@ -117,6 +122,12 @@
    <class>ConfigureWeb</class>
    <extends>QWidget</extends>
    <header>configuration/configure_web.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConfigureHacks</class>
+   <extends>QWidget</extends>
+   <header>configuration/configure_hacks.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
