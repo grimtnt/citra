@@ -397,7 +397,6 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
     if (find_result == slots.end()) {
         LOG_ERROR(Service_LDR, "Not initialized");
         rb.Push(ERROR_NOT_INITIALIZED);
-        rb.Push<u32>(0);
         return;
     }
     auto& slot = find_result->second;
@@ -471,7 +470,6 @@ void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
     if (find_result == slots.end()) {
         LOG_ERROR(Service_LDR, "Not initialized");
         rb.Push(ERROR_NOT_INITIALIZED);
-        rb.Push<u32>(0);
         return;
     }
     auto& slot = find_result->second;
@@ -515,7 +513,6 @@ void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
     if (find_result == slots.end()) {
         LOG_ERROR(Service_LDR, "Not initialized");
         rb.Push(ERROR_NOT_INITIALIZED);
-        rb.Push<u32>(0);
         return;
     }
     auto& slot = find_result->second;
@@ -557,7 +554,6 @@ void RO::Shutdown(Kernel::HLERequestContext& ctx) {
     if (find_result == slots.end()) {
         LOG_ERROR(Service_LDR, "Not initialized");
         rb.Push(ERROR_NOT_INITIALIZED);
-        rb.Push<u32>(0);
         return;
     }
     auto& slot = find_result->second;
