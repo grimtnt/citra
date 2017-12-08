@@ -83,7 +83,7 @@ after_build:
 
         # Generate pdb files for mingw
         if ($env:BUILD_TYPE -eq 'mingw') {
-          Invoke-WebRequest -Uri https://raw.githubusercontent.com/MerryMage/ext-windows-bin/master/cv2pdb/cv2pdb.exe -OutFile cv2pdb.exe
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/citra-emu/ext-windows-bin/master/cv2pdb/cv2pdb.exe -OutFile cv2pdb.exe
           foreach ($exe in Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe") {
             .\cv2pdb $exe.FullName
           }
@@ -144,15 +144,13 @@ after_build:
           Copy-Item .\updater.ps1 -Destination $RELEASE_DIST\updater.ps1
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value 1
-          Copy-Item ".\Text Files\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
+          Copy-Item ".\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
           7z a $MSVC_SEVENZIP $RELEASE_DIST
         } else {
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
           $MINGW_BUILD_PDB = "citra-windows-mingw-$GITDATE-$GITREV-debugsymbols.zip" -replace " ", ""
           $MINGW_SEVENZIP = "citra-windows-mingw-$GITDATE-$GITREV.7z" -replace " ", ""
-          # not going to bother adding separate debug symbols for mingw, so just upload a README for it
-          # if someone wants to add them, change mingw to compile with -g and use objdump and strip to separate the symbols from the binary
 
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
@@ -173,7 +171,7 @@ after_build:
           Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR\Text Files/1.ReadMe First.txt" -destination "$RELEASE_DIST\1.ReadMe First.txt"
+          Copy-Item -path "$CMAKE_SOURCE_DIR\1.ReadMe First.txt" -destination "$RELEASE_DIST\1.ReadMe First.txt"
           Copy-Item -path "$CMAKE_SOURCE_DIR\license.txt" -destination "$RELEASE_DIST\2.license.txt"
           Copy-Item -path "$CMAKE_SOURCE_DIR\updater.ps1" -destination "$RELEASE_DIST\updater.ps1"
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
