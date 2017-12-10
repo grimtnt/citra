@@ -6,6 +6,7 @@
 #include "common/logging/log.h"
 #include "core/file_sys/errors.h"
 #include "core/file_sys/file_backend.h"
+#include "core/hle/kernel/svc.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/ptm/ptm_gets.h"
@@ -14,7 +15,6 @@
 #include "core/hle/service/ptm/ptm_sysm.h"
 #include "core/hle/service/ptm/ptm_u.h"
 #include "core/hle/service/service.h"
-#include "core/hle/svc.h"
 #include "core/settings.h"
 
 namespace Service {
@@ -141,7 +141,7 @@ void ConfigureNew3DSCPU(Interface* self) {
     u32* Push = Kernel::GetCommandBuffer();
     u32 value = Push[1] & 0xF;
     IPC::MakeHeader(0x818, 0x1, 0);
-    SVC::KernelSetState(static_cast<u32>(SVC::KernelSetStateType::ConfigureNew3DSCPU),
+    Kernel::KernelSetState(static_cast<u32>(Kernel::KernelSetStateType::ConfigureNew3DSCPU),
     value, 0, 0)
     .raw;
     LOG_WARNING(Service_PTM, "(STUBBED) called");
