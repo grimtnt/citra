@@ -6,6 +6,7 @@
 #include <utility>
 #include "audio_core/audio_core.h"
 #include "common/logging/log.h"
+#include "common/file_util.h"
 #include "core/arm/arm_interface.h"
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dyncom/arm_dyncom.h"
@@ -174,6 +175,18 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     GetAndResetPerfStats();
     perf_stats.BeginSystemFrame();
 
+    if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course220")) {
+        System::FixSMMEUR();
+    }
+    
+    if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220")) {
+        System::FixSMMUSA();
+    }
+
+    if (FileUtil::Exists(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course220")) {
+        System::FixSMMJPN();
+    }
+
     return ResultStatus::Success;
 }
 
@@ -205,6 +218,45 @@ void System::Shutdown() {
     }
 
     LOG_DEBUG(Core, "Shutdown OK");
+}
+
+void System::FixSMMEUR() {
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course220");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course219");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course218");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course217");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course216");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course220");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course219");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course218");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course217");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A05/user/course216");
+}
+
+void System::FixSMMUSA() {
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course219");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course218");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course217");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course216");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course220");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course219");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course218");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course217");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A04/user/course216");
+}
+
+void System::FixSMMJPN() {
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course220");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course219");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course218");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course217");
+        FileUtil::Delete(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course216");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course220");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course219");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course218");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course217");
+        FileUtil::CreateEmptyFile(FileUtil::GetUserPath(D_SDMC_IDX) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/00001A03/user/course216");
 }
 
 } // namespace Core
