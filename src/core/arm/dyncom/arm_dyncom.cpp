@@ -12,7 +12,7 @@
 #include "core/core.h"
 #include "core/core_timing.h"
 
-struct DynComThreadContext final : public ARM_Interface::ThreadContext {
+class DynComThreadContext final : public ARM_Interface::ThreadContext {
 public:
     DynComThreadContext() {
         Reset();
@@ -149,7 +149,7 @@ void ARM_DynCom::ExecuteInstructions(int num_instructions) {
     CoreTiming::AddTicks(ticks_executed);
 }
 
-std::unique_ptr<ARM_Interface::ThreadContext> ARM_DynCom::NewContext() {
+std::unique_ptr<ARM_Interface::ThreadContext> ARM_DynCom::NewContext() const {
     return std::make_unique<DynComThreadContext>();
 }
 

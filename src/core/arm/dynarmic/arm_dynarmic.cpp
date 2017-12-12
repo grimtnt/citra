@@ -15,7 +15,7 @@
 #include "core/hle/kernel/svc.h"
 #include "core/memory.h"
 
-struct DynarmicThreadContext final : public ARM_Interface::ThreadContext {
+class DynarmicThreadContext final : public ARM_Interface::ThreadContext {
 public:
     DynarmicThreadContext() {
         Reset();
@@ -202,7 +202,7 @@ void ARM_Dynarmic::SetCP15Register(CP15Register reg, u32 value) {
     interpreter_state->CP15[reg] = value;
 }
 
-std::unique_ptr<ARM_Interface::ThreadContext> ARM_Dynarmic::NewContext() {
+std::unique_ptr<ARM_Interface::ThreadContext> ARM_Dynarmic::NewContext() const {
     return std::make_unique<DynarmicThreadContext>();
 }
 

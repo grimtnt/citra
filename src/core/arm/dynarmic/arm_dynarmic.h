@@ -35,7 +35,7 @@ public:
     u32 GetCP15Register(CP15Register reg) override;
     void SetCP15Register(CP15Register reg, u32 value) override;
 
-    std::unique_ptr<ThreadContext> NewContext() override;
+    std::unique_ptr<ThreadContext> NewContext() const override;
     void SaveContext(const std::unique_ptr<ThreadContext>& arg) override;
     void LoadContext(const std::unique_ptr<ThreadContext>& arg) override;
 

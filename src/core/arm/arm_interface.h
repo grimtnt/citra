@@ -15,7 +15,7 @@ class ARM_Interface : NonCopyable {
 public:
     virtual ~ARM_Interface() {}
 
-    struct ThreadContext {
+    class ThreadContext {
     public:
         virtual ~ThreadContext() = default;
 
@@ -154,9 +154,9 @@ public:
 
     /**
      * Creates a CPU context
-     * @param ctx Thread context to save
+     * @note The created context may only be used with this instance.
      */
-    virtual std::unique_ptr<ThreadContext> NewContext() = 0;
+    virtual std::unique_ptr<ThreadContext> NewContext() const = 0;
 
     /**
      * Saves the current CPU context
