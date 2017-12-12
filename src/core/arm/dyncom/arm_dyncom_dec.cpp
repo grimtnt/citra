@@ -5,8 +5,7 @@
 #include "core/arm/dyncom/arm_dyncom_dec.h"
 #include "core/arm/skyeye_common/armsupp.h"
 
-namespace
-{
+namespace {
 struct InstructionSetEncodingItem {
     const char* name;
     int attribute_value;
