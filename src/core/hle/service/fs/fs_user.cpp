@@ -69,9 +69,10 @@ static void OpenFile(Service::Interface* self) {
     rp.Pop<u32>(); // Always 0 ?
 
     ArchiveHandle archive_handle = rp.Pop<u64>();
-    auto filename_type = rp.PopEnum<FileSys::LowPathType>();
+    auto filename_type = static_cast<FileSys::LowPathType>(rp.Pop<u32>());
     u32 filename_size = rp.Pop<u32>();
-    FileSys::Mode mode{rp.Pop<u32>()};
+    FileSys::Mode mode;
+    mode.hex = rp.Pop<u32>();
     u32 attributes = rp.Pop<u32>(); // TODO(Link Mauve): do something with those attributes.
     VAddr filename_ptr = rp.PopStaticBuffer(nullptr);
     FileSys::Path file_path(filename_type, filename_size, filename_ptr);
@@ -112,18 +113,18 @@ static void OpenFile(Service::Interface* self) {
  *      3 : File handle
  */
 static void OpenFileDirectly(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x803, 8, 4);
-    rp.Skip(1, false); // Transaction
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    auto archive_id = rp.PopEnum<FS::ArchiveIdCode>();
-    auto archivename_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 archivename_size = rp.Pop<u32>();
-    auto filename_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 filename_size = rp.Pop<u32>();
-    FileSys::Mode mode{rp.Pop<u32>()};
-    u32 attributes = rp.Pop<u32>(); // TODO(Link Mauve): do something with those attributes.
-    u32 archivename_ptr = rp.PopStaticBuffer(nullptr);
-    u32 filename_ptr = rp.PopStaticBuffer(nullptr);
+    auto archive_id = static_cast<FS::ArchiveIdCode>(cmd_buff[2]);
+    auto archivename_type = static_cast<FileSys::LowPathType>(cmd_buff[3]);
+    u32 archivename_size = cmd_buff[4];
+    auto filename_type = static_cast<FileSys::LowPathType>(cmd_buff[5]);
+    u32 filename_size = cmd_buff[6];
+    FileSys::Mode mode;
+    mode.hex = cmd_buff[7];
+    u32 attributes = cmd_buff[8]; // TODO(Link Mauve): do something with those attributes.
+    u32 archivename_ptr = cmd_buff[10];
+    u32 filename_ptr = cmd_buff[12];
     FileSys::Path archive_path(archivename_type, archivename_size, archivename_ptr);
     FileSys::Path file_path(filename_type, filename_size, filename_ptr);
 
@@ -131,27 +132,25 @@ static void OpenFileDirectly(Service::Interface* self) {
               static_cast<u32>(archive_id), archive_path.DebugStr().c_str(),
               file_path.DebugStr().c_str(), mode.hex, attributes);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
-
     ResultVal<ArchiveHandle> archive_handle = OpenArchive(archive_id, archive_path);
     if (archive_handle.Failed()) {
         LOG_ERROR(Service_FS,
                   "Failed to get a handle for archive archive_id=0x%08X archive_path=%s",
                   static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
-        rb.Push(archive_handle.Code());
-        rb.PushMoveHandles(0);
+        cmd_buff[1] = archive_handle.Code().raw;
+        cmd_buff[3] = 0;
         return;
     }
     SCOPE_EXIT({ CloseArchive(*archive_handle); });
 
     ResultVal<std::shared_ptr<File>> file_res =
         OpenFileFromArchive(*archive_handle, file_path, mode);
-    rb.Push(file_res.Code());
+    cmd_buff[1] = file_res.Code().raw;
     if (file_res.Succeeded()) {
         std::shared_ptr<File> file = *file_res;
-        rb.PushMoveHandles(Kernel::g_handle_table.Create(file->Connect()).Unwrap());
+        cmd_buff[3] = Kernel::g_handle_table.Create(file->Connect()).Unwrap();
     } else {
-        rb.PushMoveHandles(0);
+        cmd_buff[3] = 0;
         LOG_ERROR(Service_FS, "failed to get a handle for file %s mode=%u attributes=%u",
                   file_path.DebugStr().c_str(), mode.hex, attributes);
     }
@@ -169,20 +168,19 @@ static void OpenFileDirectly(Service::Interface* self) {
  *      1 : Result of function, 0 on success, otherwise error code
  */
 static void DeleteFile(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x804, 5, 2);
-    rp.Skip(1, false); // TransactionId
-    ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
-    auto filename_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 filename_size = rp.Pop<u32>();
-    u32 filename_ptr = rp.PopStaticBuffer(nullptr);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    ArchiveHandle archive_handle = MakeArchiveHandle(cmd_buff[2], cmd_buff[3]);
+    auto filename_type = static_cast<FileSys::LowPathType>(cmd_buff[4]);
+    u32 filename_size = cmd_buff[5];
+    u32 filename_ptr = cmd_buff[7];
 
     FileSys::Path file_path(filename_type, filename_size, filename_ptr);
 
     LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(filename_type), filename_size,
               file_path.DebugStr().c_str());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(DeleteFileFromArchive(archive_handle, file_path));
+    cmd_buff[1] = DeleteFileFromArchive(archive_handle, file_path).raw;
 }
 
 /*
@@ -202,17 +200,17 @@ static void DeleteFile(Service::Interface* self) {
  *      1 : Result of function, 0 on success, otherwise error code
  */
 static void RenameFile(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x805, 9, 4);
-    rp.Skip(1, false); // TransactionId
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    ArchiveHandle src_archive_handle = rp.PopRaw<ArchiveHandle>();
-    auto src_filename_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 src_filename_size = rp.Pop<u32>();
-    ArchiveHandle dest_archive_handle = rp.PopRaw<ArchiveHandle>();
-    auto dest_filename_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 dest_filename_size = rp.Pop<u32>();
-    u32 src_filename_ptr = rp.PopStaticBuffer(nullptr);
-    u32 dest_filename_ptr = rp.PopStaticBuffer(nullptr);
+    ArchiveHandle src_archive_handle = MakeArchiveHandle(cmd_buff[2], cmd_buff[3]);
+    auto src_filename_type = static_cast<FileSys::LowPathType>(cmd_buff[4]);
+    u32 src_filename_size = cmd_buff[5];
+    ArchiveHandle dest_archive_handle = MakeArchiveHandle(cmd_buff[6], cmd_buff[7]);
+    ;
+    auto dest_filename_type = static_cast<FileSys::LowPathType>(cmd_buff[8]);
+    u32 dest_filename_size = cmd_buff[9];
+    u32 src_filename_ptr = cmd_buff[11];
+    u32 dest_filename_ptr = cmd_buff[13];
 
     FileSys::Path src_file_path(src_filename_type, src_filename_size, src_filename_ptr);
     FileSys::Path dest_file_path(dest_filename_type, dest_filename_size, dest_filename_ptr);
@@ -223,9 +221,9 @@ static void RenameFile(Service::Interface* self) {
               src_file_path.DebugStr().c_str(), static_cast<u32>(dest_filename_type),
               dest_filename_size, dest_file_path.DebugStr().c_str());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(RenameFileBetweenArchives(src_archive_handle, src_file_path, dest_archive_handle,
-                                      dest_file_path));
+    cmd_buff[1] = RenameFileBetweenArchives(src_archive_handle, src_file_path, dest_archive_handle,
+                                            dest_file_path)
+                      .raw;
 }
 
 /*
@@ -240,21 +238,19 @@ static void RenameFile(Service::Interface* self) {
  *      1 : Result of function, 0 on success, otherwise error code
  */
 static void DeleteDirectory(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x806, 5, 2);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    rp.Skip(1, false); // TransactionId
-    ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
-    auto dirname_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 dirname_size = rp.Pop<u32>();
-    u32 dirname_ptr = rp.PopStaticBuffer(nullptr);
+    ArchiveHandle archive_handle = MakeArchiveHandle(cmd_buff[2], cmd_buff[3]);
+    auto dirname_type = static_cast<FileSys::LowPathType>(cmd_buff[4]);
+    u32 dirname_size = cmd_buff[5];
+    u32 dirname_ptr = cmd_buff[7];
 
     FileSys::Path dir_path(dirname_type, dirname_size, dirname_ptr);
 
     LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr().c_str());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(DeleteDirectoryFromArchive(archive_handle, dir_path));
+    cmd_buff[1] = DeleteDirectoryFromArchive(archive_handle, dir_path).raw;
 }
 
 /*
@@ -271,21 +267,19 @@ static void DeleteDirectory(Service::Interface* self) {
  *      1 : Result of function, 0 on success, otherwise error code
  */
 static void DeleteDirectoryRecursively(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x807, 5, 2);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    rp.Skip(1, false); // TransactionId
-    ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
-    auto dirname_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 dirname_size = rp.Pop<u32>();
-    u32 dirname_ptr = rp.PopStaticBuffer(nullptr);
+    ArchiveHandle archive_handle = MakeArchiveHandle(cmd_buff[2], cmd_buff[3]);
+    auto dirname_type = static_cast<FileSys::LowPathType>(cmd_buff[4]);
+    u32 dirname_size = cmd_buff[5];
+    u32 dirname_ptr = cmd_buff[7];
 
     FileSys::Path dir_path(dirname_type, dirname_size, dirname_ptr);
 
     LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr().c_str());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(DeleteDirectoryRecursivelyFromArchive(archive_handle, dir_path));
+    cmd_buff[1] = DeleteDirectoryRecursivelyFromArchive(archive_handle, dir_path).raw;
 }
 
 /*
@@ -302,22 +296,20 @@ static void DeleteDirectoryRecursively(Service::Interface* self) {
  *      1 : Result of function, 0 on success, otherwise error code
  */
 static void CreateFile(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x808, 8, 2);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    rp.Skip(1, false); // TransactionId
-    ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
-    auto filename_type = rp.PopEnum<FileSys::LowPathType>();
-    u32 filename_size = rp.Pop<u32>();
-    u64 file_size = rp.Pop<u64>();
-    u32 filename_ptr = rp.PopStaticBuffer(nullptr);
+    ArchiveHandle archive_handle = MakeArchiveHandle(cmd_buff[2], cmd_buff[3]);
+    auto filename_type = static_cast<FileSys::LowPathType>(cmd_buff[4]);
+    u32 filename_size = cmd_buff[5];
+    u64 file_size = ((u64)cmd_buff[8] << 32) | cmd_buff[7];
+    u32 filename_ptr = cmd_buff[10];
 
     FileSys::Path file_path(filename_type, filename_size, filename_ptr);
 
     LOG_DEBUG(Service_FS, "type=%u size=%" PRIx64 " data=%s", static_cast<u32>(filename_type),
               file_size, file_path.DebugStr().c_str());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(CreateFileInArchive(archive_handle, file_path, file_size));
+    cmd_buff[1] = CreateFileInArchive(archive_handle, file_path, file_size).raw;
 }
 
 /*
@@ -486,11 +478,11 @@ static void CloseArchive(Service::Interface* self) {
 }
 
 /*
- * FS_User::IsSdmcDetected service function
- *  Outputs:
- *      1 : Result of function, 0 on success, otherwise error code
- *      2 : Whether the Sdmc could be detected
- */
+* FS_User::IsSdmcDetected service function
+*  Outputs:
+*      1 : Result of function, 0 on success, otherwise error code
+*      2 : Whether the Sdmc could be detected
+*/
 static void IsSdmcDetected(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
