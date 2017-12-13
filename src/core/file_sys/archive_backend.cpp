@@ -14,19 +14,19 @@ namespace FileSys {
 
 Path::Path(LowPathType type, u32 size, u32 pointer) : type(type) {
     switch (type) {
-    case LowPathType::Binary: {
+    case Binary: {
         binary.resize(size);
         Memory::ReadBlock(pointer, binary.data(), binary.size());
         break;
     }
 
-    case LowPathType::Char: {
+    case Char: {
         string.resize(size - 1); // Data is always null-terminated.
         Memory::ReadBlock(pointer, &string[0], string.size());
         break;
     }
 
-    case LowPathType::Wchar: {
+    case Wchar: {
         u16str.resize(size / 2 - 1); // Data is always null-terminated.
         Memory::ReadBlock(pointer, &u16str[0], u16str.size() * sizeof(char16_t));
         break;
@@ -39,12 +39,12 @@ Path::Path(LowPathType type, u32 size, u32 pointer) : type(type) {
 
 std::string Path::DebugStr() const {
     switch (GetType()) {
-    case LowPathType::Invalid:
+    case Invalid:
     default:
         return "[Invalid]";
-    case LowPathType::Empty:
+    case Empty:
         return "[Empty]";
-    case LowPathType::Binary: {
+    case Binary: {
         std::stringstream res;
         res << "[Binary: ";
         for (unsigned byte : binary)
@@ -52,23 +52,23 @@ std::string Path::DebugStr() const {
         res << ']';
         return res.str();
     }
-    case LowPathType::Char:
+    case Char:
         return "[Char: " + AsString() + ']';
-    case LowPathType::Wchar:
+    case Wchar:
         return "[Wchar: " + AsString() + ']';
     }
 }
 
 std::string Path::AsString() const {
     switch (GetType()) {
-    case LowPathType::Char:
+    case Char:
         return string;
-    case LowPathType::Wchar:
+    case Wchar:
         return Common::UTF16ToUTF8(u16str);
-    case LowPathType::Empty:
+    case Empty:
         return {};
-    case LowPathType::Invalid:
-    case LowPathType::Binary:
+    case Invalid:
+    case Binary:
     default:
         // TODO(yuriks): Add assert
         LOG_ERROR(Service_FS, "LowPathType cannot be converted to string!");
@@ -78,14 +78,14 @@ std::string Path::AsString() const {
 
 std::u16string Path::AsU16Str() const {
     switch (GetType()) {
-    case LowPathType::Char:
+    case Char:
         return Common::UTF8ToUTF16(string);
-    case LowPathType::Wchar:
+    case Wchar:
         return u16str;
-    case LowPathType::Empty:
+    case Empty:
         return {};
-    case LowPathType::Invalid:
-    case LowPathType::Binary:
+    case Invalid:
+    case Binary:
         // TODO(yuriks): Add assert
         LOG_ERROR(Service_FS, "LowPathType cannot be converted to u16string!");
         return {};
@@ -96,11 +96,11 @@ std::u16string Path::AsU16Str() const {
 
 std::vector<u8> Path::AsBinary() const {
     switch (GetType()) {
-    case LowPathType::Binary:
+    case Binary:
         return binary;
-    case LowPathType::Char:
+    case Char:
         return std::vector<u8>(string.begin(), string.end());
-    case LowPathType::Wchar: {
+    case Wchar: {
         // use two u8 for each character of u16str
         std::vector<u8> to_return(u16str.size() * 2);
         for (size_t i = 0; i < u16str.size(); ++i) {
@@ -110,9 +110,9 @@ std::vector<u8> Path::AsBinary() const {
         }
         return to_return;
     }
-    case LowPathType::Empty:
+    case Empty:
         return {};
-    case LowPathType::Invalid:
+    case Invalid:
     default:
         // TODO(yuriks): Add assert
         LOG_ERROR(Service_FS, "LowPathType cannot be converted to binary!");
