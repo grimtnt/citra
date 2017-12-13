@@ -1022,7 +1022,7 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetSurfaceSubRect(const SurfaceParams& 
                                                            ScaleMatch match_res_scale,
                                                            bool load_if_create) {
     if (params.addr == 0 || params.height * params.width == 0) {
-        return {nullptr, {}};
+        return std::make_tuple(nullptr, MathUtil::Rectangle<u32>{});
     }
 
     // Attempt to find encompassing surface
@@ -1082,7 +1082,7 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetSurfaceSubRect(const SurfaceParams& 
         ValidateSurface(surface, params.addr, params.size);
     }
 
-    return {surface, surface->GetScaledSubRect(params)};
+    return std::make_tuple(surface, surface->GetScaledSubRect(params));
 }
 
 Surface RasterizerCacheOpenGL::GetTextureSurface(
@@ -1189,7 +1189,7 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
                         boost::icl::length(depth_vp_interval));
     }
 
-    return {color_surface, depth_surface, fb_rect};
+    return std::make_tuple(color_surface, depth_surface, fb_rect);
 }
 
 Surface RasterizerCacheOpenGL::GetFillSurface(const GPU::Regs::MemoryFillConfig& config) {
@@ -1235,7 +1235,7 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetTexCopySurface(const SurfaceParams& 
         rect = match_surface->GetScaledSubRect(match_subrect);
     }
 
-    return {match_surface, rect};
+    return std::make_tuple(match_surface, rect);
 }
 
 void RasterizerCacheOpenGL::DuplicateSurface(const Surface& src_surface,
@@ -1271,15 +1271,9 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
         return;
     }
 
-    auto validate_regions = surface->invalid_regions & validate_interval;
-    auto notify_validated = [&](SurfaceInterval interval) {
-        surface->invalid_regions.erase(interval);
-        validate_regions.erase(interval);
-    };
-
     for (;;) {
-        const auto it = validate_regions.begin();
-        if (it == validate_regions.end())
+        const auto it = surface->invalid_regions.find(validate_interval);
+        if (it == surface->invalid_regions.end())
             break;
 
         const auto interval = *it & validate_interval;
@@ -1291,28 +1285,15 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
         if (copy_surface != nullptr) {
             SurfaceInterval copy_interval = params.GetCopyableInterval(copy_surface);
             CopySurface(copy_surface, surface, copy_interval);
-            notify_validated(copy_interval);
+            surface->invalid_regions.erase(interval);
             continue;
         }
-
-        // HACK HACK HACK: Ignore format reinterpretation
-        // this is a placeholder for HW texture decoding/encoding
-        constexpr bool IGNORE_FORMAT_REINTERPRETING = true;
-        bool retry = false;
-        if (IGNORE_FORMAT_REINTERPRETING) {
-            for (const auto& pair : RangeFromInterval(dirty_regions, interval)) {
-                validate_regions.erase(pair.first & interval);
-                retry = true;
-            }
-        }
-        if (retry)
-            continue;
 
         // Load data from 3DS memory
         FlushRegion(params.addr, params.size);
         surface->LoadGLBuffer(params.addr, params.end);
         surface->UploadGLTexture(surface->GetSubRect(params));
-        notify_validated(params.GetInterval());
+        surface->invalid_regions.erase(interval);
     }
 }
 
