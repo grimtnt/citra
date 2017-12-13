@@ -64,11 +64,6 @@ public:
     /// Shutdown the emulated system.
     void Shutdown();
 
-    /// Super Mario Maker for Nintendo 3DS Fixes
-    void FixSMMEUR();
-    void FixSMMUSA();
-    void FixSMMJPN();
-
     /**
      * Load an executable application.
      * @param emu_window Pointer to the host-system window used for video output and keyboard input.
