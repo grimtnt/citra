@@ -288,7 +288,6 @@ void Config::SaveValues() {
     qt_config->beginGroup("Audio");
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
-    qt_config->setValue("enable_pipe3", Settings::values.enable_pipe3);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
     qt_config->endGroup();
 
