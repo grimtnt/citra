@@ -15,6 +15,8 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     ui->setupUi(this);
     this->setConfiguration();
 
+    ui->toggle_vsync->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+
     ui->layout_combobox->setDisabled(Settings::values.custom_layout);
     ui->swap_screen->setDisabled(Settings::values.custom_layout);
 
@@ -36,6 +38,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->resolution_factor_combobox->setEnabled(Settings::values.use_hw_renderer);
     ui->toggle_shader_jit->setChecked(Settings::values.use_shader_jit);
     ui->resolution_factor_combobox->setCurrentIndex(Settings::values.resolution_factor);
+    ui->toggle_vsync->setChecked(Settings::values.use_vsync); 
     {
         bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue);
         ui->layout_bg->setStyleSheet("QPushButton { background-color: " + bg_color.name() + ";}");
@@ -67,6 +70,7 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.use_shader_jit = ui->toggle_shader_jit->isChecked();
     Settings::values.resolution_factor =
         static_cast<u16>(ui->resolution_factor_combobox->currentIndex());
+    Settings::values.use_vsync = ui->toggle_vsync->isChecked();
     Settings::values.bg_red = bg_color.redF();
     Settings::values.bg_green = bg_color.greenF();
     Settings::values.bg_blue = bg_color.blueF();
