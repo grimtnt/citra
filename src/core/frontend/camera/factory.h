@@ -15,9 +15,8 @@ public:
     virtual ~CameraFactory();
 
     /**
-     * Creates a camera object based on the configuration string.
-     * @param config Configuration string to create the camera. The implementation can decide the
-     *               meaning of this string.
+     * Creates a camera object based on the camera id.
+     * @param camera_id Camera ID.
      * @returns a unique_ptr to the created camera object.
      */
     virtual std::unique_ptr<CameraInterface> Create(int camera_id) const = 0;
@@ -32,9 +31,7 @@ void RegisterFactory(const std::string& name, std::unique_ptr<CameraFactory> fac
 
 /**
  * Creates a camera from the factory.
- * @param name Identifier of the camera factory.
- * @param config Configuration string to create the camera. The meaning of this string is
- *     defined by the factory.
+ * @param camera_id Camera ID.
  */
 std::unique_ptr<CameraInterface> CreateCamera(int camera_id);
 
