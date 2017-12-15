@@ -121,8 +121,6 @@ file(GLOB_RECURSE THEMES ${CMAKE_SOURCE_DIR}/dist/qt_themes/*)
 
 if (Qt5_FOUND)
     qt5_wrap_ui(UI_HDRS ${UIS})
-else()
-    qt4_wrap_ui(UI_HDRS ${UIS})
 endif()
 
 if (GENERATE_QT_TRANSLATION AND MINGW)
