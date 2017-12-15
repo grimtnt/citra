@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <QWidget>
+#include "common/common_types.h"
 
 namespace Ui {
 class ConfigureSystem;
@@ -36,6 +37,7 @@ private:
     int birthmonth, birthday;
     int language_index;
     unsigned char* unknown;
+    u32 model_index;
     int country_index;
     int sound_index;
 };

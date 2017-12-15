@@ -77,6 +77,10 @@ void ConfigureSystem::ReadSystemSettings() {
     language_index = Service::CFG::GetSystemLanguage();
     ui->combo_language->setCurrentIndex(language_index);
 
+    // set model
+    model_index = Service::CFG::GetSystemModelID();
+    ui->combo_model->setCurrentIndex(Service::CFG::GetSystemModelID());
+
     // set country
     std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
@@ -119,6 +123,13 @@ void ConfigureSystem::applyConfiguration() {
     int new_language = ui->combo_language->currentIndex();
     if (language_index != new_language) {
         Service::CFG::SetSystemLanguage(static_cast<Service::CFG::SystemLanguage>(new_language));
+        modified = true;
+    }
+
+    // apply model
+    u32 new_model = ui->combo_model->currentIndex();
+    if (model_index != new_model) {
+        Service::CFG::SetSystemModel(new_model);
         modified = true;
     }
 
