@@ -6,7 +6,6 @@
 #include <array>
 #include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
-#include "common/common_types.h"
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -220,13 +219,6 @@ void GetRegionCanadaUSA(Service::Interface* self) {
     } else {
         cmd_buff[2] = 0;
     }
-}
-
-u32 GetSystemModelID() {
-  u32 model;
-  GetConfigInfoBlock(ConsoleModelBlockID, 4, 0x8,
-                                          reinterpret_cast<u8 *>(&data));
-  return model;
 }
 
 void GetSystemModel(Service::Interface* self) {
