@@ -119,9 +119,7 @@ set(UIS
 file(GLOB_RECURSE ICONS ${CMAKE_SOURCE_DIR}/dist/icons/*)
 file(GLOB_RECURSE THEMES ${CMAKE_SOURCE_DIR}/dist/qt_themes/*)
 
-if (Qt5_FOUND)
-    qt5_wrap_ui(UI_HDRS ${UIS})
-endif()
+qt5_wrap_ui(UI_HDRS ${UIS})
 
 if (GENERATE_QT_TRANSLATION AND MINGW)
      qt5_create_translation(QM_FILES ${SRCS} ${HEADERS} ${UIS} translation.ts)
