@@ -37,7 +37,7 @@ private:
     int birthmonth, birthday;
     int language_index;
     unsigned char* unknown;
-    u32 model_index;
     int country_index;
     int sound_index;
+    u32 model_index;
 };
