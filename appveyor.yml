@@ -55,7 +55,7 @@ before_build:
           # redirect stderr and change the exit code to prevent powershell from cancelling the build if cmake prints a warning
           cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 -DCMAKE_USE_OPENSSL=0 .. 2>&1 && exit 0'
         } else {
-          C:\msys64\usr\bin\bash.exe -lc "cmake -G 'MSYS Makefiles' -DUSE_SYSTEM_CURL=1 -DCITRA_USE_BUNDLED_CURL=1 -DCMAKE_BUILD_TYPE=Release .. 2>&1"
+          C:\msys64\usr\bin\bash.exe -lc "cmake -G 'MSYS Makefiles' -DUSE_SYSTEM_CURL=1 -DCITRA_USE_BUNDLED_CURL=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_QT_TRANSLATION=ON .. 2>&1"
         }
   - cd ..
 
@@ -168,7 +168,6 @@ after_build:
 
           # copy the compiled binaries and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
-          Get-ChildItem "$CMAKE_SOURCE_DIR" -Recurse -Filter "translation.ts" | Copy-Item -destination $RELEASE_DIST
           # copy the libcurl dll
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "libcurl.dll" | Copy-Item -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR\1.ReadMe First.txt" -destination "$RELEASE_DIST\1.ReadMe First.txt"
