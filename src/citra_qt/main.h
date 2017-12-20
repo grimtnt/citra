@@ -185,6 +185,7 @@ private slots:
     void OnUpdateFound(bool found, bool error);
     void OnCheckForUpdates();
     void OnOpenUpdater();
+    void OnLanguageChanged(const QString& locale);
 
 private:
     void UpdateStatusBar();
