@@ -19,6 +19,7 @@ public:
     ~ConfigureCamera();
 
     void applyConfiguration();
+    void retranslateUi();
 
 private slots:
     void OuterRightCameraModeChanged(int index);
