@@ -89,3 +89,7 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.custom_bottom_bottom = ui->custom_bottom_bottom_spinbox->value();
     Settings::Apply();
 }
+
+void ConfigureGraphics::retranslateUi() {
+    ui->retranslateUi(this);
+}
