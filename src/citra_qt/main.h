@@ -180,8 +180,6 @@ private slots:
     void OnCoreError(Core::System::ResultStatus, std::string);
     /// Called whenever a user selects Help->About Citra
     void OnMenuAboutCitra();
-    void OnLoadTranslation();
-    void OnUnloadTranslation();
     void OnUpdateFound(bool found, bool error);
     void OnCheckForUpdates();
     void OnOpenUpdater();
