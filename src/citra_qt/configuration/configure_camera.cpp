@@ -124,6 +124,6 @@ void ConfigureCamera::applyConfiguration() {
     Settings::Apply();
 }
 
-void ConfigureGraphics::retranslateUi() {
+void ConfigureCamera::retranslateUi() {
     ui->retranslateUi(this);
 }
