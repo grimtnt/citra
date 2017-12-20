@@ -227,3 +227,7 @@ bool ConfigureSystem::ValidateCountry() {
 
   return true;
 }
+
+void ConfigureSystem::retranslateUi() {
+    ui->retranslateUi(this);
+}
