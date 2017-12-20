@@ -19,6 +19,7 @@ public:
     ~ConfigureHacks();
 
     void applyConfiguration();
+    void retranslateUi();
 
 private:
     void setConfiguration();
