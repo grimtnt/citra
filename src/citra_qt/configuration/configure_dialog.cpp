@@ -10,6 +10,8 @@
 ConfigureDialog::ConfigureDialog(QWidget* parent) : QDialog(parent), ui(new Ui::ConfigureDialog) {
     ui->setupUi(this);
     this->setConfiguration();
+    connect(ui->generalTab, &ConfigureGeneral::languageChanged, this,
+            &ConfigureDialog::onLanguageChanged);
 }
 
 ConfigureDialog::~ConfigureDialog() {}
@@ -27,4 +29,18 @@ void ConfigureDialog::applyConfiguration() {
     ui->webTab->applyConfiguration();
     ui->hacksTab->applyConfiguration();
     Settings::Apply();
+}
+
+void ConfigureDialog::onLanguageChanged(const QString& locale) {
+    emit languageChanged(locale);
+    ui->retranslateUi(this);
+    ui->generalTab->retranslateUi();
+    ui->systemTab->retranslateUi();
+    ui->inputTab->retranslateUi();
+    ui->graphicsTab->retranslateUi();
+    ui->audioTab->retranslateUi();
+    ui->cameraTab->retranslateUi();
+    ui->debugTab->retranslateUi();
+    ui->webTab->retranslateUi();
+    ui->hacksTab->retranslateUi()
 }
