@@ -48,7 +48,7 @@ struct Values {
     QString gamedir;
     bool gamedir_deepscan;
     QStringList recent_files;
-    QString translation_file;
+    QString language;
 
     QString theme;
 
