@@ -137,7 +137,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     qRegisterMetaType<Common::WebResult>();
 
     SetupUIStrings();
- 
+
     show();
 
     game_list->PopulateAsync(UISettings::values.gamedir, UISettings::values.gamedir_deepscan);
@@ -393,9 +393,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Install_CIA, &QAction::triggered, this, &GMainWindow::OnMenuInstallCIA);
     connect(ui.action_Select_Game_List_Root, &QAction::triggered, this,
             &GMainWindow::OnMenuSelectGameListRoot);
-    connect(ui.action_Load_Translation, &QAction::triggered, this, &GMainWindow::OnLoadTranslation);
-    connect(ui.action_Unload_Translation, &QAction::triggered, this,
-             &GMainWindow::OnUnloadTranslation);
     connect(ui.action_Exit, &QAction::triggered, this, &QMainWindow::close);
 
     // Emulation
@@ -944,7 +941,9 @@ void GMainWindow::ToggleWindowMode() {
 }
 
 void GMainWindow::OnConfigure() {
-    ConfigureDialog configureDialog(this);
+    ConfigureDialog configureDialog(this;
+    connect(&configureDialog, &ConfigureDialog::languageChanged, this,
+            &GMainWindow::OnLanguageChanged);
     auto result = configureDialog.exec();
     if (result == QDialog::Accepted) {
         configureDialog.applyConfiguration();
@@ -1229,49 +1228,44 @@ void GMainWindow::UpdateUITheme() {
     }
 }
 
-void GMainWindow::OnLoadTranslation() {
-     QString filename = QFileDialog::getOpenFileName(this, tr("Load Translation File"), QString(),
-                                                     tr("Translation file (*.qm);;All files (*.*)"));
-     if (filename.isEmpty()) {
-         return;
-     }
- 
-     if (!UISettings::values.translation_file.isEmpty()) {
-         qApp->removeTranslator(&translator);
-     }
- 
-     UISettings::values.translation_file = filename;
-     LoadTranslation();
-     ui.retranslateUi(this);
-     SetupUIStrings();
- }
- 
- void GMainWindow::OnUnloadTranslation() {
-     if (!UISettings::values.translation_file.isEmpty()) {
-         qApp->removeTranslator(&translator);
-         UISettings::values.translation_file.clear();
-         ui.retranslateUi(this);
-         SetupUIStrings();
-     }
- }
- 
- void GMainWindow::LoadTranslation() {
-     if (!UISettings::values.translation_file.isEmpty()) {
-         if (translator.load(UISettings::values.translation_file)) {
-             qApp->installTranslator(&translator);
-         } else {
-             QMessageBox::critical(
-                 this, "Failed to load translation",
-                 "Citra cannot load the translation file. The language is reset to English.");
-             UISettings::values.translation_file.clear();
-         }
-     }
- }
- 
- void GMainWindow::SetupUIStrings() {
-     setWindowTitle(QString("Citra %1| %2-%3")
-                        .arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
- }
+void GMainWindow::LoadTranslation() {
+    // If the selected language is English, no need to install any translation
+    if (UISettings::values.language == "en") {
+        return;
+    }
+
+    bool loaded;
+
+    if (UISettings::values.language.isEmpty()) {
+        // If the selected language is empty, use system locale
+        loaded = translator.load(QLocale(), "", "", ":/languages/");
+    } else {
+        // Otherwise load from the specified file
+        loaded = translator.load(UISettings::values.language, ":/languages/");
+    }
+
+    if (loaded) {
+        qApp->installTranslator(&translator);
+    } else {
+        UISettings::values.language = "en";
+    }
+}
+
+void GMainWindow::OnLanguageChanged(const QString& locale) {
+    if (UISettings::values.language != "en") {
+        qApp->removeTranslator(&translator);
+    }
+
+    UISettings::values.language = locale;
+    LoadTranslation();
+    ui.retranslateUi(this);
+    SetupUIStrings();
+}
+
+void GMainWindow::SetupUIStrings() {
+    setWindowTitle(
+        tr("Citra %1| %2-%3").arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
+}
 
 void GMainWindow::ChangeRoomState() {
     if (auto room = Network::GetRoom().lock()) {
