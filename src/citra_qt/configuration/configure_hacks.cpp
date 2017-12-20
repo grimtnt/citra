@@ -23,3 +23,7 @@ void ConfigureHacks::applyConfiguration() {
     Settings::values.enable_pipe3 = ui->toggle_pipe3->isChecked();
     Settings::Apply();
 }
+
+void ConfigureHacks::retranslateUi() {
+    ui->retranslateUi(this);
+}
