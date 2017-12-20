@@ -10,11 +10,12 @@ option(ENABLE_SDL2 "Enable the SDL2 frontend" ON)
 option(CITRA_USE_BUNDLED_SDL2 "Download bundled SDL2 binaries" OFF)
 
 option(ENABLE_QT "Enable the Qt frontend" ON)
+option(ENABLE_QT_TRANSLATION "Enable translations for the Qt frontend" OFF)
 option(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" OFF)
-option(GENERATE_QT_TRANSLATION "Generate translation.ts and translation.qm files for Qt frontend translation" ON)
 
 option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
 option(CITRA_USE_BUNDLED_CURL "FOR MINGW ONLY: Download curl configured against winssl instead of openssl" OFF)
+
 if (ENABLE_WEB_SERVICE AND CITRA_USE_BUNDLED_CURL AND WINDOWS AND MSVC)
     message("Turning off use bundled curl as msvc can compile curl on cpr")
     SET(CITRA_USE_BUNDLED_CURL OFF CACHE BOOL "" FORCE)
@@ -231,10 +232,10 @@ if (ENABLE_QT)
     endif()
 
     find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL ${QT_PREFIX_HINT})
-	
-     if (GENERATE_QT_TRANSLATION AND MINGW)
-         find_package(Qt5 REQUIRED COMPONENTS LinguistTools ${QT_PREFIX_HINT})
-     endif()
+
+    if (ENABLE_QT_TRANSLATION)
+        find_package(Qt5 REQUIRED COMPONENTS LinguistTools ${QT_PREFIX_HINT})
+    endif()
 endif()
 
 if (ENABLE_WEB_SERVICE)
