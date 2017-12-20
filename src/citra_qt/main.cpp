@@ -941,7 +941,7 @@ void GMainWindow::ToggleWindowMode() {
 }
 
 void GMainWindow::OnConfigure() {
-    ConfigureDialog configureDialog(this;
+    ConfigureDialog configureDialog(this);
     connect(&configureDialog, &ConfigureDialog::languageChanged, this,
             &GMainWindow::OnLanguageChanged);
     auto result = configureDialog.exec();
