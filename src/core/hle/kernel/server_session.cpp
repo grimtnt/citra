@@ -13,6 +13,9 @@
 
 namespace Kernel {
 
+static u64 IPCDelayNanoseconds = 51140;
+static u64 IPCDelayNanosecondsEO = 10000000;
+
 ServerSession::ServerSession() = default;
 ServerSession::~ServerSession() {
     // This destructor will be called automatically when the last ServerSession handle is closed by
@@ -85,8 +88,11 @@ ResultCode ServerSession::HandleSyncRequest(SharedPtr<Thread> thread) {
             // it takes for svcSendSyncRequest to return when performing the SetLcdForceBlack IPC
             // request to the GSP:GPU service in a n3DS with firmware 11.6. The measured values have
             // a high variance and vary between models.
-            static constexpr u64 IPCDelayNanoseconds = 51140;
-            if (name.substr(0,4) == "Path") IPCDelayNanoseconds = 10000000;
+            if (name.substr(0,4) == "Path") {
+                thread->WakeAfterDelay(IPCDelayNanosecondsEO);
+            } else {
+                thread->WakeAfterDelay(IPCDelayNanoseconds);
+            }
             thread->WakeAfterDelay(IPCDelayNanoseconds);
         } else {
             // Add the thread to the list of threads that have issued a sync request with this
