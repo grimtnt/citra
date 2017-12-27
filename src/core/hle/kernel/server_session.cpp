@@ -86,6 +86,7 @@ ResultCode ServerSession::HandleSyncRequest(SharedPtr<Thread> thread) {
             // request to the GSP:GPU service in a n3DS with firmware 11.6. The measured values have
             // a high variance and vary between models.
             static constexpr u64 IPCDelayNanoseconds = 51140;
+            if (name.substr(0,4) == "Path") IPCDelayNanoseconds = 10000000;
             thread->WakeAfterDelay(IPCDelayNanoseconds);
         } else {
             // Add the thread to the list of threads that have issued a sync request with this
