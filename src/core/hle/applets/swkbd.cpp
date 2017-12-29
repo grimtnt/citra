@@ -220,7 +220,7 @@ void SoftwareKeyboard::Update() {
         } else {
             final_text = Common::UTF16ToUTF8(custom_button_text);
         }
-        option_text += Common::StringFromFormat("\t(%u) %s\t", i, final_text);
+        option_text += "\t(" + std::to_string(i) + ") " + final_text + "\t";
     }
     std::string option;
     do {
