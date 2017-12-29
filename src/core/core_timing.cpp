@@ -15,6 +15,7 @@
 #include "common/logging/log.h"
 #include "common/thread.h"
 #include "common/threadsafe_queue.h"
+#include "core/settings.h"
 
 namespace CoreTiming {
 
@@ -122,7 +123,10 @@ u64 GetTicks() {
 }
 
 void AddTicks(u64 ticks) {
-    downcount -= 16000;
+    if (Settings::values.fix_pokemon)
+        downcount -= 16000;
+    else
+        downcount -= ticks;
 }
 
 u64 GetIdleTicks() {
