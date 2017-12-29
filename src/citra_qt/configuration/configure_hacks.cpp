@@ -17,10 +17,12 @@ ConfigureHacks::~ConfigureHacks() {}
 
 void ConfigureHacks::setConfiguration() {
     ui->toggle_pipe3->setChecked(Settings::values.enable_pipe3);
+    ui->toggle_pkfix->setChecked(Settings::values.fix_pokemon);
 }
 
 void ConfigureHacks::applyConfiguration() {
     Settings::values.enable_pipe3 = ui->toggle_pipe3->isChecked();
+    Settings::values.fix_pokemon = ui->toggle_pkfix->isChecked();
     Settings::Apply();
 }
 
