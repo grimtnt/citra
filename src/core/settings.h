@@ -74,9 +74,6 @@ static const std::array<const char*, NumAnalogs> mapping = {{
 } // namespace NativeAnalog
 
 struct Values {
-    // CheckNew3DS
-    bool is_new_3ds;
-
     // Controls
     std::array<std::string, NativeButton::NumButtons> buttons;
     std::array<std::string, NativeAnalog::NumAnalogs> analogs;

@@ -11,6 +11,7 @@
 #include "core/hle/kernel/thread.h"
 #include "core/hle/kernel/timer.h"
 #include "core/hle/shared_page.h"
+#include "core/hle/service/cfg/cfg.h"
 
 namespace Kernel {
 
@@ -21,7 +22,13 @@ void Init(u32 system_mode) {
     ConfigMem::Init();
     SharedPage::Init();
 
-    Kernel::MemoryInit(system_mode);
+    if (Service::CFG::GetSystemModelID() == 2 ||
+        Service::CFG::GetSystemModelID() == 4 ||
+        Service::CFG::GetSystemModelID() == 5) {
+      Kernel::MemoryInit(6);
+    } else {
+      Kernel::MemoryInit(system_mode);
+    }
 
     Kernel::ResourceLimitsInit();
     Kernel::ThreadingInit();

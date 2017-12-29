@@ -36,6 +36,7 @@
 #include "core/hle/lock.h"
 #include "core/hle/result.h"
 #include "core/hle/service/service.h"
+#include "core/hle/service/cfg/cfg.h"
 
 namespace Kernel {
     static bool enable_higher_core_clock = false;
@@ -1256,7 +1257,12 @@ static ResultCode GetProcessInfo(s64* out, Handle process_handle, u32 type) {
 }
 
 ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
-    const bool is_new_3ds = Settings::values.is_new_3ds;
+    bool is_new_3ds = false;
+    if (Service::CFG::GetSystemModelID() == 2 ||
+        Service::CFG::GetSystemModelID() == 4 ||
+        Service::CFG::GetSystemModelID() == 5) {
+        is_new_3ds = true;
+    }
 
     switch (static_cast<KernelSetStateType>(type)) {
     case KernelSetStateType::Type0:

@@ -18,6 +18,7 @@
 #include "core/hle/shared_page.h"
 #include "core/memory.h"
 #include "core/memory_setup.h"
+#include "core/hle/service/cfg/cfg.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -42,8 +43,13 @@ static const u32 memory_region_sizes[8][3] = {
 };
 
 void MemoryInit(u32 mem_type) {
-    // TODO(yuriks): On the n3DS, all o3DS configurations (<=5) are forced to 6 instead.
-    ASSERT_MSG(mem_type <= 5, "New 3DS memory configuration aren't supported yet!");
+    if (Service::CFG::GetSystemModelID() == 2 ||
+        Service::CFG::GetSystemModelID() == 4 ||
+        Service::CFG::GetSystemModelID() == 5) {
+      if (mem_type <= 5) {
+          mem_type = 6;
+      }
+    }
     ASSERT(mem_type != 1);
 
     // The kernel allocation regions (APPLICATION, SYSTEM and BASE) are laid out in sequence, with
@@ -62,7 +68,11 @@ void MemoryInit(u32 mem_type) {
     }
 
     // We must've allocated the entire FCRAM by the end
-    ASSERT(base == Memory::FCRAM_SIZE);
+    if (mem_type != 6) {
+        ASSERT(base == Memory::FCRAM_SIZE);
+    } else {
+        ASSERT(base == Memory::FCRAM_SIZE + Memory::FCRAM_N3DS_SIZE);
+    }
 
     using ConfigMem::config_mem;
     config_mem.app_mem_type = mem_type;

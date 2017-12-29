@@ -8,6 +8,7 @@
 #include "core/file_sys/file_backend.h"
 #include "core/hle/kernel/svc.h"
 #include "core/hle/service/fs/archive.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/ptm/ptm_gets.h"
 #include "core/hle/service/ptm/ptm_play.h"
@@ -123,11 +124,16 @@ void GetSoftwareClosedFlag(Interface* self) {
 }
 
 void CheckNew3DS(IPC::RequestBuilder& rb) {
-    const bool is_new_3ds = Settings::values.is_new_3ds;
-
+    bool is_new_3ds = false;
+    if (Service::CFG::GetSystemModelID() == 2 ||
+        Service::CFG::GetSystemModelID() == 4 ||
+        Service::CFG::GetSystemModelID() == 5) {
+        is_new_3ds = true;
+    }
+    
     if (is_new_3ds) {
-        LOG_CRITICAL(Service_PTM, "The option 'is_new_3ds' is enabled as part of the 'System' "
-                                  "settings. Citra does not fully support New 3DS emulation yet!");
+        LOG_CRITICAL(Service_PTM, "The selected model in 'System' "
+                                  "settings is New 3DS/2DS. Citra does not fully support New 3DS/2DS emulation yet!");
     }
     
     IPC::MakeHeader(0x40A, 0x2, 0);

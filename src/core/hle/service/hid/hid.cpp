@@ -10,6 +10,7 @@
 #include "core/3ds.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/frontend/emu_window.h"
 #include "core/frontend/input.h"
 #include "core/hle/ipc.h"
 #include "core/hle/kernel/event.h"
@@ -19,6 +20,8 @@
 #include "core/hle/service/hid/hid_spvr.h"
 #include "core/hle/service/hid/hid_user.h"
 #include "core/hle/service/service.h"
+#include "core/hle/shared_page.h"
+#include "video_core/video_core.h"
 
 namespace Service {
 namespace HID {
@@ -32,6 +35,7 @@ static Kernel::SharedPtr<Kernel::Event> event_pad_or_touch_2;
 static Kernel::SharedPtr<Kernel::Event> event_accelerometer;
 static Kernel::SharedPtr<Kernel::Event> event_gyroscope;
 static Kernel::SharedPtr<Kernel::Event> event_debug_pad;
+static PadState inputs_this_frame;
 
 static u32 next_pad_index;
 static u32 next_touch_index;
@@ -59,7 +63,6 @@ static std::array<std::unique_ptr<Input::ButtonDevice>, Settings::NativeButton::
 static std::unique_ptr<Input::AnalogDevice> circle_pad;
 static std::unique_ptr<Input::MotionDevice> motion_device;
 static std::unique_ptr<Input::TouchDevice> touch_device;
-static PadState inputs_this_frame;
 
 DirectionState GetStickDirectionState(s16 circle_pad_x, s16 circle_pad_y) {
     // 30 degree and 60 degree are angular thresholds for directions
@@ -110,6 +113,7 @@ static void UnloadInputDevices() {
 }
 
 static void UpdatePadCallback(u64 userdata, int cycles_late) {
+    SharedPage::shared_page.sliderstate_3d = VideoCore::g_emu_window->GetDepthSliderValue();
     SharedMem* mem = reinterpret_cast<SharedMem*>(shared_mem->GetPointer());
 
     if (is_device_reload_pending.exchange(false))
@@ -141,7 +145,6 @@ static void UpdatePadCallback(u64 userdata, int cycles_late) {
     state.circle_down.Assign(direction.down);
     state.circle_left.Assign(direction.left);
     state.circle_right.Assign(direction.right);
-    inputs_this_frame.hex = state.hex;
 
     mem->pad.current_state.hex = state.hex;
     mem->pad.index = next_pad_index;
@@ -163,6 +166,7 @@ static void UpdatePadCallback(u64 userdata, int cycles_late) {
     pad_entry.delta_removals.hex = changed.hex & old_state.hex;
     pad_entry.circle_pad_x = circle_pad_x;
     pad_entry.circle_pad_y = circle_pad_y;
+    inputs_this_frame.hex = state.hex;
 
     // If we just updated index 0, provide a new timestamp
     if (mem->pad.index == 0) {
@@ -242,6 +246,10 @@ static void UpdateAccelerometerCallback(u64 userdata, int cycles_late) {
     CoreTiming::ScheduleEvent(accelerometer_update_ticks - cycles_late, accelerometer_update_event);
 }
 
+PadState& GetInputsThisFrame() {
+    return inputs_this_frame;
+}
+
 static void UpdateGyroscopeCallback(u64 userdata, int cycles_late) {
     SharedMem* mem = reinterpret_cast<SharedMem*>(shared_mem->GetPointer());
 
@@ -273,10 +281,6 @@ static void UpdateGyroscopeCallback(u64 userdata, int cycles_late) {
 
     // Reschedule recurrent event
     CoreTiming::ScheduleEvent(gyroscope_update_ticks - cycles_late, gyroscope_update_event);
-}
-
-PadState& GetInputsThisFrame() {
-    return inputs_this_frame;
 }
 
 void GetIPCHandles(Service::Interface* self) {

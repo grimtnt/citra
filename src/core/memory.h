@@ -109,11 +109,11 @@ enum : PAddr {
 
     /// Main FCRAM
     FCRAM_PADDR = 0x20000000,
-    FCRAM_SIZE = 0x08000000, ///< FCRAM size on the Old 3DS (128MB)
+    FCRAM_SIZE = 0x08000000,      ///< FCRAM size on the Old 3DS (128MB)
     FCRAM_N3DS_PADDR = 0x28000000,
     FCRAM_N3DS_SIZE = 0x08000000, ///< FCRAM size on the New 3DS (256MB)
     FCRAM_PADDR_END = FCRAM_PADDR + FCRAM_SIZE,
-    FCRAM_N3DS_PADDR_END = FCRAM_PADDR + FCRAM_N3DS_SIZE,
+    FCRAM_N3DS_PADDR_END = FCRAM_N3DS_PADDR + FCRAM_N3DS_SIZE,
 };
 
 /// Virtual user-space memory regions
@@ -240,8 +240,7 @@ boost::optional<VAddr> PhysicalToVirtualAddress(PAddr addr);
 u8* GetPhysicalPointer(PAddr address);
 
 /**
- * Adds the supplied value to the rasterizer resource cache counter of each
- * page touching the region.
+ * Mark each page touching the region as cached.
  */
 void RasterizerMarkRegionCached(PAddr start, u32 size, bool cached);
 
