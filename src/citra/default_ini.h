@@ -70,6 +70,8 @@ touch_device=
 # Whether to use the Just-In-Time (JIT) compiler for CPU emulation
 # 0: Interpreter (slow), 1 (default): JIT (fast)
 use_cpu_jit =
+# Fix Pokemon freezes
+fix_pokemon =
 
 [Renderer]
 # Whether to use software or hardware rendering.
