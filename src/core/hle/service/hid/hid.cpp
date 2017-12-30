@@ -32,6 +32,7 @@ constexpr u64 gyroscope_update_ticks = BASE_CLOCK_RATE_ARM11 / 101;
 
 constexpr float accelerometer_coef = 512.0f; // measured from hw test result
 constexpr float gyroscope_coef = 14.375f; // got from hwtest GetGyroscopeLowRawToDpsCoefficient call
+static PadState inputs_this_frame;
 
 DirectionState GetStickDirectionState(s16 circle_pad_x, s16 circle_pad_y) {
     // 30 degree and 60 degree are angular thresholds for directions
@@ -366,7 +367,6 @@ Module::Module() {
     event_accelerometer = Event::Create(ResetType::OneShot, "HID:EventAccelerometer");
     event_gyroscope = Event::Create(ResetType::OneShot, "HID:EventGyroscope");
     event_debug_pad = Event::Create(ResetType::OneShot, "HID:EventDebugPad");
-    static PadState inputs_this_frame;
 
     // Register update callbacks
     pad_update_event =
