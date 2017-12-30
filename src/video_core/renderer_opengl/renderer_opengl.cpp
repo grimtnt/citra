@@ -407,12 +407,6 @@ void RendererOpenGL::DrawScreens() {
 
     if (layout.top_screen_enabled) {
         switch (render_window->GetStereoscopicMode()) {
-        case EmuWindow::StereoscopicMode::Off:
-            DrawSingleScreenRotated(screen_infos[0], (float)layout.top_screen.left,
-                                   (float)layout.top_screen.top,
-                                   (float)layout.top_screen.GetWidth(),
-                                   (float)layout.top_screen.GetHeight(), true, true);
-            break;
         case EmuWindow::StereoscopicMode::LeftOnly:
             DrawSingleScreenRotated(screen_infos[0], (float)layout.top_screen.left,
                                     (float)layout.top_screen.top,
