@@ -38,7 +38,7 @@ public:
         std::pair<unsigned, unsigned> min_client_area_size;
     };
 
-    enum StereoscopicMode {Off, LeftOnly, RightOnly, Anaglyph};
+    enum StereoscopicMode { LeftOnly, RightOnly, Anaglyph };
 
     /// Swap buffers to display the next frame
     virtual void SwapBuffers() = 0;
