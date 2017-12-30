@@ -35,9 +35,9 @@
       </attribute>
      </widget>
      <widget class="ConfigureGraphics" name="graphicsTab">
-       <attribute name="title">
-         <string>Graphics</string>
-       </attribute>
+      <attribute name="title">
+       <string>Graphics</string>
+      </attribute>
      </widget>
      <widget class="ConfigureAudio" name="audioTab">
       <attribute name="title">
@@ -95,10 +95,10 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-     <class>ConfigureCamera</class>
-    <extends>QWidget</extends>
-    <header>configuration/configure_camera.h</header>
-    <container>1</container>
+   <class>ConfigureCamera</class>
+   <extends>QWidget</extends>
+   <header>configuration/configure_camera.h</header>
+   <container>1</container>
    </customwidget>
    <customwidget>
    <class>ConfigureDebug</class>
