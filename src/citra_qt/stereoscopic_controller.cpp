@@ -14,25 +14,21 @@ StereoscopicControllerWidget::StereoscopicControllerWidget(QWidget* parent)
     QRadioButton* buttonLeftOnly = new QRadioButton(tr("Left eye only"));
     QRadioButton* buttonRightOnly = new QRadioButton(tr("Right eye only"));
     QRadioButton* buttonAnaglyph = new QRadioButton(tr("Anaglyph"));
-    QRadioButton* buttonOff = new QRadioButton(tr("Off"));
     connect(buttonLeftOnly, &QRadioButton::clicked,
             [=]() { emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::LeftOnly); });
     connect(buttonRightOnly, &QRadioButton::clicked,
             [=]() { emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::RightOnly); });
     connect(buttonAnaglyph, &QRadioButton::clicked,
             [=]() { emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::Anaglyph); });
-    connect(buttonOff, &QRadioButton::clicked,
-            [=]() { emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::Off); });
-    buttonOff->setChecked(true);
+    buttonAnaglyph->setChecked(true);
     emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::Anaglyph);
-    QVBoxLayout* subLayuout = new QVBoxLayout();
-    subLayuout->addWidget(buttonLeftOnly);
-    subLayuout->addWidget(buttonRightOnly);
-    subLayuout->addWidget(buttonAnaglyph);
-    subLayuout->addWidget(buttonOff);
+    QVBoxLayout* subLayout = new QVBoxLayout();
+    subLayout->addWidget(buttonLeftOnly);
+    subLayout->addWidget(buttonRightOnly);
+    subLayout->addWidget(buttonAnaglyph);
     QHBoxLayout* layout = new QHBoxLayout();
     layout->addWidget(slider);
-    layout->addLayout(subLayuout);
+    layout->addLayout(subLayout);
     QWidget* w = new QWidget(this);
     w->setLayout(layout);
     setWidget(w);
