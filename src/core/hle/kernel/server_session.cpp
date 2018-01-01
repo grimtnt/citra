@@ -89,7 +89,7 @@ ResultCode ServerSession::HandleSyncRequest(SharedPtr<Thread> thread) {
                 static constexpr u64 IPCDelayNanoseconds = 10000000;
                 thread->WakeAfterDelay(IPCDelayNanoseconds);
             } else {
-                static constexpr u64 IPCDelayNanoseconds = 51140;
+                static constexpr u64 IPCDelayNanoseconds = 39000;
                 thread->WakeAfterDelay(IPCDelayNanoseconds);
             }
         } else {
