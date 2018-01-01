@@ -30,13 +30,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="toggle_pkfix">
-          <property name="text">
-           <string>Fix Pokémon ORAS/SM/USUM Freezes</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>

@@ -69,7 +69,6 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
-    Settings::values.fix_pokemon = qt_config->value("fix_pokemon", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -256,7 +255,6 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
-    qt_config->setValue("fix_pokemon", Settings::values.fix_pokemon);
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");

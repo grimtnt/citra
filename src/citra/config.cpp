@@ -83,7 +83,6 @@ void Config::ReadValues() {
 
     // Core
     Settings::values.use_cpu_jit = sdl2_config->GetBoolean("Core", "use_cpu_jit", true);
-    Settings::values.fix_pokemon = sdl2_config->GetBoolean("Core", "fix_pokemon", true);
 
     // Renderer
     Settings::values.use_hw_renderer = sdl2_config->GetBoolean("Renderer", "use_hw_renderer", true);

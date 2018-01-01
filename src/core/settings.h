@@ -82,7 +82,6 @@ struct Values {
 
     // Core
     bool use_cpu_jit;
-    bool fix_pokemon;
 
     // Data Storage
     bool use_virtual_sd;
