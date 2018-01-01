@@ -124,7 +124,7 @@ u64 GetTicks() {
 
 void AddTicks(u64 ticks) {
     if (Settings::values.fix_pokemon)
-        downcount -= 16000;
+        downcount -= 14000;
     else
         downcount -= ticks;
 }
