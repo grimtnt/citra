@@ -99,7 +99,7 @@ static void GetInputFormat(Interface* self) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(static_cast<u32>(conversion.input_format));
+    rb.PushEnum(conversion.input_format);
 
     LOG_DEBUG(Service_Y2R, "called input_format=%hhu", static_cast<u8>(conversion.input_format));
 }
@@ -120,7 +120,7 @@ static void GetOutputFormat(Interface* self) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(static_cast<u32>(conversion.output_format));
+    rb.PushEnum(conversion.output_format);
 
     LOG_DEBUG(Service_Y2R, "called output_format=%hhu", static_cast<u8>(conversion.output_format));
 }
@@ -141,7 +141,7 @@ static void GetRotation(Interface* self) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(static_cast<u32>(conversion.rotation));
+    rb.PushEnum(conversion.rotation);
 
     LOG_DEBUG(Service_Y2R, "called rotation=%hhu", static_cast<u8>(conversion.rotation));
 }
@@ -163,7 +163,7 @@ static void GetBlockAlignment(Interface* self) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(static_cast<u32>(conversion.block_alignment));
+    rb.PushEnum(conversion.block_alignment);
 
     LOG_DEBUG(Service_Y2R, "called block_alignment=%hhu",
               static_cast<u8>(conversion.block_alignment));
@@ -278,7 +278,7 @@ static void GetTransferEndInterrupt(Interface* self) {
 static void GetTransferEndEvent(Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xF, 0, 0);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyHandles(Kernel::g_handle_table.Create(completion_event).Unwrap());
 
@@ -287,7 +287,7 @@ static void GetTransferEndEvent(Interface* self) {
 
 static void SetSendingY(Interface* self) {
     // The helper should be passed by argument to the function
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x00100102);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x10, 4, 2);
     conversion.src_Y.address = rp.Pop<u32>();
     conversion.src_Y.image_size = rp.Pop<u32>();
     conversion.src_Y.transfer_unit = rp.Pop<u32>();
@@ -305,7 +305,7 @@ static void SetSendingY(Interface* self) {
 
 static void SetSendingU(Interface* self) {
     // The helper should be passed by argument to the function
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x00110102);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x11, 4, 2);
     conversion.src_U.address = rp.Pop<u32>();
     conversion.src_U.image_size = rp.Pop<u32>();
     conversion.src_U.transfer_unit = rp.Pop<u32>();
@@ -323,7 +323,7 @@ static void SetSendingU(Interface* self) {
 
 static void SetSendingV(Interface* self) {
     // The helper should be passed by argument to the function
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x00120102);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x12, 4, 2);
 
     conversion.src_V.address = rp.Pop<u32>();
     conversion.src_V.image_size = rp.Pop<u32>();
@@ -342,7 +342,7 @@ static void SetSendingV(Interface* self) {
 
 static void SetSendingYUYV(Interface* self) {
     // The helper should be passed by argument to the function
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x00130102);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x13, 4, 2);
 
     conversion.src_YUYV.address = rp.Pop<u32>();
     conversion.src_YUYV.image_size = rp.Pop<u32>();
@@ -424,7 +424,7 @@ static void IsFinishedSendingV(Interface* self) {
 }
 
 static void SetReceiving(Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x18, 6, 0);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x18, 4, 2);
 
     conversion.dst.address = rp.Pop<u32>();
     conversion.dst.image_size = rp.Pop<u32>();
