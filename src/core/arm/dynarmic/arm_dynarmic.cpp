@@ -95,7 +95,7 @@ static bool IsReadOnlyMemory(u32 vaddr) {
 }
 
 static void AddTicks(u64 ticks) {
-    CoreTiming::AddTicks(10900);
+    CoreTiming::AddTicks(10500);
 }
 
 static u64 GetTicksRemaining() {
