@@ -4,9 +4,9 @@
 
 #include <memory>
 #include <utility>
-#include "audio_core/audio_core.h"
+#include "audio_core/dsp_interface.h"
+#include "audio_core/hle/hle.h"
 #include "common/logging/log.h"
-#include "common/file_util.h"
 #include "core/arm/arm_interface.h"
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dyncom/arm_dyncom.h"
@@ -160,9 +160,12 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     HW::Init();
     Kernel::Init(system_mode);
     Service::Init();
-    AudioCore::Init();
     CheatCore::Init();
     GDBStub::Init();
+
+    dsp_core = std::make_unique<AudioCore::DspHle>();
+    dsp_core->SetSink(Settings::values.sink_id);
+    dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
     if (!VideoCore::Init(emu_window)) {
         return ResultStatus::ErrorVideoCore;
@@ -188,8 +191,8 @@ void System::Shutdown() {
                          perf_results.frametime * 1000.0);
 
     // Shutdown emulation session
+    dsp_core = nullptr;
     GDBStub::Shutdown();
-    AudioCore::Shutdown();
     CheatCore::Shutdown();
     VideoCore::Shutdown();
     Service::Shutdown();

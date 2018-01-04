@@ -5,10 +5,12 @@
 #include <algorithm>
 #include <array>
 #include <cinttypes>
-#include "audio_core/hle/pipe.h"
+#include "audio_core/audio_types.h"
+#include "audio_core/dsp_interface.h"
 #include "common/assert.h"
 #include "common/hash.h"
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/hle/ipc.h"
 #include "core/hle/kernel/event.h"
 #include "core/hle/kernel/handle_table.h"
@@ -16,7 +18,7 @@
 #include "core/hle/service/dsp_dsp.h"
 #include "core/memory.h"
 
-using DspPipe = DSP::HLE::DspPipe;
+using DspPipe = AudioCore::DspPipe;
 
 namespace Service {
 namespace DSP_DSP {
@@ -44,7 +46,7 @@ public:
             return one;
         case InterruptType::Pipe: {
             const size_t pipe_index = static_cast<size_t>(dsp_pipe);
-            ASSERT(pipe_index < DSP::HLE::NUM_DSP_PIPE);
+            ASSERT(pipe_index < AudioCore::num_dsp_pipe);
             return pipe[pipe_index];
         }
         }
@@ -73,7 +75,7 @@ private:
     /// Currently unknown purpose
     Kernel::SharedPtr<Kernel::Event> one = nullptr;
     /// Each DSP pipe has an associated interrupt
-    std::array<Kernel::SharedPtr<Kernel::Event>, DSP::HLE::NUM_DSP_PIPE> pipe = {{}};
+    std::array<Kernel::SharedPtr<Kernel::Event>, AudioCore::num_dsp_pipe> pipe = {{}};
 };
 
 static InterruptEvents interrupt_events;
@@ -201,6 +203,32 @@ static void FlushDataCache(Service::Interface* self) {
 }
 
 /**
+* DSP_DSP::InvalidateDCache service function
+*
+* This Function is a no-op, We aren't emulating the CPU cache any time soon.
+*
+*  Inputs:
+*      1 : Address
+*      2 : Size
+*      3 : Value 0, some descriptor for the KProcess Handle
+*      4 : KProcess handle
+*  Outputs:
+*      1 : Result of function, 0 on success, otherwise error code
+*/
+static void InvalidateDCache(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+    u32 address = cmd_buff[1];
+    u32 size = cmd_buff[2];
+    u32 process = cmd_buff[4];
+
+    cmd_buff[0] = IPC::MakeHeader(0x14, 1, 0);
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+
+    LOG_TRACE(Service_DSP, "called address=0x%08X, size=0x%X, process=0x%08X", address, size,
+        process);
+}
+
+/**
  * DSP_DSP::RegisterInterruptEvents service function
  *  Inputs:
  *      1 : Interrupt Type
@@ -216,7 +244,7 @@ static void RegisterInterruptEvents(Service::Interface* self) {
     u32 pipe_index = cmd_buff[2];
     u32 event_handle = cmd_buff[4];
 
-    ASSERT_MSG(type_index < NUM_INTERRUPT_TYPE && pipe_index < DSP::HLE::NUM_DSP_PIPE,
+    ASSERT_MSG(type_index < NUM_INTERRUPT_TYPE && pipe_index < AudioCore::num_dsp_pipe,
                "Invalid type or pipe: type = %u, pipe = %u", type_index, pipe_index);
 
     InterruptType type = static_cast<InterruptType>(cmd_buff[1]);
@@ -289,7 +317,7 @@ static void WriteProcessPipe(Service::Interface* self) {
     u32 size = cmd_buff[2];
     u32 buffer = cmd_buff[4];
 
-    DSP::HLE::DspPipe pipe = static_cast<DSP::HLE::DspPipe>(pipe_index);
+    AudioCore::DspPipe pipe = static_cast<AudioCore::DspPipe>(pipe_index);
 
     if (IPC::StaticBufferDesc(size, 1) != cmd_buff[3]) {
         LOG_ERROR(Service_DSP, "IPC static buffer descriptor failed validation (0x%X). pipe=%u, "
@@ -312,12 +340,12 @@ static void WriteProcessPipe(Service::Interface* self) {
     // The likely reason for this is that games tend to pass in garbage at these bytes
     // because they read random bytes off the stack.
     switch (pipe) {
-    case DSP::HLE::DspPipe::Audio:
+    case AudioCore::DspPipe::Audio:
         ASSERT(message.size() >= 4);
         message[2] = 0;
         message[3] = 0;
         break;
-    case DSP::HLE::DspPipe::Binary:
+    case AudioCore::DspPipe::Binary:
         ASSERT(message.size() >= 8);
         message[4] = 1;
         message[5] = 0;
@@ -326,7 +354,7 @@ static void WriteProcessPipe(Service::Interface* self) {
         break;
     }
 
-    DSP::HLE::PipeWrite(pipe, message);
+    Core::DSP().PipeWrite(pipe, message);
 
     cmd_buff[0] = IPC::MakeHeader(0xD, 1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
@@ -338,7 +366,7 @@ static void WriteProcessPipe(Service::Interface* self) {
  * DSP_DSP::ReadPipeIfPossible service function
  *      A pipe is a means of communication between the ARM11 and DSP that occurs on
  *      hardware by writing to/reading from the DSP registers at 0x10203000.
- *      Pipes are used for initialisation. See also DSP::HLE::PipeRead.
+ *      Pipes are used for initialisation. See also DspInterface::PipeRead.
  *  Inputs:
  *      1 : Pipe Number
  *      2 : Unknown
@@ -356,7 +384,7 @@ static void ReadPipeIfPossible(Service::Interface* self) {
     u32 size = cmd_buff[3] & 0xFFFF; // Lower 16 bits are size
     VAddr addr = cmd_buff[0x41];
 
-    DSP::HLE::DspPipe pipe = static_cast<DSP::HLE::DspPipe>(pipe_index);
+    AudioCore::DspPipe pipe = static_cast<AudioCore::DspPipe>(pipe_index);
 
     ASSERT_MSG(Memory::IsValidVirtualAddress(addr),
                "Invalid addr: pipe=0x%08X, unknown=0x%08X, size=0x%X, buffer=0x%08X", pipe_index,
@@ -364,8 +392,8 @@ static void ReadPipeIfPossible(Service::Interface* self) {
 
     cmd_buff[0] = IPC::MakeHeader(0x10, 1, 2);
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    if (DSP::HLE::GetPipeReadableSize(pipe) >= size) {
-        std::vector<u8> response = DSP::HLE::PipeRead(pipe, size);
+    if (Core::DSP().GetPipeReadableSize(pipe) >= size) {
+        std::vector<u8> response = Core::DSP().PipeRead(pipe, size);
 
         Memory::WriteBlock(addr, response.data(), response.size());
 
@@ -400,14 +428,14 @@ static void ReadPipe(Service::Interface* self) {
     u32 size = cmd_buff[3] & 0xFFFF; // Lower 16 bits are size
     VAddr addr = cmd_buff[0x41];
 
-    DSP::HLE::DspPipe pipe = static_cast<DSP::HLE::DspPipe>(pipe_index);
+    AudioCore::DspPipe pipe = static_cast<AudioCore::DspPipe>(pipe_index);
 
     ASSERT_MSG(Memory::IsValidVirtualAddress(addr),
                "Invalid addr: pipe=0x%08X, unknown=0x%08X, size=0x%X, buffer=0x%08X", pipe_index,
                unknown, size, addr);
 
-    if (DSP::HLE::GetPipeReadableSize(pipe) >= size) {
-        std::vector<u8> response = DSP::HLE::PipeRead(pipe, size);
+    if (Core::DSP().GetPipeReadableSize(pipe) >= size) {
+        std::vector<u8> response = Core::DSP().PipeRead(pipe, size);
 
         Memory::WriteBlock(addr, response.data(), response.size());
 
@@ -441,11 +469,11 @@ static void GetPipeReadableSize(Service::Interface* self) {
     u32 pipe_index = cmd_buff[1];
     u32 unknown = cmd_buff[2];
 
-    DSP::HLE::DspPipe pipe = static_cast<DSP::HLE::DspPipe>(pipe_index);
+    AudioCore::DspPipe pipe = static_cast<AudioCore::DspPipe>(pipe_index);
 
     cmd_buff[0] = IPC::MakeHeader(0xF, 2, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = static_cast<u32>(DSP::HLE::GetPipeReadableSize(pipe));
+    cmd_buff[2] = static_cast<u32>(Core::DSP().GetPipeReadableSize(pipe));
 
     LOG_DEBUG(Service_DSP, "pipe=%u, unknown=0x%08X, return cmd_buff[2]=0x%08X", pipe_index,
               unknown, cmd_buff[2]);
@@ -511,12 +539,12 @@ static void RecvData(Service::Interface* self) {
 
     cmd_buff[0] = IPC::MakeHeader(0x1, 2, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
-    switch (DSP::HLE::GetDspState()) {
-    case DSP::HLE::DspState::On:
+    switch (Core::DSP().GetDspState()) {
+    case AudioCore::DspState::On:
         cmd_buff[2] = 0;
         break;
-    case DSP::HLE::DspState::Off:
-    case DSP::HLE::DspState::Sleeping:
+    case AudioCore::DspState::Off:
+    case AudioCore::DspState::Sleeping:
         cmd_buff[2] = 1;
         break;
     default:
@@ -572,7 +600,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x001100C2, LoadComponent, "LoadComponent"},
     {0x00120000, nullptr, "UnloadComponent"},
     {0x00130082, FlushDataCache, "FlushDataCache"},
-    {0x00140082, nullptr, "InvalidateDCache"},
+    {0x00140082, InvalidateDCache, "InvalidateDCache"},
     {0x00150082, RegisterInterruptEvents, "RegisterInterruptEvents"},
     {0x00160000, GetSemaphoreEventHandle, "GetSemaphoreEventHandle"},
     {0x00170040, SetSemaphoreMask, "SetSemaphoreMask"},
