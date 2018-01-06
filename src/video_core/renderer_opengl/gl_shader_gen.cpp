@@ -1173,8 +1173,8 @@ vec4 secondary_fragment_color = vec4(0.0);
     } else if (state.fog_mode == TexturingRegs::FogMode::Gas) {
         Core::Telemetry().AddField(Telemetry::FieldType::Session, "VideoCore_Pica_UseGasMode",
                                    true);
-        LOG_CRITICAL(Render_OpenGL, "Unimplemented gas mode");
-        UNIMPLEMENTED();
+        out += "discard; }";
+        return out;
     }
 
     out += "gl_FragDepth = depth;\n";
