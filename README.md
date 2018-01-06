@@ -4,7 +4,7 @@ Citra Emulator
 ==============
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/k213m9mio0bhwo6a?svg=true)](https://ci.appveyor.com/project/valentinvanelslande/citra)
 
-[![Downloads](https://img.shields.io/github/downloads/valentinvanelslande/citra/total.svg?label=downloads)](https://github.com/valentinvanelslande/citra/releases)
+[![Downloads](https://img.shields.io/github/downloads/valentinvanelslande/citra/total.svg)](https://github.com/valentinvanelslande/citra/releases)
 
 [![Downloads of latest release](https://img.shields.io/github/downloads/valentinvanelslande/citra/latest/total.svg?label=downloads+of+latest+release)](https://github.com/valentinvanelslande/citra/releases/latest)
 
