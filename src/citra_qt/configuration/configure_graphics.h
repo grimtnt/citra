@@ -28,6 +28,6 @@ private slots:
     void showLayoutBackgroundDialog();
 
 private:
-     QColor bg_color; 
+    QColor bg_color;
     std::unique_ptr<Ui::ConfigureGraphics> ui;
 };
