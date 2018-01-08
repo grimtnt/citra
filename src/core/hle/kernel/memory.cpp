@@ -71,7 +71,7 @@ void MemoryInit(u32 mem_type) {
     if (mem_type != 6) {
         ASSERT(base == Memory::FCRAM_SIZE);
     } else {
-        ASSERT(base == Memory::FCRAM_SIZE + Memory::FCRAM_N3DS_SIZE);
+        ASSERT(base == Memory::FCRAM_N3DS_SIZE);
     }
 
     using ConfigMem::config_mem;
