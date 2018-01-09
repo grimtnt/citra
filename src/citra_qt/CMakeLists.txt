@@ -93,6 +93,8 @@ add_executable(citra-qt
     util/spinbox.h
     util/util.cpp
     util/util.h
+    compatdb.cpp
+    compatdb.h
 )
 
 set(UIS
@@ -111,6 +113,7 @@ set(UIS
     hotkeys.ui
     cheat_gui.ui
     main.ui
+    compatdb.ui
     multiplayer/direct_connect.ui
     multiplayer/lobby.ui
     multiplayer/chat_room.ui

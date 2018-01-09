@@ -59,6 +59,10 @@
 #include "core/settings.h"
 #include "video_core/video_core.h"
 
+#ifdef CITRA_ENABLE_COMPATIBILITY_REPORTING
+#include "citra_qt/compatdb.h"
+#endif
+
 #ifdef QT_STATICPLUGIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #endif
@@ -176,6 +180,9 @@ GMainWindow::~GMainWindow() {
 }
 
 void GMainWindow::InitializeWidgets() {
+#ifdef CITRA_ENABLE_COMPATIBILITY_REPORTING
+    ui.action_Report_Compatibility->setVisible(true);
+#endif
     render_window = new GRenderWindow(this, emu_thread.get());
     render_window->hide();
 
@@ -433,6 +440,8 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start, &QAction::triggered, this, &GMainWindow::OnStartGame);
     connect(ui.action_Pause, &QAction::triggered, this, &GMainWindow::OnPauseGame);
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
+    connect(ui.action_Report_Compatibility, &QAction::triggered, this,
+            &GMainWindow::OnMenuReportCompatibility);
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
 
@@ -705,6 +714,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Start->setText(tr("Start"));
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(false);
+    ui.action_Report_Compatibility->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     render_window->hide();
     game_list->show();
@@ -905,9 +915,10 @@ void GMainWindow::OnStartGame() {
 
     ui.action_Start->setEnabled(false);
     ui.action_Start->setText(tr("Continue"));
-    ui.action_Cheats->setEnabled(true);
     ui.action_Pause->setEnabled(true);
     ui.action_Stop->setEnabled(true);
+    ui.action_Cheats->setEnabled(true);
+    ui.action_Report_Compatibility->setEnabled(true);
 }
 
 void GMainWindow::OnPauseGame() {
@@ -920,6 +931,21 @@ void GMainWindow::OnPauseGame() {
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
+}
+
+void GMainWindow::OnMenuReportCompatibility() {
+#ifdef CITRA_ENABLE_COMPATIBILITY_REPORTING
+    if (!Settings::values.citra_token.empty() && !Settings::values.citra_username.empty()) {
+        CompatDB compatdb{this};
+        compatdb.exec();
+    } else {
+        QMessageBox::critical(
+            this, tr("Missing Citra Account"),
+            tr("In order to submit a game compatibility test case, you must link your Citra "
+               "account.<br><br/>To link your Citra account, go to Emulation \> Configuration \> "
+               "Web."));
+    }
+#endif
 }
 
 void GMainWindow::ToggleFullscreen() {
