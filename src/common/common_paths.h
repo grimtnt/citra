@@ -36,6 +36,7 @@
 #define SDMC_DIR "sdmc"
 #define NAND_DIR "nand"
 #define SYSDATA_DIR "sysdata"
+#define SHADERS_DIR "shaders"
 
 // Filenames
 // Files in the directory returned by GetUserPath(D_CONFIG_IDX)
