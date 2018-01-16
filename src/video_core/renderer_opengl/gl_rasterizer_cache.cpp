@@ -390,6 +390,7 @@ SurfaceParams SurfaceParams::FromInterval(SurfaceInterval interval) const {
             addr + Common::AlignUp(boost::icl::last_next(interval) - addr, tiled_alignment);
         params.addr = aligned_start;
         params.width = PixelsInBytes(aligned_end - aligned_start) / (is_tiled ? 8 : 1);
+        params.stride = params.width;
         params.height = is_tiled ? 8 : 1;
     }
     params.UpdateParams();
@@ -447,57 +448,45 @@ MathUtil::Rectangle<u32> SurfaceParams::GetScaledSubRect(const SurfaceParams& su
 }
 
 bool SurfaceParams::ExactMatch(const SurfaceParams& other_surface) const {
-    return (other_surface.addr == addr && other_surface.width == width &&
-            other_surface.height == height && other_surface.stride == stride &&
-            other_surface.pixel_format == pixel_format && pixel_format != PixelFormat::Invalid &&
-            other_surface.is_tiled == is_tiled);
+    return other_surface.addr == addr && other_surface.width == width &&
+           other_surface.height == height && other_surface.stride == stride &&
+           other_surface.pixel_format == pixel_format && pixel_format != PixelFormat::Invalid &&
+           other_surface.is_tiled == is_tiled;
 }
 
 bool SurfaceParams::CanSubRect(const SurfaceParams& sub_surface) const {
-    return (sub_surface.addr >= addr && sub_surface.end <= end &&
-            sub_surface.pixel_format == pixel_format && pixel_format != PixelFormat::Invalid &&
-            sub_surface.is_tiled == is_tiled &&
-            (sub_surface.addr - addr) * 8 % GetFormatBpp() == 0 &&
-            (!is_tiled || PixelsInBytes(sub_surface.addr - addr) % 64 == 0) &&
-            (sub_surface.stride == stride || sub_surface.height <= (is_tiled ? 8u : 1u)) &&
-            GetSubRect(sub_surface).left + sub_surface.width <= stride);
+    return sub_surface.addr >= addr && sub_surface.end <= end &&
+           sub_surface.pixel_format == pixel_format && pixel_format != PixelFormat::Invalid &&
+           sub_surface.is_tiled == is_tiled &&
+           (sub_surface.addr - addr) % BytesInPixels(is_tiled ? 64 : 1) == 0 &&
+           (sub_surface.stride == stride || sub_surface.height <= (is_tiled ? 8u : 1u)) &&
+           GetSubRect(sub_surface).left + sub_surface.width <= stride;
 }
 
 bool SurfaceParams::CanExpand(const SurfaceParams& expanded_surface) const {
-    if (pixel_format == PixelFormat::Invalid || pixel_format != expanded_surface.pixel_format ||
-        is_tiled != expanded_surface.is_tiled || addr > expanded_surface.end ||
-        expanded_surface.addr > end || stride != expanded_surface.stride)
-        return false;
-
-    const u32 byte_offset =
-        std::max(expanded_surface.addr, addr) - std::min(expanded_surface.addr, addr);
-
-    const int x0 = byte_offset % BytesInPixels(stride);
-    const int y0 = byte_offset / BytesInPixels(stride);
-
-    return x0 == 0 && (!is_tiled || y0 % 8 == 0);
+    return pixel_format != PixelFormat::Invalid && pixel_format == expanded_surface.pixel_format &&
+           addr <= expanded_surface.end && expanded_surface.addr <= end &&
+           is_tiled == expanded_surface.is_tiled && stride == expanded_surface.stride &&
+           (std::max(expanded_surface.addr, addr) - std::min(expanded_surface.addr, addr)) %
+                   BytesInPixels(stride * (is_tiled ? 8 : 1)) ==
+               0;
 }
 
 bool SurfaceParams::CanTexCopy(const SurfaceParams& texcopy_params) const {
     if (pixel_format == PixelFormat::Invalid || addr > texcopy_params.addr ||
-        end < texcopy_params.end || ((texcopy_params.addr - addr) * 8) % GetFormatBpp() != 0 ||
-        (texcopy_params.width * 8) % GetFormatBpp() != 0 ||
-        (texcopy_params.stride * 8) % GetFormatBpp() != 0)
+        end < texcopy_params.end) {
         return false;
-
-    const u32 begin_pixel_index = PixelsInBytes(texcopy_params.addr - addr);
-
-    if (!is_tiled) {
-        const int x0 = begin_pixel_index % stride;
-        return ((texcopy_params.height == 1 || PixelsInBytes(texcopy_params.stride) == stride) &&
-                x0 + PixelsInBytes(texcopy_params.width) <= stride);
     }
-
-    const int x0 = (begin_pixel_index % (stride * 8)) / 8;
-    return (PixelsInBytes(texcopy_params.addr - addr) % 64 == 0 &&
-            PixelsInBytes(texcopy_params.width) % 64 == 0 &&
-            (texcopy_params.height == 1 || PixelsInBytes(texcopy_params.stride) == stride * 8) &&
-            x0 + PixelsInBytes(texcopy_params.width / 8) <= stride);
+    if (texcopy_params.width != texcopy_params.stride) {
+        const u32 tile_stride = BytesInPixels(stride * (is_tiled ? 8 : 1));
+        return (texcopy_params.addr - addr) % BytesInPixels(is_tiled ? 64 : 1) == 0 &&
+               texcopy_params.width % BytesInPixels(is_tiled ? 64 : 1) == 0 &&
+               (texcopy_params.height == 1 || texcopy_params.stride == tile_stride) &&
+               ((texcopy_params.addr - addr) % tile_stride) + texcopy_params.width <= tile_stride;
+    } else {
+        return FromInterval(texcopy_params.GetInterval()).GetInterval() ==
+               texcopy_params.GetInterval();
+    }
 }
 
 bool CachedSurface::CanFill(const SurfaceParams& dest_surface,
@@ -954,6 +943,52 @@ Surface FindMatch(const SurfaceCache& surface_cache, const SurfaceParams& params
 RasterizerCacheOpenGL::RasterizerCacheOpenGL() {
     read_framebuffer.Create();
     draw_framebuffer.Create();
+
+    attributeless_vao.Create();
+
+    d24s8_abgr_buffer.Create();
+    d24s8_abgr_buffer_size = 0;
+
+    const char* vs_source = R"(
+#version 330 core
+const vec2 vertices[4] = vec2[4](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0));
+void main() {
+    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
+}
+)";
+    const char* fs_source = R"(
+#version 330 core
+
+uniform samplerBuffer tbo;
+uniform vec2 tbo_size;
+uniform vec4 viewport;
+
+out vec4 color;
+
+void main() {
+    vec2 tbo_coord = (gl_FragCoord.xy - viewport.xy) * tbo_size / viewport.zw;
+    int tbo_offset = int(tbo_coord.y) * int(tbo_size.x) + int(tbo_coord.x);
+    color = texelFetch(tbo, tbo_offset).rabg;
+}
+)";
+    d24s8_abgr_shader.Create(vs_source, fs_source);
+
+    OpenGLState state = OpenGLState::GetCurState();
+    GLuint old_program = state.draw.shader_program;
+    state.draw.shader_program = d24s8_abgr_shader.handle;
+    state.Apply();
+
+    GLint tbo_u_id = glGetUniformLocation(d24s8_abgr_shader.handle, "tbo");
+    ASSERT(tbo_u_id != -1);
+    glUniform1i(tbo_u_id, 0);
+
+    state.draw.shader_program = old_program;
+    state.Apply();
+
+    d24s8_abgr_tbo_size_u_id = glGetUniformLocation(d24s8_abgr_shader.handle, "tbo_size");
+    ASSERT(d24s8_abgr_tbo_size_u_id != -1);
+    d24s8_abgr_viewport_u_id = glGetUniformLocation(d24s8_abgr_shader.handle, "viewport");
+    ASSERT(d24s8_abgr_viewport_u_id != -1);
 }
 
 RasterizerCacheOpenGL::~RasterizerCacheOpenGL() {
@@ -972,6 +1007,63 @@ bool RasterizerCacheOpenGL::BlitSurfaces(const Surface& src_surface,
     return BlitTextures(src_surface->texture.handle, src_rect, dst_surface->texture.handle,
                         dst_rect, src_surface->type, read_framebuffer.handle,
                         draw_framebuffer.handle);
+}
+
+void RasterizerCacheOpenGL::ConvertD24S8toABGR(GLuint src_tex,
+                                               const MathUtil::Rectangle<u32>& src_rect,
+                                               GLuint dst_tex,
+                                               const MathUtil::Rectangle<u32>& dst_rect) {
+    OpenGLState prev_state = OpenGLState::GetCurState();
+    SCOPE_EXIT({ prev_state.Apply(); });
+
+    OpenGLState state;
+    state.draw.read_framebuffer = read_framebuffer.handle;
+    state.draw.draw_framebuffer = draw_framebuffer.handle;
+    state.Apply();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, d24s8_abgr_buffer.handle);
+
+    GLsizeiptr target_pbo_size = src_rect.GetWidth() * src_rect.GetHeight() * 4;
+    if (target_pbo_size > d24s8_abgr_buffer_size) {
+        d24s8_abgr_buffer_size = target_pbo_size * 2;
+        glBufferData(GL_PIXEL_PACK_BUFFER, d24s8_abgr_buffer_size, nullptr, GL_STREAM_COPY);
+    }
+
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, src_tex,
+                           0);
+    glReadPixels(static_cast<GLint>(src_rect.left), static_cast<GLint>(src_rect.bottom),
+                 static_cast<GLsizei>(src_rect.GetWidth()),
+                 static_cast<GLsizei>(src_rect.GetHeight()), GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8,
+                 0);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    // PBO now contains src_tex in RABG format
+    state.draw.shader_program = d24s8_abgr_shader.handle;
+    state.draw.vertex_array = attributeless_vao.handle;
+    state.viewport.x = static_cast<GLint>(dst_rect.left);
+    state.viewport.y = static_cast<GLint>(dst_rect.bottom);
+    state.viewport.width = static_cast<GLsizei>(dst_rect.GetWidth());
+    state.viewport.height = static_cast<GLsizei>(dst_rect.GetHeight());
+    state.Apply();
+
+    OGLTexture tbo;
+    tbo.Create();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, tbo.handle);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA8, d24s8_abgr_buffer.handle);
+
+    glUniform2f(d24s8_abgr_tbo_size_u_id, static_cast<GLfloat>(src_rect.GetWidth()),
+                static_cast<GLfloat>(src_rect.GetHeight()));
+    glUniform4f(d24s8_abgr_viewport_u_id, static_cast<GLfloat>(state.viewport.x),
+                static_cast<GLfloat>(state.viewport.y), static_cast<GLfloat>(state.viewport.width),
+                static_cast<GLfloat>(state.viewport.height));
+
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dst_tex, 0);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
 }
 
 Surface RasterizerCacheOpenGL::GetSurface(const SurfaceParams& params, ScaleMatch match_res_scale,
@@ -996,6 +1088,15 @@ Surface RasterizerCacheOpenGL::GetSurface(const SurfaceParams& params, ScaleMatc
                 surface_cache, find_params, match_res_scale);
             if (expandable != nullptr && expandable->res_scale > target_res_scale) {
                 target_res_scale = expandable->res_scale;
+            }
+            // Keep res_scale when reinterpreting d24s8 -> rgba8
+            if (params.pixel_format == PixelFormat::RGBA8) {
+                find_params.pixel_format = PixelFormat::D24S8;
+                expandable = FindMatch<MatchFlags::Expand | MatchFlags::Invalid>(
+                    surface_cache, find_params, match_res_scale);
+                if (expandable != nullptr && expandable->res_scale > target_res_scale) {
+                    target_res_scale = expandable->res_scale;
+                }
             }
         }
         SurfaceParams new_params = params;
@@ -1245,14 +1346,17 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetTexCopySurface(const SurfaceParams& 
     if (match_surface != nullptr) {
         ValidateSurface(match_surface, params.addr, params.size);
 
-        SurfaceParams match_subrect = params;
-        match_subrect.width = match_surface->PixelsInBytes(params.width);
-        match_subrect.stride = match_surface->PixelsInBytes(params.stride);
-
-        if (match_surface->is_tiled) {
-            match_subrect.width /= 8;
-            match_subrect.stride /= 8;
-            match_subrect.height *= 8;
+        SurfaceParams match_subrect;
+        if (params.width != params.stride) {
+            match_subrect = params;
+            match_subrect.width =
+                match_surface->PixelsInBytes(params.width) / (match_surface->is_tiled ? 8 : 1);
+            match_subrect.stride =
+                match_surface->PixelsInBytes(params.stride) / (match_surface->is_tiled ? 8 : 1);
+            match_subrect.height *= (match_surface->is_tiled ? 8 : 1);
+        } else {
+            match_subrect = match_surface->FromInterval(params.GetInterval());
+            ASSERT(match_subrect.GetInterval() == params.GetInterval());
         }
 
         rect = match_surface->GetScaledSubRect(match_subrect);
@@ -1310,6 +1414,27 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
             CopySurface(copy_surface, surface, copy_interval);
             surface->invalid_regions.erase(copy_interval);
             continue;
+        }
+
+        // D24S8 to RGBA8
+        if (surface->pixel_format == PixelFormat::RGBA8) {
+            params.pixel_format = PixelFormat::D24S8;
+            Surface reinterpret_surface =
+                FindMatch<MatchFlags::Copy>(surface_cache, params, ScaleMatch::Ignore, interval);
+            if (reinterpret_surface != nullptr) {
+                ASSERT(reinterpret_surface->pixel_format == PixelFormat::D24S8);
+
+                SurfaceInterval convert_interval = params.GetCopyableInterval(reinterpret_surface);
+                SurfaceParams convert_params = surface->FromInterval(convert_interval);
+                auto src_rect = reinterpret_surface->GetScaledSubRect(convert_params);
+                auto dest_rect = surface->GetScaledSubRect(convert_params);
+
+                ConvertD24S8toABGR(reinterpret_surface->texture.handle, src_rect,
+                                   surface->texture.handle, dest_rect);
+
+                surface->invalid_regions.erase(convert_interval);
+                continue;
+            }
         }
 
         // Load data from 3DS memory
