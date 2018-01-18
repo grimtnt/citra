@@ -143,7 +143,7 @@ public:
          *     This command is implemented in the Old3DS PTM sysmodule too,
          *     but the above type is only implemented in the New3DS ARM11-kernel.
          */
-        void ConfigureNew3DSCPU(Interface* self);
+        void ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx);
 
     private:
         std::shared_ptr<Module> ptm;
