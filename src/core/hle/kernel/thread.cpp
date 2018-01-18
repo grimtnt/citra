@@ -133,9 +133,6 @@ static void SwitchContext(Thread* new_thread) {
 
         ready_queue.remove(new_thread->current_priority, new_thread);
         new_thread->status = THREADSTATUS_RUNNING;
-        
-        // Restores thread to its nominal priority if it has been temporarily changed
-        new_thread->current_priority = new_thread->nominal_priority;
 
         if (previous_process != current_thread->owner_process) {
             Kernel::g_current_process = current_thread->owner_process;
@@ -199,7 +196,8 @@ static void ThreadWakeupCallback(u64 thread_handle, int cycles_late) {
     }
 
     if (thread->status == THREADSTATUS_WAIT_SYNCH_ANY ||
-        thread->status == THREADSTATUS_WAIT_SYNCH_ALL || thread->status == THREADSTATUS_WAIT_ARB) {
+        thread->status == THREADSTATUS_WAIT_SYNCH_ALL || thread->status == THREADSTATUS_WAIT_ARB ||
+        thread->status == THREADSTATUS_WAIT_HLE_EVENT) {
 
         // Invoke the wakeup callback before clearing the wait objects
         if (thread->wakeup_callback)
@@ -466,7 +464,7 @@ bool HaveReadyThreads() {
     return ready_queue.get_first() != nullptr;
 }
 
-void Reschedule() {    
+void Reschedule() {
     Thread* cur = GetCurrentThread();
     Thread* next = PopNextReadyThread();
 
