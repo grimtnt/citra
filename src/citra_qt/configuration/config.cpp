@@ -59,9 +59,9 @@ void Config::ReadValues() {
     }
 
     Settings::values.motion_device =
-        qt_config->value("motion_device", "engine:motion_emu,update_period:100,sensitivity:0.01")
-            .toString()
-            .toStdString();
+        qt_config
+            ->value("motion_device",
+                    "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0")
     Settings::values.touch_device =
         qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
 
