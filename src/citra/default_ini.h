@@ -72,6 +72,10 @@ touch_device=
 # 0: Interpreter (slow), 1 (default): JIT (fast)
 use_cpu_jit =
 
+# Dynarmic AddTicks ticks
+# default: 10800
+dynarmic_addticks_ticks =
+
 [Renderer]
 # Whether to use software or hardware rendering.
 # 0: Software, 1 (default): Hardware

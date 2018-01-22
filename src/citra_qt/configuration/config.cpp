@@ -71,6 +71,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
+    Settings::values.dynarmic_addticks_ticks = qt_config->value("dynarmic_addticks_ticks", 10800).toInt();
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -257,6 +258,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
+    qt_config->setValue("dynarmic_addticks_ticks", Settings::values.dynarmic_addticks_ticks);
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
