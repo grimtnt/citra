@@ -100,6 +100,9 @@ bg_red =
 bg_blue =
 bg_green =
 
+# Vertices per thread
+vertices_per_thread =
+
 [Layout]
 # Layout for the screen inside the render window.
 # 0 (default): Default Top Bottom Screen, 1: Single Screen Only, 2: Large Screen Small Screen

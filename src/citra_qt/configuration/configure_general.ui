@@ -99,6 +99,20 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QLabel" name="label_ticks">
+            <property name="text">
+             <string>CPU JIT AddTicks Ticks:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinbox_ticks">
+            <property name="maximum">
+             <number>999999999</number>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>

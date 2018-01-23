@@ -45,6 +45,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->frame_limit->setValue(Settings::values.frame_limit);
     ui->layout_combobox->setCurrentIndex(static_cast<int>(Settings::values.layout_option));
     ui->swap_screen->setChecked(Settings::values.swap_screen);
+    ui->vertices_per_thread->setValue(Settings::values.vertices_per_thread);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -60,6 +61,7 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
+    Settings::values.vertices_per_thread = ui->vertices_per_thread->value();
     Settings::Apply();
 }
 

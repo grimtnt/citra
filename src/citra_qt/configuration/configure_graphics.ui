@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>378</width>
+    <height>340</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -137,6 +137,23 @@
           </item>
          </layout>
         </item>
+        <item>
+         <widget class="QLabel" name="label_vertices">
+          <property name="text">
+           <string>Vertices per thread:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="vertices_per_thread">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -160,8 +177,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="layout_bg">
-           </widget>
+           <widget class="QPushButton" name="layout_bg"/>
           </item>
          </layout>
         </item>

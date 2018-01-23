@@ -47,6 +47,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->toggle_deepscan->setChecked(UISettings::values.gamedir_deepscan);
     ui->toggle_check_exit->setChecked(UISettings::values.confirm_before_closing);
     ui->toggle_cpu_jit->setChecked(Settings::values.use_cpu_jit);
+    ui->spinbox_ticks->setValue(Settings::values.dynarmic_addticks_ticks);
 
     ui->toggle_update_check->setChecked(UISettings::values.check_for_update_on_start);
     ui->toggle_auto_update->setChecked(UISettings::values.update_on_close);
@@ -70,6 +71,7 @@ void ConfigureGeneral::applyConfiguration() {
 
     Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
+    Settings::values.dynarmic_addticks_ticks = ui->spinbox_ticks->value();
     Settings::Apply();
 }
 
