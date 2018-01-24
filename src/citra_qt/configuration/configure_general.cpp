@@ -38,6 +38,7 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     this->setConfiguration();
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->priority_boost->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
@@ -47,6 +48,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->toggle_deepscan->setChecked(UISettings::values.gamedir_deepscan);
     ui->toggle_check_exit->setChecked(UISettings::values.confirm_before_closing);
     ui->toggle_cpu_jit->setChecked(Settings::values.use_cpu_jit);
+    ui->priority_boost->setChecked(Settings::values.priority_boost);
     ui->spinbox_ticks->setValue(Settings::values.dynarmic_addticks_ticks);
 
     ui->toggle_update_check->setChecked(UISettings::values.check_for_update_on_start);
@@ -71,6 +73,7 @@ void ConfigureGeneral::applyConfiguration() {
 
     Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
+    Settings::values.priority_boost = ui->priority_boost->isChecked();
     Settings::values.dynarmic_addticks_ticks = ui->spinbox_ticks->value();
     Settings::Apply();
 }

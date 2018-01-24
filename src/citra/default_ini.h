@@ -75,6 +75,10 @@ use_cpu_jit =
 # Dynarmic AddTicks ticks
 dynarmic_addticks_ticks =
 
+# Priority Boost
+# 0: Disable, 1 (default): enable
+priority_boost =
+
 [Renderer]
 # Whether to use software or hardware rendering.
 # 0: Software, 1 (default): Hardware

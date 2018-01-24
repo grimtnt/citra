@@ -14,6 +14,7 @@
 #include "core/arm/skyeye_common/armstate.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/settings.h"
 #include "core/hle/kernel/errors.h"
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/kernel/kernel.h"
@@ -157,8 +158,8 @@ static void SwitchContext(Thread* new_thread) {
         ready_queue.remove(new_thread->current_priority, new_thread);
         new_thread->status = THREADSTATUS_RUNNING;
         
-        // Restores thread to its nominal priority if it has been temporarily changed
-        new_thread->current_priority = new_thread->nominal_priority;
+        if (Settings::values.priority_boost)
+            new_thread->current_priority = new_thread->nominal_priority;
 
         if (previous_process != current_thread->owner_process) {
             Kernel::g_current_process = current_thread->owner_process;
@@ -491,7 +492,8 @@ bool HaveReadyThreads() {
 }
 
 void Reschedule() {
-    PriorityBoostStarvedThreads();
+    if (Settings::values.priority_boost)
+        PriorityBoostStarvedThreads();
     
     Thread* cur = GetCurrentThread();
     Thread* next = PopNextReadyThread();

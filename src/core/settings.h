@@ -83,6 +83,7 @@ struct Values {
     // Core
     bool use_cpu_jit;
     u64 dynarmic_addticks_ticks;
+    bool priority_boost;
 
     // Data Storage
     bool use_virtual_sd;

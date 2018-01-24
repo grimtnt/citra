@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>345</width>
-    <height>493</height>
+    <height>516</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,6 +96,13 @@
            <widget class="QCheckBox" name="toggle_cpu_jit">
             <property name="text">
              <string>Enable CPU JIT</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="priority_boost">
+            <property name="text">
+             <string>Enable Priority Boost</string>
             </property>
            </widget>
           </item>
