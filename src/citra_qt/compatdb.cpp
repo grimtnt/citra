@@ -24,6 +24,8 @@ CompatDB::CompatDB(QWidget* parent)
 
 CompatDB::~CompatDB() = default;
 
+enum class CompatDBPage { Intro = 0, Selection = 1, Final = 2 };
+
 void CompatDB::Submit() {
     QButtonGroup* compatibility = new QButtonGroup(this);
     compatibility->addButton(ui->radioButton_Perfect, 0);
@@ -32,24 +34,25 @@ void CompatDB::Submit() {
     compatibility->addButton(ui->radioButton_Bad, 3);
     compatibility->addButton(ui->radioButton_IntroMenu, 4);
     compatibility->addButton(ui->radioButton_WontBoot, 5);
-    switch (currentId()) {
-    case 1:
+    switch ((static_cast<CompatDBPage>(currentId()))) {
+    case CompatDBPage::Selection:
         if (compatibility->checkedId() == -1) {
             button(NextButton)->setEnabled(false);
         }
         break;
-    case 2:
-        LOG_DEBUG(
-            Frontend,
-            tr("Compatibility Rating: %d").arg(compatibility->checkedId()).toStdString().c_str());
+    case CompatDBPage::Final:
+        LOG_DEBUG(Frontend, "Compatibility Rating: %d", compatibility->checkedId());
         Core::Telemetry().AddField(Telemetry::FieldType::UserFeedback, "Compatibility",
                                    compatibility->checkedId());
-        // the frozen dependency Linux build does not support the "NoCancelButtonOnLastPage" option,
-        // this is a workaround
+        // older versions of QT don't support the "NoCancelButtonOnLastPage" option, this is a
+        // workaround
         button(QWizard::CancelButton)->setVisible(false);
         break;
+    default:
+        LOG_ERROR(Frontend, "Unexpected page: %d", currentId());
     }
 }
+
 void CompatDB::EnableNext() {
     button(NextButton)->setEnabled(true);
 }
