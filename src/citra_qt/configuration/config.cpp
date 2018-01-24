@@ -81,6 +81,7 @@ void Config::ReadValues() {
     Settings::values.resolution_factor =
         static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
     Settings::values.use_vsync = qt_config->value("use_vsync", false).toBool();
+    Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
     Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
 
     Settings::values.bg_red = qt_config->value("bg_red", 0.0).toFloat();
@@ -269,6 +270,7 @@ void Config::SaveValues() {
     qt_config->setValue("use_shader_jit", Settings::values.use_shader_jit);
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
     qt_config->setValue("use_vsync", Settings::values.use_vsync);
+    qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);
 
     // Cast to double because Qt's written float values are not human-readable
