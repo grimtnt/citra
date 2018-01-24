@@ -73,7 +73,6 @@ touch_device=
 use_cpu_jit =
 
 # Dynarmic AddTicks ticks
-# default: 10800
 dynarmic_addticks_ticks =
 
 [Renderer]
@@ -101,6 +100,7 @@ bg_blue =
 bg_green =
 
 # Vertices per thread
+# default: 10
 vertices_per_thread =
 
 [Layout]
