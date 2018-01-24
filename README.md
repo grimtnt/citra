@@ -2,6 +2,8 @@
 
 Citra Emulator
 ==============
+[Build with Dynarmic AddTicks ticks logging (SLOW!)](https://ci.appveyor.com/api/buildjobs/81lo0wc7ma3uydnd/artifacts/citra-windows-mingw-20180123-9088915.7z)
+
 [Build with Cheat Search](https://ci.appveyor.com/api/buildjobs/qltuin9cs9crgpsa/artifacts/citra-windows-msvc-20180114-8508928.7z)
 
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/k213m9mio0bhwo6a?svg=true)](https://ci.appveyor.com/project/valentinvanelslande/citra)
