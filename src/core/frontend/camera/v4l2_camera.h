@@ -41,7 +41,7 @@ private:
 
 class V4L2CameraFactory final : public CameraFactory {
 public:
-    std::unique_ptr<CameraInterface> Create(const std::string& config) const override {
+    std::unique_ptr<CameraInterface> Create(const std::string& config) const {
         return std::make_unique<V4L2Camera>(std::stoi(config));
     }
 };
