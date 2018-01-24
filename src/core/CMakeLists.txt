@@ -392,6 +392,8 @@ add_library(core STATIC
     memory.h
     memory_setup.h
     mmio.h
+    movie.cpp
+    movie.h
     perf_stats.cpp
     perf_stats.h
     settings.cpp
