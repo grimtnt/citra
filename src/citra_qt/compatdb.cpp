@@ -41,7 +41,7 @@ void CompatDB::Submit() {
     case 2:
         LOG_DEBUG(
             Frontend,
-            tr("Compatibility Rating: %1").arg(compatibility->checkedId()).toStdString().c_str());
+            tr("Compatibility Rating: %d").arg(compatibility->checkedId()).toStdString().c_str());
         Core::Telemetry().AddField(Telemetry::FieldType::UserFeedback, "Compatibility",
                                    compatibility->checkedId());
         // the frozen dependency Linux build does not support the "NoCancelButtonOnLastPage" option,
