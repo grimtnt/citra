@@ -96,6 +96,7 @@ struct Values {
     bool use_shader_jit;
     u16 resolution_factor;
     bool use_vsync;
+    bool use_frame_limit;
     u16 frame_limit;
     int vertices_per_thread;
 
