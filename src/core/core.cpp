@@ -23,6 +23,7 @@
 #include "core/hw/hw.h"
 #include "core/loader/loader.h"
 #include "core/memory_setup.h"
+#include "core/movie.h"
 #include "core/settings.h"
 #include "network/network.h"
 #include "video_core/video_core.h"
@@ -169,6 +170,7 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     Service::Init();
     CheatCore::Init();
     GDBStub::Init();
+    Movie::GetInstance().Init();
 
     dsp_core = std::make_unique<AudioCore::DspHle>();
     dsp_core->SetSink(Settings::values.sink_id);
@@ -199,6 +201,7 @@ void System::Shutdown() {
 
     // Shutdown emulation session
     dsp_core = nullptr;
+    Movie::GetInstance().Shutdown();
     GDBStub::Shutdown();
     CheatCore::Shutdown();
     VideoCore::Shutdown();
