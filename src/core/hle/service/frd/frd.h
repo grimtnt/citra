@@ -72,15 +72,41 @@ void GetFriendProfile(Service::Interface* self);
  *      2 : Friends count << 18 | 2
  *      3 : Address of FriendKey List
  *      65 : Address of AttributeFlags
+ */
+ void GetFriendAttributeFlags(Service::Interface* self);
+
+/**
+ * FRD::HasLoggedIn service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2 : Logged in, 0 if not logged in, 1 if logged in
+ */
+void HasLoggedIn(Service::Interface* self);
+
+/**
+ * FRD::IsOnline service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2 : Online state, 0 if not online, 1 if online
+ */
+void IsOnline(Service::Interface* self);
+
+/**
+ * FRD::Login service function
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
  */
-void GetFriendAttributeFlags(Service::Interface* self);
+void Login(Service::Interface* self);
+
+/**
+ * FRD::Logout service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ */
+void Logout(Service::Interface* self);
 
 /**
  * FRD::GetMyFriendKey service function
- *  Inputs:
- *      none
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
  *      2-5 : FriendKey
