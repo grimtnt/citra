@@ -19,7 +19,7 @@ namespace FRD {
 
 static FriendKey my_friend_key = {0, 0, 0ull};
 static MyPresence my_presence = {};
-static u32 logged_in = 0;
+static u8 logged_in = 0;
 
 void GetMyPresence(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
@@ -101,7 +101,7 @@ void IsOnline(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = 0; // Not online
+    cmd_buff[2] = 0;                  // Not online
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
@@ -111,8 +111,8 @@ void Login(Service::Interface* self) {
     if (logged_in == 1) {
         // This is the correct error code?
         cmd_buff[1] = ResultCode(ErrorDescription::AlreadyDone, ErrorModule::Friends,
-                         ErrorSummary::InvalidState, ErrorLevel::Status)
-                  .raw;
+                                 ErrorSummary::InvalidState, ErrorLevel::Status)
+                          .raw;
         LOG_ERROR(Service_FRD, "Already logged in!");
     } else {
         logged_in = 1;
@@ -126,8 +126,8 @@ void Logout(Service::Interface* self) {
     if (logged_in == 0) {
         // This is the correct error code?
         cmd_buff[1] = ResultCode(ErrorDescription::AlreadyDone, ErrorModule::Friends,
-                         ErrorSummary::InvalidState, ErrorLevel::Status)
-                  .raw;
+                                 ErrorSummary::InvalidState, ErrorLevel::Status)
+                          .raw;
         LOG_ERROR(Service_FRD, "Not logged in!");
     } else {
         logged_in = 0;
