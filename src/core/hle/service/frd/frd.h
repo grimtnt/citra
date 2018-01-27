@@ -73,7 +73,7 @@ void GetFriendProfile(Service::Interface* self);
  *      3 : Address of FriendKey List
  *      65 : Address of AttributeFlags
  */
- void GetFriendAttributeFlags(Service::Interface* self);
+void GetFriendAttributeFlags(Service::Interface* self);
 
 /**
  * FRD::HasLoggedIn service function
@@ -93,6 +93,9 @@ void IsOnline(Service::Interface* self);
 
 /**
  * FRD::Login service function
+ *  Inputs:
+ *      1 : 0x0
+ *      2 : Completion event handle
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
  */
