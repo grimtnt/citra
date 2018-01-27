@@ -11,7 +11,7 @@ namespace FRD {
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010000, HasLoggedIn, "HasLoggedIn"},
     {0x00020000, IsOnline, "IsOnline"},
-    {0x00030000, Login, "Login"},
+    {0x00030002, Login, "Login"},
     {0x00040000, Logout, "Logout"},
     {0x00050000, GetMyFriendKey, "GetMyFriendKey"},
     {0x00060000, nullptr, "GetMyPreference"},
