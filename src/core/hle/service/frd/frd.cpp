@@ -108,31 +108,15 @@ void IsOnline(Service::Interface* self) {
 void Login(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    if (logged_in == 1) {
-        // This is the correct error code?
-        cmd_buff[1] = ResultCode(ErrorDescription::AlreadyDone, ErrorModule::Friends,
-                                 ErrorSummary::InvalidState, ErrorLevel::Status)
-                          .raw;
-        LOG_ERROR(Service_FRD, "Already logged in!");
-    } else {
-        logged_in = 1;
-        cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    }
+    logged_in = 1;
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 }
 
 void Logout(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    if (logged_in == 0) {
-        // This is the correct error code?
-        cmd_buff[1] = ResultCode(ErrorDescription::AlreadyDone, ErrorModule::Friends,
-                                 ErrorSummary::InvalidState, ErrorLevel::Status)
-                          .raw;
-        LOG_ERROR(Service_FRD, "Not logged in!");
-    } else {
-        logged_in = 0;
-        cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    }
+    logged_in = 0;
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 }
 
 void GetMyFriendKey(Service::Interface* self) {
