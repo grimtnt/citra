@@ -5,7 +5,7 @@
 #include "ui_control_panel.h"
 
 ControlPanel::ControlPanel(QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
     ui(new Ui::ControlPanel)
 {
     ui->setupUi(this);
