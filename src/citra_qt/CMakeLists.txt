@@ -95,6 +95,8 @@ add_executable(citra-qt
     util/util.h
     compatdb.cpp
     compatdb.h
+    control_panel.cpp
+    control_panel.h
 )
 
 set(UIS
@@ -114,6 +116,7 @@ set(UIS
     cheat_gui.ui
     main.ui
     compatdb.ui
+    control_panel.ui
     multiplayer/direct_connect.ui
     multiplayer/lobby.ui
     multiplayer/chat_room.ui

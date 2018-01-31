@@ -151,7 +151,6 @@ public:
 
 private:
     bool shell_open = true;
-    bool battery_is_charging = true;
     bool pedometer_is_counting = false;
 };
 

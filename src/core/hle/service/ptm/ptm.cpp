@@ -31,9 +31,7 @@ void Module::Interface::GetAdapterState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(ptm->battery_is_charging);
-
-    LOG_WARNING(Service_PTM, "(STUBBED) called");
+    rb.Push(Settings::values.ptm_values.adapter_connected);
 }
 
 void Module::Interface::GetShellState(Kernel::HLERequestContext& ctx) {
@@ -49,9 +47,7 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(static_cast<u32>(ChargeLevels::CompletelyFull)); // Set to a completely full battery
-
-    LOG_WARNING(Service_PTM, "(STUBBED) called");
+    rb.Push(Settings::values.ptm_values.battery_level);
 }
 
 void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
@@ -59,9 +55,7 @@ void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(ptm->battery_is_charging);
-
-    LOG_WARNING(Service_PTM, "(STUBBED) called");
+    rb.Push(Settings::values.ptm_values.battery_charging);
 }
 
 void Module::Interface::GetPedometerState(Kernel::HLERequestContext& ctx) {

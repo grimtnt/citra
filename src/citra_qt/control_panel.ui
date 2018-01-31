@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ControlPanel</class>
+ <widget class="QDialog" name="ControlPanel">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>210</width>
+    <height>63</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QTabWidget" name="tabs">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>212</width>
+     <height>66</height>
+    </rect>
+   </property>
+   <widget class="QWidget" name="tabPower">
+    <attribute name="title">
+     <string>Power</string>
+    </attribute>
+    <widget class="QComboBox" name="battery_level">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>20</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>Critical</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Low</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Half Full</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Mostly Full</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Completely Full</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_power_state">
+     <property name="geometry">
+      <rect>
+       <x>2</x>
+       <y>1</y>
+       <width>31</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Level</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="adapter_connected">
+     <property name="geometry">
+      <rect>
+       <x>85</x>
+       <y>3</y>
+       <width>115</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Adapter Connected</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="battery_charging">
+     <property name="geometry">
+      <rect>
+       <x>85</x>
+       <y>22</y>
+       <width>111</width>
+       <height>17</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Battery Charging</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -17,6 +17,7 @@
 #include <QtWidgets>
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
+#include "citra_qt/control_panel.h"
 #include "citra_qt/compatdb.h"
 #include "citra_qt/camera/still_image_camera.h" 
 #include "citra_qt/cheat_gui.h"
@@ -458,6 +459,7 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnMenuReportCompatibility);
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
+    connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -1106,6 +1108,11 @@ void GMainWindow::OnCheats() {
         cheatWindow = std::make_shared<CheatDialog>(this);
     }
     cheatWindow->show();
+}
+
+void GMainWindow::OnControlPanel() {
+    ControlPanel control_panel;
+    control_panel.exec();
 }
 
 void GMainWindow::OnCreateGraphicsSurfaceViewer() {

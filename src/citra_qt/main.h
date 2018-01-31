@@ -173,6 +173,7 @@ private slots:
     void OnAnnounceFailed(const Common::WebResult&);
     void OnConfigure();
     void OnCheats();
+    void OnControlPanel();
     void OnToggleFilterBar();
     void OnDisplayTitleBars(bool);
     void ToggleFullscreen();
