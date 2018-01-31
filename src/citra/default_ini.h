@@ -7,6 +7,16 @@
 namespace DefaultINI {
 
 const char* sdl2_config_file = R"(
+[ControlPanel]
+# Power - Adapter connected
+p_adapter_connected =
+
+# Power - Battery charging
+p_battery_charging =
+
+# Power - Battery level
+p_battery_level =
+
 [Controls]
 # The input devices and parameters for each 3DS native input
 # It should be in the format of "engine:[engine_name],[param1]:[value1],[param2]:[value2]..."

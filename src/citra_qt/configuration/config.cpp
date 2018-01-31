@@ -33,6 +33,12 @@ const std::array<std::array<int, 5>, Settings::NativeAnalog::NumAnalogs> Config:
 }};
 
 void Config::ReadValues() {
+    qt_config->beginGroup("ControlPanel");
+    Settings::values.p_adapter_connected = qt_config->value("p_adapter_connected", true).toBool();
+    Settings::values.p_battery_charging = qt_config->value("p_battery_charging", true).toBool();
+    Settings::values.p_battery_level = qt_config->value("p_battery_level", 5).toInt();
+    qt_config->endGroup();
+
     qt_config->beginGroup("Controls");
     for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {
         std::string default_param = InputCommon::GenerateKeyboardParam(default_buttons[i]);
@@ -246,6 +252,12 @@ void Config::ReadValues() {
 }
 
 void Config::SaveValues() {
+    qt_config->beginGroup("ControlPanel");
+    qt_config->setValue("p_adapter_connected", Settings::values.p_adapter_connected);
+    qt_config->setValue("p_battery_charging", Settings::values.p_battery_charging);
+    qt_config->setValue("p_battery_level", Settings::values.p_battery_level);
+    qt_config->endGroup();
+
     qt_config->beginGroup("Controls");
     for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {
         qt_config->setValue(QString::fromStdString(Settings::NativeButton::mapping[i]),

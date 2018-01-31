@@ -13,9 +13,9 @@ ControlPanel::ControlPanel(QWidget *parent) :
     ui(new Ui::ControlPanel)
 {
     ui->setupUi(this);
-    ui->adapter_connected->setChecked(Settings::values.ptm_values.adapter_connected);
-    ui->battery_charging->setChecked(Settings::values.ptm_values.battery_charging);
-    ui->battery_level->setCurrentIndex(Settings::values.ptm_values.battery_level - 1);
+    ui->adapter_connected->setChecked(Settings::values.p_adapter_connected);
+    ui->battery_charging->setChecked(Settings::values.p_battery_charging);
+    ui->battery_level->setCurrentIndex(Settings::values.p_battery_level - 1);
     connect(ui->adapter_connected, &QCheckBox::stateChanged, this, &ControlPanel::OnAdapterConnectedChanged);
     connect(ui->battery_charging, &QCheckBox::stateChanged, this, &ControlPanel::OnBatteryChargingChanged);
     connect(ui->battery_level, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ControlPanel::OnBatteryLevelChanged);
@@ -27,13 +27,13 @@ ControlPanel::~ControlPanel() {
 }
 
 void ControlPanel::OnAdapterConnectedChanged() {
-    Settings::values.ptm_values.adapter_connected = ui->adapter_connected->isChecked();
+    Settings::values.p_adapter_connected = ui->adapter_connected->isChecked();
 }
 
 void ControlPanel::OnBatteryChargingChanged() {
-    Settings::values.ptm_values.battery_charging = ui->battery_charging->isChecked();
+    Settings::values.p_battery_charging = ui->battery_charging->isChecked();
 }
 
 void ControlPanel::OnBatteryLevelChanged() {
-    Settings::values.ptm_values.battery_level = ui->battery_level->currentIndex() + 1;
+    Settings::values.p_battery_level = ui->battery_level->currentIndex() + 1;
 }
