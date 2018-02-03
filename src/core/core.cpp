@@ -151,6 +151,8 @@ void System::Reschedule() {
 System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     LOG_DEBUG(HW_Memory, "initialized OK");
 
+    CoreTiming::Init();
+
     if (Settings::values.use_cpu_jit) {
 #ifdef ARCHITECTURE_x86_64
         cpu_core = std::make_unique<ARM_Dynarmic>(USER32MODE);
@@ -162,19 +164,18 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
         cpu_core = std::make_unique<ARM_DynCom>(USER32MODE);
     }
 
+    dsp_core = std::make_unique<AudioCore::DspHle>();
+    dsp_core->SetSink(Settings::values.sink_id);
+    dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
+
     telemetry_session = std::make_unique<Core::TelemetrySession>();
 
-    CoreTiming::Init();
     HW::Init();
     Kernel::Init(system_mode);
     Service::Init();
     CheatCore::Init();
     GDBStub::Init();
     Movie::GetInstance().Init();
-
-    dsp_core = std::make_unique<AudioCore::DspHle>();
-    dsp_core->SetSink(Settings::values.sink_id);
-    dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
     if (!VideoCore::Init(emu_window)) {
         return ResultStatus::ErrorVideoCore;
@@ -200,7 +201,6 @@ void System::Shutdown() {
                          perf_results.frametime * 1000.0);
 
     // Shutdown emulation session
-    dsp_core = nullptr;
     Movie::GetInstance().Shutdown();
     GDBStub::Shutdown();
     CheatCore::Shutdown();
@@ -208,10 +208,12 @@ void System::Shutdown() {
     Service::Shutdown();
     Kernel::Shutdown();
     HW::Shutdown();
-    CoreTiming::Shutdown();
-    cpu_core = nullptr;
-    app_loader = nullptr;
     telemetry_session = nullptr;
+    dsp_core = nullptr;
+    cpu_core = nullptr;
+    CoreTiming::Shutdown();
+    app_loader = nullptr;
+
     if (auto room_member = Network::GetRoomMember().lock()) {
         Network::GameInfo game_info{};
         room_member->SendGameInfo(game_info);
