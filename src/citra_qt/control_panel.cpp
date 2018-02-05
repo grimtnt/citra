@@ -20,6 +20,7 @@ ControlPanel::ControlPanel(QWidget *parent) :
     connect(ui->battery_charging, &QCheckBox::stateChanged, this, &ControlPanel::OnBatteryChargingChanged);
     connect(ui->battery_level, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ControlPanel::OnBatteryLevelChanged);
     setWindowTitle("Control Panel");
+    setFixedSize(size());
 }
 
 ControlPanel::~ControlPanel() {
