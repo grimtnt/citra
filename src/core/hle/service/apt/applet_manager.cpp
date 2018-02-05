@@ -167,7 +167,6 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletAttributes
 
 void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
     next_parameter = parameter;
-    cancelled = false;
     // Signal the event to let the receiver know that a new parameter is ready to be read
     auto* const slot_data = GetAppletSlotData(static_cast<AppletId>(parameter.destination_id));
     if (slot_data == nullptr) {

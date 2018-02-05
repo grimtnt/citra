@@ -14,9 +14,6 @@
 namespace Service {
 namespace APT {
 
-/// stores the state for CancelParameter
-static bool cancelled = false;
-
 /// Signals used by APT functions
 enum class SignalType : u32 {
     None = 0x0,

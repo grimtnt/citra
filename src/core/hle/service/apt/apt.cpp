@@ -353,11 +353,6 @@ void ReceiveParameter(Service::Interface* self) {
     size_t static_buff_size;
     VAddr buffer = rp.PeekStaticBuffer(0, &static_buff_size);
 
-    if (cancelled) {
-        IPC::RequestParser rp();
-        return;
-    }
-
     if (buffer_size > static_buff_size)
         LOG_WARNING(
             Service_APT,
@@ -400,11 +395,6 @@ void GlanceParameter(Service::Interface* self) {
     size_t static_buff_size;
     VAddr buffer = rp.PeekStaticBuffer(0, &static_buff_size);
 
-    if (cancelled) {
-        IPC::RequestParser rp();
-        return;
-    }
-
     if (buffer_size > static_buff_size)
         LOG_WARNING(
             Service_APT,
@@ -445,8 +435,6 @@ void CancelParameter(Service::Interface* self) {
     AppletId sender_appid = rp.PopEnum<AppletId>();
     bool check_receiver = rp.Pop<bool>();
     AppletId receiver_appid = rp.PopEnum<AppletId>();
-
-    cancelled = true;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
 
