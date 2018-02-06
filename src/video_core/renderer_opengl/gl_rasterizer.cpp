@@ -1083,8 +1083,8 @@ bool RasterizerOpenGL::AccelerateTextureCopy(const GPU::Regs::DisplayTransferCon
     dst_params.res_scale = src_surface->res_scale;
     dst_params.UpdateParams();
 
-    const bool load_gap = output_gap != 0; // Since we are going to invalidate the gap if there is
-                                           // one, we will have to load it first
+    // Since we are going to invalidate the gap if there is one, we will have to load it first
+    const bool load_gap = output_gap != 0;
     MathUtil::Rectangle<u32> dst_rect;
     Surface dst_surface;
     std::tie(dst_surface, dst_rect) =
