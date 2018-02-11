@@ -734,7 +734,7 @@ void Module::Interface::CheckNew3DS(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_APT, "(STUBBED) called");
 }
 
-void ReplySleepQuery(Service::Interface* self) {
+void Module::Interface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x3E, 0, 80); // 0x003E0080
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
 
