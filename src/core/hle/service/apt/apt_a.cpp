@@ -71,7 +71,7 @@ APT_A::APT_A(std::shared_ptr<Module> apt)
         {0x003B0040, &APT_A::CancelLibraryApplet, "CancelLibraryApplet"},
         {0x003C0042, nullptr, "SendDspSleep"},
         {0x003D0042, nullptr, "SendDspWakeUp"},
-        {0x003E0080, nullptr, "ReplySleepQuery"},
+        {0x003E0080, &APT_A::ReplySleepQuery, "ReplySleepQuery"},
         {0x003F0040, nullptr, "ReplySleepNotificationComplete"},
         {0x00400042, nullptr, "SendCaptureBufferInfo"},
         {0x00410040, nullptr, "ReceiveCaptureBufferInfo"},
