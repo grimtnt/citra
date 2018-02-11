@@ -278,7 +278,7 @@ void Init() {
     FS::ArchiveInit();
     ACT::Init();
     AM::Init();
-    APT::Init();
+    APT::InstallInterfaces(*SM::g_service_manager);
     BOSS::Init();
     CAM::InstallInterfaces(*SM::g_service_manager);
     CECD::Init();
@@ -320,7 +320,6 @@ void Shutdown() {
     CFG::Shutdown();
     CECD::Shutdown();
     BOSS::Shutdown();
-    APT::Shutdown();
     AM::Shutdown();
     FS::ArchiveShutdown();
 
