@@ -481,7 +481,7 @@ public:
          *  Outputs:
          *      1: Result code
          */
-        void ReplySleepQuery(Service::Interface* self);
+        void ReplySleepQuery(Kernel::HLERequestContext& ctx);
 
     private:
         std::shared_ptr<Module> apt;
