@@ -83,6 +83,7 @@ void Init() {
         static_cast<u8>(Settings::values.p_battery_charging));
 
     shared_page.wifi_link_level = Settings::values.n_wifi_link_level;
+    shared_page.wifi_unknown2 = 0x00;
 
     update_time_event =
         CoreTiming::RegisterEvent("SharedPage::UpdateTimeCallback", UpdateTimeCallback);
