@@ -19,7 +19,7 @@ ControlPanel::ControlPanel(QWidget *parent) :
     ui->battery_charging->setChecked(Settings::values.p_battery_charging);
     ui->battery_level->setCurrentIndex(Settings::values.p_battery_level - 1);
     ui->wifi_status->setCurrentIndex(Settings::values.n_wifi_status);
-    ui->link_level->setValue(Settings::values.n_link_level);
+    ui->link_level->setValue(Settings::values.n_wifi_link_level);
     connect(ui->adapter_connected, &QCheckBox::stateChanged, this, &ControlPanel::OnAdapterConnectedChanged);
     connect(ui->battery_charging, &QCheckBox::stateChanged, this, &ControlPanel::OnBatteryChargingChanged);
     connect(ui->battery_level, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ControlPanel::OnBatteryLevelChanged);
