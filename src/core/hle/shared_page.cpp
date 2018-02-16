@@ -82,6 +82,11 @@ void Init() {
     shared_page.battery_state.is_charging.Assign(
         static_cast<u8>(Settings::values.p_battery_charging));
 
+    u8 mac[6] = {0x00, 0x00, 0xDE, 0xAD, 0xC0, 0xDE};
+
+    shared_page.wifi_macaddr = mac;
+    shared_page.wifi_link_level = Settings::values.n_wifi_link_level;
+
     update_time_event =
         CoreTiming::RegisterEvent("SharedPage::UpdateTimeCallback", UpdateTimeCallback);
     CoreTiming::ScheduleEvent(0, update_time_event);

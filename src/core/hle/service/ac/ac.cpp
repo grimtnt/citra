@@ -17,6 +17,7 @@
 
 namespace Service {
 namespace AC {
+
 void Module::Interface::CreateDefaultConfig(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x1, 0, 0);
 
@@ -95,9 +96,7 @@ void Module::Interface::GetWifiStatus(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0); // Connection type set to none
-
-    LOG_WARNING(Service_AC, "(STUBBED) called");
+    rb.Push<u32>(Settings::values.n_wifi_status);
 }
 
 void Module::Interface::GetInfraPriority(Kernel::HLERequestContext& ctx) {

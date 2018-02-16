@@ -62,6 +62,10 @@ void Config::ReadValues() {
     Settings::values.p_battery_charging = sdl2_config->GetBoolean("ControlPanel", "p_battery_charging", true);
     Settings::values.p_battery_level =
             static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "p_battery_level", 5));
+    Settings::values.n_wifi_status =
+            static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "n_wifi_status", 0));
+    Settings::values.n_wifi_link_level =
+            static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_wifi_link_level", 0));
 
     // Controls
     for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {

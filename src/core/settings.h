@@ -78,6 +78,8 @@ struct Values {
     bool p_adapter_connected;
     bool p_battery_charging;
     u32 p_battery_level;
+    u32 n_wifi_status;
+    u8 n_wifi_link_level;
 
     // Controls
     std::array<std::string, NativeButton::NumButtons> buttons;

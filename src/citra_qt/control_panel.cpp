@@ -21,6 +21,8 @@ ControlPanel::ControlPanel(QWidget *parent) :
     connect(ui->adapter_connected, &QCheckBox::stateChanged, this, &ControlPanel::OnAdapterConnectedChanged);
     connect(ui->battery_charging, &QCheckBox::stateChanged, this, &ControlPanel::OnBatteryChargingChanged);
     connect(ui->battery_level, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ControlPanel::OnBatteryLevelChanged);
+    connect(ui->wifi_status, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ControlPanel::OnWifiStatusChanged);
+    connect(ui->wifi_link_level, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &ControlPanel::OnWifiLinkLevelChanged);
     setWindowTitle("Control Panel");
     setFixedSize(size());
 }
@@ -45,4 +47,13 @@ void ControlPanel::OnBatteryLevelChanged() {
     Settings::values.p_battery_level = ui->battery_level->currentIndex() + 1;
     SharedPage::shared_page.battery_state.charge_level.Assign(
                 static_cast<u8>(Settings::values.p_battery_level));
+}
+
+void ControlPanel::OnWifiStatusChanged() {
+    Settings::values.n_wifi_status = ui->wifi_status->currentIndex();
+}
+
+void ControlPanel::OnWifiLinkLevelChanged() {
+    Settings::values.n_wifi_link_level = ui->link_level->value();
+    SharedPage::shared_page.wifi_link_level = ui->link_level->value();
 }
