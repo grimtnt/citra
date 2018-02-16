@@ -14,6 +14,7 @@
 #include "core/hle/service/ac/ac_i.h"
 #include "core/hle/service/ac/ac_u.h"
 #include "core/memory.h"
+#include "core/settings.h"
 
 namespace Service {
 namespace AC {
