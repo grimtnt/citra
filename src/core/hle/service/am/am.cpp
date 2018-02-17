@@ -1157,13 +1157,18 @@ void GetRequiredSizeFromCia(Service::Interface* self) {
 }
 
 void DeleteProgram(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0410, 0, 0xC0);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0410, 3, 0);
     auto media_type = rp.PopEnum<FS::MediaType>();
     u32 low = rp.Pop<u32>();
     u32 high = rp.Pop<u32>();
-    FileUtil::DeleteDirRecursively(GetTitlePath(media_type, std::stoull(Common::StringFromFormat("%08x%08x", high, low), 0, 16)));
+    u64 title_id = static_cast<u64>(low) | (static_cast<u64>(high) << 32);
+    LOG_INFO(Service_AM, "Deleting title 0x%016" PRIx64, title_id);
+    std::string path = GetTitlePath(media_type, title_id);
+    bool success = FileUtil::DeleteDirRecursively(path);
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
+    if (!success)
+        LOG_ERROR(Service_AM, "failed");
 }
 
 void GetMetaSizeFromCia(Service::Interface* self) {
