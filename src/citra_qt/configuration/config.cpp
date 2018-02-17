@@ -41,7 +41,7 @@ void Config::ReadValues() {
     Settings::values.n_wifi_status =
             static_cast<u32>(qt_config->value("n_wifi_status", 0).toInt());
     Settings::values.n_wifi_link_level =
-            static_cast<u8>(qt_config->value("wifi_link_level", 0).toInt());
+            static_cast<u8>(qt_config->value("n_wifi_link_level", 0).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
