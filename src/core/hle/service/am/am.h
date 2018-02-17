@@ -440,6 +440,18 @@ void GetCoreVersionFromCia(Service::Interface* self);
 void GetRequiredSizeFromCia(Service::Interface* self);
 
 /**
+ * AM::DeleteProgram service function
+ * Deletes a program
+ *  Inputs:
+ *      0 : Command header (0x041000C0)
+ *      1 : Media type
+ *      2-3 : Title ID
+ *  Outputs:
+ *      1 : Result, 0 on success, otherwise error code
+ */
+void DeleteProgram(Service::Interface* self);
+
+/**
  * AM::GetMetaSizeFromCia service function
  * Returns the size of a given CIA's meta section
  *  Inputs:

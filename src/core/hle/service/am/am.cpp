@@ -1156,6 +1156,16 @@ void GetRequiredSizeFromCia(Service::Interface* self) {
     rb.Push(container.GetTitleMetadata().GetContentSizeByIndex(FileSys::TMDContentIndex::Main));
 }
 
+void DeleteProgram(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0410, 0, 0xC0);
+    auto media_type = rp.PopEnum<FS::MediaType>();
+    u32 low = rp.Pop<u32>();
+    u32 high = rp.Pop<u32>();
+    FileUtil::DeleteDirRecursively(GetTitlePath(media_type, std::stoull(Common::StringFromFormat("%08x%08x", high, low), 0, 16)));
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
 void GetMetaSizeFromCia(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0413, 0, 2); // 0x04130002
 

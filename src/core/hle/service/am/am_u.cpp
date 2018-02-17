@@ -69,7 +69,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x040D0042, GetRequiredSizeFromCia, "GetRequiredSizeFromCia"},
     {0x040E00C2, nullptr, "CommitImportProgramsAndUpdateFirmwareAuto"},
     {0x040F0000, nullptr, "UpdateFirmwareAuto"},
-    {0x041000C0, nullptr, "DeleteProgram"},
+    {0x041000C0, DeleteProgram, "DeleteProgram"},
     {0x04110044, nullptr, "GetTwlProgramListForReboot"},
     {0x04120000, nullptr, "GetSystemUpdaterMutex"},
     {0x04130002, GetMetaSizeFromCia, "GetMetaSizeFromCia"},
