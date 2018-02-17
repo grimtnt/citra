@@ -1165,6 +1165,7 @@ void DeleteProgram(Service::Interface* self) {
     LOG_INFO(Service_AM, "Deleting title 0x%016" PRIx64, title_id);
     std::string path = GetTitlePath(media_type, title_id);
     bool success = FileUtil::DeleteDirRecursively(path);
+    ScanForAllTitles();
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
     if (!success)
