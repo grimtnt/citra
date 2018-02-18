@@ -28,6 +28,7 @@ enum {
     CIACurrentlyInstalling = 4,
     InvalidTID = 31,
     EmptyCIA = 32,
+    TryingToUninstallSystemApp = 44,
     InvalidTIDInList = 60,
     InvalidCIAHeader = 104,
 };
@@ -225,6 +226,17 @@ void GetProgramList(Service::Interface* self);
  *      1 : Result, 0 on success, otherwise error code
  */
 void GetProgramInfos(Service::Interface* self);
+
+/**
+ * AM::DeleteUserProgram service function
+ * Deletes a user program
+ *  Inputs:
+ *      1 : Media Type
+ *      2-3 : Title ID
+ *  Outputs:
+ *      1 : Result, 0 on success, otherwise error code
+ */
+void DeleteUserProgram(Service::Interface* self);
 
 /**
  * AM::GetDLCTitleInfos service function
