@@ -1164,9 +1164,15 @@ void DeleteProgram(Service::Interface* self) {
     u64 title_id = static_cast<u64>(low) | (static_cast<u64>(high) << 32);
     LOG_INFO(Service_AM, "Deleting title 0x%016" PRIx64, title_id);
     std::string path = GetTitlePath(media_type, title_id);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    if (!FileUtil::Exists(path)) {
+        rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::AM, ErrorSummary::InvalidState,
+                           ErrorLevel::Permanent));
+        LOG_ERROR(Service_AM, "Title not found");
+        return;
+    }
     bool success = FileUtil::DeleteDirRecursively(path);
     ScanForAllTitles();
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
     if (!success)
         LOG_ERROR(Service_AM, "failed");
