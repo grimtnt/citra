@@ -511,13 +511,16 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
 
     u32 wlan_comm_id = rp.Pop<u32>();
     u32 id = rp.Pop<u32>();
-    Kernel::Handle input_handle = rp.PopHandle();
+    // From 3dbrew:
+    // 'Official user processes create a new event handle which is then passed to this command.
+    // However, those user processes don't save that handle anywhere afterwards.'
+    // So we don't save/use that event too.
+    Kernel::SharedPtr<Kernel::Event> input_event = rp.PopObject<Kernel::Event>();
 
     Kernel::MappedBuffer out_buffer = rp.PopMappedBuffer();
     ASSERT(out_buffer.GetSize() == out_buffer_size);
 
-    size_t offset = sizeof(BeaconDataReplyHeader);
-    u32 total_size = sizeof(BeaconDataReplyHeader);
+    size_t cur_buffer_size = sizeof(BeaconDataReplyHeader);
 
     // Retrieve all beacon frames that were received from the desired mac address.
     auto beacons = GetReceivedBeacons(mac_address);
@@ -536,28 +539,27 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
         entry.header_size = sizeof(BeaconEntryHeader);
         entry.mac_address = beacon.transmitter_address;
 
-        ASSERT(offset < out_buffer_size);
+        ASSERT(cur_buffer_size < out_buffer_size);
 
-        out_buffer.Write(&entry, offset, sizeof(BeaconEntryHeader));
-        offset += sizeof(BeaconEntryHeader);
+        out_buffer.Write(&entry, cur_buffer_size, sizeof(BeaconEntryHeader));
+        cur_buffer_size += sizeof(BeaconEntryHeader);
         const unsigned char* beacon_data = beacon.data.data();
-        out_buffer.Write(const_cast<void*>(static_cast<const void*>(beacon_data)), offset,
+        out_buffer.Write(beacon_data, cur_buffer_size,
                          beacon.data.size());
-        offset += beacon.data.size();
-
-        total_size += static_cast<u32>(sizeof(BeaconEntryHeader) + beacon.data.size());
+        cur_buffer_size += beacon.data.size();
     }
 
     // Update the total size in the structure and write it to the buffer again.
-    data_reply_header.total_size = total_size;
+    data_reply_header.total_size = cur_buffer_size;
     out_buffer.Write(&data_reply_header, 0, sizeof(BeaconDataReplyHeader));
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 1);
     rb.Push(RESULT_SUCCESS);
+    rb.PushMappedBuffer(out_buffer);
 
     LOG_DEBUG(Service_NWM, "called out_buffer_size=0x%08X, wlan_comm_id=0x%08X, id=0x%08X,"
-                           "input_handle=0x%08X, unk1=0x%08X, unk2=0x%08X, offset=%d",
-              out_buffer_size, wlan_comm_id, id, input_handle, unk1, unk2, offset);
+              "unk1=0x%08X, unk2=0x%08X, offset=%zu",
+              out_buffer_size, wlan_comm_id, id, unk1, unk2, cur_buffer_size);
 }
 
 void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
@@ -670,7 +672,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
-        LOG_DEBUG(Service_NWM, "data_channel = %d, bind_node_id = %d", data_channel, bind_node_id);
+        LOG_WARNING(Service_NWM, "data_channel = %d, bind_node_id = %d", data_channel, bind_node_id);
         return;
     }
 
@@ -679,7 +681,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
                            ErrorSummary::OutOfResource, ErrorLevel::Status));
-        LOG_DEBUG(Service_NWM, "max bind nodes");
+        LOG_WARNING(Service_NWM, "max bind nodes");
         return;
     }
 
@@ -688,7 +690,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
-        LOG_DEBUG(Service_NWM, "MinRecvBufferSize");
+        LOG_WARNING(Service_NWM, "MinRecvBufferSize");
         return;
     }
 
@@ -974,6 +976,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     u32 max_out_buff_size_aligned = rp.Pop<u32>();
     u32 max_out_buff_size = rp.Pop<u32>();
 
+    // This size is hard coded into the uds module. We don't know the meaning yet.
     u32 buff_size = std::min<u32>(max_out_buff_size_aligned, 0x172) << 2;
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
@@ -1088,8 +1091,8 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
 
     u32 size = rp.Pop<u32>();
 
-    const std::vector<u8> address = rp.PopStaticBuffer();
-    ASSERT(address.size() == size);
+    const std::vector<u8> application_data = rp.PopStaticBuffer();
+    ASSERT(application_data.size() == size);
 
     LOG_DEBUG(Service_NWM, "called");
 
@@ -1102,7 +1105,7 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
     }
 
     network_info.application_data_size = size;
-    std::memcpy(network_info.application_data.data(), address.data(), size);
+    std::memcpy(network_info.application_data.data(), application_data.data(), size);
 
     rb.Push(RESULT_SUCCESS);
 }
@@ -1130,11 +1133,11 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
     ASSERT_MSG(encrypted_data0_buffer[3] == static_cast<u8>(NintendoTagId::EncryptedData0),
                "Unexpected tag id");
 
-    std::vector<u8> beacon_data(encrypted_data0_buffer.size() + encrypted_data1_buffer.size());
+    std::vector<u8> beacon_data(encrypted_data0_buffer.size() - 4 + encrypted_data1_buffer.size() - 4);
     std::memcpy(beacon_data.data(), encrypted_data0_buffer.data() + 4,
-                encrypted_data0_buffer.size());
-    std::memcpy(beacon_data.data() + encrypted_data0_buffer.size(),
-                encrypted_data1_buffer.data() + 4, encrypted_data1_buffer.size());
+                encrypted_data0_buffer.size() - 4);
+    std::memcpy(beacon_data.data() + encrypted_data0_buffer.size() - 4,
+                encrypted_data1_buffer.data() + 4, encrypted_data1_buffer.size() - 4);
 
     // Decrypt the data
     DecryptBeacon(net_info, beacon_data);
