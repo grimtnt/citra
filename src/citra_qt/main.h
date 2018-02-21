@@ -90,8 +90,10 @@ signals:
      * system emulation handles and memory are still valid, but are about become invalid.
      */
     void EmulationStopping();
-    void UpdateProgress(size_t written, size_t total);
 
+    void UpdateProgress(size_t written, size_t total);
+    void CIAInstallReport(Service::AM::InstallStatus status, QString filepath);
+    void CIAInstallFinished();
     void NetworkStateChanged(const Network::RoomMember::State&);
     void AnnounceFailed(const Common::WebResult&);
 
@@ -166,6 +168,7 @@ private slots:
     void OnMenuLoadFile();
     void OnMenuInstallCIA();
     void OnUpdateProgress(size_t written, size_t total);
+    void OnCIAInstallReport(Service::AM::InstallStatus status, QString filepath);
     void OnCIAInstallFinished();
     /// Called whenever a user selects the "File->Select Game List Root" menu item
     void OnMenuSelectGameListRoot();
@@ -203,7 +206,6 @@ private:
     Ui::MainWindow ui;
 
     GRenderWindow* render_window;
-    QFutureWatcher<Service::AM::InstallStatus>* watcher = nullptr;
 
     // Status bar elements
     QProgressBar* progress_bar = nullptr;
@@ -258,4 +260,5 @@ protected:
 };
 
 Q_DECLARE_METATYPE(size_t);
+Q_DECLARE_METATYPE(Service::AM::InstallStatus);
 Q_DECLARE_METATYPE(Common::WebResult);
