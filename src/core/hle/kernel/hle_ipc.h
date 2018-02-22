@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -172,7 +173,7 @@ public:
     using WakeupCallback = std::function<void(SharedPtr<Thread> thread, HLERequestContext& context,
                                               ThreadWakeupReason reason)>;
 
-    /*
+    /**
      * Puts the specified guest thread to sleep until the returned event is signaled or until the
      * specified timeout expires.
      * @param thread Thread to be put to sleep.
@@ -185,7 +186,7 @@ public:
      * @returns Event that when signaled will resume the thread and call the callback function.
      */
     SharedPtr<Event> SleepClientThread(SharedPtr<Thread> thread, const std::string& reason,
-                                       u64 timeout, WakeupCallback&& callback);
+                                       std::chrono::nanoseconds timeout, WakeupCallback&& callback);
 
     /**
      * Resolves a object id from the request command buffer into a pointer to an object. See the
