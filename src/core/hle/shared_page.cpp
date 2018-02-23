@@ -88,12 +88,10 @@ void Init() {
     update_time_event =
         CoreTiming::RegisterEvent("SharedPage::UpdateTimeCallback", UpdateTimeCallback);
     CoreTiming::ScheduleEvent(0, update_time_event);
-
-    SetMacAddress(DefaultMac);
 }
 
 void SetMacAddress(const MacAddress& addr) {
     std::memcpy(shared_page.wifi_macaddr, addr.data(), sizeof(MacAddress));
 }
 
-} // namespace
+} // namespace SharedPage
