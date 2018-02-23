@@ -25,19 +25,20 @@ enum class RequestMethod : u8 {
     Head = 0x3,
     Put = 0x4,
     Delete = 0x5,
+    PostEmpty = 0x6,
+    PutEmpty = 0x7,
 };
 
 struct Context {
-    cpr::Url url;
-    cpr::Header request_header;
-    RequestMethod method{RequestMethod::Get};
-    bool initialized = false;
-    bool proxy_default = false;
-    bool keep_alive = false;
-    u32 ssl_options = 0;
-    u32 current_offset = 0;
-    u64 timeout = 0;
-    cpr::Response response;
+    void SetUrl(const std::string& url_string) {
+        url = url_string;
+        // session.SetUrl(url);
+    }
+
+    void SetKeepAlive(bool keep_alive_) {
+        // just stub, cpr sets keep alive by default
+        keep_alive = keep_alive_;
+    }
 
     u32 GetResponseStatusCode() const {
         return response.status_code;
@@ -54,6 +55,50 @@ struct Context {
         static const u32 disable_verify = 0x200; // TODO(mailwl): bitfield value from ssl:C
         return cpr::VerifySsl{(ssl_options & disable_verify) != disable_verify};
     }
+    // context->second.response = cpr::Get(context->second.url, context->second.request_header,
+    //                                    context->second.SslOptions());
+    ResultCode Delete() {
+        response = cpr::Delete(url, request_header, SslOptions());
+        return RESULT_SUCCESS;
+    }
+    ResultCode Get() {
+        response = cpr::Get(url, request_header, SslOptions());
+        return RESULT_SUCCESS;
+    }
+    ResultCode Head() {
+        response = cpr::Head(url, request_header, SslOptions());
+        return RESULT_SUCCESS;
+    }
+    ResultCode Post(const cpr::Body& body) {
+        if (method == RequestMethod::Post) {
+            response = cpr::Post(url, request_header, body, SslOptions());
+        } else {
+            response = cpr::Post(url, request_header, SslOptions());
+        }
+        return RESULT_SUCCESS;
+    }
+    ResultCode Put(const cpr::Body& body) {
+        if (method == RequestMethod::Put) {
+            response = cpr::Put(url, request_header, body, SslOptions());
+        } else {
+            response = cpr::Put(url, request_header, SslOptions());
+        }
+        return RESULT_SUCCESS;
+    }
+    void Initialize() {
+        // just stub
+    }
+
+    u32 current_offset = 0;
+    // private:
+    cpr::Header request_header;
+    cpr::Url url;
+    cpr::Response response;
+    RequestMethod method{RequestMethod::Get};
+    bool proxy_default = false;
+    bool keep_alive = true;
+    u32 ssl_options = 0;
+    u64 timeout = 0;
 };
 
 class HTTP_C::Impl {
@@ -104,22 +149,23 @@ void HTTP_C::Impl::Initialize(Kernel::HLERequestContext& ctx) {
 void HTTP_C::Impl::CreateContext(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x2, 2, 2);
     const u32 url_size = rp.Pop<u32>();
-
-    Context context;
-    context.url.resize(url_size);
-    context.method = rp.PopEnum<RequestMethod>();
+    std::string url;
+    url.resize(url_size);
+    RequestMethod method = rp.PopEnum<RequestMethod>();
 
     Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
-    buffer.Read(&context.url[0], 0, url_size);
+    buffer.Read(&url[0], 0, url_size - 1);
 
-    contexts[++context_counter] = context;
+    Context context;
+    context.SetUrl(url);
+    contexts[++context_counter] = std::move(context);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(context_counter);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_HTTP, "called, url_size=%u, url=%s", url_size, context.url.c_str());
+    LOG_WARNING(Service_HTTP, "called, url_size=%u, url=%s", url_size, url.c_str());
 }
 
 void HTTP_C::Impl::CloseContext(Kernel::HLERequestContext& ctx) {
@@ -173,7 +219,7 @@ void HTTP_C::Impl::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context_id=%u not found", context_id);
         return;
     }
-    context->second.initialized = true;
+    context->second.Initialize();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
@@ -192,11 +238,36 @@ void HTTP_C::Impl::BeginRequest(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context_id=%u not found", context_id);
         return;
     }
+
     switch (context->second.method) {
     case RequestMethod::Get:
-        context->second.response = cpr::Get(context->second.url, context->second.request_header,
-                                            context->second.SslOptions());
+        context->second.Get();
         break;
+    case RequestMethod::Post: {
+        const cpr::Body body(reinterpret_cast<const char*>(shared_memory->GetPointer()),
+                             shared_memory->size);
+        context->second.Post(body);
+    } break;
+    case RequestMethod::PostEmpty: {
+        const cpr::Body body;
+        context->second.Post(body);
+    } break;
+    case RequestMethod::Delete:
+        context->second.Delete();
+        break;
+    case RequestMethod::Head:
+        context->second.Head();
+        break;
+    case RequestMethod::Put: {
+        const cpr::Body body(reinterpret_cast<const char*>(shared_memory->GetPointer()),
+            shared_memory->size);
+        context->second.Put(body);
+    }
+    case RequestMethod::PutEmpty: {
+        const cpr::Body body;
+        context->second.Put(body);
+    } break;
+
     default:
         UNIMPLEMENTED();
     }
@@ -327,11 +398,12 @@ void HTTP_C::Impl::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     }
     const std::string value = context->second.response.header[name] + '\0';
 
-    value_buffer.Write(value.c_str(), 0, value.size());
+    u32 size = static_cast<u32>(value.size());
+    value_buffer.Write(value.c_str(), 0, size);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(value.size());
+    rb.Push<u32>(size);
     rb.PushMappedBuffer(value_buffer);
 
     LOG_WARNING(Service_HTTP,
