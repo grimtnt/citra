@@ -39,8 +39,8 @@ union BatteryState {
 
 using MacAddress = std::array<u8, 6>;
 
-// Default MAC address in the nintendo 3ds range
-constexpr MacAddress DefaultMac = { 0x40, 0xF4, 0x07, 0x00, 0x00, 0x00 };
+// Default MAC address in the Nintendo 3DS range
+constexpr MacAddress DefaultMac = {0x40, 0xF4, 0x07, 0x00, 0x00, 0x00};
 
 struct SharedPageDef {
     // Most of these names are taken from the 3dbrew page linked above.
@@ -73,4 +73,4 @@ void Init();
 
 void SetMacAddress(const MacAddress&);
 
-} // namespace
+} // namespace SharedPage
