@@ -196,6 +196,9 @@ public:
     GSP_GPU();
     ~GSP_GPU() = default;
 
+    /// Thread id that currently has GPU rights or -1 if none.
+    int active_thread_id = -1;
+
     /**
      * Signals that the specified interrupt type has occurred to userland code
      * @param interrupt_id ID of interrupt that is being signalled
@@ -376,9 +379,6 @@ private:
 
     /// GSP shared memory
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
-
-    /// Thread id that currently has GPU rights or -1 if none.
-    int active_thread_id = -1;
 
     bool first_initialization = true;
 };

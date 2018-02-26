@@ -10,6 +10,8 @@
 #include "core/hle/kernel/event.h"
 #include "core/hle/result.h"
 #include "core/hle/service/fs/archive.h"
+#include "core/hle/kernel/kernel.h"
+#include "core/memory.h"
 
 namespace Service {
 namespace APT {
@@ -138,6 +140,8 @@ public:
     };
 
     ResultVal<AppletInfo> GetAppletInfo(AppletId app_id);
+    ResultCode PrepareToCloseLibraryApplet(bool not_pause, bool exiting, bool jump_to_home);
+    ResultCode CloseLibraryApplet(u32 parameter_size, Kernel::Handle handle, VAddr parameter_addr);
 
 private:
     /// Parameter data to be returned in the next call to Glance/ReceiveParameter.
@@ -164,7 +168,17 @@ private:
         AppletAttributes attributes;
         Kernel::SharedPtr<Kernel::Event> notification_event;
         Kernel::SharedPtr<Kernel::Event> parameter_event;
+ 
+        void Reset() {
+            applet_id = AppletId::None;
+            registered = false;
+            attributes.raw = 0;
+        }
     };
+
+    /// The parameter signal to send to an application when a running library applet calls
+    /// CloseLibraryApplet.
+    SignalType library_applet_closing_command = SignalType::None;
 
     // Holds data about the concurrently running applets in the system.
     std::array<AppletSlotData, NumAppletSlot> applet_slots = {};

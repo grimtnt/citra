@@ -392,8 +392,9 @@ void Module::Interface::CancelParameter(Kernel::HLERequestContext& ctx) {
     rb.Push(apt->applet_manager->CancelParameter(check_sender, sender_appid, check_receiver,
                                                  receiver_appid));
 
-    LOG_DEBUG(Service_APT, "called check_sender=%u, sender_appid=0x%08X, "
-                           "check_receiver=%u, receiver_appid=0x%08X",
+    LOG_DEBUG(Service_APT,
+              "called check_sender=%u, sender_appid=0x%08X, "
+              "check_receiver=%u, receiver_appid=0x%08X",
               check_sender, static_cast<u32>(sender_appid), check_receiver,
               static_cast<u32>(receiver_appid));
 }
@@ -538,6 +539,26 @@ void Module::Interface::StartLibraryApplet(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(apt->applet_manager->StartLibraryApplet(applet_id, object, buffer));
+}
+
+void Module::Interface::PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x25, 3, 0); // 0x002500C0
+    bool not_pause = rp.Pop<bool>();
+    bool exiting = rp.Pop<bool>();
+    bool jump_to_home = rp.Pop<bool>();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(apt->applet_manager->PrepareToCloseLibraryApplet(not_pause, exiting, jump_to_home));
+}
+
+void Module::Interface::CloseLibraryApplet(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x28, 1, 4); // 0x00280044
+    u32 parameter_size = rp.Pop<u32>();
+    Kernel::Handle handle = rp.PopHandle();
+    VAddr parameter_addr = rp.PopStaticBuffer(nullptr);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(apt->applet_manager->CloseLibraryApplet(parameter_size, handle, parameter_addr));
 }
 
 void Module::Interface::CancelLibraryApplet(Kernel::HLERequestContext& ctx) {

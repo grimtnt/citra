@@ -24,6 +24,12 @@ void SignalInterrupt(InterruptId interrupt_id) {
     return gpu->SignalInterrupt(interrupt_id);
 }
 
+void ReleaseAppletRight() {
+    auto gpu = gsp_gpu.lock();
+    ASSERT(gpu != nullptr);
+    gpu->active_thread_id = -1;
+}
+
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     auto gpu = std::make_shared<GSP_GPU>();
     gpu->InstallAsService(service_manager);

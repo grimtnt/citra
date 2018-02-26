@@ -409,6 +409,9 @@ public:
          */
         void StartLibraryApplet(Kernel::HLERequestContext& ctx);
 
+        void PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx);
+        void CloseLibraryApplet(Kernel::HLERequestContext& ctx);
+
         /**
          * APT::CancelLibraryApplet service function
          *  Inputs:
