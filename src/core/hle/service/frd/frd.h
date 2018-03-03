@@ -41,6 +41,16 @@ struct Profile {
 void GetMyPresence(Service::Interface* self);
 
 /**
+ * FRD::GetMyPreference service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2 : Public mode (0 = private, non-zero = public) 
+ *      3 : Show current game (0 = don't show, non-zero = show)
+ *      4 : Show game history (0 = don't show, non-zero = show)
+ */
+void GetMyPreference(Service::Interface* self);
+
+/**
  * FRD::GetFriendKeyList service function
  *  Inputs:
  *      1 : Unknown

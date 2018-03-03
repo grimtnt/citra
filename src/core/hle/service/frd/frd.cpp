@@ -91,32 +91,35 @@ void GetFriendAttributeFlags(Service::Interface* self) {
 }
 
 void HasLoggedIn(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = logged_in;
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u8>(logged_in);
 }
 
 void IsOnline(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = 0;                  // Not online
-    LOG_WARNING(Service_FRD, "(STUBBED) called");
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x2, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u8>(logged_in);
 }
 
 void Login(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x3, 0, 2);
     logged_in = 1;
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
 void Logout(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x4, 0, 0);
     logged_in = 0;
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
 void GetMyFriendKey(Service::Interface* self) {
@@ -124,6 +127,17 @@ void GetMyFriendKey(Service::Interface* self) {
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
     std::memcpy(&cmd_buff[2], &my_friend_key, sizeof(FriendKey));
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
+}
+
+void GetMyPreference(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x6, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(4, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u8>(1);
+    rb.Push<u8>(1);
+    rb.Push<u8>(1);
+
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
@@ -179,15 +193,13 @@ void UnscrambleLocalFriendCode(Service::Interface* self) {
 }
 
 void SetClientSdkVersion(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    const u32 version = cmd_buff[1];
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x32, 1, 2);
+    u32 version = rp.Pop<u32>();
 
     self->SetVersion(version);
 
-    LOG_WARNING(Service_FRD, "(STUBBED) called, version: 0x%08X", version);
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
 }
 
 void Init() {

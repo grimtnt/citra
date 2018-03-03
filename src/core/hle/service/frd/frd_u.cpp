@@ -14,7 +14,7 @@ const Interface::FunctionInfo FunctionTable[] = {
     {0x00030002, Login, "Login"},
     {0x00040000, Logout, "Logout"},
     {0x00050000, GetMyFriendKey, "GetMyFriendKey"},
-    {0x00060000, nullptr, "GetMyPreference"},
+    {0x00060000, GetMyPreference, "GetMyPreference"},
     {0x00070000, nullptr, "GetMyProfile"},
     {0x00080000, GetMyPresence, "GetMyPresence"},
     {0x00090000, GetMyScreenName, "GetMyScreenName"},
