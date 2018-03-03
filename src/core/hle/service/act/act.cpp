@@ -2,68 +2,114 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <boost/algorithm/string.hpp>
+#include "common/logging/log.h"
+#include "common/string_util.h"
+#include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/act/act.h"
 #include "core/hle/service/act/act_a.h"
 #include "core/hle/service/act/act_u.h"
+#include "core/hle/service/cfg/cfg.h"
+#include "core/hle/ipc_helpers.h"
 
 namespace Service {
 namespace ACT {
 
 void Initialize(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-    u32 version = cmd_buff[1];
-    u32 shared_memory_size = cmd_buff[2];
-    ASSERT(cmd_buff[3] == 0x20);
-    ASSERT(cmd_buff[5] == 0);
-    u32 shared_memory = cmd_buff[6];
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1, 2, 4);
+    u32 version = rp.Pop<u32>();
+    u32 shared_memory_size = rp.Pop<u32>();
+    rp.Skip(3, false);
+    u32 shared_memory = rp.Pop<u32>();
 
-    LOG_WARNING(Log,
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    LOG_WARNING(Service_ACT,
                 "(STUBBED) called, version=0x%08X, shared_memory_size=0x%X, shared_memory=0x%08X",
                 version, shared_memory_size, shared_memory);
-    cmd_buff[0] = 0x00010080;
-    cmd_buff[1] = 0;
+}
+
+void GetErrorCode(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x2, 1, 0);
+    u32 error_code = rp.Pop<u32>();
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u32>(error_code); // TODO(valentinvanelslande): convert
+
+    LOG_WARNING(Service_ACT, "(STUBBED) called");
 }
 
 void GetAccountDataBlock(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-    u8 unk = static_cast<u8>(cmd_buff[1] & 0xFF);
-    u32 size = cmd_buff[2];
-    u32 id = cmd_buff[3];
-    ASSERT(cmd_buff[4] == ((size << 4) | 0xC));
-    VAddr addr = cmd_buff[5];
-
-    LOG_WARNING(Log, "(STUBBED) called, unk=0x%02X, size=0x%X, id=0x%X", unk, size, id);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x6, 3, 2);
+    u8 unk = rp.Pop<u8>();
+    u32 size = rp.Pop<u32>();
+    BlkId id = rp.PopEnum<BlkId>();
+    u32 assert1 = rp.Pop<u32>();
+    ASSERT(assert1 == ((size << 4) | 0xC));
+    VAddr addr = (VAddr)rp.Pop<u32>();
 
     switch (id) {
-    case 0x8: {
-        char network_id[0x11] = "wwylele";
+    case BlkId::NNID: {
+        std::string nnid = Common::UTF16ToUTF8(CFG::GetUsername());
+        if (nnid.length() > 7)
+            nnid = nnid.substr(0, 7);
+        boost::algorithm::replace_all(nnid, " ", "_");
+        const char* network_id = nnid.c_str();
         Memory::WriteBlock(addr, network_id, sizeof(network_id));
         break;
     }
-    case 0x1B: {
-        char16_t username[0xB] = u"wwy";
-        Memory::WriteBlock(addr, username, sizeof(username));
-        break;
-    }
-    case 0xC: {
-        u32 principle_id = 0xDEADBEEF;
-        Memory::WriteBlock(addr, &principle_id, sizeof(principle_id));
-        break;
-    }
-    case 0xB: {
-        char country[3] = "JP";
-        Memory::WriteBlock(addr, country, sizeof(country));
-        break;
-    }
-    case 0x17: {
+    case BlkId::Unknown6: {
         u32 a = 1;
         Memory::WriteBlock(addr, &a, sizeof(a));
         break;
     }
+    case BlkId::U16MiiName: {
+        const char16_t* mii_name = Service::CFG::GetUsername().c_str();
+        Memory::WriteBlock(addr, mii_name, sizeof(mii_name));
+        break;
+    }
+    case BlkId::PrincipalID: {
+        u32 principal_id = 0xDEADBEEF;
+        Memory::WriteBlock(addr, &principal_id, sizeof(principal_id));
+        break;
+    }
+    case BlkId::CountryName: {
+        std::tuple<unsigned char*, u8> country_tuple = Service::CFG::GetCountryInfo();
+        u8 country_code = std::get<1>(country_tuple);
+        char b0 = (char)(country_code & 0xFF);
+        char b1 = (char)(country_code >> 8);
+        char country[3] = {b0, b1};
+        Memory::WriteBlock(addr, country, sizeof(country));
+        break;
+    }
+    case BlkId::MiiImageURL: {
+        char url[0x101] = "https://avatars0.githubusercontent.com/u/4592895";
+        Memory::WriteBlock(addr, url, sizeof(url));
+        break;
+    }
+    case BlkId::Age: {
+        if (unk == 0xFE) {
+            char age[2] = {0x00, 0x00};
+            Memory::WriteBlock(addr, age, sizeof(age));
+            break;
+        } else {
+            char age[2] = {0x00, 0x0C};
+            Memory::WriteBlock(addr, age, sizeof(age));
+            break;
+        }
+    }
+    default: {
+        LOG_ERROR(Service_ACT, "Unimplemented block ID");
+        UNIMPLEMENTED();
+        break;
+    }
     }
 
-    cmd_buff[0] = 0x00060082;
-    cmd_buff[1] = 0;
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    LOG_WARNING(Service_ACT, "(STUBBED) called, unk=0x%02X, size=0x%X, id=0x%X", unk, size, id);
 }
 
 void Init() {

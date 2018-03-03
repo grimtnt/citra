@@ -19,7 +19,6 @@ namespace NWM {
 
 void Init() {
     AddService(new NWM_CEC);
-    AddService(new NWM_EXT);
     AddService(new NWM_INF);
     AddService(new NWM_SAP);
     AddService(new NWM_SOC);
@@ -39,6 +38,7 @@ void Init() {
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
+    std::make_shared<NWM_EXT>()->InstallAsService(service_manager);
     std::make_shared<NWM_UDS>()->InstallAsService(service_manager);
 }
 

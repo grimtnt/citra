@@ -6,16 +6,31 @@
 
 #include "core/hle/service/service.h"
 
+namespace Kernel {
+class HLERequestContext;
+}
+
 namespace Service {
 namespace NWM {
+namespace ErrCodes {
+enum {
+    D_13 = 13,
+};
+} // namespace ErrCodes
 
-class NWM_EXT final : public Interface {
+class NWM_EXT final : public ServiceFramework<NWM_EXT> {
 public:
     NWM_EXT();
+    ~NWM_EXT();
 
-    std::string GetPortName() const override {
-        return "nwm::EXT";
-    }
+private:
+    /** NWM_EXT::ControlWirelessEnabled service function
+     *  Inputs:
+     *        1 : Enable
+     *  Outputs:
+     *        1 : Result code
+     */
+    void ControlWirelessEnabled(Kernel::HLERequestContext& ctx);
 };
 
 } // namespace NWM

@@ -196,8 +196,7 @@ public:
     GSP_GPU();
     ~GSP_GPU() = default;
 
-    /// Thread id that currently has GPU rights or -1 if none.
-    int active_thread_id = -1;
+    void ClientDisconnected(Kernel::SharedPtr<Kernel::ServerSession> server_session) override;
 
     /**
      * Signals that the specified interrupt type has occurred to userland code
@@ -338,6 +337,12 @@ private:
     void ReleaseRight(Kernel::HLERequestContext& ctx);
 
     /**
+     * Releases rights to the GPU.
+     * Will fail if the session_data doesn't have the GPU right
+     */
+    void ReleaseRight(SessionData* session_data);
+
+    /**
      * GSP_GPU::ImportDisplayCaptureInfo service function
      *
      * Returns information about the current framebuffer state
@@ -379,6 +384,9 @@ private:
 
     /// GSP shared memory
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
+
+    /// Thread id that currently has GPU rights or -1 if none.
+    int active_thread_id = -1;
 
     bool first_initialization = true;
 };

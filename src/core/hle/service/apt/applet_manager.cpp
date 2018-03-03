@@ -6,7 +6,6 @@
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/applets/applet.h"
 #include "core/hle/service/apt/applet_manager.h"
-#include "core/hle/service/gsp/gsp.h"
 #include "core/hle/service/apt/errors.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/ns/ns.h"
@@ -460,7 +459,6 @@ ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, Kernel::Handle 
     if (library_applet_closing_command != SignalType::WakeupByPause) {
         // TODO(Subv): Terminate the running applet title
         slot.Reset();
-        Service::GSP::ReleaseAppletRight();
     }
 
     return RESULT_SUCCESS;

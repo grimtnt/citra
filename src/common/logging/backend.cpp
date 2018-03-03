@@ -138,6 +138,7 @@ void FileBackend::Write(const Entry& entry) {
     SUB(Service, FRD)                                                                              \
     SUB(Service, FS)                                                                               \
     SUB(Service, ERR)                                                                              \
+    SUB(Service, ACT)                                                                              \
     SUB(Service, APT)                                                                              \
     SUB(Service, BOSS)                                                                             \
     SUB(Service, GSP)                                                                              \
