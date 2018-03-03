@@ -27,13 +27,6 @@ static u8 my_mii[0x60];
 static u8 logged_in;
 static std::vector<FriendKey> friends;
 
-void GetMyProfile(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    std::memcpy(&cmd_buff[2], &my_profile, sizeof(Profile));
-}
-
 void GetMyPresence(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
@@ -49,31 +42,13 @@ void GetMyPresence(Service::Interface* self) {
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
-void GetMyMii(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    std::memcpy(&cmd_buff[2], &my_mii, 0x60);
-}
-    
-void GetMyPlayingGame(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xC, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+void GetMyPreference(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x6, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(4, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0);
-    rb.Push<u32>(0);
-    rb.Push<u16>(0);
-    rb.Push<u32>(0);
-
-    LOG_WARNING(Service_FRD, "(STUBBED) called");
-}
-
-void GetMyFavoriteGame(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xD, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0);
-    rb.Push<u32>(0);
+    rb.Push<u8>(1);
+    rb.Push<u8>(1);
+    rb.Push<u8>(1);
 
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
@@ -172,6 +147,56 @@ void Logout(Service::Interface* self) {
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
+void GetMyFriendKey(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    std::memcpy(&cmd_buff[2], &my_friend_key, sizeof(FriendKey));
+}
+
+void GetMyScreenName(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    Service::CFG::GetUsername().copy(reinterpret_cast<char16_t*>(&cmd_buff[2]), 11);
+}
+
+void GetMyProfile(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    std::memcpy(&cmd_buff[2], &my_profile, sizeof(Profile));
+}
+
+void GetMyMii(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    std::memcpy(&cmd_buff[2], &my_mii, 0x60);
+}
+    
+void GetMyPlayingGame(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xC, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u32>(0);
+    rb.Push<u32>(0);
+    rb.Push<u16>(0);
+    rb.Push<u32>(0);
+
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
+}
+
+void GetMyFavoriteGame(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xD, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u32>(0);
+    rb.Push<u32>(0);
+
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
+}
+
 void GetMyComment(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
@@ -180,29 +205,14 @@ void GetMyComment(Service::Interface* self) {
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
-void GetMyFriendKey(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    std::memcpy(&cmd_buff[2], &my_friend_key, sizeof(FriendKey));
-}
-
-void GetMyPreference(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x6, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(4, 0);
+void IsValidFriendCode(Service::Interface* self) {
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x26, 2, 0);
+    u64 friend_code = rp.Pop<u64>();
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u8>(1);
-    rb.Push<u8>(1);
     rb.Push<u8>(1);
 
     LOG_WARNING(Service_FRD, "(STUBBED) called");
-}
-
-void GetMyScreenName(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
-
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    Service::CFG::GetUsername().copy(reinterpret_cast<char16_t*>(&cmd_buff[2]), 11);
 }
 
 void UnscrambleLocalFriendCode(Service::Interface* self) {
@@ -244,16 +254,6 @@ void UnscrambleLocalFriendCode(Service::Interface* self) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(unscrambled_friend_codes, out_buffer_size, 0);
-    LOG_WARNING(Service_FRD, "(STUBBED) called");
-}
-
-void IsValidFriendCode(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x26, 2, 0);
-    u64 friend_code = rp.Pop<u64>();
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u8>(1);
-
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
