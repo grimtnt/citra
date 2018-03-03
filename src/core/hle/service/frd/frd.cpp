@@ -5,6 +5,7 @@
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
+#include "core/hle/kernel/event.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/result.h"
@@ -17,9 +18,21 @@
 namespace Service {
 namespace FRD {
 
-static FriendKey my_friend_key = {0, 0, 0ull};
+static Kernel::SharedPtr<Kernel::Event> event_notification;
+static Kernel::SharedPtr<Kernel::Event> completion_event;
+static FriendKey my_friend_key = {1, 2, 3ull};
 static MyPresence my_presence = {};
-static u8 logged_in = 0;
+static Profile my_profile = {1, 2, 3, 4, 5};
+static u8 mii_data[0x60];
+static u8 logged_in;
+static std::vector<FriendKey> friends;
+
+void GetMyProfile(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    std::memcpy(&cmd_buff[2], &my_profile, sizeof(Profile));
+}
 
 void GetMyPresence(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
@@ -122,12 +135,19 @@ void Logout(Service::Interface* self) {
     LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
+void GetMyComment(Service::Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    Common::UTF8ToUTF16("Citra is awesome!").copy(reinterpret_cast<char16_t*>(&cmd_buff[2]), 33);
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
+}
+
 void GetMyFriendKey(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
     std::memcpy(&cmd_buff[2], &my_friend_key, sizeof(FriendKey));
-    LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
 void GetMyPreference(Service::Interface* self) {
@@ -145,9 +165,7 @@ void GetMyScreenName(Service::Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    // TODO: (mailwl) get the name from config
-    Common::UTF8ToUTF16("Citra").copy(reinterpret_cast<char16_t*>(&cmd_buff[2]), 11);
-    LOG_WARNING(Service_FRD, "(STUBBED) called");
+    Service::CFG::GetUsername().copy(reinterpret_cast<char16_t*>(&cmd_buff[2]), 11);
 }
 
 void UnscrambleLocalFriendCode(Service::Interface* self) {
@@ -186,10 +204,10 @@ void UnscrambleLocalFriendCode(Service::Interface* self) {
                            sizeof(result));
     }
 
-    LOG_WARNING(Service_FRD, "(STUBBED) called");
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(unscrambled_friend_codes, out_buffer_size, 0);
+    LOG_WARNING(Service_FRD, "(STUBBED) called");
 }
 
 void SetClientSdkVersion(Service::Interface* self) {
@@ -207,9 +225,19 @@ void Init() {
 
     AddService(new FRD_A_Interface);
     AddService(new FRD_U_Interface);
+
+    completion_event = nullptr;
+    event_notification = nullptr;
+
+    logged_in = false;
 }
 
-void Shutdown() {}
+void Shutdown() {
+    completion_event = nullptr;
+    event_notification = nullptr;
+
+    logged_in = false;
+}
 
 } // namespace FRD
 
