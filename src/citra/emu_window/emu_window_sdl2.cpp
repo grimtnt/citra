@@ -66,7 +66,7 @@ EmuWindow_SDL2::EmuWindow_SDL2() {
 
     // Initialize the window
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        NGLOG_CRITICAL(Frontend, "Failed to initialize SDL2! Exiting...");
+        LOG_CRITICAL(Frontend, "Failed to initialize SDL2! Exiting...");
         exit(1);
     }
 
@@ -89,19 +89,19 @@ EmuWindow_SDL2::EmuWindow_SDL2() {
                          SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
     if (render_window == nullptr) {
-        NGLOG_CRITICAL(Frontend, "Failed to create SDL2 window: {}", SDL_GetError());
+        LOG_CRITICAL(Frontend, "Failed to create SDL2 window: %s", SDL_GetError());
         exit(1);
     }
 
     gl_context = SDL_GL_CreateContext(render_window);
 
     if (gl_context == nullptr) {
-        NGLOG_CRITICAL(Frontend, "Failed to create SDL2 GL context: {}", SDL_GetError());
+        LOG_CRITICAL(Frontend, "Failed to create SDL2 GL context: %s", SDL_GetError());
         exit(1);
     }
 
     if (!gladLoadGLLoader(static_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
-        NGLOG_CRITICAL(Frontend, "Failed to initialize GL functions: {}", SDL_GetError());
+        LOG_CRITICAL(Frontend, "Failed to initialize GL functions: %s", SDL_GetError());
         exit(1);
     }
 

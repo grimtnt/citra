@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>244</width>
-    <height>66</height>
+    <width>279</width>
+    <height>69</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>247</width>
+     <width>281</width>
      <height>70</height>
     </rect>
    </property>
@@ -109,7 +109,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>242</width>
+       <width>274</width>
        <height>43</height>
       </rect>
      </property>
@@ -172,7 +172,28 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="network_state"/>
+         <widget class="QComboBox" name="network_state">
+          <item>
+           <property name="text">
+            <string>Enabled</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Disabled</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Local</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Internet</string>
+           </property>
+          </item>
+         </widget>
         </item>
        </layout>
       </item>

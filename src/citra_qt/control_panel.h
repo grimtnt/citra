@@ -5,6 +5,7 @@
 #pragma once
 
 #include <QDialog>
+#include "common/common_types.h"
 
 namespace Ui {
 class ControlPanel;
@@ -18,6 +19,8 @@ public:
     ~ControlPanel();
 
 public slots:
+    int nsti(u8 state);
+    u8 itns(int index);
     void OnAdapterConnectedChanged();
     void OnBatteryChargingChanged();
     void OnBatteryLevelChanged();
