@@ -23,6 +23,7 @@ public slots:
     void OnBatteryLevelChanged();
     void OnWifiStatusChanged();
     void OnWifiLinkLevelChanged();
+    void OnNetworkStateChanged();
 
 private:
     Ui::ControlPanel *ui;

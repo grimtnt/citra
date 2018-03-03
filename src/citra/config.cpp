@@ -74,6 +74,8 @@ void Config::ReadValues() {
             static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "n_wifi_status", 0));
     Settings::values.n_wifi_link_level =
             static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_wifi_link_level", 0));
+    Settings::values.n_state =
+            static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_state", 0));
 
     // Controls
     for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {

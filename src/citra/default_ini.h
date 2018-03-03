@@ -23,6 +23,9 @@ n_wifi_status =
 # Network - Wi-Fi link level
 n_wifi_link_level =
 
+# Network - State
+n_state =
+
 [Controls]
 # The input devices and parameters for each 3DS native input
 # It should be in the format of "engine:[engine_name],[param1]:[value1],[param2]:[value2]..."

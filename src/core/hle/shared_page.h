@@ -53,7 +53,7 @@ struct SharedPageDef {
     DateTime date_time_1;                // 40
     u8 wifi_macaddr[6];                  // 60
     u8 wifi_link_level;                  // 66
-    u8 wifi_unknown2;                    // 67
+    u8 network_state;                    // 67
     INSERT_PADDING_BYTES(0x80 - 0x68);   // 68
     float_le sliderstate_3d;             // 80
     u8 ledstate_3d;                      // 84

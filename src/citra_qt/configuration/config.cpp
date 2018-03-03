@@ -50,6 +50,8 @@ void Config::ReadValues() {
             static_cast<u32>(qt_config->value("n_wifi_status", 0).toInt());
     Settings::values.n_wifi_link_level =
             static_cast<u8>(qt_config->value("n_wifi_link_level", 0).toInt());
+    Settings::values.n_state =
+            static_cast<u8>(qt_config->value("n_state", 0).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
@@ -272,6 +274,7 @@ void Config::SaveValues() {
     qt_config->setValue("p_battery_level", Settings::values.p_battery_level);
     qt_config->setValue("n_wifi_status", Settings::values.n_wifi_status);
     qt_config->setValue("n_wifi_link_level", Settings::values.n_wifi_link_level);
+    qt_config->setValue("n_state", Settings::values.n_state);
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
