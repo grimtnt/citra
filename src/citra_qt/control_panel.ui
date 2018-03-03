@@ -34,13 +34,13 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>241</width>
+       <width>271</width>
        <height>44</height>
       </rect>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="layoutPower">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QVBoxLayout" name="layoutPowerBatteryLevel">
         <item>
          <widget class="QLabel" name="label_power_battery_level">
           <property name="text">
@@ -80,7 +80,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="layoutPowerToggles">
         <item>
          <widget class="QCheckBox" name="power_adapter_connected">
           <property name="text">
@@ -113,9 +113,9 @@
        <height>43</height>
       </rect>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <layout class="QHBoxLayout" name="layoutNetwork">
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="layoutNetworkWifiStatus">
         <item>
          <widget class="QLabel" name="label_network_wifi_status">
           <property name="text">
@@ -145,7 +145,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QVBoxLayout" name="layoutNetworkWifiLinkLevel">
         <item>
          <widget class="QLabel" name="label_network_link_level">
           <property name="text">
@@ -163,7 +163,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="layoutNetworkStatus">
         <item>
          <widget class="QLabel" name="label_network_state">
           <property name="text">
