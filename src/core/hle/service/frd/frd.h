@@ -138,6 +138,16 @@ void GetMyFriendKey(Service::Interface* self);
 void GetMyScreenName(Service::Interface* self);
 
 /**
+ * FRD::IsValidFriendCode service function
+ * Inputs:
+ *      1-2 : Friend code
+ * Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2 : 1 if the provided friend code is valid, 0 otherwise 
+ */
+void IsValidFriendCode(Service::Interface* self);
+
+/**
  * FRD::UnscrambleLocalFriendCode service function
  *  Inputs:
  *      1 : Friend code count
