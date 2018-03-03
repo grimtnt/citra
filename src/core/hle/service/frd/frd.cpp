@@ -79,7 +79,7 @@ void GetMyFavoriteGame(Service::Interface* self) {
 }
 
 void GetFriendKeyList(Service::Interface* self) {
-    u32* cmd_buff = Kernel::GetCommandBuffer();
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x11, 2, 0);
 
     u32 offset = rp.Pop<u32>();
     u32 frd_count = rp.Pop<u32>();
@@ -88,13 +88,17 @@ void GetFriendKeyList(Service::Interface* self) {
     ASSERT_MSG(frd_keys_size == sizeof(FriendKey) * frd_count, "Output buffer size not match");
     u32 frd_key_addr = rp.Pop<u32>();
 
-    FriendKey zero_key = {};
-    for (u32 i = 0; i < frd_count; ++i) {
-        Memory::WriteBlock(frd_key_addr + i * sizeof(FriendKey), &zero_key, sizeof(FriendKey));
+    if (offset < friends.size()) {
+        for (u32 i = offset; i < frd_count; ++i) {
+            if (i >= friends.size())
+                break;
+            Memory::WriteBlock(frd_key_addr + i * sizeof(FriendKey), &friends[i], sizeof(FriendKey));
+        }
     }
 
-    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
-    cmd_buff[2] = 0;                  // 0 friends
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u32>(static_cast<u32>(friends.size()));
     LOG_WARNING(Service_FRD, "(STUBBED) called, offset=%d, frd_count=%d, frd_key_addr=0x%08X",
                 offset, frd_count, frd_key_addr);
 }
@@ -105,7 +109,8 @@ void GetFriendProfile(Service::Interface* self) {
     u32 count = cmd_buff[1];
     u32 frd_key_addr = cmd_buff[3];
     u32 profiles_addr = cmd_buff[65];
-
+    u32 profiles_size = cmd_buff[64] >> 14;
+    ASSERT_MSG(profiles_size == sizeof(Profile) * count, "Output buffer size not match");
     Profile zero_profile = {};
     for (u32 i = 0; i < count; ++i) {
         Memory::WriteBlock(profiles_addr + i * sizeof(Profile), &zero_profile, sizeof(Profile));
