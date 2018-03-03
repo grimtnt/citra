@@ -14,8 +14,11 @@ namespace FRD {
 
 struct FriendKey {
     u32 friend_id;
-    u32 unknown;
+    u32 padding;
     u64 friend_code;
+    bool operator== (const FriendKey& other) const {
+        return (friend_id == other.friend_id) && (friend_code == other.friend_code);
+    }
 };
 
 struct MyPresence {
