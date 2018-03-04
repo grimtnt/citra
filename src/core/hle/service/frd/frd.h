@@ -138,6 +138,48 @@ void GetMyFriendKey(Service::Interface* self);
 void GetMyScreenName(Service::Interface* self);
 
 /**
+ * FRD::GetMyProfile service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2-3 : Profile structure
+ */
+void GetMyProfile(Service::Interface* self);
+
+/**
+ * FRD::GetMyMii service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2 : Mii data
+ */
+void GetMyMii(Service::Interface* self);
+
+/**
+ * FRD::GetMyPlayingGame service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2-3 : Title ID
+ *      4 : ?
+ *      5 : ? 
+ */
+void GetMyPlayingGame(Service::Interface* self);
+
+/**
+ * FRD::GetMyFavoriteGame service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2-3 : Application Title ID
+ */
+void GetMyFavoriteGame(Service::Interface* self);
+
+/**
+ * FRD::GetMyComment service function
+ *  Outputs:
+ *      1 : Result of function, 0 on success, otherwise error code
+ *      2-3 : 32-byte UTF-16 comment
+ */
+void GetMyComment(Service::Interface* self);
+
+/**
  * FRD::IsValidFriendCode service function
  * Inputs:
  *      1-2 : Friend code
