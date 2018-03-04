@@ -479,7 +479,7 @@ void ScanForAllTitles() {
 }
 
 void GetNumPrograms(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1, 1, 0); // 0x00010040
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0001, 1, 0); // 0x00010040
     u32 media_type = rp.Pop<u8>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
@@ -616,7 +616,7 @@ void DeleteContents(Service::Interface* self) {
 }
 
 void GetProgramList(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 2, 2, 2); // 0x00020082
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0002, 2, 2); // 0x00020082
 
     u32 count = rp.Pop<u32>();
     u8 media_type = rp.Pop<u8>();
@@ -667,7 +667,7 @@ ResultCode GetTitleInfoFromList(const std::vector<u64>& title_id_list,
 }
 
 void GetProgramInfos(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 3, 2, 4); // 0x00030084
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0003, 2, 4); // 0x00030084
 
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
     u32 title_count = rp.Pop<u32>();
@@ -689,7 +689,7 @@ void GetProgramInfos(Service::Interface* self) {
 }
 
 void DeleteUserProgram(Service::Interface *self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x000400, 3, 0);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0004, 3, 0);
     auto media_type = rp.PopEnum<FS::MediaType>();
     u32 low = rp.Pop<u32>();
     u32 high = rp.Pop<u32>();
@@ -848,7 +848,7 @@ void GetDLCContentInfoCount(Service::Interface* self) {
 }
 
 void DeleteTicket(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 7, 2, 0); // 0x00070080
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0007, 2, 0); // 0x00070080
     u64 title_id = rp.Pop<u64>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -857,7 +857,7 @@ void DeleteTicket(Service::Interface* self) {
 }
 
 void GetNumTickets(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 8, 0, 0); // 0x00080000
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0008, 0, 0); // 0x00080000
     u32 ticket_count = 0;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
@@ -867,7 +867,7 @@ void GetNumTickets(Service::Interface* self) {
 }
 
 void GetTicketList(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 9, 2, 2); // 0x00090082
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0009, 2, 2); // 0x00090082
     u32 ticket_list_count = rp.Pop<u32>();
     u32 ticket_index = rp.Pop<u32>();
     VAddr ticket_tids_out = rp.PopMappedBuffer(nullptr);
@@ -881,7 +881,7 @@ void GetTicketList(Service::Interface* self) {
 }
 
 void QueryAvailableTitleDatabase(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x19, 1, 0); // 0x190040
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0019, 1, 0); // 0x190040
     u8 media_type = rp.Pop<u8>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
@@ -892,7 +892,7 @@ void QueryAvailableTitleDatabase(Service::Interface* self) {
 }
 
 void CheckContentRights(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x25, 3, 0); // 0x2500C0
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0025, 3, 0); // 0x2500C0
     u64 tid = rp.Pop<u64>();
     u16 content_index = rp.Pop<u16>();
 
@@ -908,7 +908,7 @@ void CheckContentRights(Service::Interface* self) {
 }
 
 void CheckContentRightsIgnorePlatform(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x2D, 3, 0); // 0x2D00C0
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x002D, 3, 0); // 0x2D00C0
     u64 tid = rp.Pop<u64>();
     u16 content_index = rp.Pop<u16>();
 
