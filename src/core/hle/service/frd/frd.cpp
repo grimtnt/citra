@@ -55,14 +55,14 @@ void GetMyPreference(Service::Interface* self) {
 }
 
 void GetFriendKeyList(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x11, 2, 0);
+    u32* cmd_buff = Kernel::GetCommandBuffer();
 
-    u32 offset = rp.Pop<u32>();
-    u32 frd_count = rp.Pop<u32>();
-    rp.Skip(62, false);
-    u32 frd_keys_size = rp.Pop<u32>() >> 14;
+    u32 offset = cmd_buff[1];
+    u32 frd_count = cmd_buff[2];
+
+    u32 frd_keys_size = cmd_buff[64] >> 14;
     ASSERT_MSG(frd_keys_size == sizeof(FriendKey) * frd_count, "Output buffer size not match");
-    u32 frd_key_addr = rp.Pop<u32>();
+    u32 frd_key_addr = cmd_buff[65];
 
     if (offset < friends.size()) {
         for (u32 i = offset; i < frd_count; ++i) {
@@ -72,9 +72,8 @@ void GetFriendKeyList(Service::Interface* self) {
         }
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(static_cast<u32>(friends.size()));
+    cmd_buff[1] = RESULT_SUCCESS.raw; // No error
+    cmd_buff[2] = friends.size();
     LOG_WARNING(Service_FRD, "(STUBBED) called, offset=%d, frd_count=%d, frd_key_addr=0x%08X",
                 offset, frd_count, frd_key_addr);
 }
