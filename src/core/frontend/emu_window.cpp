@@ -46,7 +46,7 @@ EmuWindow::EmuWindow() {
     touch_state = std::make_shared<TouchState>();
     Input::RegisterFactory<Input::TouchDevice>("emu_window", touch_state);
     depth_slider = 0.0f;
-    stereoscopic_mode = Anaglyph;
+    stereoscopic_mode = LeftOnly;
 }
 
 EmuWindow::~EmuWindow() {
