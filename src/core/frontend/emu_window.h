@@ -87,19 +87,19 @@ public:
     }
 
     /**
-    * Gets the value of the 3D depth slider.
-    * @return float-type value
-    */
+     * Gets the value of the 3D depth slider.
+     * @return float-type value
+     */
     f32 GetDepthSliderValue() const {
-    return depth_slider;
+        return depth_slider;
     }
 
     /**
-    * Gets the stereoscopic mode.
-    * @return StereoscopicMode value
-    */
+     * Gets the stereoscopic mode.
+     * @return StereoscopicMode value
+     */
     StereoscopicMode GetStereoscopicMode() const {
-    return stereoscopic_mode;
+        return stereoscopic_mode;
     }
 
     /**
@@ -113,9 +113,9 @@ public:
     }
 
     /**
-      * Gets the framebuffer layout (width, height, and screen regions)
-      * @note This method is thread-safe
-      */
+     * Gets the framebuffer layout (width, height, and screen regions)
+     * @note This method is thread-safe
+     */
     const Layout::FramebufferLayout& GetFramebufferLayout() const {
         return framebuffer_layout;
     }

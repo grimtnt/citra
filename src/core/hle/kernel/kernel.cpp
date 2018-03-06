@@ -10,8 +10,8 @@
 #include "core/hle/kernel/resource_limit.h"
 #include "core/hle/kernel/thread.h"
 #include "core/hle/kernel/timer.h"
-#include "core/hle/shared_page.h"
 #include "core/hle/service/cfg/cfg.h"
+#include "core/hle/shared_page.h"
 
 namespace Kernel {
 
@@ -22,12 +22,11 @@ void Init(u32 system_mode) {
     ConfigMem::Init();
     SharedPage::Init();
 
-    if (Service::CFG::GetSystemModelID() == 2 ||
-        Service::CFG::GetSystemModelID() == 4 ||
+    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
         Service::CFG::GetSystemModelID() == 5) {
-      Kernel::MemoryInit(6);
+        Kernel::MemoryInit(6);
     } else {
-      Kernel::MemoryInit(system_mode);
+        Kernel::MemoryInit(system_mode);
     }
 
     Kernel::ResourceLimitsInit();
@@ -52,4 +51,4 @@ void Shutdown() {
     Kernel::MemoryShutdown();
 }
 
-} // namespace
+} // namespace Kernel

@@ -25,7 +25,7 @@ private slots:
     void OuterRightCameraModeChanged(int index);
     void OuterLeftCameraModeChanged(int index);
     void InnerCameraModeChanged(int index);
- 
+
 private:
     void setConfiguration();
 

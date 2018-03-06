@@ -45,13 +45,11 @@ void Config::ReadValues() {
     Settings::values.p_adapter_connected = qt_config->value("p_adapter_connected", true).toBool();
     Settings::values.p_battery_charging = qt_config->value("p_battery_charging", true).toBool();
     Settings::values.p_battery_level =
-            static_cast<u32>(qt_config->value("p_battery_level", 5).toInt());
-    Settings::values.n_wifi_status =
-            static_cast<u32>(qt_config->value("n_wifi_status", 0).toInt());
+        static_cast<u32>(qt_config->value("p_battery_level", 5).toInt());
+    Settings::values.n_wifi_status = static_cast<u32>(qt_config->value("n_wifi_status", 0).toInt());
     Settings::values.n_wifi_link_level =
-            static_cast<u8>(qt_config->value("n_wifi_link_level", 0).toInt());
-    Settings::values.n_state =
-            static_cast<u8>(qt_config->value("n_state", 0).toInt());
+        static_cast<u8>(qt_config->value("n_wifi_link_level", 0).toInt());
+    Settings::values.n_state = static_cast<u8>(qt_config->value("n_state", 0).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
@@ -83,8 +81,8 @@ void Config::ReadValues() {
         qt_config
             ->value("motion_device",
                     "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0")
-             .toString()
-             .toStdString();
+            .toString()
+            .toStdString();
     Settings::values.touch_device =
         qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
 
@@ -92,7 +90,8 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
-    Settings::values.dynarmic_addticks_ticks = qt_config->value("dynarmic_addticks_ticks", Settings::DEFAULT_TICKS).toInt();
+    Settings::values.dynarmic_addticks_ticks =
+        qt_config->value("dynarmic_addticks_ticks", Settings::DEFAULT_TICKS).toInt();
     Settings::values.priority_boost = qt_config->value("priority_boost", true).toBool();
     qt_config->endGroup();
 
@@ -187,7 +186,7 @@ void Config::ReadValues() {
     Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
     Settings::values.citra_token = qt_config->value("citra_token").toString().toStdString();
     qt_config->endGroup();
-    
+
     qt_config->beginGroup("Hacks");
     Settings::values.enable_pipe3 = qt_config->value("enable_pipe3", true).toBool();
     qt_config->endGroup();

@@ -610,8 +610,9 @@ void DeleteContents(Service::Interface* self) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    LOG_WARNING(Service_AM, "(STUBBED) media_type=%u, title_id=0x%016" PRIx64
-                            ", content_count=%u, content_ids_in=0x%08x",
+    LOG_WARNING(Service_AM,
+                "(STUBBED) media_type=%u, title_id=0x%016" PRIx64
+                ", content_count=%u, content_ids_in=0x%08x",
                 media_type, title_id, content_count, content_ids_in);
 }
 
@@ -688,7 +689,7 @@ void GetProgramInfos(Service::Interface* self) {
     rb.PushMappedBuffer(title_info_out, title_info_size, title_info_perms);
 }
 
-void DeleteUserProgram(Service::Interface *self) {
+void DeleteUserProgram(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0004, 3, 0);
     auto media_type = rp.PopEnum<FS::MediaType>();
     u32 low = rp.Pop<u32>();
@@ -812,8 +813,9 @@ void ListDataTitleTicketInfos(Service::Interface* self) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(ticket_count);
 
-    LOG_WARNING(Service_AM, "(STUBBED) ticket_count=0x%08X, title_id=0x%016" PRIx64
-                            ", start_index=0x%08X, ticket_info_out=0x%08X",
+    LOG_WARNING(Service_AM,
+                "(STUBBED) ticket_count=0x%08X, title_id=0x%016" PRIx64
+                ", start_index=0x%08X, ticket_info_out=0x%08X",
                 ticket_count, title_id, start_index, ticket_info_out);
 }
 

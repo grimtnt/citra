@@ -11,7 +11,6 @@
 #include "common/string_util.h"
 #include "core/arm/arm_interface.h"
 #include "core/core_timing.h"
-#include "core/settings.h"
 #include "core/hle/function_wrappers.h"
 #include "core/hle/kernel/address_arbiter.h"
 #include "core/hle/kernel/client_port.h"
@@ -35,12 +34,13 @@
 #include "core/hle/kernel/wait_object.h"
 #include "core/hle/lock.h"
 #include "core/hle/result.h"
-#include "core/hle/service/service.h"
 #include "core/hle/service/cfg/cfg.h"
+#include "core/hle/service/service.h"
+#include "core/settings.h"
 
 namespace Kernel {
-    static bool enable_higher_core_clock = false;
-    static bool enable_additional_cache = false;
+static bool enable_higher_core_clock = false;
+static bool enable_additional_cache = false;
 
 enum ControlMemoryOperation {
     MEMOP_FREE = 1,
@@ -292,7 +292,6 @@ static ResultCode WaitSynchronization1(Handle handle, s64 nano_seconds) {
 
         thread->wakeup_callback = [](ThreadWakeupReason reason, SharedPtr<Thread> thread,
                                      SharedPtr<WaitObject> object) {
-
             ASSERT(thread->status == THREADSTATUS_WAIT_SYNCH_ANY);
 
             if (reason == ThreadWakeupReason::Timeout) {
@@ -382,7 +381,6 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
 
         thread->wakeup_callback = [](ThreadWakeupReason reason, SharedPtr<Thread> thread,
                                      SharedPtr<WaitObject> object) {
-
             ASSERT(thread->status == THREADSTATUS_WAIT_SYNCH_ALL);
 
             if (reason == ThreadWakeupReason::Timeout) {
@@ -443,7 +441,6 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
 
         thread->wakeup_callback = [](ThreadWakeupReason reason, SharedPtr<Thread> thread,
                                      SharedPtr<WaitObject> object) {
-
             ASSERT(thread->status == THREADSTATUS_WAIT_SYNCH_ANY);
 
             if (reason == ThreadWakeupReason::Timeout) {
@@ -595,7 +592,6 @@ static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_
 
     thread->wakeup_callback = [](ThreadWakeupReason reason, SharedPtr<Thread> thread,
                                  SharedPtr<WaitObject> object) {
-
         ASSERT(thread->status == THREADSTATUS_WAIT_SYNCH_ANY);
         ASSERT(reason == ThreadWakeupReason::Signal);
 
@@ -778,8 +774,9 @@ static ResultCode CreateThread(Handle* out_handle, u32 priority, u32 entry_point
 
     Core::System::GetInstance().PrepareReschedule();
 
-    LOG_TRACE(Kernel_SVC, "called entrypoint=0x%08X (%s), arg=0x%08X, stacktop=0x%08X, "
-                          "threadpriority=0x%08X, processorid=0x%08X : created handle=0x%08X",
+    LOG_TRACE(Kernel_SVC,
+              "called entrypoint=0x%08X (%s), arg=0x%08X, stacktop=0x%08X, "
+              "threadpriority=0x%08X, processorid=0x%08X : created handle=0x%08X",
               entry_point, name.c_str(), arg, stack_top, priority, processor_id, *out_handle);
 
     return RESULT_SUCCESS;
@@ -1258,8 +1255,7 @@ static ResultCode GetProcessInfo(s64* out, Handle process_handle, u32 type) {
 
 ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
     bool is_new_3ds = false;
-    if (Service::CFG::GetSystemModelID() == 2 ||
-        Service::CFG::GetSystemModelID() == 4 ||
+    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
         Service::CFG::GetSystemModelID() == 5) {
         is_new_3ds = true;
     }
@@ -1281,24 +1277,22 @@ ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
     case KernelSetStateType::ConfigureNew3DSCPU:
         enable_higher_core_clock = (is_new_3ds && param0 & 0x00000001);
         enable_additional_cache = (is_new_3ds && (param0 >> 1) & 0x00000001);
-        LOG_WARNING(Kernel_SVC,
-                    "called, enables_higher_core_clock=%u, enables_additional_cache=%u",
+        LOG_WARNING(Kernel_SVC, "called, enables_higher_core_clock=%u, enables_additional_cache=%u",
                     enable_higher_core_clock, enable_additional_cache);
         break;
     default:
         return ResultCode( // 0xF8C007F4
             ErrorDescription::InvalidEnumValue, ErrorModule::Kernel, ErrorSummary::InvalidArgument,
             ErrorLevel::Permanent);
-         break;
-         LOG_WARNING(Kernel_SVC,
-                     "called, enables_higher_core_clock=%u, enables_additional_cache=%u",
-                     enable_higher_core_clock, enable_additional_cache);
-         break;
+        break;
+        LOG_WARNING(Kernel_SVC, "called, enables_higher_core_clock=%u, enables_additional_cache=%u",
+                    enable_higher_core_clock, enable_additional_cache);
+        break;
 
         return ResultCode( // 0xF8C007F4
             ErrorDescription::InvalidEnumValue, ErrorModule::Kernel, ErrorSummary::InvalidArgument,
             ErrorLevel::Permanent);
-         break;
+        break;
     }
     return RESULT_SUCCESS;
 }

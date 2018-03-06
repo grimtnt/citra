@@ -3,8 +3,8 @@
 // Refer to the license.txt file included.
 
 #include "common/common_paths.h"
-#include "core/hle/kernel/handle_table.h"
 #include "core/hle/applets/applet.h"
+#include "core/hle/kernel/handle_table.h"
 #include "core/hle/service/apt/applet_manager.h"
 #include "core/hle/service/apt/errors.h"
 #include "core/hle/service/cfg/cfg.h"
@@ -417,7 +417,8 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
                                    slot->registered, slot->loaded, slot->attributes.raw});
 }
 
-ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiting, bool jump_to_home) {
+ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiting,
+                                                      bool jump_to_home) {
     LOG_DEBUG(Service_APT, "called not_pause=%u exiting=%u jump_to_home=%u",
               static_cast<u32>(not_pause), static_cast<u32>(exiting),
               static_cast<u32>(jump_to_home));
@@ -439,7 +440,8 @@ ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiti
     return RESULT_SUCCESS;
 }
 
-ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, Kernel::Handle handle, VAddr parameter_addr) {
+ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, Kernel::Handle handle,
+                                             VAddr parameter_addr) {
     LOG_DEBUG(Service_APT, "called size=%u handle=%u", parameter_size, static_cast<u32>(handle));
 
     auto& slot = applet_slots[static_cast<size_t>(AppletSlot::LibraryApplet)];

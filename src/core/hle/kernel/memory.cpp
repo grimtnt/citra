@@ -15,10 +15,10 @@
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/vm_manager.h"
 #include "core/hle/result.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/shared_page.h"
 #include "core/memory.h"
 #include "core/memory_setup.h"
-#include "core/hle/service/cfg/cfg.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,12 +43,11 @@ static const u32 memory_region_sizes[8][3] = {
 };
 
 void MemoryInit(u32 mem_type) {
-    if (Service::CFG::GetSystemModelID() == 2 ||
-        Service::CFG::GetSystemModelID() == 4 ||
+    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
         Service::CFG::GetSystemModelID() == 5) {
-      if (mem_type <= 5) {
-          mem_type = 6;
-      }
+        if (mem_type <= 5) {
+            mem_type = 6;
+        }
     }
     ASSERT(mem_type != 1);
 
@@ -136,8 +135,9 @@ void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mappin
                    mapping_limit <= area.vaddr_base + area.size;
         });
     if (area == std::end(memory_areas)) {
-        LOG_ERROR(Loader, "Unhandled special mapping: address=0x%08" PRIX32 " size=0x%" PRIX32
-                          " read_only=%d unk_flag=%d",
+        LOG_ERROR(Loader,
+                  "Unhandled special mapping: address=0x%08" PRIX32 " size=0x%" PRIX32
+                  " read_only=%d unk_flag=%d",
                   mapping.address, mapping.size, mapping.read_only, mapping.unk_flag);
         return;
     }

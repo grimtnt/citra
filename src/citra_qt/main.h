@@ -11,9 +11,9 @@
 #include <QTranslator>
 #include "common/announce_multiplayer_room.h"
 #include "core/core.h"
+#include "core/frontend/emu_window.h"
 #include "core/hle/service/am/am.h"
 #include "network/network.h"
-#include "core/frontend/emu_window.h"
 #include "ui_main.h"
 
 class AboutDialog;
@@ -252,7 +252,7 @@ private:
     QAction* actions_recent_files[max_recent_files_item];
 
     QTranslator translator;
- 
+
 protected:
     void dropEvent(QDropEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;

@@ -12,9 +12,9 @@
 #include "common/x64/cpu_detect.h"
 #endif
 #include "core/core.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/settings.h"
 #include "core/telemetry_session.h"
-#include "core/hle/service/cfg/cfg.h"
 
 #ifdef ENABLE_WEB_SERVICE
 #include "web_service/telemetry_json.h"

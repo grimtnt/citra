@@ -139,9 +139,9 @@ public:
          *      0 : Header code
          *      1 : Result code
          * Note:
-         *     This just uses svcKernelSetState with Type10 where Param0=<input u8 value from the cmd>.
-         *     This command is implemented in the Old3DS PTM sysmodule too,
-         *     but the above type is only implemented in the New3DS ARM11-kernel.
+         *     This just uses svcKernelSetState with Type10 where Param0=<input u8 value from the
+         * cmd>. This command is implemented in the Old3DS PTM sysmodule too, but the above type is
+         * only implemented in the New3DS ARM11-kernel.
          */
         void ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx);
 

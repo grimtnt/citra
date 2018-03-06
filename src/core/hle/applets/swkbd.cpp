@@ -290,5 +290,5 @@ void SoftwareKeyboard::Finalize() {
 
     is_running = false;
 }
-}
-} // namespace
+} // namespace Applets
+} // namespace HLE

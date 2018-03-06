@@ -38,8 +38,8 @@ void StillImageCamera::SetEffect(Service::CAM::Effect effect) {
 std::vector<u16> StillImageCamera::ReceiveFrame() const {
     const std::string camera_config = Settings::values.camera_config[camera_id];
     QImage image(QString::fromStdString(camera_config));
-	if (!image.isNull()) {
-		std::vector<u16> buffer(width * height);
+    if (!image.isNull()) {
+        std::vector<u16> buffer(width * height);
         QImage scaled =
             image.scaled(width, height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
         QImage transformed =
@@ -77,7 +77,7 @@ std::vector<u16> StillImageCamera::ReceiveFrame() const {
                         pu = u;
                         pv = v;
                     }
-                   write = !write;
+                    write = !write;
                 }
             }
         }

@@ -260,7 +260,7 @@ void HTTP_C::Impl::BeginRequest(Kernel::HLERequestContext& ctx) {
         break;
     case RequestMethod::Put: {
         const cpr::Body body(reinterpret_cast<const char*>(shared_memory->GetPointer()),
-            shared_memory->size);
+                             shared_memory->size);
         context->second.Put(body);
     }
     case RequestMethod::PutEmpty: {

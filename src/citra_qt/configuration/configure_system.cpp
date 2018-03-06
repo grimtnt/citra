@@ -11,7 +11,18 @@
 #include "ui_configure_system.h"
 
 static const std::array<int, 12> days_in_month = {{
-    31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    31,
+    29,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
 }};
 
 ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureSystem) {
@@ -52,8 +63,8 @@ void ConfigureSystem::setConfiguration() {
         ui->label_disable_info->hide();
         ui->link_country_codes->setOpenExternalLinks(true);
         ui->link_country_codes->setText(
-        tr("<a "
-           "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
+            tr("<a "
+               "href='https://3dbrew.org/wiki/Country_Code_List'>Country Codes</a>"));
     }
 }
 
@@ -137,8 +148,7 @@ void ConfigureSystem::applyConfiguration() {
     if (!ValidateCountry()) {
         ui->spinbox_country->setValue(1);
         QString error_text = tr("Invalid country id, changed to 1.");
-        QMessageBox::critical(this, tr("Error"), error_text,
-                                    QMessageBox::Ok);
+        QMessageBox::critical(this, tr("Error"), error_text, QMessageBox::Ok);
     }
 
     int new_country = ui->spinbox_country->value();
@@ -203,29 +213,23 @@ void ConfigureSystem::refreshConsoleID() {
 }
 
 bool ConfigureSystem::ValidateCountry() {
-  if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
-    return false;
-  } else if (ui->spinbox_country->value() > 52 &&
-             ui->spinbox_country->value() < 64) {
-    return false;
-  } else if (ui->spinbox_country->value() > 128 &&
-             ui->spinbox_country->value() < 136) {
-    return false;
-  } else if (ui->spinbox_country->value() > 136 &&
-             ui->spinbox_country->value() < 144) {
-    return false;
-  } else if (ui->spinbox_country->value() > 155 &&
-             ui->spinbox_country->value() < 160) {
-    return false;
-  } else if (ui->spinbox_country->value() > 160 &&
-             ui->spinbox_country->value() < 168) {
-    return false;
-  } else if (ui->spinbox_country->value() > 177 &&
-             ui->spinbox_country->value() < 184) {
-    return false;
-  }
+    if (ui->spinbox_country->value() > 1 && ui->spinbox_country->value() < 8) {
+        return false;
+    } else if (ui->spinbox_country->value() > 52 && ui->spinbox_country->value() < 64) {
+        return false;
+    } else if (ui->spinbox_country->value() > 128 && ui->spinbox_country->value() < 136) {
+        return false;
+    } else if (ui->spinbox_country->value() > 136 && ui->spinbox_country->value() < 144) {
+        return false;
+    } else if (ui->spinbox_country->value() > 155 && ui->spinbox_country->value() < 160) {
+        return false;
+    } else if (ui->spinbox_country->value() > 160 && ui->spinbox_country->value() < 168) {
+        return false;
+    } else if (ui->spinbox_country->value() > 177 && ui->spinbox_country->value() < 184) {
+        return false;
+    }
 
-  return true;
+    return true;
 }
 
 void ConfigureSystem::retranslateUi() {

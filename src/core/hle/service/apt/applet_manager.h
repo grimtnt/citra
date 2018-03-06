@@ -8,9 +8,9 @@
 #include <vector>
 #include <boost/optional.hpp>
 #include "core/hle/kernel/event.h"
+#include "core/hle/kernel/kernel.h"
 #include "core/hle/result.h"
 #include "core/hle/service/fs/archive.h"
-#include "core/hle/kernel/kernel.h"
 #include "core/memory.h"
 
 namespace Service {
@@ -168,7 +168,7 @@ private:
         AppletAttributes attributes;
         Kernel::SharedPtr<Kernel::Event> notification_event;
         Kernel::SharedPtr<Kernel::Event> parameter_event;
- 
+
         void Reset() {
             applet_id = AppletId::None;
             registered = false;

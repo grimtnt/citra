@@ -5,12 +5,12 @@
 #include <boost/algorithm/string.hpp>
 #include "common/logging/log.h"
 #include "common/string_util.h"
+#include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/act/act.h"
 #include "core/hle/service/act/act_a.h"
 #include "core/hle/service/act/act_u.h"
 #include "core/hle/service/cfg/cfg.h"
-#include "core/hle/ipc_helpers.h"
 
 namespace Service {
 namespace ACT {

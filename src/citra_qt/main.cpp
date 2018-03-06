@@ -17,12 +17,12 @@
 #include <QtWidgets>
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
-#include "citra_qt/control_panel.h"
-#include "citra_qt/compatdb.h"
-#include "citra_qt/camera/still_image_camera.h" 
+#include "citra_qt/camera/still_image_camera.h"
 #include "citra_qt/cheat_gui.h"
+#include "citra_qt/compatdb.h"
 #include "citra_qt/configuration/config.h"
 #include "citra_qt/configuration/configure_dialog.h"
+#include "citra_qt/control_panel.h"
 #include "citra_qt/debugger/graphics/graphics.h"
 #include "citra_qt/debugger/graphics/graphics_breakpoints.h"
 #include "citra_qt/debugger/graphics/graphics_cmdlists.h"
@@ -35,12 +35,12 @@
 #include "citra_qt/game_list.h"
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
-#include "citra_qt/stereoscopic_controller.h"
 #include "citra_qt/multiplayer/client_room.h"
 #include "citra_qt/multiplayer/direct_connect.h"
 #include "citra_qt/multiplayer/host_room.h"
 #include "citra_qt/multiplayer/lobby.h"
 #include "citra_qt/multiplayer/message.h"
+#include "citra_qt/stereoscopic_controller.h"
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/updater/updater.h"
 #include "citra_qt/util/clickable_label.h"
@@ -54,8 +54,8 @@
 #include "common/scope_exit.h"
 #include "common/string_util.h"
 #include "core/core.h"
-#include "core/frontend/camera/v4l2_camera.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
+#include "core/frontend/camera/v4l2_camera.h"
 #include "core/gdbstub/gdbstub.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
@@ -1142,8 +1142,7 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnCheats() {
-    if (cheatWindow == nullptr)
-    {
+    if (cheatWindow == nullptr) {
         cheatWindow = std::make_shared<CheatDialog>(this);
     }
     cheatWindow->show();

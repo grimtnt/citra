@@ -572,6 +572,6 @@ void DumpTevStageConfig(const std::array<TexturingRegs::TevStageConfig, 6>& stag
     LOG_TRACE(HW_GPU, "%s", stage_info.c_str());
 }
 
-} // namespace
+} // namespace DebugUtils
 
-} // namespace
+} // namespace Pica

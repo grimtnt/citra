@@ -15,7 +15,7 @@ class ControlPanel : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ControlPanel(QWidget *parent = 0);
+    explicit ControlPanel(QWidget* parent = 0);
     ~ControlPanel();
 
 public slots:
@@ -29,5 +29,5 @@ public slots:
     void OnNetworkStateChanged();
 
 private:
-    Ui::ControlPanel *ui;
+    Ui::ControlPanel* ui;
 };

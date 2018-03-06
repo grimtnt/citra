@@ -2,7 +2,7 @@
 
 #include "droparea.h"
 
-DropArea::DropArea(QWidget *parent) : QLabel(parent) {
+DropArea::DropArea(QWidget* parent) : QLabel(parent) {
     setMinimumSize(200, 120);
     setMaximumSize(200, 120);
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
@@ -12,20 +12,20 @@ DropArea::DropArea(QWidget *parent) : QLabel(parent) {
     clear();
 }
 
-void DropArea::dragEnterEvent(QDragEnterEvent *event) {
-    const QMimeData *mimeData = event->mimeData();
+void DropArea::dragEnterEvent(QDragEnterEvent* event) {
+    const QMimeData* mimeData = event->mimeData();
     setBackgroundRole(QPalette::Highlight);
     if (mimeData->hasImage() || mimeData->hasUrls()) {
         event->acceptProposedAction();
     }
 }
 
-void DropArea::dragMoveEvent(QDragMoveEvent *event) {
+void DropArea::dragMoveEvent(QDragMoveEvent* event) {
     event->acceptProposedAction();
 }
 
-void DropArea::dropEvent(QDropEvent *event) {
-    const QMimeData *mimeData = event->mimeData();
+void DropArea::dropEvent(QDropEvent* event) {
+    const QMimeData* mimeData = event->mimeData();
 
     if (mimeData->hasUrls()) {
         QList<QUrl> urlList = mimeData->urls();
@@ -45,17 +45,17 @@ QString DropArea::GetImageFilepath() {
 void DropArea::SetImage(QString filepath) {
     imageFilepath = filepath;
     QPixmap img = QPixmap(imageFilepath);
-    if(!img.isNull()){
+    if (!img.isNull()) {
         setPixmap(img.scaled(200, 120, Qt::KeepAspectRatio));
         setToolTip(imageFilepath);
     }
 }
 
-void DropArea::dragLeaveEvent(QDragLeaveEvent *event)  {
+void DropArea::dragLeaveEvent(QDragLeaveEvent* event) {
     event->accept();
 }
 
-void DropArea::clear(){
+void DropArea::clear() {
     setText(tr("<Drop an image>"));
     setBackgroundRole(QPalette::Dark);
 

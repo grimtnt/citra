@@ -49,11 +49,7 @@ union ProcessFlags {
     BitField<12, 1, u16> loaded_high; ///< Application loaded high (not at 0x00100000).
 };
 
-enum class ProcessStatus {
-    Created,
-    Running,
-    Exited
-};
+enum class ProcessStatus { Created, Running, Exited };
 
 class ResourceLimit;
 struct MemoryRegionInfo;

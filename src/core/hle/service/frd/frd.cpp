@@ -5,9 +5,9 @@
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
-#include "core/hle/kernel/event.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
+#include "core/hle/kernel/event.h"
 #include "core/hle/result.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/frd/frd.h"
@@ -68,7 +68,8 @@ void GetFriendKeyList(Service::Interface* self) {
         for (u32 i = offset; i < frd_count; ++i) {
             if (i >= friends.size())
                 break;
-            Memory::WriteBlock(frd_key_addr + i * sizeof(FriendKey), &friends[i], sizeof(FriendKey));
+            Memory::WriteBlock(frd_key_addr + i * sizeof(FriendKey), &friends[i],
+                               sizeof(FriendKey));
         }
     }
 
@@ -174,7 +175,7 @@ void GetMyMii(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
     std::memcpy(&cmd_buff[2], &my_mii, 0x60);
 }
-    
+
 void GetMyPlayingGame(Service::Interface* self) {
     IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0xC, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);

@@ -21,7 +21,7 @@
 namespace Kernel {
 class Event;
 class SharedMemory;
-}
+} // namespace Kernel
 
 namespace CoreTiming {
 class EventType;
@@ -337,5 +337,5 @@ void InstallInterfaces(SM::ServiceManager& service_manager);
 void ReloadInputDevices();
 
 PadState& GetInputsThisFrame();
-}
-}
+} // namespace HID
+} // namespace Service

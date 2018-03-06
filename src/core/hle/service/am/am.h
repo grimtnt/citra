@@ -15,7 +15,7 @@ namespace Service {
 namespace FS {
 enum class MediaType : u32;
 }
-}
+} // namespace Service
 
 namespace Service {
 

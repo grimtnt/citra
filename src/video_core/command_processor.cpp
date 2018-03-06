@@ -14,8 +14,8 @@
 #include "common/vector_math.h"
 #include "core/hle/service/gsp/gsp.h"
 #include "core/hw/gpu.h"
-#include "core/settings.h"
 #include "core/memory.h"
+#include "core/settings.h"
 #include "core/tracer/recorder.h"
 #include "video_core/command_processor.h"
 #include "video_core/debug_utils/debug_utils.h"
@@ -304,7 +304,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             CachedVertex(const CachedVertex& other) : CachedVertex() {}
             union {
                 Shader::AttributeBuffer output_attr; // GS used
-                Shader::OutputVertex output_vertex; // No GS
+                Shader::OutputVertex output_vertex;  // No GS
             };
             std::atomic<u32> batch;
             std::atomic_flag lock;
@@ -326,10 +326,10 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
         const auto& index_info = regs.pipeline.index_array;
         const u8* index_address_8 = Memory::GetPhysicalPointer(base_address + index_info.offset);
-            if (!index_address_8) {
-                LOG_CRITICAL(HW_GPU, "Invalid index_address_8 %08x", index_address_8);
-                break;
-            }
+        if (!index_address_8) {
+            LOG_CRITICAL(HW_GPU, "Invalid index_address_8 %08x", index_address_8);
+            break;
+        }
         const u16* index_address_16 = reinterpret_cast<const u16*>(index_address_8);
         bool index_u16 = index_info.format != 0;
 
@@ -338,7 +338,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         auto VertexIndex = [&](unsigned int index) {
             // Indexed rendering doesn't use the start offset
             return is_indexed ? (index_u16 ? index_address_16[index] : index_address_8[index])
-                : (index + regs.pipeline.vertex_offset);
+                              : (index + regs.pipeline.vertex_offset);
         };
 
         if (g_debug_context && g_debug_context->recorder) {
@@ -349,8 +349,9 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
                 u8* texture_data = Memory::GetPhysicalPointer(texture.config.GetPhysicalAddress());
                 g_debug_context->recorder->MemoryAccessed(
-                    texture_data, Pica::TexturingRegs::NibblesPerPixel(texture.format) *
-                    texture.config.width / 2 * texture.config.height,
+                    texture_data,
+                    Pica::TexturingRegs::NibblesPerPixel(texture.format) * texture.config.width /
+                        2 * texture.config.height,
                     texture.config.GetPhysicalAddress());
             }
         }
@@ -365,10 +366,12 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         const bool use_gs = regs.pipeline.use_gs == PipelineRegs::UseGS::Yes;
 
         auto VSUnitLoop = [&](u32 thread_id, auto num_threads) {
-            constexpr bool single_thread = std::is_same<std::integral_constant<u32, 1>, decltype(num_threads)>();
+            constexpr bool single_thread =
+                std::is_same<std::integral_constant<u32, 1>, decltype(num_threads)>();
             Shader::UnitState shader_unit;
 
-            for (unsigned int index = thread_id; index < regs.pipeline.num_vertices; index += num_threads) {
+            for (unsigned int index = thread_id; index < regs.pipeline.num_vertices;
+                 index += num_threads) {
                 unsigned int vertex = VertexIndex(index);
                 auto& cached_vertex = vs_output[is_indexed ? vertex : index];
 
@@ -380,7 +383,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                     if (g_debug_context && Pica::g_debug_context->recorder) {
                         int size = index_u16 ? 2 : 1;
                         memory_accesses.AddAccess(base_address + index_info.offset + size * index,
-                            size);
+                                                  size);
                     }
 
                     if (!single_thread) {
@@ -395,34 +398,35 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                             cached_vertex.lock.clear(std::memory_order_release);
                             continue;
                         }
-                    }
-                    else if (cached_vertex.batch.load(std::memory_order_relaxed) == batch_id) {
+                    } else if (cached_vertex.batch.load(std::memory_order_relaxed) == batch_id) {
                         continue;
                     }
                 }
                 Shader::AttributeBuffer attribute_buffer;
-                Shader::AttributeBuffer& output_attr = use_gs ? cached_vertex.output_attr : attribute_buffer;
+                Shader::AttributeBuffer& output_attr =
+                    use_gs ? cached_vertex.output_attr : attribute_buffer;
 
                 // Initialize data for the current vertex
                 loader.LoadVertex(base_address, index, vertex, attribute_buffer, memory_accesses);
 
                 // Send to vertex shader
                 if (g_debug_context)
-                    g_debug_context->OnEvent(DebugContext::Event::VertexShaderInvocation, &attribute_buffer);
+                    g_debug_context->OnEvent(DebugContext::Event::VertexShaderInvocation,
+                                             &attribute_buffer);
                 shader_unit.LoadInput(regs.vs, attribute_buffer);
                 shader_engine->Run(g_state.vs, shader_unit);
 
                 shader_unit.WriteOutput(regs.vs, output_attr);
                 if (!use_gs)
-                    cached_vertex.output_vertex = Shader::OutputVertex::FromAttributeBuffer(regs.rasterizer, output_attr);
+                    cached_vertex.output_vertex =
+                        Shader::OutputVertex::FromAttributeBuffer(regs.rasterizer, output_attr);
 
                 if (!single_thread) {
                     cached_vertex.batch.store(batch_id, std::memory_order_release);
                     if (is_indexed) {
                         cached_vertex.lock.clear(std::memory_order_release);
                     }
-                }
-                else if (is_indexed) {
+                } else if (is_indexed) {
                     cached_vertex.batch.store(batch_id, std::memory_order_relaxed);
                 }
             }
@@ -433,12 +437,11 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
         unsigned int vs_threads =
             std::min(regs.pipeline.num_vertices / Settings::values.vertices_per_thread,
-            std::thread::hardware_concurrency() - 1);
+                     std::thread::hardware_concurrency() - 1);
 
         if (!vs_threads) {
             VSUnitLoop(0, std::integral_constant<u32, 1>{});
-        }
-        else {
+        } else {
             for (unsigned int thread_id = 0; thread_id < vs_threads; ++thread_id) {
                 futures.emplace_back(thread_pool.push(VSUnitLoop, thread_id, vs_threads));
             }
@@ -449,9 +452,10 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         if (g_state.geometry_pipeline.NeedIndexInput())
             ASSERT(is_indexed);
 
-        const auto AddTriangle = [rasterizer = VideoCore::g_renderer->Rasterizer()](auto& v0, auto& v1, auto& v2) {
-            rasterizer->AddTriangle(v0, v1, v2);
-        };
+        const auto AddTriangle =
+            [rasterizer = VideoCore::g_renderer->Rasterizer()](auto& v0, auto& v1, auto& v2) {
+                rasterizer->AddTriangle(v0, v1, v2);
+            };
 
         for (unsigned int index = 0; index < regs.pipeline.num_vertices; ++index) {
             unsigned int vertex = VertexIndex(index);
@@ -482,7 +486,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
         for (auto& range : memory_accesses.ranges) {
             g_debug_context->recorder->MemoryAccessed(Memory::GetPhysicalPointer(range.first),
-                range.second, range.first);
+                                                      range.second, range.first);
         }
 
         VideoCore::g_renderer->Rasterizer()->DrawTriangles();

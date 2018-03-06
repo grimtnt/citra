@@ -17,8 +17,8 @@
 #include "core/hle/service/hid/hid_spvr.h"
 #include "core/hle/service/hid/hid_user.h"
 #include "core/hle/service/service.h"
-#include "core/movie.h"
 #include "core/hle/shared_page.h"
+#include "core/movie.h"
 #include "video_core/video_core.h"
 
 namespace Service {
@@ -342,7 +342,9 @@ void Module::Interface::GetGyroscopeLowCalibrateParam(Kernel::HLERequestContext&
 
     const s16 param_unit = 6700; // an approximate value taken from hw
     GyroscopeCalibrateParam param = {
-        {0, param_unit, -param_unit}, {0, param_unit, -param_unit}, {0, param_unit, -param_unit},
+        {0, param_unit, -param_unit},
+        {0, param_unit, -param_unit},
+        {0, param_unit, -param_unit},
     };
     rb.PushRaw(param);
 

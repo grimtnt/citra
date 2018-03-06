@@ -14,7 +14,7 @@ class QWidget;
 namespace Ui {
 class CheatDialog;
 class NewCheatDialog;
-}
+} // namespace Ui
 
 class CheatDialog : public QDialog {
     Q_OBJECT

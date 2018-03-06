@@ -16,7 +16,7 @@ struct FriendKey {
     u32 friend_id;
     u32 padding;
     u64 friend_code;
-    bool operator== (const FriendKey& other) const {
+    bool operator==(const FriendKey& other) const {
         return (friend_id == other.friend_id) && (friend_code == other.friend_code);
     }
 };
@@ -47,7 +47,7 @@ void GetMyPresence(Service::Interface* self);
  * FRD::GetMyPreference service function
  *  Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
- *      2 : Public mode (0 = private, non-zero = public) 
+ *      2 : Public mode (0 = private, non-zero = public)
  *      3 : Show current game (0 = don't show, non-zero = show)
  *      4 : Show game history (0 = don't show, non-zero = show)
  */
@@ -159,7 +159,7 @@ void GetMyMii(Service::Interface* self);
  *      1 : Result of function, 0 on success, otherwise error code
  *      2-3 : Title ID
  *      4 : ?
- *      5 : ? 
+ *      5 : ?
  */
 void GetMyPlayingGame(Service::Interface* self);
 
@@ -185,7 +185,7 @@ void GetMyComment(Service::Interface* self);
  *      1-2 : Friend code
  * Outputs:
  *      1 : Result of function, 0 on success, otherwise error code
- *      2 : 1 if the provided friend code is valid, 0 otherwise 
+ *      2 : 1 if the provided friend code is valid, 0 otherwise
  */
 void IsValidFriendCode(Service::Interface* self);
 

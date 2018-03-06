@@ -43,7 +43,8 @@ void ConfigureGraphics::setConfiguration() {
     ui->toggle_vsync->setChecked(Settings::values.use_vsync);
     ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
     {
-        bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue);
+        bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green,
+                         Settings::values.bg_blue);
         ui->layout_bg->setStyleSheet("QPushButton { background-color: " + bg_color.name() + ";}");
     }
     ui->frame_limit->setValue(Settings::values.frame_limit);

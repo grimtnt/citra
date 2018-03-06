@@ -66,16 +66,18 @@ static const std::array<std::array<int, 5>, Settings::NativeAnalog::NumAnalogs> 
 
 void Config::ReadValues() {
     // Control Panel
-    Settings::values.p_adapter_connected = sdl2_config->GetBoolean("ControlPanel", "p_adapter_connected", true);
-    Settings::values.p_battery_charging = sdl2_config->GetBoolean("ControlPanel", "p_battery_charging", true);
+    Settings::values.p_adapter_connected =
+        sdl2_config->GetBoolean("ControlPanel", "p_adapter_connected", true);
+    Settings::values.p_battery_charging =
+        sdl2_config->GetBoolean("ControlPanel", "p_battery_charging", true);
     Settings::values.p_battery_level =
-            static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "p_battery_level", 5));
+        static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "p_battery_level", 5));
     Settings::values.n_wifi_status =
-            static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "n_wifi_status", 0));
+        static_cast<u32>(sdl2_config->GetInteger("ControlPanel", "n_wifi_status", 0));
     Settings::values.n_wifi_link_level =
-            static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_wifi_link_level", 0));
+        static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_wifi_link_level", 0));
     Settings::values.n_state =
-            static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_state", 0));
+        static_cast<u8>(sdl2_config->GetInteger("ControlPanel", "n_state", 0));
 
     // Controls
     for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {
@@ -104,8 +106,8 @@ void Config::ReadValues() {
 
     // Core
     Settings::values.use_cpu_jit = sdl2_config->GetBoolean("Core", "use_cpu_jit", true);
-    Settings::values.dynarmic_addticks_ticks =
-        static_cast<u64>(sdl2_config->GetInteger("Core", "dynarmic_addticks_ticks", Settings::DEFAULT_TICKS));
+    Settings::values.dynarmic_addticks_ticks = static_cast<u64>(
+        sdl2_config->GetInteger("Core", "dynarmic_addticks_ticks", Settings::DEFAULT_TICKS));
     Settings::values.priority_boost = sdl2_config->GetBoolean("Core", "priority_boost", true);
 
     // Renderer
@@ -195,7 +197,7 @@ void Config::ReadValues() {
                          "https://services.citra-emu.org/api/multiplayer/rooms");
     Settings::values.citra_username = sdl2_config->Get("WebService", "citra_username", "");
     Settings::values.citra_token = sdl2_config->Get("WebService", "citra_token", "");
-    
+
     // Hacks
     Settings::values.enable_pipe3 = sdl2_config->GetBoolean("Hacks", "enable_pipe3", true);
 }

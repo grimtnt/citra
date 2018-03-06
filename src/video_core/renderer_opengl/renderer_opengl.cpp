@@ -393,7 +393,7 @@ void RendererOpenGL::DrawScreens() {
 
     glViewport(0, 0, layout.width, layout.height);
     glClearColor(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue,
-                0.0f);
+                 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Set projection matrix

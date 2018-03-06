@@ -143,10 +143,12 @@ void CheatDialog::OnAddCheat() {
     enabled->setStyleSheet("margin-left:7px;");
     ui->tableCheats->setItem(new_cheat_index, 0, new QTableWidgetItem());
     ui->tableCheats->setCellWidget(new_cheat_index, 0, enabled);
-    ui->tableCheats->setItem(new_cheat_index, 1, new QTableWidgetItem(QString::fromStdString(
-                                                     cheats[new_cheat_index]->GetName())));
-    ui->tableCheats->setItem(new_cheat_index, 2, new QTableWidgetItem(QString::fromStdString(
-                                                     cheats[new_cheat_index]->GetType())));
+    ui->tableCheats->setItem(
+        new_cheat_index, 1,
+        new QTableWidgetItem(QString::fromStdString(cheats[new_cheat_index]->GetName())));
+    ui->tableCheats->setItem(
+        new_cheat_index, 2,
+        new QTableWidgetItem(QString::fromStdString(cheats[new_cheat_index]->GetType())));
     ui->tableCheats->setRowHeight(new_cheat_index, 23);
     enabled->setProperty("row", new_cheat_index);
     connect(enabled, &QCheckBox::stateChanged, this, &CheatDialog::OnCheckChanged);

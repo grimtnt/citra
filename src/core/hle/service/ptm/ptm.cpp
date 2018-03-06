@@ -7,8 +7,8 @@
 #include "core/file_sys/errors.h"
 #include "core/file_sys/file_backend.h"
 #include "core/hle/kernel/svc.h"
-#include "core/hle/service/fs/archive.h"
 #include "core/hle/service/cfg/cfg.h"
+#include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/ptm/ptm_gets.h"
 #include "core/hle/service/ptm/ptm_play.h"
@@ -114,15 +114,16 @@ void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
 
 void CheckNew3DS(IPC::RequestBuilder& rb) {
     bool is_new_3ds = false;
-    if (Service::CFG::GetSystemModelID() == 2 ||
-        Service::CFG::GetSystemModelID() == 4 ||
+    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
         Service::CFG::GetSystemModelID() == 5) {
         is_new_3ds = true;
     }
 
     if (is_new_3ds) {
-        LOG_CRITICAL(Service_PTM, "The selected model in 'System' "
-                                  "settings is New 3DS/2DS. Citra does not fully support New 3DS/2DS emulation yet!");
+        LOG_CRITICAL(
+            Service_PTM,
+            "The selected model in 'System' "
+            "settings is New 3DS/2DS. Citra does not fully support New 3DS/2DS emulation yet!");
     }
 
     rb.Push(RESULT_SUCCESS);
@@ -136,7 +137,7 @@ void Module::Interface::ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx) {
     u8 value = rp.Pop<u8>() & 0xF;
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(Kernel::KernelSetState(static_cast<u32>(Kernel::KernelSetStateType::ConfigureNew3DSCPU),
-    value, 0, 0));
+                                   value, 0, 0));
     LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 

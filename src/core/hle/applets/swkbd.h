@@ -202,5 +202,5 @@ private:
     /// Configuration of this instance of the SoftwareKeyboard, as received from the application
     SoftwareKeyboardConfig config;
 };
-}
-} // namespace
+} // namespace Applets
+} // namespace HLE

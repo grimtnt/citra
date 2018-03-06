@@ -15,7 +15,7 @@ namespace CheatCore {
 void Init();
 void Shutdown();
 void RefreshCheats();
-}
+} // namespace CheatCore
 namespace CheatEngine {
 
 enum class CheatType {
@@ -165,4 +165,4 @@ public:
 private:
     std::vector<std::shared_ptr<CheatBase>> cheats_list;
 };
-}
+} // namespace CheatEngine

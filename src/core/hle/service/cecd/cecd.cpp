@@ -416,10 +416,11 @@ void WriteMessageWithHMAC(Service::Interface* self) {
     ASSERT(IPC::MappedBufferDesc(message_id_size, IPC::RW) == cmd_buff[9]);
     VAddr message_id_addr = cmd_buff[10];
 
-    LOG_CRITICAL(Service_CECD, "(STUBBED) called. title_id = 0x%08X, box_type = %d, "
-                               "message_id_addr = 0x%08X, message_id_size = 0x%X, buffer_addr = "
-                               "0x%08X, buffer_size = 0x%X, "
-                               "key_addr = 0x%08X",
+    LOG_CRITICAL(Service_CECD,
+                 "(STUBBED) called. title_id = 0x%08X, box_type = %d, "
+                 "message_id_addr = 0x%08X, message_id_size = 0x%X, buffer_addr = "
+                 "0x%08X, buffer_size = 0x%X, "
+                 "key_addr = 0x%08X",
                  title_id, box_type, message_id_addr, message_id_size, buffer_addr, buffer_size,
                  key_addr);
 
@@ -436,8 +437,9 @@ void Delete(Service::Interface* self) {
     ASSERT(IPC::MappedBufferDesc(message_id_size, IPC::R) == cmd_buff[5]);
     VAddr message_id_addr = cmd_buff[6];
 
-    LOG_CRITICAL(Service_CECD, "(STUBBED) called. title_id = 0x%08X, save_data_type = %d, box_type "
-                               "= %d, message_id_size = 0x%X, message_id_addr = 0x%08X",
+    LOG_CRITICAL(Service_CECD,
+                 "(STUBBED) called. title_id = 0x%08X, save_data_type = %d, box_type "
+                 "= %d, message_id_size = 0x%X, message_id_addr = 0x%08X",
                  title_id, save_data_type, box_type, message_id_size, message_id_addr);
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
@@ -454,8 +456,9 @@ void cecd9(Service::Interface* self) {
 
     cmd_buff[1] = RESULT_SUCCESS.raw; // No error
 
-    LOG_CRITICAL(Service_CECD, "(STUBBED) called, title_id = 0x%08X, option = 0x%08X, "
-                               "buffer_address = 0x%08X, size = 0x%X",
+    LOG_CRITICAL(Service_CECD,
+                 "(STUBBED) called, title_id = 0x%08X, option = 0x%08X, "
+                 "buffer_address = 0x%08X, size = 0x%X",
                  title_id, option, buffer_address, size);
 }
 
@@ -472,8 +475,9 @@ void GetSystemInfo(Service::Interface* self) {
     ASSERT(IPC::MappedBufferDesc(info_size, IPC::W) == cmd_buff[6]);
     VAddr info_addr = cmd_buff[7];
 
-    LOG_CRITICAL(Service_CECD, "(STUBBED) called, info_addr = 0x%08X, info_size = 0x%X, type = %d, "
-                               "param_addr = 0x%08X, param_size = 0x%X",
+    LOG_CRITICAL(Service_CECD,
+                 "(STUBBED) called, info_addr = 0x%08X, info_size = 0x%X, type = %d, "
+                 "param_addr = 0x%08X, param_size = 0x%X",
                  info_addr, info_size, type, param_addr, param_size);
 
     switch (type) {
@@ -615,8 +619,9 @@ void OpenAndRead(Service::Interface* self) {
     VAddr buffer_address = rp.PopMappedBuffer(&buffer_size, &perm);
     ASSERT(buffer_size == size && perm == IPC::W);
 
-    LOG_CRITICAL(Service_CECD, "(STUBBED) called. title_id = 0x%08X, save_data_type = %d, option = "
-                               "0x%08X, buffer_address = 0x%08X, size = 0x%X",
+    LOG_CRITICAL(Service_CECD,
+                 "(STUBBED) called. title_id = 0x%08X, save_data_type = %d, option = "
+                 "0x%08X, buffer_address = 0x%08X, size = 0x%X",
                  title_id, save_data_type, option, buffer_address, size);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
