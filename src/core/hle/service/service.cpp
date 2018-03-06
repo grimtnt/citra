@@ -251,8 +251,8 @@ void Init() {
     IR::InstallInterfaces(*SM::g_service_manager);
     MVD::Init();
     NDM::Init();
-    NEWS::Init();
-    NFC::Init();
+    NEWS::InstallInterfaces(*SM::g_service_manager);
+    NFC::InstallInterfaces(*SM::g_service_manager);
     NIM::Init();
     NWM::Init();
     PTM::InstallInterfaces(*SM::g_service_manager);
@@ -271,9 +271,7 @@ void Init() {
 
 /// Shutdown ServiceManager
 void Shutdown() {
-    NFC::Shutdown();
     NIM::Shutdown();
-    NEWS::Shutdown();
     NDM::Shutdown();
     FRD::Shutdown();
     DLP::Shutdown();
