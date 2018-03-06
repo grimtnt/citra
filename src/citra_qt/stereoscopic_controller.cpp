@@ -20,8 +20,8 @@ StereoscopicControllerWidget::StereoscopicControllerWidget(QWidget* parent)
             [=]() { emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::RightOnly); });
     connect(buttonAnaglyph, &QRadioButton::clicked,
             [=]() { emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::Anaglyph); });
-    buttonAnaglyph->setChecked(true);
-    emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::Anaglyph);
+    buttonLeftOnly->setChecked(true);
+    emit StereoscopeModeChanged(EmuWindow::StereoscopicMode::LeftOnly);
     QVBoxLayout* subLayout = new QVBoxLayout();
     subLayout->addWidget(buttonLeftOnly);
     subLayout->addWidget(buttonRightOnly);
