@@ -28,7 +28,7 @@ namespace Applets {
 enum class KbdButton {
     Cancel = 0,
     Ok = 1,
-    IForgot = 2,
+    IForgot = 2
 };
 
 struct KbdResult {

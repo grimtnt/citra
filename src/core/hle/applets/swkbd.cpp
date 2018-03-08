@@ -244,18 +244,7 @@ void SoftwareKeyboard::Update() {
         command += std::to_string((int)config.fixed_width);
 
         KbdResult res;
-        int kbd_res = system(command.c_str());
-        switch (kbd_res) {
-        case 0:
-            res.button = KbdButton::Ok;
-            break;
-        case 1:
-            res.button = KbdButton::Cancel;
-            break;
-        case 2:
-            res.button = KbdButton::IForgot;
-            break;
-        }
+        res.button = static_cast<KbdButton>(system(command.c_str()));
         FileUtil::ReadFileToString(true, text_path.c_str(), res.text);
         FileUtil::Delete(text_path);
         switch (res.button) {

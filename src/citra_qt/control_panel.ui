@@ -23,22 +23,22 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tabPower">
     <attribute name="title">
      <string>Power</string>
     </attribute>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QWidget" name="layoutPower">
      <property name="geometry">
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>271</width>
+       <width>274</width>
        <height>44</height>
       </rect>
      </property>
-     <layout class="QHBoxLayout" name="layoutPower">
+     <layout class="QHBoxLayout" name="layoutPower_2">
       <item>
        <layout class="QVBoxLayout" name="layoutPowerBatteryLevel">
         <item>
@@ -104,7 +104,7 @@
     <attribute name="title">
      <string>Network</string>
     </attribute>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QWidget" name="layoutNetwork">
      <property name="geometry">
       <rect>
        <x>0</x>
@@ -113,7 +113,7 @@
        <height>43</height>
       </rect>
      </property>
-     <layout class="QHBoxLayout" name="layoutNetwork">
+     <layout class="QHBoxLayout" name="layoutNetwork_2">
       <item>
        <layout class="QVBoxLayout" name="layoutNetworkWifiStatus">
         <item>

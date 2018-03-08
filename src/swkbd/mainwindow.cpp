@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     // I Forgot text
     if (args.length() >= 7) {
         if (args[6] == "_def")
-            ui->I_Forgot->setText(D_CANCEL_TEXT);
+            ui->I_Forgot->setText(D_I_FORGOT_TEXT);
         else
             ui->I_Forgot->setText(args[6]);
     }
@@ -87,7 +87,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     // Ok text
     if (args.length() >= 8) {
         if (args[7] == "_def")
-            ui->Ok->setText(D_I_FORGOT_TEXT);
+            ui->Ok->setText(D_OK_TEXT);
         else
             ui->Ok->setText(args[7]);
     }
@@ -157,7 +157,7 @@ void MainWindow::on_Shift_toggled(bool checked) {
 void MainWindow::on_Cancel_clicked() {
     std::ofstream ofs;
     ofs.open("text.txt", std::ofstream::out | std::ofstream::trunc);
-    ofs << "";
+    ofs << ui->Text->text().toStdString();
     ofs.close();
     exit(1);
 }
@@ -165,7 +165,7 @@ void MainWindow::on_Cancel_clicked() {
 void MainWindow::on_I_Forgot_clicked() {
     std::ofstream ofs;
     ofs.open("text.txt", std::ofstream::out | std::ofstream::trunc);
-    ofs << "";
+    ofs << ui->Text->text().toStdString();
     ofs.close();
     exit(2);
 }
