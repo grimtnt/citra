@@ -40,8 +40,3 @@ target_link_libraries(citra-kbd PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 if(UNIX AND NOT APPLE)
     install(TARGETS citra-kbd RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
 endif()
-
-if (MSVC)
-    include(CopyCitraQt5Deps)
-    copy_citra_Qt5_deps(citra-kbd)
-endif()
