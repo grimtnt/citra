@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     ui->Ok->setEnabled(false);
     setWindowTitle("Keyboard");
+    setFixedSize(size());
     QStringList args = QApplication::arguments();
 
     /**
@@ -39,7 +40,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
      */
 
     // Title
-    if (args.length() >= 2) {
+    if (args.count() >= 2) {
         if (args[1] == "_def")
             this->setWindowTitle(D_TITLE);
         else
@@ -47,7 +48,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Placeholder
-    if (args.length() >= 3) {
+    if (args.count() >= 3) {
         if (args[2] == "_def")
             ui->Text->setPlaceholderText(D_PLACEHOLDER);
         else
@@ -55,7 +56,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Default text
-    if (args.length() >= 4) {
+    if (args.count() >= 4) {
         if (args[3] == "_def")
             ui->Text->setText(D_TEXT);
         else
@@ -63,7 +64,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Max length
-    if (args.length() >= 5) {
+    if (args.count() >= 5) {
         if (args[4] == "_def")
             ui->Text->setMaxLength(D_MAX_LENGTH);
         else
@@ -71,7 +72,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Cancel text
-    if (args.length() >= 6) {
+    if (args.count() >= 6) {
         if (args[5] == "_def")
             ui->Cancel->setText(D_CANCEL_TEXT);
         else
@@ -79,7 +80,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // I Forgot text
-    if (args.length() >= 7) {
+    if (args.count() >= 7) {
         if (args[6] == "_def")
             ui->I_Forgot->setText(D_I_FORGOT_TEXT);
         else
@@ -87,7 +88,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Ok text
-    if (args.length() >= 8) {
+    if (args.count() >= 8) {
         if (args[7] == "_def")
             ui->Ok->setText(D_OK_TEXT);
         else
@@ -95,14 +96,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // Fixed length
-    if (args.length() >= 9) {
+    if (args.count() >= 9) {
         if (args[8] == "1")
             fixed_length = true;
     }
 
     // Valid input
-    if (args.length() >= 10)
+    if (args.count() >= 10)
         valid_input = args[9].toInt();
+
+    validateText("");
 }
 
 MainWindow::~MainWindow() {
@@ -110,10 +113,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_Text_textChanged(const QString& arg1) {
-    Q_UNUSED(arg1);
-    while (ui->Text->text().length() > ui->Text->maxLength())
-        ui->Text->setText(ui->Text->text().chopped(1));
-    validateText(ui->Text->text());
+    validateText(arg1);
 }
 
 void MainWindow::validateText(QString text) {
@@ -133,8 +133,8 @@ void MainWindow::validateText(QString text) {
     case 2: {
         bool valid =
             std::any_of(input.begin(), input.end(), [](const char c) { return !std::isspace(c); });
-        if (valid && !input.empty())
-            ui->Ok->setEnabled(true);
+        if (valid)
+            ui->Ok->setEnabled(!input.empty());
         else
             ui->Ok->setEnabled(false);
         break;
@@ -150,7 +150,7 @@ void MainWindow::validateText(QString text) {
     }
     case 4: {
         if (fixed_length) {
-            if (input.size() == ui->Text->maxLength())
+            if (input.length() == ui->Text->maxLength())
                 ui->Ok->setEnabled(true);
             else
                 ui->Ok->setEnabled(false);
@@ -160,9 +160,6 @@ void MainWindow::validateText(QString text) {
         break;
     }
     }
-    QString qinput = QString::fromStdString(input);
-    if (qinput.contains("@") || qinput.contains("%") || qinput.contains("\\"))
-        ui->Ok->setEnabled(false);
 }
 
 void MainWindow::ShiftToggled(bool state) {
@@ -198,7 +195,7 @@ void MainWindow::on_Shift_toggled(bool checked) {
 void MainWindow::on_Cancel_clicked() {
     std::ofstream ofs;
     ofs.open("text.txt", std::ofstream::out | std::ofstream::trunc);
-    ofs << ui->Text->text().toStdString();
+    ofs << "";
     ofs.close();
     exit(0);
 }

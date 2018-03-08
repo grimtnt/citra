@@ -25,11 +25,7 @@ namespace Applets {
 /// Maximum filter callback error message length, in UTF-16 code units.
 #define SWKBD_MAX_CALLBACK_MSG_LEN 256
 
-enum class KbdButton {
-    Cancel = 0,
-    Ok = 1,
-    IForgot = 2
-};
+enum class KbdButton { Cancel = 0, IForgot = 1, Ok = 2 };
 
 struct KbdResult {
     std::string text;
