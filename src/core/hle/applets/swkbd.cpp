@@ -241,7 +241,11 @@ void SoftwareKeyboard::Update() {
         command += " ";
         command += std::to_string(config.max_text_length);
         command += " ";
-        command += std::to_string((int)config.fixed_width);
+        command += std::to_string(
+                    static_cast<int>(config.fixed_width));
+        command += " ";
+        command += std::to_string(
+                    static_cast<int>(config.valid_input));
 
         KbdResult res;
         res.button = static_cast<KbdButton>(system(command.c_str()));

@@ -17,6 +17,7 @@ bool dcaps = false;
 bool dshift = false;
 bool shift = false;
 bool fixed_length = false;
+int valid_input;
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
@@ -34,6 +35,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
      * 6: I Forgot text
      * 7: Ok text
      * 8: Fixed Length
+     * 9: Valid input
      */
 
     // Title
@@ -97,6 +99,10 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
         if (args[8] == "1")
             fixed_length = true;
     }
+
+    // Valid input
+    if (args.length() >= 10)
+        valid_input = args[9].toInt();
 }
 
 MainWindow::~MainWindow() {
@@ -112,15 +118,50 @@ void MainWindow::on_Text_textChanged(const QString& arg1) {
 
 void MainWindow::validateText(QString text) {
     std::string input = text.toStdString();
-    bool valid =
-        std::any_of(input.begin(), input.end(), [](const char c) { return !std::isspace(c); });
-    if (fixed_length) {
-        if (input.size() != ui->Text->maxLength())
-            valid = false;
-    }
-    if (valid && !input.empty())
+    switch (valid_input) {
+    case 0: {
         ui->Ok->setEnabled(true);
-    else
+        break;
+    }
+    case 1: {
+        if (input.empty())
+            ui->Ok->setEnabled(false);
+        else
+            ui->Ok->setEnabled(true);
+        break;
+    }
+    case 2: {
+        bool valid =
+            std::any_of(input.begin(), input.end(), [](const char c) { return !std::isspace(c); });
+        if (valid && !input.empty())
+            ui->Ok->setEnabled(true);
+        else
+            ui->Ok->setEnabled(false);
+        break;
+    }
+    case 3: {
+        bool valid =
+            std::any_of(input.begin(), input.end(), [](const char c) { return !std::isspace(c); });
+        if (valid)
+            ui->Ok->setEnabled(true);
+        else
+            ui->Ok->setEnabled(false);
+        break;
+    }
+    case 4: {
+        if (fixed_length) {
+            if (input.size() == ui->Text->maxLength())
+                ui->Ok->setEnabled(true);
+            else
+                ui->Ok->setEnabled(false);
+        } else {
+            ui->Ok->setEnabled(true);
+        }
+        break;
+    }
+    }
+    QString qinput = QString::fromStdString(input);
+    if (qinput.contains("@") || qinput.contains("%") || qinput.contains("\\"))
         ui->Ok->setEnabled(false);
 }
 
@@ -159,7 +200,7 @@ void MainWindow::on_Cancel_clicked() {
     ofs.open("text.txt", std::ofstream::out | std::ofstream::trunc);
     ofs << ui->Text->text().toStdString();
     ofs.close();
-    exit(1);
+    exit(0);
 }
 
 void MainWindow::on_I_Forgot_clicked() {
@@ -167,7 +208,7 @@ void MainWindow::on_I_Forgot_clicked() {
     ofs.open("text.txt", std::ofstream::out | std::ofstream::trunc);
     ofs << ui->Text->text().toStdString();
     ofs.close();
-    exit(2);
+    exit(1);
 }
 
 void MainWindow::on_Ok_clicked() {
@@ -175,7 +216,7 @@ void MainWindow::on_Ok_clicked() {
     ofs.open("text.txt", std::ofstream::out | std::ofstream::trunc);
     ofs << ui->Text->text().toStdString();
     ofs.close();
-    exit(0);
+    exit(2);
 }
 
 void MainWindow::press(QString key) {
