@@ -431,7 +431,9 @@ void MainWindow::on_LetterSExclamationMark_clicked() {
 }
 
 void MainWindow::on_Delete_clicked() {
-    ui->Text->setText(ui->Text->text().chopped(1));
+    QString text = ui->Text->text();
+    text.chop(1);
+    ui->Text->setText(text);
 }
 
 void MainWindow::on_Space_clicked() {
