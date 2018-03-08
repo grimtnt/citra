@@ -144,7 +144,7 @@ void SendPacket(Network::WifiPacket& packet) {
 static u16 GetNextAvailableNodeId() {
     for (u16 index = 0; index < connection_status.max_nodes; ++index) {
         if ((connection_status.node_bitmask & (1 << index)) == 0)
-            return index;
+            return index + 1;
     }
 
     // Any connection attempts to an already full network should have been refused.
@@ -254,11 +254,11 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         // Get an unused network node id
         u16 node_id = GetNextAvailableNodeId();
-        node.network_node_id = node_id + 1;
+        node.network_node_id = node_id;
 
-        connection_status.node_bitmask |= 1 << node_id;
-        connection_status.changed_nodes |= 1 << node_id;
-        connection_status.nodes[node_id] = node.network_node_id;
+        connection_status.node_bitmask |= 1 << (node_id - 1);
+        connection_status.changed_nodes |= 1 << (node_id - 1);
+        connection_status.nodes[node_id - 1] = node.network_node_id;
         connection_status.total_nodes++;
 
         u8 current_nodes = network_info.total_nodes;
@@ -266,7 +266,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         network_info.total_nodes++;
 
-        node_map[packet.transmitter_address] = node_id;
+        node_map[packet.transmitter_address] = node.network_node_id;
 
         // Send the EAPoL-Logoff packet.
         using Network::WifiPacket;
@@ -279,8 +279,8 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         eapol_logoff.destination_address = packet.transmitter_address;
         eapol_logoff.type = WifiPacket::PacketType::Data;
 
-        SendPacket(eapol_logoff);
         BroadcastNodeMap();
+        SendPacket(eapol_logoff);
 
         connection_status_event->Signal();
     } else {
@@ -470,12 +470,12 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
 
     u16 node_id = node_map[packet.transmitter_address];
     auto node = std::find_if(node_info.begin(), node_info.end(), [&node_id](const NodeInfo& info) {
-        return info.network_node_id == node_id + 1;
+        return info.network_node_id == node_id;
     });
     ASSERT(node != node_info.end());
 
-    connection_status.node_bitmask &= ~(1 << node_id);
-    connection_status.changed_nodes |= 1 << node_id;
+    connection_status.node_bitmask &= ~(1 << (node_id - 1));
+    connection_status.changed_nodes |= 1 << (node_id - 1);
     connection_status.total_nodes--;
 
     network_info.total_nodes--;
@@ -595,9 +595,8 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(out_buffer);
 
-    LOG_DEBUG(Service_NWM,
-              "called out_buffer_size=0x%08X, wlan_comm_id=0x%08X, id=0x%08X,"
-              "unk1=0x%08X, unk2=0x%08X, offset=%zu",
+    LOG_DEBUG(Service_NWM, "called out_buffer_size=0x%08X, wlan_comm_id=0x%08X, id=0x%08X,"
+                           "unk1=0x%08X, unk2=0x%08X, offset=%zu",
               out_buffer_size, wlan_comm_id, id, unk1, unk2, cur_buffer_size);
 }
 
@@ -854,6 +853,7 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::UpdateNetworkAttribute(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x07, 2, 0);
     rp.Skip(2, false);
+    LOG_WARNING(Service_NWM, "stubbed");
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 }
@@ -950,6 +950,9 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     u32 data_size = rp.Pop<u32>();
     u8 flags = rp.Pop<u8>();
 
+    // There should never be a dest_node_id of 0
+    ASSERT(dest_node_id != 0);
+
     std::vector<u8> input_buffer = rp.PopStaticBuffer();
     ASSERT(input_buffer.size() >= data_size);
     input_buffer.resize(data_size);
@@ -965,7 +968,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     }
 
     if (dest_node_id == connection_status.network_node_id) {
-        LOG_ERROR(Service_NWM, "tried to send packet to unknown dest id");
+        LOG_ERROR(Service_NWM, "tried to send packet to itself");
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Status));
         return;
@@ -973,32 +976,29 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
 
     Network::MacAddress dest_address;
 
-    if (!(flags & 0x1) || (flags >> 2)) {
+    if (flags >> 2) {
         LOG_ERROR(Service_NWM, "Unexpected flags 0x%02X", flags);
     }
 
     if ((flags & (0x1 << 1)) || dest_node_id == 0xFFFF) {
-        // Broadcast and don't listen to the dest node id
+        // Broadcast
         dest_address = Network::BroadcastMac;
-    } else {
-        if ((connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost)) ||
-            dest_node_id != 0) {
-            // Send from host to specific client
-            auto destination =
-                std::find_if(node_map.begin(), node_map.end(), [dest_node_id](const auto& node) {
-                    return node.second == dest_node_id;
-                });
-            if (destination == node_map.end()) {
-                LOG_ERROR(Service_NWM, "tried to send packet to unknown dest id %u", dest_node_id);
-                rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
-                                   ErrorSummary::WrongArgument, ErrorLevel::Status));
-                return;
-            }
-            dest_address = destination->first;
-        } else {
-            // Send message to host
-            dest_address = network_info.host_mac_address;
+    } else if ((connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost)) ||
+               dest_node_id != 1) {
+        // Send to specific client
+        auto destination =
+            std::find_if(node_map.begin(), node_map.end(),
+                         [dest_node_id](const auto& node) { return node.second == dest_node_id; });
+        if (destination == node_map.end()) {
+            LOG_ERROR(Service_NWM, "tried to send packet to unknown dest id %u", dest_node_id);
+            rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
+                               ErrorSummary::WrongArgument, ErrorLevel::Status));
+            return;
         }
+        dest_address = destination->first;
+    } else {
+        // Not host and dest_node_id == 1: Send message to host
+        dest_address = network_info.host_mac_address;
     }
 
     constexpr size_t MaxSize = 0x5C6;
