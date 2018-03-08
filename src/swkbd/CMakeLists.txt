@@ -7,6 +7,7 @@ add_executable(citra-kbd
     main.cpp
     mainwindow.cpp
     mainwindow.h
+    citra-kbd.rc
 )
 
 set(UIS
