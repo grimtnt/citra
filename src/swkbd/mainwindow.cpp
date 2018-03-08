@@ -1,4 +1,7 @@
+#include <QString>
+#include <QStringList>
 #include <cctype>
+#include <string>
 #include <fstream>
 #include <iostream>
 #include "mainwindow.h"
