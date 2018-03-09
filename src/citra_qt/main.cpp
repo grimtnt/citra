@@ -955,6 +955,7 @@ void GMainWindow::OnMenuRecentFile() {
 }
 
 void GMainWindow::OnNetworkStateChanged(const Network::RoomMember::State& state) {
+    LOG_INFO(Frontend, "network state change");
     if (state == Network::RoomMember::State::Joined) {
         network_status->setPixmap(QPixmap(":/icons/connected.png"));
         ui.action_Chat->setEnabled(true);
@@ -970,7 +971,7 @@ void GMainWindow::OnAnnounceFailed(const Common::WebResult& result) {
     announce_multiplayer_session->Stop();
     QMessageBox::warning(
         this, tr("Error"),
-        tr("Announcing the room failed. \nThe room will not get listed publicy. \nError: ") +
+        tr("Announcing the room failed.\nThe room will not get listed publicly.\nError: ") +
             QString::fromStdString(result.result_string),
         QMessageBox::Ok);
 }
@@ -1169,7 +1170,11 @@ static void BringWidgetToFront(QWidget* widget) {
 void GMainWindow::OnViewLobby() {
     if (lobby == nullptr) {
         lobby = new Lobby(this, game_list->GetModel(), announce_multiplayer_session);
-        connect(lobby, &QWidget::close, this, [&] { lobby = nullptr; });
+        connect(lobby, &Lobby::Closed, [&] {
+            LOG_INFO(Frontend, "Destroying lobby");
+            // lobby->close();
+            lobby = nullptr;
+        });
     }
     BringWidgetToFront(lobby);
 }
@@ -1177,7 +1182,11 @@ void GMainWindow::OnViewLobby() {
 void GMainWindow::OnCreateRoom() {
     if (host_room == nullptr) {
         host_room = new HostRoomWindow(this, game_list->GetModel(), announce_multiplayer_session);
-        connect(host_room, &QWidget::close, this, [&] { host_room = nullptr; });
+        connect(host_room, &HostRoomWindow::Closed, [&] {
+            // host_room->close();
+            LOG_INFO(Frontend, "Destroying host room");
+            host_room = nullptr;
+        });
     }
     BringWidgetToFront(host_room);
 }
@@ -1188,6 +1197,7 @@ void GMainWindow::OnCloseRoom() {
             if (NetworkMessage::WarnCloseRoom()) {
                 room->Destroy();
                 announce_multiplayer_session->Stop();
+                // host_room->close();
             }
         }
     }
@@ -1198,7 +1208,11 @@ void GMainWindow::OnOpenNetworkRoom() {
         if (member->IsConnected()) {
             if (client_room == nullptr) {
                 client_room = new ClientRoomWindow(this);
-                connect(client_room, &QWidget::close, this, [&] { client_room = nullptr; });
+                connect(client_room, &ClientRoomWindow::Closed, [&] {
+                    LOG_INFO(Frontend, "Destroying client room");
+                    // client_room->close();
+                    client_room = nullptr;
+                });
             }
             BringWidgetToFront(client_room);
         }
@@ -1208,7 +1222,11 @@ void GMainWindow::OnOpenNetworkRoom() {
 void GMainWindow::OnDirectConnectToRoom() {
     if (direct_connect == nullptr) {
         direct_connect = new DirectConnectWindow(this);
-        connect(direct_connect, &QWidget::close, this, [&] { direct_connect = nullptr; });
+        connect(direct_connect, &DirectConnectWindow::Closed, [&] {
+            LOG_INFO(Frontend, "Destroying direct connect");
+            // direct_connect->close();
+            direct_connect = nullptr;
+        });
     }
     BringWidgetToFront(direct_connect);
 }
