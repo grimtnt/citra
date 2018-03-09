@@ -37,7 +37,7 @@
        <item>
         <widget class="QPushButton" name="disconnect">
          <property name="text">
-          <string>Disconnect</string>
+          <string>Leave Room</string>
          </property>
         </widget>
        </item>
