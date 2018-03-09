@@ -140,6 +140,7 @@ void HostRoomWindow::OnConnection() {
             parent->ChangeRoomState();
             parent->OnOpenNetworkRoom();
             close();
+            emit Closed();
             break;
         }
     }
