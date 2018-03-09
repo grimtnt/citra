@@ -10,7 +10,6 @@
 #include <QMetaType>
 #include <QTime>
 #include <QtConcurrent/QtConcurrentRun>
-
 #include "citra_qt/game_list_p.h"
 #include "citra_qt/multiplayer/client_room.h"
 #include "citra_qt/multiplayer/message.h"
@@ -114,12 +113,9 @@ void ClientRoomWindow::UpdateView() {
                                .arg(information.member_slots));
             return;
         }
-        // disconnected: disable controls
-        ui->chat->Disable();
-        ui->disconnect->setDisabled(true);
-        ui->chat->SetPlayerList(Network::RoomMember::MemberList{});
-        setWindowTitle(tr("Disconnected"));
-        return;
     }
     // TODO(B3N30): can't get RoomMember*, show error and close window
+    close();
+    emit Closed();
+    return;
 }
