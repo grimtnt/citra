@@ -5,10 +5,7 @@
 If you believe you have a valid issue report, please post text or a screenshot from the log (the console window that opens alongside Citra) and build version (hex string visible in the titlebar and zip filename), as well as your hardware and software information if applicable.
 
 # Contributing
-
-Citra is a brand new project, so we have a great opportunity to keep things clean and well organized early on. As such, coding style is very important when making commits.
-
-# Using clang format (version 6.0)
+## Using clang format (version 6.0)
 When generating the native build script for your toolset, cmake will try to find the correct version of clang format (or will download it on windows). Before running cmake, please install clang format version 6.0 for your platform as follows:
 
 * Windows: do nothing; cmake will download a pre built binary for MSVC and MINGW. MSVC users can additionally install a clang format Visual Studio extension to add features like format on save.
