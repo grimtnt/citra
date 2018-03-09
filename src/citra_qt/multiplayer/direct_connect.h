@@ -18,16 +18,22 @@ class DirectConnectWindow : public QDialog {
 public:
     explicit DirectConnectWindow(QWidget* parent = nullptr);
 
+signals:
+    /**
+     * Signalled by this widget when it is closing itself and destroying any state such as
+     * connections that it might have.
+     */
+    void Closed();
+
+private slots:
+    void OnConnection();
+
 private:
     void Connect();
     void ClearAllError();
     void BeginConnecting();
     void EndConnecting();
 
-private slots:
-    void OnConnection();
-
-private:
     QFutureWatcher<void>* watcher;
     Ui::DirectConnect* ui;
 };
