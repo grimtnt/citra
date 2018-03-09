@@ -172,7 +172,7 @@ void Lobby::RefreshLobby() {
         ui->refresh_list->setEnabled(false);
         ui->refresh_list->setText(tr("Refreshing"));
     } else {
-        // TODO(jroweboy): Display an error box about network couldn't be started
+        // TODO(jroweboy): Display an error box about announce couldn't be started
     }
 }
 
