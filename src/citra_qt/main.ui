@@ -284,7 +284,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Chat</string>
+    <string>Current Room</string>
    </property>
   </action>
   <action name="action_Fullscreen">
