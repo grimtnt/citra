@@ -47,11 +47,11 @@ void GetAccountDataBlock(Service::Interface* self) {
     BlkId id = rp.PopEnum<BlkId>();
     u32 assert1 = rp.Pop<u32>();
     ASSERT(assert1 == ((size << 4) | 0xC));
-    VAddr addr = (VAddr)rp.Pop<u32>();
+    VAddr addr = static_cast<VAddr>(rp.Pop<u32>());
 
     switch (id) {
     case BlkId::NNID: {
-        std::string nnid = Common::UTF16ToUTF8(CFG::GetUsername());
+        std::string nnid = Common::UTF16ToUTF8(Service::CFG::GetUsername());
         if (nnid.length() > 7)
             nnid = nnid.substr(0, 7);
         boost::algorithm::replace_all(nnid, " ", "_");
@@ -77,10 +77,7 @@ void GetAccountDataBlock(Service::Interface* self) {
     case BlkId::CountryName: {
         std::tuple<unsigned char*, u8> country_tuple = Service::CFG::GetCountryInfo();
         u8 country_code = std::get<1>(country_tuple);
-        char b0 = (char)(country_code & 0xFF);
-        char b1 = (char)(country_code >> 8);
-        char country[3] = {b0, b1};
-        Memory::WriteBlock(addr, country, sizeof(country));
+        Memory::Write16(addr, Service::CFG::country_codes[country_code]);
         break;
     }
     case BlkId::MiiImageURL: {
