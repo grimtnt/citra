@@ -1,5 +1,8 @@
-#ifndef CLICKABLELABEL_H
-#define CLICKABLELABEL_H
+// Copyright 2017 Citra Emulator Project
+// Licensed under GPLv2 or any later version
+// Refer to the license.txt file included.
+
+#pragma once
 
 #include <QLabel>
 #include <QWidget>
@@ -18,5 +21,3 @@ signals:
 protected:
     void mouseReleaseEvent(QMouseEvent* event);
 };
-
-#endif // CLICKABLELABEL_H
