@@ -45,6 +45,7 @@ private slots:
      * Pulls the list of rooms from network and fills out the lobby model with the results
      */
     void OnRefreshLobby();
+
     /**
      * Handler for double clicking on a room in the list. Gathers the host ip and port and attempts
      * to connect. Will also prompt for a password in case one is required.
@@ -72,6 +73,12 @@ signals:
      */
     void Connected();
 
+    /**
+     * Signalled by this widget when it is closing itself and destroying any state such as
+     * connections that it might have.
+     */
+    void Closed();
+
     void StateChanged(const Network::RoomMember::State&);
 
 private:
@@ -81,7 +88,7 @@ private:
     void ResetModel();
 
     /**
-     * Prompts for a password. Returns an empty QString in the user either did not provide a
+     * Prompts for a password. Returns an empty QString if the user either did not provide a
      * password or if the user closed the window.
      */
     const QString PasswordPrompt();
