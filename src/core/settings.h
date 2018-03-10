@@ -11,6 +11,10 @@
 
 namespace Settings {
 
+enum class HwShaders { Off, All, VS };
+
+enum class RenderBackend { Software, OpenGL };
+
 enum class LayoutOption {
     Default,
     SingleScreen,
@@ -113,13 +117,14 @@ struct Values {
     int region_value;
 
     // Renderer
-    bool use_hw_renderer;
+    RenderBackend renderer;
+    HwShaders hw_shaders;
+    bool shaders_accurate_mul;
     bool use_shader_jit;
     u16 resolution_factor;
     bool use_vsync;
     bool use_frame_limit;
     u16 frame_limit;
-    int vertices_per_thread;
 
     LayoutOption layout_option;
     bool swap_screen;

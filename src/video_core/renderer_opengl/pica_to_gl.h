@@ -21,6 +21,10 @@ using GLvec2 = std::array<GLfloat, 2>;
 using GLvec3 = std::array<GLfloat, 3>;
 using GLvec4 = std::array<GLfloat, 4>;
 
+using GLuvec2 = std::array<GLuint, 2>;
+using GLuvec3 = std::array<GLuint, 3>;
+using GLuvec4 = std::array<GLuint, 4>;
+
 namespace PicaToGL {
 
 inline GLenum TextureFilterMode(Pica::TexturingRegs::TextureConfig::TextureFilter mode) {
@@ -221,18 +225,14 @@ inline GLenum StencilOp(Pica::FramebufferRegs::StencilAction action) {
 
 inline GLvec4 ColorRGBA8(const u32 color) {
     return {{
-        (color >> 0 & 0xFF) / 255.0f,
-        (color >> 8 & 0xFF) / 255.0f,
-        (color >> 16 & 0xFF) / 255.0f,
+        (color >> 0 & 0xFF) / 255.0f, (color >> 8 & 0xFF) / 255.0f, (color >> 16 & 0xFF) / 255.0f,
         (color >> 24 & 0xFF) / 255.0f,
     }};
 }
 
 inline std::array<GLfloat, 3> LightColor(const Pica::LightingRegs::LightColor& color) {
     return {{
-        color.r / 255.0f,
-        color.g / 255.0f,
-        color.b / 255.0f,
+        color.r / 255.0f, color.g / 255.0f, color.b / 255.0f,
     }};
 }
 

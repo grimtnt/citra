@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <QColorDialog>
-
 #include "citra_qt/configuration/configure_graphics.h"
 #include "core/core.h"
 #include "core/settings.h"
@@ -22,6 +21,9 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
 
     ui->layoutBox->setEnabled(!Settings::values.custom_layout);
 
+    connect(ui->renderer_comboBox, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(UpdateRenderer(int)));
+
     connect(ui->layout_bg, SIGNAL(released()), this, SLOT(showLayoutBackgroundDialog()));
 }
 
@@ -36,9 +38,11 @@ void ConfigureGraphics::showLayoutBackgroundDialog() {
 ConfigureGraphics::~ConfigureGraphics() {}
 
 void ConfigureGraphics::setConfiguration() {
-    ui->toggle_hw_renderer->setChecked(Settings::values.use_hw_renderer);
-    ui->resolution_factor_combobox->setEnabled(Settings::values.use_hw_renderer);
-    ui->toggle_shader_jit->setChecked(Settings::values.use_shader_jit);
+    ui->renderer_comboBox->setCurrentIndex(static_cast<int>(Settings::values.renderer));
+    ui->hw_shaders->setCurrentIndex(static_cast<int>(Settings::values.hw_shaders));
+    ui->accurate_hardware_shader->setChecked(Settings::values.shaders_accurate_mul);
+    ui->software_shader_jit->setChecked(Settings::values.use_shader_jit);
+    ui->opengl_shader_jit->setChecked(Settings::values.use_shader_jit);
     ui->resolution_factor_combobox->setCurrentIndex(Settings::values.resolution_factor);
     ui->toggle_vsync->setChecked(Settings::values.use_vsync);
     ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
@@ -50,12 +54,15 @@ void ConfigureGraphics::setConfiguration() {
     ui->frame_limit->setValue(Settings::values.frame_limit);
     ui->layout_combobox->setCurrentIndex(static_cast<int>(Settings::values.layout_option));
     ui->swap_screen->setChecked(Settings::values.swap_screen);
-    ui->vertices_per_thread->setValue(Settings::values.vertices_per_thread);
+
+    UpdateRenderer(static_cast<int>(Settings::values.renderer));
 }
 
 void ConfigureGraphics::applyConfiguration() {
-    Settings::values.use_hw_renderer = ui->toggle_hw_renderer->isChecked();
-    Settings::values.use_shader_jit = ui->toggle_shader_jit->isChecked();
+    Settings::values.renderer =
+        static_cast<Settings::RenderBackend>(ui->renderer_comboBox->currentIndex());
+    Settings::values.hw_shaders = static_cast<Settings::HwShaders>(ui->hw_shaders->currentIndex());
+    Settings::values.shaders_accurate_mul = ui->accurate_hardware_shader->isChecked();
     Settings::values.resolution_factor =
         static_cast<u16>(ui->resolution_factor_combobox->currentIndex());
     Settings::values.use_vsync = ui->toggle_vsync->isChecked();
@@ -67,8 +74,33 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
-    Settings::values.vertices_per_thread = ui->vertices_per_thread->value();
+
+    switch (Settings::values.renderer) {
+    case Settings::RenderBackend::Software:
+        Settings::values.use_shader_jit = ui->software_shader_jit->isChecked();
+        break;
+    case Settings::RenderBackend::OpenGL:
+        Settings::values.use_shader_jit = ui->opengl_shader_jit->isChecked();
+        break;
+    default:
+        break;
+    }
     Settings::Apply();
+}
+
+void ConfigureGraphics::UpdateRenderer(int val) {
+    switch (static_cast<Settings::RenderBackend>(val)) {
+    case Settings::RenderBackend::Software:
+        ui->opengl_render_group->hide();
+        ui->software_render_group->show();
+        break;
+    case Settings::RenderBackend::OpenGL:
+        ui->opengl_render_group->show();
+        ui->software_render_group->hide();
+        break;
+    default:
+        break;
+    }
 }
 
 void ConfigureGraphics::retranslateUi() {

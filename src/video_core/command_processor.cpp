@@ -4,13 +4,11 @@
 
 #include <array>
 #include <cstddef>
-#include <future>
 #include <memory>
 #include <utility>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/microprofile.h"
-#include "common/thread_pool.h"
 #include "common/vector_math.h"
 #include "core/hle/service/gsp/gsp.h"
 #include "core/hw/gpu.h"
@@ -30,6 +28,8 @@
 #include "video_core/shader/shader.h"
 #include "video_core/vertex_loader.h"
 #include "video_core/video_core.h"
+
+#include "common/bit_set.h"
 
 namespace Pica {
 
@@ -282,12 +282,48 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
     case PICA_REG_INDEX(pipeline.trigger_draw):
     case PICA_REG_INDEX(pipeline.trigger_draw_indexed): {
         MICROPROFILE_SCOPE(GPU_Drawing);
+        bool is_indexed = (id == PICA_REG_INDEX(pipeline.trigger_draw_indexed));
 
 #if PICA_LOG_TEV
         DebugUtils::DumpTevStageConfig(regs.GetTevStages());
 #endif
         if (g_debug_context)
             g_debug_context->OnEvent(DebugContext::Event::IncomingPrimitiveBatch, nullptr);
+
+        PrimitiveAssembler<Shader::OutputVertex>& primitive_assembler = g_state.primitive_assembler;
+
+        auto hw_shaders_setting = Settings::values.hw_shaders;
+        bool accelerate_draw = hw_shaders_setting != Settings::HwShaders::Off &&
+                               (regs.pipeline.use_gs == PipelineRegs::UseGS::No ||
+                                hw_shaders_setting == Settings::HwShaders::All);
+
+        accelerate_draw &=
+            primitive_assembler.buffer_index == 0 && !primitive_assembler.strip_ready;
+
+        if (regs.pipeline.use_gs == PipelineRegs::UseGS::No) {
+            switch (primitive_assembler.topology) {
+            case PipelineRegs::TriangleTopology::Shader:
+            case PipelineRegs::TriangleTopology::List:
+                accelerate_draw &= (regs.pipeline.num_vertices % 3) ==
+                                   0; // || peek_into_cmdlist_for_reset_primitive();
+                break;
+            case PipelineRegs::TriangleTopology::Strip:
+            case PipelineRegs::TriangleTopology::Fan:
+                // accelerate_draw &= peek_into_cmdlist_for_reset_primitive();
+                // accelerate_draw = false;
+                break;
+            default:
+                UNREACHABLE();
+            }
+        }
+
+        if (accelerate_draw &&
+            VideoCore::g_renderer->Rasterizer()->AccelerateDrawBatch(is_indexed)) {
+            if (g_debug_context) {
+                g_debug_context->OnEvent(DebugContext::Event::FinishedPrimitiveBatch, nullptr);
+            }
+            break;
+        }
 
         // Processes information about internal vertex attributes to figure out how a vertex is
         // loaded.
@@ -297,49 +333,10 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         Shader::OutputVertex::ValidateSemantics(regs.rasterizer);
 
         // Load vertices
-        bool is_indexed = (id == PICA_REG_INDEX(pipeline.trigger_draw_indexed));
-
-        struct CachedVertex {
-            explicit CachedVertex() : batch(0), lock ATOMIC_FLAG_INIT {}
-            CachedVertex(const CachedVertex& other) : CachedVertex() {}
-            union {
-                Shader::AttributeBuffer output_attr; // GS used
-                Shader::OutputVertex output_vertex;  // No GS
-            };
-            std::atomic<u32> batch;
-            std::atomic_flag lock;
-        };
-        static std::vector<CachedVertex> vs_output(0x10000);
-
-        if (!is_indexed && vs_output.size() < regs.pipeline.num_vertices)
-            vs_output.resize(regs.pipeline.num_vertices);
-
-        // used as a mean to invalidate data from the previous batch without clearing it
-        static u32 batch_id = std::numeric_limits<u32>::max();
-
-        ++batch_id;
-        if (batch_id == 0) { // reset cache when id overflows for safety
-            ++batch_id;
-            for (auto& entry : vs_output)
-                entry.batch = 0;
-        }
-
         const auto& index_info = regs.pipeline.index_array;
         const u8* index_address_8 = Memory::GetPhysicalPointer(base_address + index_info.offset);
-        if (!index_address_8) {
-            LOG_CRITICAL(HW_GPU, "Invalid index_address_8 %08x", index_address_8);
-            break;
-        }
         const u16* index_address_16 = reinterpret_cast<const u16*>(index_address_8);
         bool index_u16 = index_info.format != 0;
-
-        PrimitiveAssembler<Shader::OutputVertex>& primitive_assembler = g_state.primitive_assembler;
-
-        auto VertexIndex = [&](unsigned int index) {
-            // Indexed rendering doesn't use the start offset
-            return is_indexed ? (index_u16 ? index_address_16[index] : index_address_8[index])
-                              : (index + regs.pipeline.vertex_offset);
-        };
 
         if (g_debug_context && g_debug_context->recorder) {
             for (int i = 0; i < 3; ++i) {
@@ -358,131 +355,82 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
         DebugUtils::MemoryAccessTracker memory_accesses;
 
+        // Simple circular-replacement vertex cache
+        // The size has been tuned for optimal balance between hit-rate and the cost of lookup
+        const size_t VERTEX_CACHE_SIZE = 32;
+        std::array<u16, VERTEX_CACHE_SIZE> vertex_cache_ids;
+        std::array<Shader::AttributeBuffer, VERTEX_CACHE_SIZE> vertex_cache;
+        Shader::AttributeBuffer vs_output;
+
+        unsigned int vertex_cache_pos = 0;
+        vertex_cache_ids.fill(-1);
+
         auto* shader_engine = Shader::GetEngine();
         Shader::UnitState shader_unit;
 
         shader_engine->SetupBatch(g_state.vs, regs.vs.main_offset);
-
-        const bool use_gs = regs.pipeline.use_gs == PipelineRegs::UseGS::Yes;
-
-        auto VSUnitLoop = [&](u32 thread_id, auto num_threads) {
-            constexpr bool single_thread =
-                std::is_same<std::integral_constant<u32, 1>, decltype(num_threads)>();
-            Shader::UnitState shader_unit;
-
-            for (unsigned int index = thread_id; index < regs.pipeline.num_vertices;
-                 index += num_threads) {
-                unsigned int vertex = VertexIndex(index);
-                auto& cached_vertex = vs_output[is_indexed ? vertex : index];
-
-                // -1 is a common special value used for primitive restart. Since it's unknown if
-                // the PICA supports it, and it would mess up the caching, guard against it here.
-                ASSERT(vertex != -1);
-
-                if (is_indexed) {
-                    if (g_debug_context && Pica::g_debug_context->recorder) {
-                        int size = index_u16 ? 2 : 1;
-                        memory_accesses.AddAccess(base_address + index_info.offset + size * index,
-                                                  size);
-                    }
-
-                    if (!single_thread) {
-                        // Try locking this vertex
-                        if (cached_vertex.lock.test_and_set(std::memory_order_acquire)) {
-                            // Another thread is processing this vertex
-                            continue;
-                        }
-                        // Vertex is not being processed and is from the correct batch
-                        else if (cached_vertex.batch.load(std::memory_order_acquire) == batch_id) {
-                            // Unlock
-                            cached_vertex.lock.clear(std::memory_order_release);
-                            continue;
-                        }
-                    } else if (cached_vertex.batch.load(std::memory_order_relaxed) == batch_id) {
-                        continue;
-                    }
-                }
-                Shader::AttributeBuffer attribute_buffer;
-                Shader::AttributeBuffer& output_attr =
-                    use_gs ? cached_vertex.output_attr : attribute_buffer;
-
-                // Initialize data for the current vertex
-                loader.LoadVertex(base_address, index, vertex, attribute_buffer, memory_accesses);
-
-                // Send to vertex shader
-                if (g_debug_context)
-                    g_debug_context->OnEvent(DebugContext::Event::VertexShaderInvocation,
-                                             &attribute_buffer);
-                shader_unit.LoadInput(regs.vs, attribute_buffer);
-                shader_engine->Run(g_state.vs, shader_unit);
-
-                shader_unit.WriteOutput(regs.vs, output_attr);
-                if (!use_gs)
-                    cached_vertex.output_vertex =
-                        Shader::OutputVertex::FromAttributeBuffer(regs.rasterizer, output_attr);
-
-                if (!single_thread) {
-                    cached_vertex.batch.store(batch_id, std::memory_order_release);
-                    if (is_indexed) {
-                        cached_vertex.lock.clear(std::memory_order_release);
-                    }
-                } else if (is_indexed) {
-                    cached_vertex.batch.store(batch_id, std::memory_order_relaxed);
-                }
-            }
-        };
-
-        auto& thread_pool = Common::ThreadPool::GetPool();
-        std::vector<std::future<void>> futures;
-
-        unsigned int vs_threads =
-            std::min(regs.pipeline.num_vertices / Settings::values.vertices_per_thread,
-                     std::thread::hardware_concurrency() - 1);
-
-        if (!vs_threads) {
-            VSUnitLoop(0, std::integral_constant<u32, 1>{});
-        } else {
-            for (unsigned int thread_id = 0; thread_id < vs_threads; ++thread_id) {
-                futures.emplace_back(thread_pool.push(VSUnitLoop, thread_id, vs_threads));
-            }
-        }
 
         g_state.geometry_pipeline.Reconfigure();
         g_state.geometry_pipeline.Setup(shader_engine);
         if (g_state.geometry_pipeline.NeedIndexInput())
             ASSERT(is_indexed);
 
-        const auto AddTriangle =
-            [rasterizer = VideoCore::g_renderer->Rasterizer()](auto& v0, auto& v1, auto& v2) {
-                rasterizer->AddTriangle(v0, v1, v2);
-            };
-
         for (unsigned int index = 0; index < regs.pipeline.num_vertices; ++index) {
-            unsigned int vertex = VertexIndex(index);
-            auto& cached_vertex = vs_output[is_indexed ? vertex : index];
+            // Indexed rendering doesn't use the start offset
+            unsigned int vertex =
+                is_indexed ? (index_u16 ? index_address_16[index] : index_address_8[index])
+                           : (index + regs.pipeline.vertex_offset);
 
-            if (use_gs && is_indexed && g_state.geometry_pipeline.NeedIndexInput()) {
-                g_state.geometry_pipeline.SubmitIndex(vertex);
-                continue;
-            }
+            // -1 is a common special value used for primitive restart. Since it's unknown if
+            // the PICA supports it, and it would mess up the caching, guard against it here.
+            ASSERT(!index_u16 || vertex != 0xFFFF);
 
-            // Synchronize threads
-            if (vs_threads) {
-                while (cached_vertex.batch.load(std::memory_order_acquire) != batch_id) {
-                    std::this_thread::yield();
+            bool vertex_cache_hit = false;
+
+            if (is_indexed) {
+                if (g_state.geometry_pipeline.NeedIndexInput()) {
+                    g_state.geometry_pipeline.SubmitIndex(vertex);
+                    continue;
+                }
+
+                if (g_debug_context && Pica::g_debug_context->recorder) {
+                    int size = index_u16 ? 2 : 1;
+                    memory_accesses.AddAccess(base_address + index_info.offset + size * index,
+                                              size);
+                }
+
+                for (unsigned int i = 0; i < VERTEX_CACHE_SIZE; ++i) {
+                    if (vertex == vertex_cache_ids[i]) {
+                        vs_output = vertex_cache[i];
+                        vertex_cache_hit = true;
+                        break;
+                    }
                 }
             }
 
-            if (use_gs) {
-                // Send to geometry pipeline
-                g_state.geometry_pipeline.SubmitVertex(cached_vertex.output_attr);
-            } else {
-                primitive_assembler.SubmitVertex(cached_vertex.output_vertex, AddTriangle);
-            }
-        }
+            if (!vertex_cache_hit) {
+                // Initialize data for the current vertex
+                Shader::AttributeBuffer input;
+                loader.LoadVertex(base_address, index, vertex, input, memory_accesses);
 
-        for (auto& future : futures)
-            future.get();
+                // Send to vertex shader
+                if (g_debug_context)
+                    g_debug_context->OnEvent(DebugContext::Event::VertexShaderInvocation,
+                                             (void*)&input);
+                shader_unit.LoadInput(regs.vs, input);
+                shader_engine->Run(g_state.vs, shader_unit);
+                shader_unit.WriteOutput(regs.vs, vs_output);
+
+                if (is_indexed) {
+                    vertex_cache[vertex_cache_pos] = vs_output;
+                    vertex_cache_ids[vertex_cache_pos] = vertex;
+                    vertex_cache_pos = (vertex_cache_pos + 1) % VERTEX_CACHE_SIZE;
+                }
+            }
+
+            // Send to geometry pipeline
+            g_state.geometry_pipeline.SubmitVertex(vs_output);
+        }
 
         for (auto& range : memory_accesses.ranges) {
             g_debug_context->recorder->MemoryAccessed(Memory::GetPhysicalPointer(range.first),
@@ -538,6 +486,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             LOG_ERROR(HW_GPU, "Invalid GS program offset %u", offset);
         } else {
             g_state.gs.program_code[offset] = value;
+            g_state.gs.program_code_hash_dirty = true;
             offset++;
         }
         break;
@@ -556,6 +505,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             LOG_ERROR(HW_GPU, "Invalid GS swizzle pattern offset %u", offset);
         } else {
             g_state.gs.swizzle_data[offset] = value;
+            g_state.gs.swizzle_data_hash_dirty = true;
             offset++;
         }
         break;
@@ -605,8 +555,10 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             LOG_ERROR(HW_GPU, "Invalid VS program offset %u", offset);
         } else {
             g_state.vs.program_code[offset] = value;
+            g_state.vs.program_code_hash_dirty = true;
             if (!g_state.regs.pipeline.gs_unit_exclusive_configuration) {
                 g_state.gs.program_code[offset] = value;
+                g_state.gs.program_code_hash_dirty = true;
             }
             offset++;
         }
@@ -626,8 +578,10 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             LOG_ERROR(HW_GPU, "Invalid VS swizzle pattern offset %u", offset);
         } else {
             g_state.vs.swizzle_data[offset] = value;
+            g_state.vs.swizzle_data_hash_dirty = true;
             if (!g_state.regs.pipeline.gs_unit_exclusive_configuration) {
                 g_state.gs.swizzle_data[offset] = value;
+                g_state.gs.swizzle_data_hash_dirty = true;
             }
             offset++;
         }

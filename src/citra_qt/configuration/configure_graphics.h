@@ -21,13 +21,12 @@ public:
     void applyConfiguration();
     void retranslateUi();
 
-private:
-    void setConfiguration();
-
 private slots:
+    void UpdateRenderer(int val);
     void showLayoutBackgroundDialog();
 
 private:
+    void setConfiguration();
     QColor bg_color;
     std::unique_ptr<Ui::ConfigureGraphics> ui;
 };

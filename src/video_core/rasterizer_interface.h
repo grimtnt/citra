@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vector>
 #include "common/common_types.h"
 #include "core/hw/gpu.h"
 
@@ -12,8 +13,9 @@ struct ScreenInfo;
 namespace Pica {
 namespace Shader {
 struct OutputVertex;
+struct AttributeBuffer;
 }
-} // namespace Pica
+}
 
 namespace VideoCore {
 
@@ -66,5 +68,9 @@ public:
                                    ScreenInfo& screen_info) {
         return false;
     }
+
+    virtual bool AccelerateDrawBatch(bool is_indexed) {
+        return false;
+    }
 };
-} // namespace VideoCore
+}

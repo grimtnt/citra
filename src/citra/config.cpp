@@ -111,7 +111,12 @@ void Config::ReadValues() {
     Settings::values.priority_boost = sdl2_config->GetBoolean("Core", "priority_boost", true);
 
     // Renderer
-    Settings::values.use_hw_renderer = sdl2_config->GetBoolean("Renderer", "use_hw_renderer", true);
+    Settings::values.renderer =
+        static_cast<Settings::RenderBackend>(sdl2_config->GetInteger("Renderer", "renderer", 1));
+    Settings::values.hw_shaders =
+        static_cast<Settings::HwShaders>(sdl2_config->GetInteger("Renderer", "hw_shaders", 1));
+    Settings::values.shaders_accurate_mul =
+        sdl2_config->GetBoolean("Renderer", "shaders_accurate_mul", true);
     Settings::values.use_shader_jit = sdl2_config->GetBoolean("Renderer", "use_shader_jit", true);
     Settings::values.resolution_factor =
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "resolution_factor", 1));
@@ -123,8 +128,6 @@ void Config::ReadValues() {
     Settings::values.bg_red = (float)sdl2_config->GetReal("Renderer", "bg_red", 0.0);
     Settings::values.bg_green = (float)sdl2_config->GetReal("Renderer", "bg_green", 0.0);
     Settings::values.bg_blue = (float)sdl2_config->GetReal("Renderer", "bg_blue", 0.0);
-    Settings::values.vertices_per_thread =
-        sdl2_config->GetInteger("Renderer", "vertices_per_thread", 10);
 
     // Layout
     Settings::values.layout_option =
