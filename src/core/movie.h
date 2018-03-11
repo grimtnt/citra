@@ -75,10 +75,10 @@ public:
      */
     void HandleExtraHidResponse(Service::IR::ExtraHIDResponse& extra_hid_response);
 
-    bool IsPlayingInput();
-
 private:
     static Movie s_instance;
+
+    bool IsPlayingInput();
 
     bool IsRecordingInput();
 
