@@ -116,13 +116,13 @@ class OGLPipeline : private NonCopyable {
 public:
     OGLPipeline() = default;
     OGLPipeline(OGLPipeline&& o) {
-        std::swap(handle, o.handle);
+        handle = std::exchange<GLuint>(o.handle, 0);
     }
     ~OGLPipeline() {
         Release();
     }
     OGLPipeline& operator=(OGLPipeline&& o) {
-        std::swap(handle, o.handle);
+        handle = std::exchange<GLuint>(o.handle, 0);
         return *this;
     }
 
@@ -182,13 +182,13 @@ class OGLSync : private NonCopyable {
 public:
     OGLSync() = default;
     OGLSync(OGLSync&& o) {
-        std::swap(handle, o.handle);
+        handle = std::exchange<GLsync>(o.handle, nullptr);
     }
     ~OGLSync() {
         Release();
     }
     OGLSync& operator=(OGLSync&& o) {
-        std::swap(handle, o.handle);
+        handle = std::exchange<GLsync>(o.handle, nullptr);
         return *this;
     }
 

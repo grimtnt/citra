@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <vector>
 #include "common/common_types.h"
 #include "core/hw/gpu.h"
 
@@ -13,7 +12,6 @@ struct ScreenInfo;
 namespace Pica {
 namespace Shader {
 struct OutputVertex;
-struct AttributeBuffer;
 } // namespace Shader
 } // namespace Pica
 

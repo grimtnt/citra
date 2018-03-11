@@ -45,7 +45,17 @@ struct PrimitiveAssembler {
      */
     void Reconfigure(PipelineRegs::TriangleTopology topology);
 
-public:
+    /**
+     * Is our internal state empty?
+     */
+    bool IsEmpty() const;
+
+    /**
+     * What is our triangle topology?
+     */
+    PipelineRegs::TriangleTopology GetTopology() const;
+
+private:
     PipelineRegs::TriangleTopology topology;
 
     int buffer_index;

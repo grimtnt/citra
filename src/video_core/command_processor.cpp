@@ -297,11 +297,10 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                                (regs.pipeline.use_gs == PipelineRegs::UseGS::No ||
                                 hw_shaders_setting == Settings::HwShaders::All);
 
-        accelerate_draw &=
-            primitive_assembler.buffer_index == 0 && !primitive_assembler.strip_ready;
+        accelerate_draw &= primitive_assembler.IsEmpty();
 
         if (regs.pipeline.use_gs == PipelineRegs::UseGS::No) {
-            switch (primitive_assembler.topology) {
+            switch (primitive_assembler.GetTopology()) {
             case PipelineRegs::TriangleTopology::Shader:
             case PipelineRegs::TriangleTopology::List:
                 accelerate_draw &= (regs.pipeline.num_vertices % 3) ==

@@ -2,8 +2,11 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <array>
 #include <functional>
-#include "../shader/shader.h"
+#include <string>
+#include "common/common_types.h"
+#include "video_core/shader/shader.h"
 
 namespace Pica {
 namespace Shader {

@@ -841,31 +841,32 @@ std::string DecompileProgram(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>& pro
     call_subroutine = [&](const Subroutine& subroutine) -> u32 {
         if (subroutine.IsInline()) {
             return compile_range(subroutine.begin, subroutine.end, [](u32) { UNREACHABLE(); });
-        } else {
-            std::function<bool(const Subroutine&)> maybe_end_instr =
-                [&maybe_end_instr](const Subroutine& subroutine) -> bool {
-                for (auto& callee : subroutine.calls) {
-                    if (maybe_end_instr(*callee.second)) {
-                        return true;
-                    }
-                }
-                for (auto& branch : subroutine.branches) {
-                    if (maybe_end_instr(*branch.second)) {
-                        return true;
-                    }
-                }
-                return subroutine.end_instr_distance.is_initialized();
-            };
-
-            if (subroutine.end_instr_distance) {
-                add_line(subroutine.GetName() + "();");
-                add_line("return true;");
-            } else if (maybe_end_instr(subroutine)) {
-                add_line("if (" + subroutine.GetName() + "()) { return true; }");
-            } else {
-                add_line(subroutine.GetName() + "();");
-            }
         }
+
+        std::function<bool(const Subroutine&)> maybe_end_instr =
+            [&maybe_end_instr](const Subroutine& subroutine) -> bool {
+            for (auto& callee : subroutine.calls) {
+                if (maybe_end_instr(*callee.second)) {
+                    return true;
+                }
+            }
+            for (auto& branch : subroutine.branches) {
+                if (maybe_end_instr(*branch.second)) {
+                    return true;
+                }
+            }
+            return subroutine.end_instr_distance.is_initialized();
+        };
+
+        if (subroutine.end_instr_distance) {
+            add_line(subroutine.GetName() + "();");
+            add_line("return true;");
+        } else if (maybe_end_instr(subroutine)) {
+            add_line("if (" + subroutine.GetName() + "()) { return true; }");
+        } else {
+            add_line(subroutine.GetName() + "();");
+        }
+
         return subroutine.end;
     };
 
