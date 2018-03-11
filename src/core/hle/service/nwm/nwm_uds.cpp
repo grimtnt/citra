@@ -1334,7 +1334,8 @@ NWM_UDS::NWM_UDS() : ServiceFramework("nwm::UDS") {
             mac = room_member->GetMacAddress();
         }
     }
-    SharedPage::SetMacAddress(mac);
+    auto shared_page_handler = SharedPage::GetHandler().lock();
+    shared_page_handler->SetMacAddress(mac);
 }
 
 NWM_UDS::~NWM_UDS() {

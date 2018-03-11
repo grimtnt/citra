@@ -13,6 +13,11 @@ namespace Settings {
 
 enum class SwkbdImplementation { StdIn, Qt };
 
+enum class InitClock {
+    SystemTime = 0,
+    FixedTime = 1,
+};
+
 enum class LayoutOption {
     Default,
     SingleScreen,
@@ -117,6 +122,8 @@ struct Values {
 
     // System
     int region_value;
+    InitClock init_clock;
+    time_t init_time;
     bool enable_new_mode;
 
     // Renderer

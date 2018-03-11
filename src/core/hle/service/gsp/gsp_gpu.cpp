@@ -701,7 +701,9 @@ void GSP_GPU::SetLedForceOff(Kernel::HLERequestContext& ctx) {
     u8 state = rp.Pop<u8>();
 
     Settings::values.sp_enable_3d = state == 0;
-    SharedPage::shared_page.ledstate_3d = static_cast<u8>(state == 0);
+
+    auto shared_page_handler = SharedPage::GetHandler().lock();
+    shared_page_handler->Set3DLed(state);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
