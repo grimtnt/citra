@@ -1544,9 +1544,8 @@ bool RasterizerOpenGL::AccelerateTextureCopy(const GPU::Regs::DisplayTransferCon
     }
 
     if (output_gap != 0 &&
-        (output_width !=
-             src_surface->BytesInPixels(src_rect.GetWidth() / src_surface->res_scale) *
-                 (src_surface->is_tiled ? 8 : 1) ||
+        (output_width != src_surface->BytesInPixels(src_rect.GetWidth() / src_surface->res_scale) *
+                             (src_surface->is_tiled ? 8 : 1) ||
          output_gap % src_surface->BytesInPixels(src_surface->is_tiled ? 64 : 1) != 0)) {
         return false;
     }
@@ -1554,9 +1553,8 @@ bool RasterizerOpenGL::AccelerateTextureCopy(const GPU::Regs::DisplayTransferCon
     SurfaceParams dst_params = *src_surface;
     dst_params.addr = config.GetPhysicalOutputAddress();
     dst_params.width = src_rect.GetWidth() / src_surface->res_scale;
-    dst_params.stride =
-        dst_params.width +
-        src_surface->PixelsInBytes(src_surface->is_tiled ? output_gap / 8 : output_gap);
+    dst_params.stride = dst_params.width + src_surface->PixelsInBytes(
+                                               src_surface->is_tiled ? output_gap / 8 : output_gap);
     dst_params.height = src_rect.GetHeight() / src_surface->res_scale;
     dst_params.res_scale = src_surface->res_scale;
     dst_params.UpdateParams();

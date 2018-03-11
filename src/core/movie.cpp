@@ -129,6 +129,7 @@ void Movie::CheckInputEnd() {
     if (current_byte + sizeof(ControllerState) > recorded_input.size()) {
         LOG_INFO(Movie, "Playback finished");
         play_mode = PlayMode::None;
+        Settings::values.movie_play = "";
     }
 }
 
@@ -388,7 +389,10 @@ void Movie::SaveMovie() {
 
     if (!save_record.IsGood()) {
         LOG_ERROR(Movie, "Error saving movie");
+        return;
     }
+
+    Settings::values.movie_record = "";
 }
 
 void Movie::Init() {

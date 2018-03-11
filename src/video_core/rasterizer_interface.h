@@ -14,8 +14,8 @@ namespace Pica {
 namespace Shader {
 struct OutputVertex;
 struct AttributeBuffer;
-}
-}
+} // namespace Shader
+} // namespace Pica
 
 namespace VideoCore {
 
@@ -73,4 +73,4 @@ public:
         return false;
     }
 };
-}
+} // namespace VideoCore

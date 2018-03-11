@@ -96,7 +96,8 @@ public:
                 bool separable_program = false) {
         if (handle != 0)
             return;
-        handle = GLShader::LoadProgram(vert_shader, geo_shader, frag_shader, feedback_vars, separable_program);
+        handle = GLShader::LoadProgram(vert_shader, geo_shader, frag_shader, feedback_vars,
+                                       separable_program);
     }
 
     /// Deletes the internal OpenGL resource

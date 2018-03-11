@@ -489,6 +489,10 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Screen_Layout_Swap_Screens, &QAction::triggered, this,
             &GMainWindow::OnSwapScreens);
 
+    // Movie
+    connect(ui.action_Record, &QAction::triggered, this, &GMainWindow::OnRecordMovie);
+    connect(ui.action_Play, &QAction::triggered, this, &GMainWindow::OnPlayMovie);
+
     // Multiplayer
     connect(ui.action_View_Lobby, &QAction::triggered, this, &GMainWindow::OnViewLobby);
     connect(ui.action_Start_Room, &QAction::triggered, this, &GMainWindow::OnCreateRoom);
@@ -749,6 +753,8 @@ void GMainWindow::ShutdownGame() {
     ui.action_Stop->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
+    ui.action_Record->setEnabled(true);
+    ui.action_Play->setEnabled(true);
     render_window->hide();
     game_list->show();
     game_list->setFilterFocus();
@@ -987,6 +993,8 @@ void GMainWindow::OnStartGame() {
     ui.action_Pause->setEnabled(true);
     ui.action_Stop->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
+    ui.action_Record->setEnabled(false);
+    ui.action_Play->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(true);
 }
 
@@ -1159,6 +1167,22 @@ void GMainWindow::OnCreateGraphicsSurfaceViewer() {
     addDockWidget(Qt::RightDockWidgetArea, graphicsSurfaceViewerWidget);
     // TODO: Maybe graphicsSurfaceViewerWidget->setFloating(true);
     graphicsSurfaceViewerWidget->show();
+}
+
+void GMainWindow::OnRecordMovie() {
+    QString path = QFileDialog::getSaveFileName(this, tr("Save movie"));
+    if (path.isEmpty())
+        return;
+    if (Settings::values.movie_play != "")
+        Settings::values.movie_play = "";
+    Settings::values.movie_record = path.toStdString();
+}
+
+void GMainWindow::OnPlayMovie() {
+    QString path = QFileDialog::getOpenFileName(this, tr("Play Movie"));
+    if (Settings::values.movie_record != "")
+        Settings::values.movie_record = "";
+    Settings::values.movie_play = path.toStdString();
 }
 
 static void BringWidgetToFront(QWidget* widget) {

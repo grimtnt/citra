@@ -1,9 +1,9 @@
-#include <QString>
-#include <QStringList>
 #include <cctype>
-#include <string>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <QString>
+#include <QStringList>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 

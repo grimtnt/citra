@@ -135,9 +135,17 @@
     <addaction name="action_FAQ"/>
     <addaction name="action_About"/>
    </widget>
+   <widget class="QMenu" name="menu_Movie">
+    <property name="title">
+     <string>Movie</string>
+    </property>
+    <addaction name="action_Record"/>
+    <addaction name="action_Play"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Emulation"/>
    <addaction name="menu_View"/>
+   <addaction name="menu_Movie"/>
    <addaction name="menu_Multiplayer"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -362,6 +370,16 @@
   <action name="action_Control_Panel">
    <property name="text">
     <string>Control Panel</string>
+   </property>
+  </action>
+  <action name="action_Record">
+   <property name="text">
+    <string>Record</string>
+   </property>
+  </action>
+  <action name="action_Play">
+   <property name="text">
+    <string>Play</string>
    </property>
   </action>
  </widget>
