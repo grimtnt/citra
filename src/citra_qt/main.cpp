@@ -1170,18 +1170,18 @@ void GMainWindow::OnCreateGraphicsSurfaceViewer() {
 }
 
 void GMainWindow::OnRecordMovie() {
-    QString path = QFileDialog::getSaveFileName(this, tr("Save movie"));
+    QString path = QFileDialog::getSaveFileName(this, tr("Save Movie"));
     if (path.isEmpty())
         return;
-    if (Settings::values.movie_play != "")
-        Settings::values.movie_play = "";
+    if (!Settings::values.movie_play.empty())
+        Settings::values.movie_play.clear();
     Settings::values.movie_record = path.toStdString();
 }
 
 void GMainWindow::OnPlayMovie() {
     QString path = QFileDialog::getOpenFileName(this, tr("Play Movie"));
-    if (Settings::values.movie_record != "")
-        Settings::values.movie_record = "";
+    if (!Settings::values.movie_record.empty())
+        Settings::values.movie_record.clear();
     Settings::values.movie_play = path.toStdString();
 }
 
