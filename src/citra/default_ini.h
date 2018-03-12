@@ -94,6 +94,10 @@ use_cpu_jit =
 # Dynarmic AddTicks ticks
 dynarmic_addticks_ticks =
 
+# Dynarmic Ticks Mode
+# 0: Accurate (default), 1: Auto, 2: Fixed
+ticks_mode =
+
 # Priority Boost
 # 0: Disable, 1 (default): enable
 priority_boost =

@@ -19,7 +19,7 @@
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
-        <string>Hacks</string>
+        <string>Audio</string>
        </property>
        <layout class="QVBoxLayout" name="Hacks">
         <item>

@@ -106,6 +106,8 @@ void Config::ReadValues() {
 
     // Core
     Settings::values.use_cpu_jit = sdl2_config->GetBoolean("Core", "use_cpu_jit", true);
+    Settings::values.ticks_mode =
+        static_cast<Settings::TicksMode>(sdl2_config->GetInteger("Core", "ticks_mode", 0));
     Settings::values.dynarmic_addticks_ticks = static_cast<u64>(
         sdl2_config->GetInteger("Core", "dynarmic_addticks_ticks", Settings::DEFAULT_TICKS));
     Settings::values.priority_boost = sdl2_config->GetBoolean("Core", "priority_boost", true);

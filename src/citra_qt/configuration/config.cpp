@@ -90,6 +90,8 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
+    Settings::values.ticks_mode =
+        static_cast<Settings::TicksMode>(qt_config->value("ticks_mode", 0).toInt());
     Settings::values.dynarmic_addticks_ticks =
         qt_config->value("dynarmic_addticks_ticks", Settings::DEFAULT_TICKS).toInt();
     Settings::values.priority_boost = qt_config->value("priority_boost", true).toBool();
@@ -293,6 +295,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
+    qt_config->setValue("ticks_mode", static_cast<int>(Settings::values.ticks_mode));
     qt_config->setValue("dynarmic_addticks_ticks", Settings::values.dynarmic_addticks_ticks);
     qt_config->setValue("priority_boost", Settings::values.priority_boost);
     qt_config->endGroup();

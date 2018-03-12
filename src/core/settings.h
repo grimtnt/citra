@@ -90,6 +90,12 @@ static const std::array<const char*, NumAnalogs> mapping = {{
 }};
 } // namespace NativeAnalog
 
+enum class TicksMode {
+    Accurate = 0,
+    Auto = 1,
+    Fixed = 2,
+};
+
 struct Values {
     // Control Panel
     bool p_adapter_connected;
@@ -107,6 +113,7 @@ struct Values {
 
     // Core
     bool use_cpu_jit;
+    TicksMode ticks_mode;
     u64 dynarmic_addticks_ticks;
     bool priority_boost;
 
