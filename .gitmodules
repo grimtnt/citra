@@ -28,6 +28,6 @@
 [submodule "inih"]
     path = externals/inih/inih
     url = https://github.com/benhoyt/inih.git
-[submodule "externals/libressl"]
-	path = externals/libressl
-	url = https://github.com/j-selby/libressl-portable
+[submodule "libressl"]
+    path = externals/libressl
+    url = https://github.com/j-selby/libressl-portable.git
