@@ -138,6 +138,7 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
 }
 
 ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode) {
+    fixed_ticks = Settings::values.dynarmic_addticks_ticks;
     if (Settings::values.ticks_mode == Settings::TicksMode::Auto) {
         u64 tid;
         Core::System::GetInstance().GetAppLoader().ReadProgramId(tid);
