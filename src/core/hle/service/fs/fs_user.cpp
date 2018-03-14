@@ -15,6 +15,7 @@
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/client_port.h"
 #include "core/hle/kernel/client_session.h"
+#include "core/hle/kernel/event.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/server_session.h"
 #include "core/hle/result.h"
@@ -68,6 +69,13 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
         rb.PushMoveObjects<Kernel::Object>(nullptr);
         LOG_ERROR(Service_FS, "failed to get a handle for file %s", file_path.DebugStr().c_str());
     }
+
+    ctx.SleepClientThread(Kernel::GetCurrentThread(), "fs::openfile",
+                          std::chrono::nanoseconds{10000000},
+                          [](Kernel::SharedPtr<Kernel::Thread> thread,
+                             Kernel::HLERequestContext& ctx, ThreadWakeupReason reason) {
+                              // Nothing to do here
+                          });
 }
 
 void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {

@@ -8,18 +8,15 @@
 namespace Service {
 namespace ACT {
 
-const Interface::FunctionInfo FunctionTable[] = {
-    // clang-format off
-    {0x00010084, Initialize, "Initialize"},
-    {0x00020040, GetErrorCode, "GetErrorCode"},
-    {0x000600C2, GetAccountDataBlock, "GetAccountDataBlock"},
-    {0x000B0042, nullptr, "AcquireEulaList"},
-    {0x000D0040, nullptr, "GenerateUuid"},
-    // clang-format on
-};
-
-ACT_U::ACT_U() {
-    Register(FunctionTable);
+ACT_U::ACT_U(std::shared_ptr<Module> act) : Module::Interface(std::move(act), "act:u", 2) {
+    static const FunctionInfo functions[] = {
+        {0x00010084, &ACT_U::Initialize, "Initialize"},
+        {0x00020040, &ACT_U::GetErrorCode, "GetErrorCode"},
+        {0x000600C2, &ACT_U::GetAccountDataBlock, "GetAccountDataBlock"},
+        {0x000B0042, nullptr, "AcquireEulaList"},
+        {0x000D0040, nullptr, "GenerateUuid"},
+    };
+    RegisterHandlers(functions);
 }
 
 } // namespace ACT

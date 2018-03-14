@@ -5,14 +5,12 @@
 #pragma once
 
 #include "common/common_types.h"
+#include "core/hle/service/service.h"
 
 namespace Service {
-
-class Interface;
-
 namespace ACT {
 
-enum class BlkId : u32 {
+enum class BlkID : u32 {
     PersistentID = 0x5,
     TransferableIDBase = 0x6,
     MiiData = 0x7,
@@ -49,12 +47,56 @@ enum class BlkId : u32 {
     CountryInfo = 0x2F
 };
 
-void Initialize(Service::Interface* self);
-void GetErrorCode(Service::Interface* self);
-void GetAccountDataBlock(Service::Interface* self);
+class Module final {
+public:
+    class Interface : public ServiceFramework<Interface> {
+    public:
+        Interface(std::shared_ptr<Module> act, const char* name, u32 max_session);
 
-/// Initializes all ACT services
-void Init();
+    protected:
+        /**
+         * ACT::Initialize service function
+         *  Inputs:
+         *      1 : SDK Version
+         *      2 : Shared memory size
+         *      3 : 0x20 (Kernel PID header)
+         *      4 : 0x20 (The code to request the current process handle)
+         *      5 : 0x00 (handle-transfer header for kernel)
+         *      6 : Shared memory address value
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         */
+        void Initialize(Kernel::HLERequestContext& ctx);
+
+        /**
+         * ACT::GetErrorCode service function.
+         *  Inputs:
+         *      1 : Input error code
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         *      2 : Output value
+         */
+        void GetErrorCode(Kernel::HLERequestContext& ctx);
+
+        /**
+         * ACT::GetAccountDataBlock service function
+         *  Inputs:
+         *      1 : Unknown, usually 0xFE?
+         *      2 : Size
+         *      3 : BlkID
+         *      4 : (Size<<4) | 12
+         *      5 : Output buffer ptr
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         */
+        void GetAccountDataBlock(Kernel::HLERequestContext& ctx);
+
+    private:
+        std::shared_ptr<Module> act;
+    };
+};
+
+void InstallInterfaces(SM::ServiceManager& service_manager);
 
 } // namespace ACT
 } // namespace Service

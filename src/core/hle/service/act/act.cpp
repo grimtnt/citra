@@ -15,11 +15,13 @@
 namespace Service {
 namespace ACT {
 
-void Initialize(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x1, 2, 4);
+void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x0001, 2, 4);
     u32 version = rp.Pop<u32>();
     u32 shared_memory_size = rp.Pop<u32>();
-    rp.Skip(3, false);
+    ASSERT(rp.Pop<u32>() == 0x20);
+    rp.Skip(1, false);
+    ASSERT(rp.Pop<u32>() == 0);
     u32 shared_memory = rp.Pop<u32>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -30,8 +32,8 @@ void Initialize(Service::Interface* self) {
                 version, shared_memory_size, shared_memory);
 }
 
-void GetErrorCode(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x2, 1, 0);
+void Module::Interface::GetErrorCode(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x0002, 1, 0);
     u32 error_code = rp.Pop<u32>();
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
@@ -40,18 +42,18 @@ void GetErrorCode(Service::Interface* self) {
     LOG_WARNING(Service_ACT, "(STUBBED) called");
 }
 
-void GetAccountDataBlock(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x6, 3, 2);
+void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
+    // TODO: find out why direct command buffer modifying is needed to this to work correctly
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0006, 3, 2);
     u8 unk = rp.Pop<u8>();
     u32 size = rp.Pop<u32>();
-    BlkId id = rp.PopEnum<BlkId>();
-    u32 assert1 = rp.Pop<u32>();
-    ASSERT(assert1 == ((size << 4) | 0xC));
-    VAddr addr = static_cast<VAddr>(rp.Pop<u32>());
-
+    BlkID id = rp.PopEnum<BlkID>();
+    ASSERT(rp.Pop<u32>() == ((size << 4) | 0xC));
+    VAddr addr = rp.Pop<VAddr>();
     switch (id) {
-    case BlkId::NNID: {
+    case BlkID::NNID: {
         std::string nnid = Common::UTF16ToUTF8(Service::CFG::GetUsername());
+        // TODO: find out why max length is 7 in citra
         if (nnid.length() > 7)
             nnid = nnid.substr(0, 7);
         boost::algorithm::replace_all(nnid, " ", "_");
@@ -59,33 +61,33 @@ void GetAccountDataBlock(Service::Interface* self) {
         Memory::WriteBlock(addr, network_id, sizeof(network_id));
         break;
     }
-    case BlkId::Unknown6: {
+    case BlkID::Unknown6: {
         u32 a = 1;
         Memory::WriteBlock(addr, &a, sizeof(a));
         break;
     }
-    case BlkId::U16MiiName: {
+    case BlkID::U16MiiName: {
         const char16_t* mii_name = Service::CFG::GetUsername().c_str();
         Memory::WriteBlock(addr, mii_name, sizeof(mii_name));
         break;
     }
-    case BlkId::PrincipalID: {
+    case BlkID::PrincipalID: {
         u32 principal_id = 0xDEADBEEF;
         Memory::WriteBlock(addr, &principal_id, sizeof(principal_id));
         break;
     }
-    case BlkId::CountryName: {
+    case BlkID::CountryName: {
         std::tuple<unsigned char*, u8> country_tuple = Service::CFG::GetCountryInfo();
         u8 country_code = std::get<1>(country_tuple);
         Memory::Write16(addr, Service::CFG::country_codes[country_code]);
         break;
     }
-    case BlkId::MiiImageURL: {
+    case BlkID::MiiImageURL: {
         char url[0x101] = "https://avatars0.githubusercontent.com/u/4592895";
         Memory::WriteBlock(addr, url, sizeof(url));
         break;
     }
-    case BlkId::Age: {
+    case BlkID::Age: {
         if (unk == 0xFE) {
             char age[2] = {0x00, 0x00};
             Memory::WriteBlock(addr, age, sizeof(age));
@@ -109,9 +111,13 @@ void GetAccountDataBlock(Service::Interface* self) {
     LOG_WARNING(Service_ACT, "(STUBBED) called, unk=0x%02X, size=0x%X, id=0x%X", unk, size, id);
 }
 
-void Init() {
-    AddService(new ACT_A);
-    AddService(new ACT_U);
+Module::Interface::Interface(std::shared_ptr<Module> act, const char* name, u32 max_session)
+    : ServiceFramework(name, max_session), act(std::move(act)) {}
+
+void InstallInterfaces(SM::ServiceManager& service_manager) {
+    auto act = std::make_shared<Module>();
+    std::make_shared<ACT_A>(act)->InstallAsService(service_manager);
+    std::make_shared<ACT_U>(act)->InstallAsService(service_manager);
 }
 
 } // namespace ACT
