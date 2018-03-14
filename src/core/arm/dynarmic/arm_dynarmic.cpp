@@ -158,7 +158,7 @@ ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode) {
         case 0x0004000000175E00: // pokemon moon
         case 0x00040000001B5000: // pokemon ultra sun
         case 0x00040000001B5100: // pokemon ultra moon
-            fixed_ticks = 14000; // fmv hack and fixes
+            fixed_ticks = 17000; // fmv hack
             break;
         default:
             Settings::values.ticks_mode = Settings::TicksMode::Accurate;
