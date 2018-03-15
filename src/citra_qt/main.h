@@ -19,6 +19,7 @@
 class AboutDialog;
 class CheatDialog;
 class Config;
+class ControlPanel;
 class ClickableLabel;
 class EmuThread;
 class GameList;
@@ -249,6 +250,7 @@ private:
 
     Network::RoomMember::CallbackHandle<Network::RoomMember::State> state_callback_handle;
 
+    std::shared_ptr<ControlPanel> controlPanel;
     std::shared_ptr<CheatDialog> cheatWindow;
 
     QAction* actions_recent_files[max_recent_files_item];

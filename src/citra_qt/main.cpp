@@ -1152,15 +1152,15 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnCheats() {
-    if (cheatWindow == nullptr) {
+    if (cheatWindow == nullptr)
         cheatWindow = std::make_shared<CheatDialog>(this);
-    }
     cheatWindow->show();
 }
 
 void GMainWindow::OnControlPanel() {
-    ControlPanel control_panel;
-    control_panel.exec();
+    if (controlPanel == nullptr)
+        controlPanel = std::make_shared<ControlPanel>(this);
+    controlPanel->show();
 }
 
 void GMainWindow::OnCreateGraphicsSurfaceViewer() {
