@@ -134,6 +134,15 @@ private:
             return false;
         }
 
+        bool HasRecursion() const {
+            for (auto& callee : calls) {
+                if (IsCalledBy(callee.second) || callee.second->HasRecursion()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// Check if this Subroutine is suitable for inlining.
         bool IsInline() const {
             if (callers.size() > 1 &&
@@ -153,43 +162,31 @@ private:
         std::set<std::pair<u32, u32>> discovered;
         std::optional<size_t> end_instr_distance;
 
-        using SubroutineMap = std::map<std::pair<u32, u32>, const Subroutine*>;
+        using SubroutineMap = std::map<std::pair<u32 /*begin*/, u32 /*end*/>, const Subroutine*>;
         SubroutineMap branches;
         SubroutineMap calls;
-        std::map<u32, const Subroutine*> callers;
-        std::map<u32, u32> jumps;
+        std::map<u32 /*from*/, const Subroutine*> callers;
+        std::map<u32 /*from*/, u32 /*to*/> jumps;
     };
 
-public:
-    Impl(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>& program_code,
-         const std::array<u32, MAX_SWIZZLE_DATA_LENGTH>& swizzle_data, u32 main_offset,
-         const std::function<std::string(u32)>& inputreg_getter,
-         const std::function<std::string(u32)>& outputreg_getter, bool sanitize_mul,
-         const std::string& emit_cb, const std::string& setemit_cb)
-        : program_code(program_code), swizzle_data(swizzle_data), main_offset(main_offset),
-          inputreg_getter(inputreg_getter), outputreg_getter(outputreg_getter),
-          sanitize_mul(sanitize_mul), emit_cb(emit_cb), setemit_cb(setemit_cb) {}
+    std::map<std::pair<u32, u32>, Subroutine> subroutines;
 
-    std::string Decompile() {
-        constexpr bool PRINT_DEBUG = true;
-
-        if (!FindEndInstr(main_offset, PROGRAM_END)) {
-            return "";
+    /**
+     * Gets the Subroutine object corresponding to the specified address. If it is not in the
+     * subroutine list yet, adds it to the list
+     */
+    Subroutine& GetRoutine(u32 begin, u32 end) {
+        auto [iter, inserted] =
+            subroutines.emplace(std::make_pair(std::make_pair(begin, end), Subroutine{begin, end}));
+        auto& sub = iter->second;
+        if (inserted) {
+            sub.end_instr_distance = FindEndInstr(sub.begin, sub.end);
         }
+        return sub;
+    }
 
-        std::map<std::pair<u32, u32>, Subroutine> subroutines;
-
-        auto get_routine = [&](u32 begin, u32 end) -> Subroutine& {
-            auto res = subroutines.emplace(
-                std::make_pair(std::make_pair(begin, end), Subroutine{begin, end}));
-            auto& sub = res.first->second;
-            if (res.second) {
-                res.first->second.end_instr_distance = FindEndInstr(sub.begin, sub.end);
-            }
-            return sub;
-        };
-
-        auto& program_main = get_routine(main_offset, PROGRAM_END);
+    Subroutine& AnalyzeControlFlow() {
+        auto& program_main = GetRoutine(main_offset, PROGRAM_END);
 
         std::queue<std::tuple<u32, u32, Subroutine*>> discover_queue;
         discover_queue.emplace(main_offset, PROGRAM_END, &program_main);
@@ -209,6 +206,7 @@ public:
                 const Instruction instr = {program_code[offset]};
                 switch (instr.opcode.Value()) {
                 case OpCode::Id::END: {
+                    // Breaks the outer for loop if the program ends
                     offset = PROGRAM_END;
                     break;
                 }
@@ -227,13 +225,14 @@ public:
                                                   instr.flow_control.dest_offset +
                                                       instr.flow_control.num_instructions};
 
-                    auto& sub = get_routine(sub_range.first, sub_range.second);
+                    auto& sub = GetRoutine(sub_range.first, sub_range.second);
 
                     sub.callers.emplace(offset, routine);
                     routine->calls[sub_range] = &sub;
                     discover_queue.emplace(sub_range.first, sub_range.second, &sub);
 
                     if (instr.opcode.Value() == OpCode::Id::CALL && sub.end_instr_distance) {
+                        // Breaks the outer for loop if the unconditial subroutine ends the program
                         offset = PROGRAM_END;
                     }
                     break;
@@ -247,22 +246,25 @@ public:
                         instr.flow_control.dest_offset + instr.flow_control.num_instructions;
                     ASSERT(else_offset > if_offset);
 
+                    // Both branches are treated as subroutine, so skips the if-else block in this
+                    // routine
                     offset = endif_offset - 1;
 
-                    auto& sub_if = get_routine(if_offset, else_offset);
+                    auto& sub_if = GetRoutine(if_offset, else_offset);
 
                     sub_if.callers.emplace(offset, routine);
                     routine->branches[{if_offset, else_offset}] = &sub_if;
                     discover_queue.emplace(if_offset, else_offset, &sub_if);
 
                     if (instr.flow_control.num_instructions != 0) {
-                        auto& sub_else = get_routine(else_offset, endif_offset);
+                        auto& sub_else = GetRoutine(else_offset, endif_offset);
 
                         sub_else.callers.emplace(offset, routine);
                         routine->branches[{else_offset, endif_offset}] = &sub_else;
                         discover_queue.emplace(else_offset, endif_offset, &sub_else);
 
                         if (sub_if.end_instr_distance && sub_else.end_instr_distance) {
+                            // Breaks the outer for loop if both branches end the program
                             offset = PROGRAM_END;
                         }
                     }
@@ -273,14 +275,21 @@ public:
                     std::pair<u32, u32> sub_range{offset + 1, instr.flow_control.dest_offset + 1};
                     ASSERT(sub_range.second > sub_range.first);
 
-                    auto& sub = get_routine(sub_range.first, sub_range.second);
+                    auto& sub = GetRoutine(sub_range.first, sub_range.second);
 
                     sub.callers.emplace(offset, routine);
                     routine->branches[sub_range] = &sub;
                     discover_queue.emplace(sub_range.first, sub_range.second, &sub);
 
+                    // The lopp block is treated as subroutine, so skips the if-else block in this
+                    // routine.
+                    // Note: the first instruction after the loop block is at dest_offset + 1 (due
+                    // to PICA design), and the next instruction to scan is at offset + 1 (due to
+                    // for loop increment). The two offset-by-one cancel each other here.
                     offset = instr.flow_control.dest_offset;
+
                     if (sub.end_instr_distance) {
+                        // Breaks the outer for loop if the loop block ends the program
                         offset = PROGRAM_END;
                     }
                     break;
@@ -288,22 +297,41 @@ public:
                 }
             }
         }
+        return program_main;
+    }
 
-        std::function<bool(const Subroutine&)> is_callable = [&](const Subroutine& subroutine) {
-            for (auto& callee : subroutine.calls) {
-                if (subroutine.IsCalledBy(callee.second) || !is_callable(*callee.second)) {
-                    return false;
-                }
-            }
-            return true;
-        };
-
+    bool HasRecursion() {
         for (auto& pair : subroutines) {
             auto& subroutine = pair.second;
-            if (!is_callable(subroutine)) {
-                return "";
+            if (subroutine.HasRecursion()) {
+                return true;
             }
         }
+
+        return false;
+    }
+
+public:
+    Impl(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>& program_code,
+         const std::array<u32, MAX_SWIZZLE_DATA_LENGTH>& swizzle_data, u32 main_offset,
+         const std::function<std::string(u32)>& inputreg_getter,
+         const std::function<std::string(u32)>& outputreg_getter, bool sanitize_mul,
+         const std::string& emit_cb, const std::string& setemit_cb)
+        : program_code(program_code), swizzle_data(swizzle_data), main_offset(main_offset),
+          inputreg_getter(inputreg_getter), outputreg_getter(outputreg_getter),
+          sanitize_mul(sanitize_mul), emit_cb(emit_cb), setemit_cb(setemit_cb) {}
+
+    std::string Decompile() {
+        constexpr bool PRINT_DEBUG = true;
+
+        if (!FindEndInstr(main_offset, PROGRAM_END)) {
+            return "";
+        }
+
+        auto& program_main = AnalyzeControlFlow();
+
+        if (HasRecursion())
+            return "";
 
         std::string shader_source;
         int scope = 0;
@@ -733,9 +761,9 @@ public:
                     add_line(condition.empty() ? "{" : "if (" + condition + ") {");
                     ++scope;
 
-                    auto& call_sub = get_routine(instr.flow_control.dest_offset,
-                                                 instr.flow_control.dest_offset +
-                                                     instr.flow_control.num_instructions);
+                    auto& call_sub = GetRoutine(instr.flow_control.dest_offset,
+                                                instr.flow_control.dest_offset +
+                                                    instr.flow_control.num_instructions);
 
                     call_subroutine(call_sub);
                     if (instr.opcode.Value() == OpCode::Id::CALL && call_sub.end_instr_distance) {
@@ -768,7 +796,7 @@ public:
                     add_line("if (" + condition + ") {");
                     ++scope;
 
-                    auto& if_sub = get_routine(if_offset, else_offset);
+                    auto& if_sub = GetRoutine(if_offset, else_offset);
                     call_subroutine(if_sub);
                     offset = else_offset - 1;
 
@@ -777,7 +805,7 @@ public:
                         add_line("} else {");
                         ++scope;
 
-                        auto& else_sub = get_routine(else_offset, endif_offset);
+                        auto& else_sub = GetRoutine(else_offset, endif_offset);
                         call_subroutine(else_sub);
                         offset = endif_offset - 1;
 
@@ -807,7 +835,7 @@ public:
                              loop_var + ") {");
                     ++scope;
 
-                    auto& loop_sub = get_routine(offset + 1, instr.flow_control.dest_offset + 1);
+                    auto& loop_sub = GetRoutine(offset + 1, instr.flow_control.dest_offset + 1);
                     call_subroutine(loop_sub);
                     offset = instr.flow_control.dest_offset;
 
