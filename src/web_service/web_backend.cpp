@@ -3,11 +3,9 @@
 // Refer to the license.txt file included.
 
 #include <cstdlib>
-#include <iostream>
 #include <string>
 #include <thread>
 #include <LUrlParser.h>
-#include <boost/optional.hpp>
 #include <httplib.h>
 #include "common/announce_multiplayer_room.h"
 #include "common/logging/log.h"
@@ -17,46 +15,43 @@ namespace WebService {
 
 static constexpr char API_VERSION[]{"1"};
 
-static constexpr int HTTP_PORT = 80;
-static constexpr int HTTPS_PORT = 443;
+constexpr int HTTP_PORT = 80;
+constexpr int HTTPS_PORT = 443;
 
-static constexpr int TIMEOUT_SECONDS = 30;
+constexpr int TIMEOUT_SECONDS = 30;
 
-boost::optional<std::unique_ptr<httplib::Client>> GetClientFor(
-    const LUrlParser::clParseURL& parsedUrl) {
-    using namespace httplib;
+std::unique_ptr<httplib::Client> GetClientFor(const LUrlParser::clParseURL& parsedUrl) {
+    namespace hl = httplib;
 
     int port;
 
-    std::unique_ptr<Client> cli;
+    std::unique_ptr<hl::Client> cli;
 
     if (parsedUrl.m_Scheme == "http") {
         if (!parsedUrl.GetPort(&port)) {
             port = HTTP_PORT;
         }
-        cli = std::make_unique<Client>(parsedUrl.m_Host.c_str(), port, TIMEOUT_SECONDS,
-                                       HttpVersion::v1_1);
+        return std::make_unique<hl::Client>(parsedUrl.m_Host.c_str(), port, TIMEOUT_SECONDS,
+                                            hl::HttpVersion::v1_1);
     } else if (parsedUrl.m_Scheme == "https") {
         if (!parsedUrl.GetPort(&port)) {
             port = HTTPS_PORT;
         }
-        cli = std::make_unique<SSLClient>(parsedUrl.m_Host.c_str(), port, TIMEOUT_SECONDS,
-                                          HttpVersion::v1_1);
+        return std::make_unique<hl::SSLClient>(parsedUrl.m_Host.c_str(), port, TIMEOUT_SECONDS,
+                                               hl::HttpVersion::v1_1);
     } else {
         LOG_ERROR(WebService, "Bad URL scheme %s", parsedUrl.m_Scheme.c_str());
-        return boost::optional<std::unique_ptr<httplib::Client>>();
+        return std::unique_ptr<hl::Client>(nullptr);
     }
-
-    return boost::optional<std::unique_ptr<httplib::Client>>(std::move(cli));
 }
 
 std::future<Common::WebResult> PostJson(const std::string& url, const std::string& data,
                                         bool allow_anonymous, const std::string& username,
                                         const std::string& token) {
-    using LUrlParser::clParseURL;
-    using namespace httplib;
+    using lup = LUrlParser::clParseURL;
+    namespace hl = httplib;
 
-    clParseURL parsedUrl = clParseURL::ParseURL(url);
+    lup parsedUrl = lup::ParseURL(url);
 
     if (url.empty() || !parsedUrl.IsValid()) {
         LOG_ERROR(WebService, "URL is invalid");
@@ -75,7 +70,7 @@ std::future<Common::WebResult> PostJson(const std::string& url, const std::strin
     }
 
     // Built request header
-    Headers params;
+    hl::Headers params;
     if (are_credentials_provided) {
         // Authenticated request if credentials are provided
         params = {{std::string("x-username"), username},
@@ -90,21 +85,21 @@ std::future<Common::WebResult> PostJson(const std::string& url, const std::strin
 
     // Post JSON asynchronously
     return std::async(std::launch::async, [url, parsedUrl, params, data] {
-        boost::optional<std::unique_ptr<Client>> cli = GetClientFor(parsedUrl);
+        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
 
-        if (!cli.is_initialized()) {
+        if (cli == nullptr) {
             return Common::WebResult{Common::WebResult::Code::InvalidURL, "URL is invalid"};
         }
 
-        Request request;
+        hl::Request request;
         request.method = "POST";
         request.path = "/" + parsedUrl.m_Path;
         request.headers = params;
         request.body = data;
 
-        Response response;
+        hl::Response response;
 
-        if (!cli.get()->send(request, response)) {
+        if (!cli->send(request, response)) {
             LOG_ERROR(WebService, "POST to %s returned null", url.c_str());
             return Common::WebResult{Common::WebResult::Code::LibError, "Null response"};
         }
@@ -133,10 +128,10 @@ template <typename T>
 std::future<T> GetJson(std::function<T(const std::string&)> func, const std::string& url,
                        bool allow_anonymous, const std::string& username,
                        const std::string& token) {
-    using LUrlParser::clParseURL;
-    using namespace httplib;
+    using lup = LUrlParser::clParseURL;
+    namespace hl = httplib;
 
-    clParseURL parsedUrl = clParseURL::ParseURL(url);
+    lup parsedUrl = lup::ParseURL(url);
 
     if (url.empty() || !parsedUrl.IsValid()) {
         LOG_ERROR(WebService, "URL is invalid");
@@ -150,7 +145,7 @@ std::future<T> GetJson(std::function<T(const std::string&)> func, const std::str
     }
 
     // Built request header
-    Headers params;
+    hl::Headers params;
     if (are_credentials_provided) {
         // Authenticated request if credentials are provided
         params = {{std::string("x-username"), username},
@@ -163,20 +158,20 @@ std::future<T> GetJson(std::function<T(const std::string&)> func, const std::str
 
     // Get JSON asynchronously
     return std::async(std::launch::async, [func, url, parsedUrl, params] {
-        boost::optional<std::unique_ptr<Client>> cli = GetClientFor(parsedUrl);
+        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
 
-        if (!cli.is_initialized()) {
+        if (cli == nullptr) {
             return func("");
         }
 
-        Request request;
+        hl::Request request;
         request.method = "GET";
         request.path = "/" + parsedUrl.m_Path;
         request.headers = params;
 
-        Response response;
+        hl::Response response;
 
-        if (!cli.get()->send(request, response)) {
+        if (!cli->send(request, response)) {
             LOG_ERROR(WebService, "GET to %s returned null", url.c_str());
             return func("");
         }
@@ -210,10 +205,10 @@ template std::future<AnnounceMultiplayerRoom::RoomList> GetJson(
 
 void DeleteJson(const std::string& url, const std::string& data, const std::string& username,
                 const std::string& token) {
-    using LUrlParser::clParseURL;
-    using namespace httplib;
+    using lup = LUrlParser::clParseURL;
+    namespace hl = httplib;
 
-    clParseURL parsedUrl = clParseURL::ParseURL(url);
+    lup parsedUrl = lup::ParseURL(url);
 
     if (url.empty() || !parsedUrl.IsValid()) {
         LOG_ERROR(WebService, "URL is invalid");
@@ -227,28 +222,28 @@ void DeleteJson(const std::string& url, const std::string& data, const std::stri
     }
 
     // Built request header
-    Headers params = {{std::string("x-username"), username},
-                      {std::string("x-token"), token},
-                      {std::string("api-version"), std::string(API_VERSION)},
-                      {std::string("Content-Type"), std::string("application/json")}};
+    hl::Headers params = {{std::string("x-username"), username},
+                          {std::string("x-token"), token},
+                          {std::string("api-version"), std::string(API_VERSION)},
+                          {std::string("Content-Type"), std::string("application/json")}};
 
     // Delete JSON asynchronously
     std::async(std::launch::async, [url, parsedUrl, params, data] {
-        boost::optional<std::unique_ptr<Client>> cli = GetClientFor(parsedUrl);
+        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
 
-        if (!cli.is_initialized()) {
+        if (cli == nullptr) {
             return;
         }
 
-        Request request;
+        hl::Request request;
         request.method = "DELETE";
         request.path = "/" + parsedUrl.m_Path;
         request.headers = params;
         request.body = data;
 
-        Response response;
+        hl::Response response;
 
-        if (!cli.get()->send(request, response)) {
+        if (!cli->send(request, response)) {
             LOG_ERROR(WebService, "DELETE to %s returned null", url.c_str());
             return;
         }
