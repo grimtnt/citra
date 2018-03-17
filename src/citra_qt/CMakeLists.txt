@@ -11,6 +11,8 @@ add_executable(citra-qt
     bootmanager.h
     cheat_gui.cpp
     cheat_gui.h
+    cheatsearch.cpp
+    cheatsearch.h
     citra-qt.rc
     camera/still_image_camera.cpp
     camera/still_image_camera.h
@@ -114,6 +116,7 @@ set(UIS
     aboutdialog.ui
     hotkeys.ui
     cheat_gui.ui
+    cheatsearch.ui
     main.ui
     compatdb.ui
     control_panel.ui

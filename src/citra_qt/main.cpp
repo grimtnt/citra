@@ -19,6 +19,7 @@
 #include "citra_qt/bootmanager.h"
 #include "citra_qt/camera/still_image_camera.h"
 #include "citra_qt/cheat_gui.h"
+#include "citra_qt/cheatsearch.h"
 #include "citra_qt/compatdb.h"
 #include "citra_qt/configuration/config.h"
 #include "citra_qt/configuration/configure_dialog.h"
@@ -405,6 +406,7 @@ void GMainWindow::RestoreUIState() {
 #endif
 
     ui.action_Cheats->setEnabled(false);
+    ui.action_Cheat_Search->setEnabled(false);
     game_list->LoadInterfaceLayout();
 
     ui.action_Single_Window_Mode->setChecked(UISettings::values.single_window_mode);
@@ -462,6 +464,7 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnMenuReportCompatibility);
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
+    connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
 
     // View
@@ -753,6 +756,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Stop->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
+    ui.action_Cheat_Search->setEnabled(false);
     ui.action_Record->setEnabled(true);
     ui.action_Play->setEnabled(true);
     render_window->hide();
@@ -993,6 +997,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Pause->setEnabled(true);
     ui.action_Stop->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
+    ui.action_Cheat_Search->setEnabled(true);
     ui.action_Record->setEnabled(false);
     ui.action_Play->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(true);
@@ -1155,6 +1160,12 @@ void GMainWindow::OnCheats() {
     if (cheatWindow == nullptr)
         cheatWindow = std::make_shared<CheatDialog>(this);
     cheatWindow->show();
+}
+
+void GMainWindow::OnCheatSearch() {
+    if (cheatSearchWindow == nullptr)
+        cheatSearchWindow = std::make_shared<CheatSearch>(this);
+    cheatSearchWindow->show();
 }
 
 void GMainWindow::OnControlPanel() {

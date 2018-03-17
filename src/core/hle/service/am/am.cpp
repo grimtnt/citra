@@ -464,11 +464,13 @@ void ScanForTitles(Service::FS::MediaType media_type) {
     for (const FileUtil::FSTEntry& tid_high : entries.children) {
         for (const FileUtil::FSTEntry& tid_low : tid_high.children) {
             std::string tid_string = tid_high.virtualName + tid_low.virtualName;
-            u64 tid = std::stoull(tid_string.c_str(), nullptr, 16);
+            if (tid_string.length() == 16) {
+                u64 tid = std::stoull(tid_string.c_str(), nullptr, 16);
 
-            FileSys::NCCHContainer container(GetTitleContentPath(media_type, tid));
-            if (container.Load() == Loader::ResultStatus::Success)
-                am_title_list[static_cast<u32>(media_type)].push_back(tid);
+                FileSys::NCCHContainer container(GetTitleContentPath(media_type, tid));
+                if (container.Load() == Loader::ResultStatus::Success)
+                    am_title_list[static_cast<u32>(media_type)].push_back(tid);
+            }
         }
     }
 }

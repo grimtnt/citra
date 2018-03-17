@@ -18,6 +18,7 @@
 
 class AboutDialog;
 class CheatDialog;
+class CheatSearch;
 class Config;
 class ControlPanel;
 class ClickableLabel;
@@ -178,6 +179,7 @@ private slots:
     void OnAnnounceFailed(const Common::WebResult&);
     void OnConfigure();
     void OnCheats();
+    void OnCheatSearch();
     void OnControlPanel();
     void OnToggleFilterBar();
     void OnDisplayTitleBars(bool);
@@ -252,6 +254,7 @@ private:
 
     std::shared_ptr<ControlPanel> controlPanel;
     std::shared_ptr<CheatDialog> cheatWindow;
+    std::shared_ptr<CheatSearch> cheatSearchWindow;
 
     QAction* actions_recent_files[max_recent_files_item];
 
