@@ -14,9 +14,6 @@
 #include "core/core_timing.h"
 #include "core/hle/kernel/svc.h"
 #include "core/memory.h"
-#include "core/settings.h"
-
-u64 fixed_ticks;
 
 class DynarmicThreadContext final : public ARM_Interface::ThreadContext {
 public:
@@ -98,11 +95,11 @@ static bool IsReadOnlyMemory(u32 vaddr) {
 }
 
 static void AddTicks(u64 ticks) {
-    CoreTiming::AddTicks(fixed_ticks);
+    CoreTiming::AddTicks(ticks);
 }
 
-static void AddTicksAccurate(u64 ticks) {
-    CoreTiming::AddTicks(ticks);
+static void AddTicksTL(u64 ticks) {
+    CoreTiming::AddTicks(570);
 }
 
 static u64 GetTicksRemaining() {
@@ -126,10 +123,19 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
     user_callbacks.memory.Write16 = &Memory::Write16;
     user_callbacks.memory.Write32 = &Memory::Write32;
     user_callbacks.memory.Write64 = &Memory::Write64;
-    if (Settings::values.ticks_mode == Settings::TicksMode::Accurate) {
-        user_callbacks.AddTicks = &AddTicksAccurate;
-    } else {
+    u64 title_id;
+    Core::System::GetInstance().GetAppLoader().ReadProgramId(title_id);
+    switch (title_id) {
+    case 0x000400000008C300:
+    case 0x000400000008C400:
+    case 0x000400000008C500:
+    case 0x0004000000126A00:
+    case 0x0004000200120C01:
+        user_callbacks.AddTicks = &AddTicksTL;
+        break;
+    default:
         user_callbacks.AddTicks = &AddTicks;
+        break;
     }
     user_callbacks.GetTicksRemaining = &GetTicksRemaining;
     user_callbacks.page_table = &current_page_table->pointers;
@@ -138,33 +144,6 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
 }
 
 ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode) {
-    fixed_ticks = Settings::values.dynarmic_addticks_ticks;
-    if (Settings::values.ticks_mode == Settings::TicksMode::Auto) {
-        u64 tid;
-        Core::System::GetInstance().GetAppLoader().ReadProgramId(tid);
-        switch (tid) {
-        case 0x000400000008C400: // tomodachi life eur
-        case 0x000400000008C300: // tomodachi life usa
-        case 0x0004000000126A00: // tomodachi life move in version
-        case 0x0004000200120C01: // tomodachi life demo version
-        case 0x000400000008C500: // tomodachi collection new life
-            fixed_ticks = 570;   // for audio fix
-            break;
-        case 0x0004000000055D00: // pokemon x
-        case 0x0004000000055E00: // pokemon y
-        case 0x000400000011C400: // pokemon omega ruby
-        case 0x000400000011C500: // pokemon alpha sapphire
-        case 0x0004000000164800: // pokemon sun
-        case 0x0004000000175E00: // pokemon moon
-        case 0x00040000001B5000: // pokemon ultra sun
-        case 0x00040000001B5100: // pokemon ultra moon
-            fixed_ticks = 17000; // fmv hack
-            break;
-        default:
-            Settings::values.ticks_mode = Settings::TicksMode::Accurate;
-            break;
-        }
-    }
     interpreter_state = std::make_shared<ARMul_State>(initial_mode);
     PageTableChanged();
 }

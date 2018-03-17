@@ -90,11 +90,6 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
-    Settings::values.ticks_mode =
-        static_cast<Settings::TicksMode>(qt_config->value("ticks_mode", 0).toInt());
-    Settings::values.dynarmic_addticks_ticks =
-        qt_config->value("dynarmic_addticks_ticks", Settings::DEFAULT_TICKS).toInt();
-    Settings::values.priority_boost = qt_config->value("priority_boost", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -132,6 +127,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Audio");
     Settings::values.sink_id = qt_config->value("output_engine", "auto").toString().toStdString();
+    Settings::values.enable_pipe3 = qt_config->value("enable_pipe3", true).toBool();
     Settings::values.enable_audio_stretching =
         qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.audio_device_id =
@@ -193,7 +189,7 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Hacks");
-    Settings::values.enable_pipe3 = qt_config->value("enable_pipe3", true).toBool();
+    Settings::values.priority_boost = qt_config->value("priority_boost", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");
@@ -295,9 +291,6 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
-    qt_config->setValue("ticks_mode", static_cast<int>(Settings::values.ticks_mode));
-    qt_config->setValue("dynarmic_addticks_ticks", Settings::values.dynarmic_addticks_ticks);
-    qt_config->setValue("priority_boost", Settings::values.priority_boost);
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -332,6 +325,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Audio");
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
+    qt_config->setValue("enable_pipe3", Settings::values.enable_pipe3);
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
     qt_config->endGroup();
@@ -383,7 +377,7 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Hacks");
-    qt_config->setValue("enable_pipe3", Settings::values.enable_pipe3);
+    qt_config->setValue("priority_boost", Settings::values.priority_boost);
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");

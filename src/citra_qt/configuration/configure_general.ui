@@ -99,61 +99,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QCheckBox" name="priority_boost">
-            <property name="text">
-             <string>Enable Priority Boost</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QLabel" name="label_ticks_mode">
-              <property name="text">
-               <string>CPU JIT AddTicks Mode:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="combo_ticks_mode">
-              <item>
-               <property name="text">
-                <string>Accurate</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Auto</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Fixed</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
-            <item>
-             <widget class="QLabel" name="label_ticks">
-              <property name="text">
-               <string>CPU JIT AddTicks Ticks:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="spinbox_ticks">
-              <property name="maximum">
-               <number>999999999</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
          </layout>
         </item>
        </layout>

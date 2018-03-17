@@ -17,15 +17,15 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="groupbox_kernel">
        <property name="title">
-        <string>Audio</string>
+        <string>Kernel</string>
        </property>
        <layout class="QVBoxLayout" name="Hacks">
         <item>
-         <widget class="QCheckBox" name="toggle_pipe3">
+         <widget class="QCheckBox" name="toggle_priority_boost">
           <property name="text">
-           <string>Enable Pipe 2 Channel 3 (Binary Pipe)</string>
+           <string>Priority Boost</string>
           </property>
          </widget>
         </item>

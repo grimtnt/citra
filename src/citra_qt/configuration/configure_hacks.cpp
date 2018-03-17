@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include "citra_qt/configuration/configure_hacks.h"
+#include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_hacks.h"
 
@@ -11,16 +12,17 @@ ConfigureHacks::ConfigureHacks(QWidget* parent)
     ui->setupUi(this);
 
     this->setConfiguration();
+    ui->toggle_priority_boost->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 }
 
 ConfigureHacks::~ConfigureHacks() {}
 
 void ConfigureHacks::setConfiguration() {
-    ui->toggle_pipe3->setChecked(Settings::values.enable_pipe3);
+    ui->toggle_priority_boost->setChecked(Settings::values.priority_boost);
 }
 
 void ConfigureHacks::applyConfiguration() {
-    Settings::values.enable_pipe3 = ui->toggle_pipe3->isChecked();
+    Settings::values.priority_boost = ui->toggle_priority_boost->isChecked();
     Settings::Apply();
 }
 

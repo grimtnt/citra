@@ -113,9 +113,6 @@ struct Values {
 
     // Core
     bool use_cpu_jit;
-    TicksMode ticks_mode;
-    u64 dynarmic_addticks_ticks;
-    bool priority_boost;
 
     // Data Storage
     bool use_virtual_sd;
@@ -153,6 +150,7 @@ struct Values {
 
     // Audio
     std::string sink_id;
+    bool enable_pipe3;
     bool enable_audio_stretching;
     std::string audio_device_id;
 
@@ -177,13 +175,12 @@ struct Values {
     std::string citra_token;
 
     // Hacks
-    bool enable_pipe3;
+    bool priority_boost;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region
 // value to fit the region lockout info of the game
 static constexpr int REGION_VALUE_AUTO_SELECT = -1;
-static constexpr u64 DEFAULT_TICKS = 10500;
 
 void Apply();
 } // namespace Settings

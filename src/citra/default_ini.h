@@ -91,17 +91,6 @@ touch_device=
 # 0: Interpreter (slow), 1 (default): JIT (fast)
 use_cpu_jit =
 
-# Dynarmic AddTicks ticks
-dynarmic_addticks_ticks =
-
-# Dynarmic Ticks Mode
-# 0: Accurate (default), 1: Auto, 2: Fixed
-ticks_mode =
-
-# Priority Boost
-# 0: Disable, 1 (default): enable
-priority_boost =
-
 [Renderer]
 # Whether to use software or hardware rendering.
 # 0: Software, 1 (default): OpenGL
@@ -172,6 +161,9 @@ swap_screen =
 # auto (default): Auto-select, null: No audio output, sdl2: SDL2 (if available)
 output_engine =
 
+# Enable Pipe 2 Channel 3 (Binary Pipe)
+enable_pipe3 =
+
 # Whether or not to enable the audio-stretching post-processing effect.
 # This effect adjusts audio speed to match emulation speed and helps prevent audio stutter,
 # at the cost of increasing audio latency.
@@ -234,7 +226,8 @@ citra_username =
 citra_token =
 
 [Hacks]
-# Enable Pipe 2 Channel 3 (Binary Pipe)
-enable_pipe3 =
+# Priority Boost
+# 0: (default) disable, 1: enable
+priority_boost =
 )";
 }
