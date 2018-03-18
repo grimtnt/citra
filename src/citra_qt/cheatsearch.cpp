@@ -27,14 +27,14 @@ CheatSearch::CheatSearch(QWidget* parent) : QDialog(parent), ui(new Ui::CheatSea
     ui->tableFound->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableFound->setSelectionBehavior(QAbstractItemView::SelectRows);
     previous_found = make_shared<std::vector<FoundItems>>();
-    connect(ui->btnNextScan, &QPushButton::released, this, [&]() { CheatSearch::OnScan(true); });
-    connect(ui->btnFirstScan, &QPushButton::released, this, [&]() { CheatSearch::OnScan(false); });
+    connect(ui->btnNextScan, &QPushButton::clicked, this, [this] { OnScan(true); });
+    connect(ui->btnFirstScan, &QPushButton::clicked, this, [this] { OnScan(false); });
     connect(ui->cbScanType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [&](int index) { CheatSearch::OnScanTypeChanged(index); });
+            this, [this](int index) { OnScanTypeChanged(index); });
     connect(ui->cbValueType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [&](int index) { CheatSearch::OnValueTypeChanged(index); });
+            this, [this](int index) { OnValueTypeChanged(index); });
     connect(ui->chkHex, &QCheckBox::clicked, this,
-            [&](bool i) { CheatSearch::OnHexCheckedChanged(i); });
+            [this](bool i) { OnHexCheckedChanged(i); });
     connect(ui->tableFound, &QTableWidget::doubleClicked, this, [&](QModelIndex i) {
         ModifyAddressDialog* dialog =
             new ModifyAddressDialog(this, ui->tableFound->item(i.row(), 0)->text().toStdString(),
@@ -357,6 +357,7 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, string address, int ty
     : QDialog(parent) {
     resize(300, 30);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowTitle(tr("Modify Address"));
     setSizeGripEnabled(false);
     auto mainLayout = new QVBoxLayout(this);
 
