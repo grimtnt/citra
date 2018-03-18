@@ -4,7 +4,6 @@
 #include <QLineEdit>
 #include <QTableWidgetItem>
 #include "citra_qt/cheat_gui.h"
-#include "core/hle/kernel/process.h"
 #include "ui_cheat_gui.h"
 
 CheatDialog::CheatDialog(QWidget* parent)
@@ -23,10 +22,10 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->textDetails->setEnabled(false);
 
-    connect(ui->buttonClose, &QPushButton::released, this, &CheatDialog::OnCancel);
-    connect(ui->buttonNewCheat, &QPushButton::released, this, &CheatDialog::OnAddCheat);
-    connect(ui->buttonSave, &QPushButton::released, this, &CheatDialog::OnSave);
-    connect(ui->buttonDelete, &QPushButton::released, this, &CheatDialog::OnDelete);
+    connect(ui->buttonClose, &QPushButton::clicked, this, &CheatDialog::OnCancel);
+    connect(ui->buttonNewCheat, &QPushButton::clicked, this, &CheatDialog::OnAddCheat);
+    connect(ui->buttonSave, &QPushButton::clicked, this, &CheatDialog::OnSave);
+    connect(ui->buttonDelete, &QPushButton::clicked, this, &CheatDialog::OnDelete);
     connect(ui->tableCheats, &QTableWidget::cellClicked, this, &CheatDialog::OnRowSelected);
     connect(ui->textDetails, &QPlainTextEdit::textChanged, this, &CheatDialog::OnDetailsChanged);
 
@@ -155,7 +154,9 @@ void CheatDialog::OnAddCheat() {
 }
 
 NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
-    resize(250, 150);
+    resize(166, 115);
+    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    setWindowTitle(tr("New Cheat"));
     setSizeGripEnabled(false);
     auto mainLayout = new QVBoxLayout(this);
 
