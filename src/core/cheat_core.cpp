@@ -38,7 +38,7 @@ void RefreshCheats() {
 
 namespace CheatEngine {
 static std::string GetFilePath() {
-    return FileUtil::GetUserPath(D_USER_IDX) + "cheats" + DIR_SEP + "cheats.txt";
+    return FileUtil::GetUserPath(D_USER_IDX) + "cheats.txt";
 }
 CheatEngine::CheatEngine() {
     const auto file_path = GetFilePath();

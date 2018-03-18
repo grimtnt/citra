@@ -22,8 +22,6 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->textDetails->setEnabled(false);
-    ui->labelInfoTitles->setText(tr("The Cheats are for all Titles."));
-    ui->labelInfoApply->setText(tr("If cheats changes is not applied, restart the game."));
 
     connect(ui->buttonClose, &QPushButton::released, this, &CheatDialog::OnCancel);
     connect(ui->buttonNewCheat, &QPushButton::released, this, &CheatDialog::OnAddCheat);
