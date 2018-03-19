@@ -737,7 +737,6 @@ void GetProductCode(Service::Interface* self) {
     FileUtil::IOFile f(path, "rb");
     f.Seek(0x150, 0);
     f.ReadBytes(&Kernel::GetCommandBuffer()[2], 0x10);
-    f.Close();
     rb.Push(RESULT_SUCCESS);
 }
 
