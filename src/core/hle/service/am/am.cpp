@@ -722,7 +722,7 @@ void DeleteUserProgram(Service::Interface* self) {
 }
 
 void GetProductCode(Service::Interface* self) {
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x5, 3, 0);
+    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0005, 3, 0);
     FS::MediaType media_type = rp.PopEnum<FS::MediaType>();
     u64 title_id = rp.Pop<u64>();
     std::string path = GetTitleContentPath(media_type, title_id);
