@@ -90,12 +90,6 @@ static const std::array<const char*, NumAnalogs> mapping = {{
 }};
 } // namespace NativeAnalog
 
-enum class TicksMode {
-    Accurate = 0,
-    Auto = 1,
-    Fixed = 2,
-};
-
 struct Values {
     // Control Panel
     bool sp_enable_3d;
