@@ -239,6 +239,18 @@ void GetProgramInfos(Service::Interface* self);
 void DeleteUserProgram(Service::Interface* self);
 
 /**
+ * AM::GetProductCode service function
+ * Gets the product code of a title
+ *  Inputs:
+ *      1 : Media Type
+ *      2-3 : Title ID
+ *  Outputs:
+ *      1 : Result, 0 on success, otherwise error code
+ *      2-5 : Product Code
+ */
+void GetProductCode(Service::Interface* self);
+
+/**
  * AM::GetDLCTitleInfos service function
  * Wrapper for AM::GetProgramInfos, explicitly checks that TID high value is 0004008C.
  *  Inputs:
