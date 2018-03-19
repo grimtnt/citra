@@ -21,6 +21,7 @@ public:
 public slots:
     int nsti(u8 state);
     u8 itns(int index);
+    void On3DEnabledChanged();
     void OnAdapterConnectedChanged();
     void OnBatteryChargingChanged();
     void OnBatteryLevelChanged();

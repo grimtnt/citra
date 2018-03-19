@@ -66,6 +66,8 @@ static const std::array<std::array<int, 5>, Settings::NativeAnalog::NumAnalogs> 
 
 void Config::ReadValues() {
     // Control Panel
+    Settings::values.sp_enable_3d =
+        sdl2_config->GetBoolean("ControlPanel", "sp_enable_3d", false);
     Settings::values.p_adapter_connected =
         sdl2_config->GetBoolean("ControlPanel", "p_adapter_connected", true);
     Settings::values.p_battery_charging =

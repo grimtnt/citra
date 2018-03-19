@@ -98,6 +98,7 @@ enum class TicksMode {
 
 struct Values {
     // Control Panel
+    bool sp_enable_3d;
     bool p_adapter_connected;
     bool p_battery_charging;
     u32 p_battery_level;

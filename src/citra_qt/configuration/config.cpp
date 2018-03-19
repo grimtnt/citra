@@ -42,6 +42,7 @@ const std::array<std::array<int, 5>, Settings::NativeAnalog::NumAnalogs> Config:
 
 void Config::ReadValues() {
     qt_config->beginGroup("ControlPanel");
+    Settings::values.sp_enable_3d = qt_config->value("sp_enable_3d", false).toBool();
     Settings::values.p_adapter_connected = qt_config->value("p_adapter_connected", true).toBool();
     Settings::values.p_battery_charging = qt_config->value("p_battery_charging", true).toBool();
     Settings::values.p_battery_level =
@@ -268,6 +269,7 @@ void Config::ReadValues() {
 
 void Config::SaveValues() {
     qt_config->beginGroup("ControlPanel");
+    qt_config->setValue("sp_enable_3d", Settings::values.sp_enable_3d);
     qt_config->setValue("p_adapter_connected", Settings::values.p_adapter_connected);
     qt_config->setValue("p_battery_charging", Settings::values.p_battery_charging);
     qt_config->setValue("p_battery_level", Settings::values.p_battery_level);

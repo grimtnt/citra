@@ -8,6 +8,9 @@ namespace DefaultINI {
 
 const char* sdl2_config_file = R"(
 [ControlPanel]
+# Shared Page - Enable 3D
+sp_enable_3d =
+
 # Power - Adapter connected
 p_adapter_connected =
 

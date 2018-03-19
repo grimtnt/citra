@@ -25,6 +25,30 @@
    <property name="currentIndex">
     <number>0</number>
    </property>
+   <widget class="QWidget" name="tabSharedPage">
+    <attribute name="title">
+     <string>Shared Page</string>
+    </attribute>
+    <widget class="QWidget" name="horizontalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>273</width>
+       <height>44</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="layoutSharedPage">
+      <item>
+       <widget class="QCheckBox" name="shared_page_enable_3d">
+        <property name="text">
+         <string>Enable 3D</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
    <widget class="QWidget" name="tabPower">
     <attribute name="title">
      <string>Power</string>

@@ -14,12 +14,15 @@ ControlPanel::ControlPanel(QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
       ui(new Ui::ControlPanel) {
     ui->setupUi(this);
+    ui->shared_page_enable_3d->setChecked(Settings::values.sp_enable_3d);
     ui->power_adapter_connected->setChecked(Settings::values.p_adapter_connected);
     ui->power_battery_charging->setChecked(Settings::values.p_battery_charging);
     ui->power_battery_level->setCurrentIndex(Settings::values.p_battery_level - 1);
     ui->network_wifi_status->setCurrentIndex(Settings::values.n_wifi_status);
     ui->network_link_level->setValue(Settings::values.n_wifi_link_level);
     ui->network_state->setCurrentIndex(nsti(Settings::values.n_state));
+    connect(ui->shared_page_enable_3d, &QCheckBox::stateChanged, this,
+            &ControlPanel::On3DEnabledChanged);
     connect(ui->power_adapter_connected, &QCheckBox::stateChanged, this,
             &ControlPanel::OnAdapterConnectedChanged);
     connect(ui->power_battery_charging, &QCheckBox::stateChanged, this,
@@ -69,6 +72,11 @@ u8 ControlPanel::itns(int index) {
     case 3:
         return 2;
     }
+}
+
+void ControlPanel::On3DEnabledChanged() {
+    Settings::values.sp_enable_3d = ui->shared_page_enable_3d->isChecked();
+    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 0 : 1;
 }
 
 void ControlPanel::OnAdapterConnectedChanged() {
