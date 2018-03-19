@@ -309,7 +309,7 @@ int main(int argc, char** argv) {
     }
 
 #ifdef __linux__
-    RegisterFactory("V4L2", std::make_unique<V4L2CameraFactory>());
+    Camera::RegisterFactory("V4L2", std::make_unique<V4L2CameraFactory>());
 #endif
 
     while (emu_window->IsOpen()) {
