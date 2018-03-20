@@ -67,8 +67,8 @@ struct BindNodeData {
     std::deque<std::vector<u8>> received_packets; ///< List of packets received on this channel.
 };
 
-// Mapping of bind_node_ids to their internal data.
-static std::unordered_map<u32, BindNodeData> bind_node_data;
+// Mapping of data channels to their internal data.
+static std::unordered_map<u32, BindNodeData> channel_data;
 
 // The WiFi network channel that the network is currently on.
 // Since we're not actually interacting with physical radio waves, this is just a dummy value.
@@ -268,6 +268,8 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         node_map[packet.transmitter_address] = node.network_node_id;
 
+        BroadcastNodeMap();
+
         // Send the EAPoL-Logoff packet.
         using Network::WifiPacket;
         WifiPacket eapol_logoff;
@@ -283,7 +285,6 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         eapol_logoff.destination_address = Network::BroadcastMac;
         eapol_logoff.type = WifiPacket::PacketType::Data;
 
-        BroadcastNodeMap();
         SendPacket(eapol_logoff);
 
         connection_status_event->Signal();
@@ -374,21 +375,21 @@ static void HandleSecureDataPacket(const Network::WifiPacket& packet) {
     // TODO(B3N30): We don't currently send nor handle management frames.
     ASSERT(!secure_data.is_management);
 
-    for (auto bind_node : bind_node_data) {
-        // Ignore packets from channels we're not interested in.
-        if (bind_node.second.channel != secure_data.data_channel)
-            continue;
+    // TODO(B3N30): Allow more than one bind node per channel.
+    auto channel_info = channel_data.find(secure_data.data_channel);
+    // Ignore packets from channels we're not interested in.
+    if (channel_info == channel_data.end())
+        return;
 
-        if (bind_node.second.network_node_id != BroadcastNetworkNodeId &&
-            bind_node.second.network_node_id != secure_data.src_node_id)
-            continue;
+    if (channel_info->second.network_node_id != BroadcastNetworkNodeId &&
+        channel_info->second.network_node_id != secure_data.src_node_id)
+        return;
 
-        // Add the received packet to the data queue.
-        channel_info->second.received_packets.emplace_back(packet.data);
+    // Add the received packet to the data queue.
+    channel_info->second.received_packets.emplace_back(packet.data);
 
-        // Signal the data event. We can do this directly because we locked g_hle_lock
-        channel_info->second.event->Signal();
-    }
+    // Signal the data event. We can do this directly because we locked g_hle_lock
+    channel_info->second.event->Signal();
 }
 
 /*
@@ -542,10 +543,10 @@ void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
     if (auto room_member = Network::GetRoomMember().lock())
         room_member->Unbind(wifi_packet_received);
 
-    for (auto bind_node : bind_node_data) {
+    for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
     }
-    bind_node_data.clear();
+    channel_data.clear();
     node_map.clear();
 
     recv_buffer_memory.reset();
@@ -730,7 +731,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     }
 
     constexpr size_t MaxBindNodes = 16;
-    if (bind_node_data.size() >= MaxBindNodes) {
+    if (channel_data.size() >= MaxBindNodes) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
                            ErrorSummary::OutOfResource, ErrorLevel::Status));
@@ -752,10 +753,9 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
                                        "NWM::BindNodeEvent" + std::to_string(bind_node_id));
     std::lock_guard<std::mutex> lock(connection_status_mutex);
 
-    // A 3DS segfaults if you try to bind with an already used bind_node_id
-    ASSERT(bind_node_data.find(bind_node_id) == bind_node_data.end());
-
-    bind_node_data[bind_node_id] = {bind_node_id, data_channel, network_node_id, event};
+    ASSERT(channel_data.find(data_channel) == channel_data.end());
+    // TODO(B3N30): Support more than one bind node per channel.
+    channel_data[data_channel] = {bind_node_id, data_channel, network_node_id, event};
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
@@ -775,7 +775,14 @@ void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
 
-    bind_node_data.erase(bind_node_id);
+    auto itr =
+        std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
+            return data.second.bind_node_id == bind_node_id;
+        });
+
+    if (itr != channel_data.end()) {
+        channel_data.erase(itr);
+    }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
     rb.Push(RESULT_SUCCESS);
@@ -899,10 +906,10 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
 
-    for (auto bind_node : bind_node_data) {
+    for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
     }
-    bind_node_data.clear();
+    channel_data.clear();
 
     rb.Push(RESULT_SUCCESS);
 
@@ -945,10 +952,10 @@ void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
 
     SendPacket(deauth);
 
-    for (auto bind_node : bind_node_data) {
+    for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
     }
-    bind_node_data.clear();
+    channel_data.clear();
 
     rb.Push(RESULT_SUCCESS);
     LOG_DEBUG(Service_NWM, "called");
@@ -997,8 +1004,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     if ((flags & (0x1 << 1)) || dest_node_id == 0xFFFF) {
         // Broadcast
         dest_address = Network::BroadcastMac;
-    } else if ((connection_status.status == static_cast<u32>(NetworkStatus::ConnectedAsHost)) ||
-               dest_node_id != 1) {
+    } else if (dest_node_id != 1) {
         // Send to specific client
         auto destination =
             std::find_if(node_map.begin(), node_map.end(),
@@ -1011,7 +1017,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
         }
         dest_address = destination->first;
     } else {
-        // Not host and dest_node_id == 1: Send message to host
+        // Send message to host
         dest_address = network_info.host_mac_address;
     }
 
@@ -1063,15 +1069,19 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    auto bind_node = bind_node_data.find(bind_node_id);
-    if (bind_node == bind_node_data.end()) {
+    auto channel =
+        std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
+            return data.second.bind_node_id == bind_node_id;
+        });
+
+    if (channel == channel_data.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
     }
 
-    if (bind_node->second.received_packets.empty()) {
+    if (channel->second.received_packets.empty()) {
         std::vector<u8> output_buffer(buff_size, 0);
         IPC::RequestBuilder rb = rp.MakeBuilder(3, 2);
         rb.Push(RESULT_SUCCESS);
@@ -1081,7 +1091,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    const auto& next_packet = bind_node->second.received_packets.front();
+    const auto& next_packet = channel->second.received_packets.front();
 
     auto secure_data = ParseSecureDataHeader(next_packet);
     auto data_size = secure_data.GetActualDataSize();
@@ -1105,7 +1115,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     rb.Push<u16>(secure_data.src_node_id);
     rb.PushStaticBuffer(output_buffer, 0);
 
-    bind_node->second.received_packets.pop_front();
+    channel->second.received_packets.pop_front();
 }
 
 void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
@@ -1311,7 +1321,7 @@ NWM_UDS::NWM_UDS() : ServiceFramework("nwm::UDS") {
 
 NWM_UDS::~NWM_UDS() {
     network_info = {};
-    bind_node_data.clear();
+    channel_data.clear();
     connection_status_event = nullptr;
     recv_buffer_memory = nullptr;
     initialized = false;
