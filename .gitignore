@@ -30,6 +30,3 @@ CMakeSettings.json
 
 # Windows global filetypes
 Thumbs.db
-
-# Qt translation files
-*.ts
