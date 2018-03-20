@@ -12,7 +12,7 @@
 class OrphanBuffer : public OGLStreamBuffer {
 public:
     explicit OrphanBuffer(GLenum target) : OGLStreamBuffer(target) {}
-    ~OrphanBuffer() = default;
+    ~OrphanBuffer() override;
 
 private:
     void Create(size_t size, size_t sync_subdivide) override;
@@ -27,7 +27,7 @@ private:
 class StorageBuffer : public OGLStreamBuffer {
 public:
     explicit StorageBuffer(GLenum target) : OGLStreamBuffer(target) {}
-    ~StorageBuffer() = default;
+    ~StorageBuffer() override;
 
 private:
     void Create(size_t size, size_t sync_subdivide) override;
@@ -50,10 +50,6 @@ OGLStreamBuffer::OGLStreamBuffer(GLenum target) {
     gl_target = target;
 }
 
-OGLStreamBuffer::~OGLStreamBuffer() {
-    Release();
-}
-
 GLuint OGLStreamBuffer::GetHandle() const {
     return gl_buffer.handle;
 }
@@ -63,6 +59,10 @@ std::unique_ptr<OGLStreamBuffer> OGLStreamBuffer::MakeBuffer(bool storage_buffer
         return std::make_unique<StorageBuffer>(target);
     }
     return std::make_unique<OrphanBuffer>(target);
+}
+
+OrphanBuffer::~OrphanBuffer() {
+    Release();
 }
 
 void OrphanBuffer::Create(size_t size, size_t /*sync_subdivide*/) {
@@ -97,6 +97,10 @@ void OrphanBuffer::Unmap() {
     glBufferSubData(gl_target, static_cast<GLintptr>(buffer_pos),
                     static_cast<GLsizeiptr>(mapped_size), &data[buffer_pos]);
     buffer_pos += mapped_size;
+}
+
+StorageBuffer::~StorageBuffer() {
+    Release();
 }
 
 void StorageBuffer::Create(size_t size, size_t sync_subdivide) {
