@@ -17,6 +17,9 @@
 
 namespace Common {
 
+/// Returns if a string contains digits
+bool ContainsDigits(std::string str);
+
 /// Make a string lowercase
 std::string ToLower(std::string str);
 

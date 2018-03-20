@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <string>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "core/hle/applets/applet.h"
@@ -24,13 +23,6 @@ namespace Applets {
 #define SWKBD_MAX_HINT_TEXT_LEN 64
 /// Maximum filter callback error message length, in UTF-16 code units.
 #define SWKBD_MAX_CALLBACK_MSG_LEN 256
-
-enum class KbdButton { Cancel = 0, IForgot = 1, Ok = 2 };
-
-struct KbdResult {
-    std::string text;
-    KbdButton button;
-};
 
 /// Keyboard types
 enum class SwkbdType : u32 {
@@ -185,6 +177,7 @@ public:
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;
+    void QtImpl();
     void Update() override;
 
     /**

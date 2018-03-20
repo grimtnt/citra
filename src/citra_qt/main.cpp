@@ -372,14 +372,14 @@ void GMainWindow::InitializeHotkeys() {
             [&] {
                 if (Settings::values.frame_limit < 9999 - SPEED_LIMIT_STEP) {
                     Settings::values.frame_limit += SPEED_LIMIT_STEP;
-                    UpdateStatusBar();
+                    UpdateStatusBarAndApplets();
                 }
             });
     connect(GetHotkey("Main Window", "Decrease Speed Limit", this), &QShortcut::activated, this,
             [&] {
                 if (Settings::values.frame_limit > SPEED_LIMIT_STEP) {
                     Settings::values.frame_limit -= SPEED_LIMIT_STEP;
-                    UpdateStatusBar();
+                    UpdateStatusBarAndApplets();
                 }
             });
 }
@@ -447,7 +447,8 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(this, &GMainWindow::EmulationStopping, render_window,
             &GRenderWindow::OnEmulationStopping);
 
-    connect(&status_bar_update_timer, &QTimer::timeout, this, &GMainWindow::UpdateStatusBar);
+    connect(&status_bar_and_applets_update_timer, &QTimer::timeout, this,
+            &GMainWindow::UpdateStatusBarAndApplets);
 
     connect(this, &GMainWindow::UpdateProgress, this, &GMainWindow::OnUpdateProgress);
     connect(this, &GMainWindow::CIAInstallReport, this, &GMainWindow::OnCIAInstallReport);
@@ -725,7 +726,8 @@ void GMainWindow::BootGame(const QString& filename) {
     if (ui.action_Single_Window_Mode->isChecked()) {
         game_list->hide();
     }
-    status_bar_update_timer.start(2000);
+
+    status_bar_and_applets_update_timer.start(2000);
 
     render_window->show();
     render_window->setFocus();
@@ -770,8 +772,8 @@ void GMainWindow::ShutdownGame() {
     game_list->show();
     game_list->setFilterFocus();
 
-    // Disable status bar updates
-    status_bar_update_timer.stop();
+    // Disable status bar and applets updates
+    status_bar_and_applets_update_timer.stop();
     message_label->setVisible(false);
     emu_speed_label->setVisible(false);
     game_fps_label->setVisible(false);
@@ -1274,9 +1276,116 @@ void GMainWindow::OnDirectConnectToRoom() {
     BringWidgetToFront(direct_connect);
 }
 
-void GMainWindow::UpdateStatusBar() {
+void GMainWindow::UpdateSwkbd() {
+    bool valid = false;
+    while (!valid) {
+        bool ok;
+        u16 max_length = Settings::values.swkbd_info.config.max_text_length;
+        std::u16string hint(
+            reinterpret_cast<char16_t*>(Settings::values.swkbd_info.config.hint_text));
+        std::u16string cancel_text(
+            reinterpret_cast<char16_t*>(Settings::values.swkbd_info.config.button_text[0]));
+        std::u16string ok_text(
+            reinterpret_cast<char16_t*>(Settings::values.swkbd_info.config.button_text[1]));
+        QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
+        dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
+                                                       : QString::fromStdU16String(cancel_text));
+        dialog.setOkButtonText(ok_text.empty() ? tr("Ok") : QString::fromStdU16String(ok_text));
+        std::string text =
+            dialog
+                .getText(this, tr("Software Keyboard"), QString::fromStdU16String(hint),
+                         QLineEdit::Normal, QString(), &ok, dialog.windowFlags())
+                .toStdString();
+        if (ok) {
+            if (text.length() > max_length)
+                QMessageBox::critical(
+                    this, tr("Invalid input"),
+                    tr("Input is longer than the maximum length. Max: %1").arg(max_length));
+            else if (((Settings::values.swkbd_info.config.filter_flags &
+                       HLE::Applets::SWKBDFILTER_DIGITS) == HLE::Applets::SWKBDFILTER_DIGITS) &&
+                     Common::ContainsDigits(text))
+                QMessageBox::critical(this, tr("Invalid input"),
+                                      tr("Input must not contain any digits"));
+            else if (((Settings::values.swkbd_info.config.filter_flags &
+                       HLE::Applets::SWKBDFILTER_AT) == HLE::Applets::SWKBDFILTER_AT) &&
+                     (text.find("@") != std::string::npos))
+                QMessageBox::critical(this, tr("Invalid input"),
+                                      tr("Input must not contain the @ symbol"));
+            else if (((Settings::values.swkbd_info.config.filter_flags &
+                       HLE::Applets::SWKBDFILTER_PERCENT) == HLE::Applets::SWKBDFILTER_PERCENT) &&
+                     (text.find("%") != std::string::npos))
+                QMessageBox::critical(this, tr("Invalid input"),
+                                      tr("Input must not contain the % symbol"));
+            else if (((Settings::values.swkbd_info.config.filter_flags &
+                       HLE::Applets::SWKBDFILTER_BACKSLASH) ==
+                      HLE::Applets::SWKBDFILTER_BACKSLASH) &&
+                     (text.find("\\") != std::string::npos))
+                QMessageBox::critical(this, tr("Invalid input"),
+                                      tr("Input must not contain the \\ symbol"));
+            else if ((Settings::values.swkbd_info.config.valid_input ==
+                      HLE::Applets::SwkbdValidInput::FIXEDLEN) &&
+                     (text.length() != Settings::values.swkbd_info.config.max_text_length))
+                QMessageBox::critical(this, tr("Invalid input"),
+                                      tr("Input must be exactly %1 characters.").arg(max_length));
+            else if ((Settings::values.swkbd_info.config.valid_input ==
+                      HLE::Applets::SwkbdValidInput::NOTEMPTY_NOTBLANK) &&
+                         (std::any_of(text.begin(), text.end(),
+                                      [](const char c) { return std::isspace(c); })) ||
+                     text.empty())
+                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be blank."));
+            else if ((Settings::values.swkbd_info.config.valid_input ==
+                      HLE::Applets::SwkbdValidInput::NOTBLANK) &&
+                     (std::any_of(text.begin(), text.end(),
+                                  [](const char c) { return std::isspace(c); })))
+                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be blank."));
+            else if ((Settings::values.swkbd_info.config.valid_input ==
+                      HLE::Applets::SwkbdValidInput::NOTEMPTY) &&
+                     text.empty())
+                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be empty."));
+            else {
+                Settings::values.swkbd_info.text = text.substr(0, max_length);
+                switch (Settings::values.swkbd_info.config.num_buttons_m1) {
+                case HLE::Applets::SwkbdButtonConfig::NO_BUTTON:
+                    Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::NONE;
+                    break;
+                case HLE::Applets::SwkbdButtonConfig::SINGLE_BUTTON:
+                    Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::D0_CLICK;
+                    break;
+                case HLE::Applets::SwkbdButtonConfig::DUAL_BUTTON:
+                    Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::D1_CLICK1;
+                    break;
+                case HLE::Applets::SwkbdButtonConfig::TRIPLE_BUTTON:
+                    Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::D2_CLICK2;
+                    break;
+                }
+                Settings::values.swkbd_info.open = false;
+                valid = true;
+            }
+        } else {
+            Settings::values.swkbd_info.text.clear();
+            switch (Settings::values.swkbd_info.config.num_buttons_m1) {
+            case HLE::Applets::SwkbdButtonConfig::NO_BUTTON:
+                Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::NONE;
+                break;
+            case HLE::Applets::SwkbdButtonConfig::SINGLE_BUTTON:
+                Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::D0_CLICK;
+                break;
+            case HLE::Applets::SwkbdButtonConfig::DUAL_BUTTON:
+                Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::D1_CLICK0;
+                break;
+            case HLE::Applets::SwkbdButtonConfig::TRIPLE_BUTTON:
+                Settings::values.swkbd_info.return_code = HLE::Applets::SwkbdResult::D2_CLICK0;
+                break;
+            }
+            Settings::values.swkbd_info.open = false;
+            valid = true;
+        }
+    }
+}
+
+void GMainWindow::UpdateStatusBarAndApplets() {
     if (emu_thread == nullptr) {
-        status_bar_update_timer.stop();
+        status_bar_and_applets_update_timer.stop();
         return;
     }
 
@@ -1295,6 +1404,9 @@ void GMainWindow::UpdateStatusBar() {
     emu_speed_label->setVisible(true);
     game_fps_label->setVisible(true);
     emu_frametime_label->setVisible(true);
+
+    if (Settings::values.swkbd_info.open)
+        UpdateSwkbd();
 }
 
 void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string details) {
@@ -1543,6 +1655,7 @@ void GMainWindow::SyncMenuUISettings() {
 #endif
 
 int main(int argc, char* argv[]) {
+    Settings::values.frontend = Settings::Frontend::Qt;
     Log::Filter log_filter(Log::Level::Info);
     Log::SetFilter(&log_filter);
 

@@ -204,7 +204,8 @@ private slots:
     void OnLanguageChanged(const QString& locale);
 
 private:
-    void UpdateStatusBar();
+    void UpdateSwkbd();
+    void UpdateStatusBarAndApplets();
     void LoadTranslation();
     void SetupUIStrings();
 
@@ -219,7 +220,7 @@ private:
     QLabel* game_fps_label = nullptr;
     QLabel* emu_frametime_label = nullptr;
     ClickableLabel* network_status = nullptr;
-    QTimer status_bar_update_timer;
+    QTimer status_bar_and_applets_update_timer;
 
     std::unique_ptr<Config> config;
     std::shared_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;

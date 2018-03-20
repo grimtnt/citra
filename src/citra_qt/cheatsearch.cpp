@@ -33,8 +33,7 @@ CheatSearch::CheatSearch(QWidget* parent) : QDialog(parent), ui(new Ui::CheatSea
             this, [this](int index) { OnScanTypeChanged(index); });
     connect(ui->cbValueType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this](int index) { OnValueTypeChanged(index); });
-    connect(ui->chkHex, &QCheckBox::clicked, this,
-            [this](bool i) { OnHexCheckedChanged(i); });
+    connect(ui->chkHex, &QCheckBox::clicked, this, [this](bool i) { OnHexCheckedChanged(i); });
     connect(ui->tableFound, &QTableWidget::doubleClicked, this, [&](QModelIndex i) {
         ModifyAddressDialog* dialog =
             new ModifyAddressDialog(this, ui->tableFound->item(i.row(), 0)->text().toStdString(),

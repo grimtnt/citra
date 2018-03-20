@@ -23,6 +23,15 @@
 
 namespace Common {
 
+/// Returns if a string contains digits
+bool ContainsDigits(std::string str) {
+    for (size_t i = 0; i < str.size(); ++i) {
+        if (std::isdigit(str[i]))
+            return true;
+    }
+    return false;
+}
+
 /// Make a string lowercase
 std::string ToLower(std::string str) {
     boost::transform(str, str.begin(), ::tolower);
