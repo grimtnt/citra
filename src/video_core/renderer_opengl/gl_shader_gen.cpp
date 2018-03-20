@@ -1594,7 +1594,8 @@ void emit_cb() {
 void main() {
 )";
     for (u32 i = 0; i < config.num_outputs; ++i) {
-        out += "    output_buffer.attributes[" + std::to_string(i) + "] = vec4(0.0, 0.0, 0.0, 1.0);\n";
+        out +=
+            "    output_buffer.attributes[" + std::to_string(i) + "] = vec4(0.0, 0.0, 0.0, 1.0);\n";
     }
 
     // execute shader
