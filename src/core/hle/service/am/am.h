@@ -52,6 +52,7 @@ enum class InstallStatus : u32 {
     ErrorEncrypted,
 };
 
+// Title ID valid length
 constexpr size_t TITLE_ID_VALID_LENGTH = 16;
 
 // Progress callback for InstallCIA, receives bytes written and total bytes
