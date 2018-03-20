@@ -410,7 +410,12 @@ private:
         return "uniforms.b[" + std::to_string(index) + "]";
     };
 
-    static u32 CallSubroutine(ShaderWriter& shader, const Subroutine& subroutine) {
+    /**
+     * Adds code that calls a subroutine.
+     * @param shader a ShaderWriter object to write GLSL code.
+     * @param subroutine the subroutine to call.
+     */
+    static void CallSubroutine(ShaderWriter& shader, const Subroutine& subroutine) {
         std::function<bool(const Subroutine&)> maybe_end_instr =
             [&maybe_end_instr](const Subroutine& subroutine) -> bool {
             for (auto& callee : subroutine.calls) {
@@ -434,10 +439,16 @@ private:
         } else {
             shader.AddLine(subroutine.GetName() + "();");
         }
-
-        return subroutine.end;
     };
 
+    /**
+     * Compiles a single instruction from PICA to GLSL.
+     * @param shader a ShaderWriter object to write GLSL code.
+     * @param offset the offset of the PICA shader instruction.
+     * @return the offset of the next instruction to execute. Usually it is the current offset + 1.
+     * If the current instruction is IF or LOOP, the next instruction is after the IF or LOOP block.
+     * If the current instruction always terminates the program, returns PROGRAM_END.
+     */
     u32 CompileInstr(ShaderWriter& shader, u32 offset) {
         const Instruction instr = {program_code[offset]};
 
@@ -451,8 +462,8 @@ private:
                            instr.opcode.Value().GetInfo().name);
         }
 
-        auto set_dest = [&](const std::string& reg, const std::string& value,
-                            u32 dest_num_components, u32 value_num_components) {
+        auto set_dest = [&shader, &swizzle](const std::string& reg, const std::string& value,
+                                            u32 dest_num_components, u32 value_num_components) {
             u32 dest_mask_num_components = 0;
             std::string dest_mask_swizzle = ".";
 
@@ -780,10 +791,6 @@ private:
 
                 --shader.scope;
                 shader.AddLine("}");
-
-                if (offset == PROGRAM_END - 1) {
-                    shader.AddLine("return true;");
-                }
                 break;
             }
 
@@ -808,7 +815,6 @@ private:
 
                 if (loop_sub.always_end) {
                     offset = PROGRAM_END - 1;
-                    shader.AddLine("return true;");
                 }
 
                 break;
@@ -843,6 +849,21 @@ private:
         }
         }
         return offset + 1;
+    };
+
+    /**
+     * Compiles a range of instructions from PICA to GLSL.
+     * @param shader a ShaderWriter object to write GLSL code.
+     * @param begin the offset of the starting instruction.
+     * @param end the offset where the compilation should stop (exclusive).
+     * @return the offset of the next instruction to compile. PROGRAM_END if the program terminates.
+     */
+    u32 CompileRange(ShaderWriter& shader, u32 begin, u32 end) {
+        u32 program_counter;
+        for (program_counter = begin; program_counter < (begin > end ? PROGRAM_END : end);) {
+            program_counter = CompileInstr(shader, program_counter);
+        }
+        return program_counter;
     };
 
 public:
@@ -891,14 +912,6 @@ public:
         }
         shader.AddLine("");
 
-        auto compile_range = [&shader, this](u32 begin, u32 end) -> u32 {
-            u32 program_counter;
-            for (program_counter = begin; program_counter < (begin > end ? PROGRAM_END : end);) {
-                program_counter = CompileInstr(shader, program_counter);
-            }
-            return program_counter;
-        };
-
         shader.AddLine("bool exec_shader() {");
         ++shader.scope;
         CallSubroutine(shader, program_main);
@@ -917,7 +930,7 @@ public:
             ++shader.scope;
 
             if (labels.empty()) {
-                if (compile_range(subroutine.begin, subroutine.end) != PROGRAM_END) {
+                if (CompileRange(shader, subroutine.begin, subroutine.end) != PROGRAM_END) {
                     shader.AddLine("return false;");
                 }
             } else {
@@ -935,8 +948,9 @@ public:
                     auto next_it = labels.lower_bound(label + 1);
                     u32 next_label = next_it == labels.end() ? subroutine.end : *next_it;
 
-                    u32 compile_end = compile_range(label, next_label);
+                    u32 compile_end = CompileRange(shader, label, next_label);
                     if (compile_end > next_label && compile_end != PROGRAM_END) {
+                        // This happens only when there is a label inside a IF/LOOP block
                         shader.AddLine("{ jmp_to = " + std::to_string(compile_end) + "u; break; }");
                         labels.emplace(compile_end);
                     }
