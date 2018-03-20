@@ -107,12 +107,13 @@ RasterizerOpenGL::RasterizerOpenGL() {
     }
 
     // Generate VBO, VAO and UBO
-    vertex_buffer.Create();
+    vertex_buffer = OGLStreamBuffer::MakeBuffer(GLAD_GL_ARB_buffer_storage, GL_ARRAY_BUFFER);
+    vertex_buffer->Create(VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE / 2);
     sw_vao.Create();
     uniform_buffer.Create();
 
     state.draw.vertex_array = sw_vao.handle;
-    state.draw.vertex_buffer = vertex_buffer.handle;
+    state.draw.vertex_buffer = vertex_buffer->GetHandle();
     state.draw.uniform_buffer = uniform_buffer.handle;
     state.Apply();
 
@@ -292,13 +293,11 @@ RasterizerOpenGL::RasterizerOpenGL() {
 }
 
 RasterizerOpenGL::~RasterizerOpenGL() {
-    if (stream_buffer == nullptr) {
-        return;
+    if (stream_buffer != nullptr) {
+        state.draw.vertex_buffer = stream_buffer->GetHandle();
+        state.Apply();
+        stream_buffer->Release();
     }
-
-    state.draw.vertex_buffer = stream_buffer->GetHandle();
-    state.Apply();
-    stream_buffer->Release();
 }
 
 /**
@@ -902,7 +901,7 @@ void RasterizerOpenGL::DrawTriangles() {
         }
     } else {
         state.draw.vertex_array = sw_vao.handle;
-        state.draw.vertex_buffer = vertex_buffer.handle;
+        state.draw.vertex_buffer = vertex_buffer->GetHandle();
         if (has_ARB_separate_shader_objects) {
             glUseProgramStages(pipeline.handle, GL_VERTEX_SHADER_BIT, vs_default_shader.handle);
             glUseProgramStages(pipeline.handle, GL_GEOMETRY_SHADER_BIT, 0);
@@ -913,9 +912,16 @@ void RasterizerOpenGL::DrawTriangles() {
         }
         state.Apply();
 
-        glBufferData(GL_ARRAY_BUFFER, vertex_batch.size() * sizeof(HardwareVertex),
-                     vertex_batch.data(), GL_STREAM_DRAW);
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_batch.size()));
+        size_t max_vertices = 3 * (VERTEX_BUFFER_SIZE / (3 * sizeof(HardwareVertex)));
+        for (size_t base_vertex = 0; base_vertex < vertex_batch.size();
+             base_vertex += max_vertices) {
+            size_t vertices = std::min(max_vertices, vertex_batch.size() - base_vertex);
+            size_t vertex_size = vertices * sizeof(HardwareVertex);
+            auto map = vertex_buffer->Map(vertex_size, 1);
+            memcpy(map.first, vertex_batch.data() + base_vertex, vertex_size);
+            vertex_buffer->Unmap();
+            glDrawArrays(GL_TRIANGLES, map.second / sizeof(HardwareVertex), (GLsizei)vertices);
+        }
     }
 
     // Disable scissor test
