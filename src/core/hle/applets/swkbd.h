@@ -177,7 +177,6 @@ public:
 
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;
-    void QtImpl();
     void Update() override;
 
     /**
