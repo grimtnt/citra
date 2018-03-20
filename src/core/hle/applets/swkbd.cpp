@@ -192,22 +192,18 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
     return valid;
 }
 
-void SoftwareKeyboard::QtImpl() {
-    Settings::values.swkbd_info = Settings::SwkbdInfo{true, "", SwkbdResult::D0_CLICK, config};
-    while (Settings::values.swkbd_info.open) {
-        std::this_thread::sleep_for(std::chrono::nanoseconds{1});
-    }
-    std::u16string text = Common::UTF8ToUTF16(Settings::values.swkbd_info.text);
-    memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
-    config.return_code = Settings::values.swkbd_info.return_code;
-    config.text_length = text.length();
-    config.text_offset = 0;
-    Finalize();
-}
-
 void SoftwareKeyboard::Update() {
     if (Settings::values.frontend == Settings::Frontend::Qt) {
-        QtImpl();
+        Settings::values.swkbd_info = Settings::SwkbdInfo{true, "", SwkbdResult::D0_CLICK, config};
+        while (Settings::values.swkbd_info.open) {
+            std::this_thread::sleep_for(std::chrono::nanoseconds{1});
+        }
+        std::u16string text = Common::UTF8ToUTF16(Settings::values.swkbd_info.text);
+        memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
+        config.return_code = Settings::values.swkbd_info.return_code;
+        config.text_length = text.length();
+        config.text_offset = 0;
+        Finalize();
         return;
     }
 
