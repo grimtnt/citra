@@ -1328,17 +1328,6 @@ void GMainWindow::UpdateSwkbd() {
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must be exactly %1 characters.").arg(max_length));
             else if ((Settings::values.swkbd_info.config.valid_input ==
-                      HLE::Applets::SwkbdValidInput::NOTEMPTY_NOTBLANK) &&
-                         (std::any_of(text.begin(), text.end(),
-                                      [](const char c) { return std::isspace(c); })) ||
-                     text.empty())
-                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be blank."));
-            else if ((Settings::values.swkbd_info.config.valid_input ==
-                      HLE::Applets::SwkbdValidInput::NOTBLANK) &&
-                     (std::any_of(text.begin(), text.end(),
-                                  [](const char c) { return std::isspace(c); })))
-                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be blank."));
-            else if ((Settings::values.swkbd_info.config.valid_input ==
                       HLE::Applets::SwkbdValidInput::NOTEMPTY) &&
                      text.empty())
                 QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be empty."));
