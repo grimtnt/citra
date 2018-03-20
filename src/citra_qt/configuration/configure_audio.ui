@@ -48,7 +48,7 @@
       <item>
        <widget class="QCheckBox" name="toggle_pipe3">
         <property name="text">
-         <string>Enable Pipe 2 Channel 3</string>
+         <string>Enable Pipe 3</string>
         </property>
        </widget>
       </item>
