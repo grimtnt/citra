@@ -10,7 +10,7 @@
 class OGLStreamBuffer : private NonCopyable {
 public:
     explicit OGLStreamBuffer(GLenum target);
-    virtual ~OGLStreamBuffer();
+    virtual ~OGLStreamBuffer() = default;
 
 public:
     static std::unique_ptr<OGLStreamBuffer> MakeBuffer(bool storage_buffer, GLenum target);
