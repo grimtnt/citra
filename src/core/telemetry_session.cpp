@@ -166,6 +166,8 @@ TelemetrySession::TelemetrySession() {
     AddField(Telemetry::FieldType::UserConfig, "Audio_EnableAudioStretching",
              Settings::values.enable_audio_stretching);
     AddField(Telemetry::FieldType::UserConfig, "Core_UseCpuJit", Settings::values.use_cpu_jit);
+    AddField(Telemetry::FieldType::UserConfig, "Core_SwkbdMode",
+             static_cast<int>(Settings::values.swkbd_mode));
     AddField(Telemetry::FieldType::UserConfig, "Renderer_ResolutionFactor",
              Settings::values.resolution_factor);
     AddField(Telemetry::FieldType::UserConfig, "Renderer_UseFrameLimit",

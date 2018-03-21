@@ -12,6 +12,7 @@
 #include "common/announce_multiplayer_room.h"
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
+#include "core/hle/applets/swkbd.h"
 #include "core/hle/service/am/am.h"
 #include "network/network.h"
 #include "ui_main.h"
@@ -113,6 +114,8 @@ private:
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
+    void SwkbdCallback(std::string* textp, HLE::Applets::SwkbdResult* result,
+                       HLE::Applets::SoftwareKeyboardConfig config);
     void SyncMenuUISettings();
     void RestoreUIState();
 
@@ -204,8 +207,7 @@ private slots:
     void OnLanguageChanged(const QString& locale);
 
 private:
-    void UpdateSwkbd();
-    void UpdateStatusBarAndApplets();
+    void UpdateStatusBar();
     void LoadTranslation();
     void SetupUIStrings();
 
@@ -220,7 +222,7 @@ private:
     QLabel* game_fps_label = nullptr;
     QLabel* emu_frametime_label = nullptr;
     ClickableLabel* network_status = nullptr;
-    QTimer status_bar_and_applets_update_timer;
+    QTimer status_bar_update_timer;
 
     std::unique_ptr<Config> config;
     std::shared_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;

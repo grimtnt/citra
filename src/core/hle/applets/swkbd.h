@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <functional>
+#include <map>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "core/hle/applets/applet.h"
@@ -201,6 +203,43 @@ private:
 
     /// Configuration of this instance of the SoftwareKeyboard, as received from the application
     SoftwareKeyboardConfig config;
+};
+
+class SwkbdFactory {
+public:
+    SwkbdFactory() {}
+
+    ~SwkbdFactory() {
+        Clear();
+    }
+
+    bool Exists(std::string name) {
+        auto it = callbacks.find(name);
+        if (it != callbacks.end())
+            return true;
+        return false;
+    }
+
+    void Clear() {
+        callbacks.clear();
+    }
+
+    void Register(
+        std::string name,
+        std::function<void(std::string*, SwkbdResult*, SoftwareKeyboardConfig)> callback) {
+        callbacks.emplace(name, callback);
+    }
+
+    void Launch(std::string name, std::string* text, SwkbdResult* result,
+                SoftwareKeyboardConfig config) {
+        auto it = callbacks.find(name);
+        if (it != callbacks.end())
+            it->second(text, result, config);
+    }
+
+private:
+    std::map<std::string, std::function<void(std::string*, SwkbdResult*, SoftwareKeyboardConfig)>>
+        callbacks;
 };
 } // namespace Applets
 } // namespace HLE

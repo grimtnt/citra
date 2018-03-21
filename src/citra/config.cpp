@@ -107,6 +107,8 @@ void Config::ReadValues() {
 
     // Core
     Settings::values.use_cpu_jit = sdl2_config->GetBoolean("Core", "use_cpu_jit", true);
+    Settings::values.swkbd_mode =
+        static_cast<Settings::SwkbdMode>(sdl2_config->GetInteger("Core", "swkbd_mode", 0));
 
     // Renderer
     Settings::values.renderer =

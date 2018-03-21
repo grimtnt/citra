@@ -7,19 +7,16 @@
 #include <array>
 #include <string>
 #include "common/common_types.h"
-#include "core/hle/applets/swkbd.h"
+#include "core/core.h"
 #include "core/hle/service/cam/cam.h"
 
 namespace Settings {
-
-using SwkbdResult = HLE::Applets::SwkbdResult;
-using SwkbdConfig = HLE::Applets::SoftwareKeyboardConfig;
 
 enum class HwShaders { Off, All, VS };
 
 enum class RenderBackend { Software, OpenGL };
 
-enum class Frontend { SDL, Qt };
+enum class SwkbdMode { StdIn, Qt };
 
 enum class LayoutOption {
     Default,
@@ -96,13 +93,6 @@ static const std::array<const char*, NumAnalogs> mapping = {{
 }};
 } // namespace NativeAnalog
 
-struct SwkbdInfo {
-    bool open;
-    std::string text;
-    SwkbdResult return_code;
-    SwkbdConfig config;
-};
-
 struct Values {
     // Control Panel
     bool sp_enable_3d;
@@ -121,7 +111,7 @@ struct Values {
 
     // Core
     bool use_cpu_jit;
-    SwkbdInfo swkbd_info;
+    SwkbdMode swkbd_mode;
 
     // Data Storage
     bool use_virtual_sd;
@@ -155,7 +145,6 @@ struct Values {
     float bg_green;
     float bg_blue;
 
-    Frontend frontend;
     std::string log_filter;
 
     // Audio

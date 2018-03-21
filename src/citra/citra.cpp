@@ -114,7 +114,6 @@ static void OnMessageReceived(const Network::ChatEntry& msg) {
 
 /// Application entry point
 int main(int argc, char** argv) {
-    Settings::values.frontend = Settings::Frontend::SDL;
     Config config;
     int option_index = 0;
     bool use_gdbstub = Settings::values.use_gdbstub;

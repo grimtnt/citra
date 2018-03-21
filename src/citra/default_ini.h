@@ -94,6 +94,10 @@ touch_device=
 # 0: Interpreter (slow), 1 (default): JIT (fast)
 use_cpu_jit =
 
+# Software Keyboard mode
+# 0: stdin (default), 1: Qt
+swkbd_mode =
+
 [Renderer]
 # Whether to use software or hardware rendering.
 # 0: Software, 1 (default): OpenGL

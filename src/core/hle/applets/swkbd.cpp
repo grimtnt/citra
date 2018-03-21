@@ -11,6 +11,7 @@
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
+#include "core/core.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
@@ -193,15 +194,19 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 }
 
 void SoftwareKeyboard::Update() {
-    if (Settings::values.frontend == Settings::Frontend::Qt) {
-        Settings::values.swkbd_info = Settings::SwkbdInfo{true, "", SwkbdResult::D0_CLICK, config};
-        while (Settings::values.swkbd_info.open) {
+    if (Settings::values.swkbd_mode == Settings::SwkbdMode::Qt &&
+        Core::System::GetInstance().GetSwkbdFactory().Exists("qt")) {
+        std::string text;
+        SwkbdResult result = SwkbdResult::NONE;
+        Core::System::GetInstance().GetSwkbdFactory().Launch("qt", &text, &result, config);
+        while (result == SwkbdResult::NONE) {
             std::this_thread::sleep_for(std::chrono::nanoseconds{1});
         }
-        std::u16string text = Common::UTF8ToUTF16(Settings::values.swkbd_info.text);
-        memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
-        config.return_code = Settings::values.swkbd_info.return_code;
-        config.text_length = text.length();
+        std::u16string utf16_input = Common::UTF8ToUTF16(text);
+        memcpy(text_memory->GetPointer(), utf16_input.c_str(),
+               utf16_input.length() * sizeof(char16_t));
+        config.return_code = result;
+        config.text_length = static_cast<u16>(utf16_input.size());
         config.text_offset = 0;
         Finalize();
         return;

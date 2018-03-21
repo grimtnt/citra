@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include "common/common_types.h"
+#include "core/hle/applets/swkbd.h"
 #include "core/loader/loader.h"
 #include "core/memory.h"
 #include "core/perf_stats.h"
@@ -132,6 +133,10 @@ public:
         return *app_loader;
     }
 
+    HLE::Applets::SwkbdFactory& GetSwkbdFactory() const {
+        return *swkbd_factory;
+    }
+
 private:
     /**
      * Initialize the emulated system.
@@ -146,6 +151,9 @@ private:
 
     /// AppLoader used to load the current executing application
     std::unique_ptr<Loader::AppLoader> app_loader;
+
+    /// Software keyboard factory
+    std::unique_ptr<HLE::Applets::SwkbdFactory> swkbd_factory;
 
     ///< ARM11 CPU core
     std::unique_ptr<ARM_Interface> cpu_core;

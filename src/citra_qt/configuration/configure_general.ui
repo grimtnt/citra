@@ -52,6 +52,31 @@
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QLabel" name="swkbd_mode_label">
+              <property name="text">
+               <string>Software keyboard mode</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="swkbd_mode_combobox">
+              <item>
+               <property name="text">
+                <string>StdIn</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Qt</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </item>
        </layout>
