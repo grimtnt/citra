@@ -7,7 +7,6 @@
 #include <array>
 #include <string>
 #include "common/common_types.h"
-#include "core/core.h"
 #include "core/hle/service/cam/cam.h"
 
 namespace Settings {
