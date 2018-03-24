@@ -41,7 +41,7 @@ std::unique_ptr<httplib::Client> GetClientFor(const LUrlParser::clParseURL& pars
                                                hl::HttpVersion::v1_1);
     } else {
         LOG_ERROR(WebService, "Bad URL scheme %s", parsedUrl.m_Scheme.c_str());
-        return std::unique_ptr<hl::Client>(nullptr);
+        return nullptr;
     }
 }
 
