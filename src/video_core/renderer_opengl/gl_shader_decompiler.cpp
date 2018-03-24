@@ -2,11 +2,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <map>
 #include <set>
 #include <string>
 #include <nihstro/shader_bytecode.h>
-#include <queue>
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "video_core/renderer_opengl/gl_shader_decompiler.h"
@@ -21,6 +19,196 @@ using nihstro::RegisterType;
 using nihstro::SourceRegister;
 using nihstro::SwizzlePattern;
 
+constexpr u32 PROGRAM_END = MAX_PROGRAM_CODE_LENGTH;
+
+/// Describes the behaviour of code path of a given entry point and a return point.
+enum class ExitMethod {
+    Undetermined, ///< Internal value. Only occur when analyzing JMP loop.
+    AlwaysReturn, ///< All code paths reach the return point.
+    Conditional,  ///< Code path reaches the return point or an END instruction conditionally.
+    AlwaysEnd,    ///< All code paths reach a END instruction.
+};
+
+/// A subroutine is a range of code refereced by a CALL, IF or LOOP instruction.
+struct Subroutine {
+    /// Generates a name suitable for GLSL source code.
+    std::string GetName() const {
+        return "sub_" + std::to_string(begin) + "_" + std::to_string(end);
+    }
+
+    u32 begin;              ///< Entry point of the subroutine.
+    u32 end;                ///< Return point of the subroutine.
+    ExitMethod exit_method; ///< Exit method of the subroutine.
+    std::set<u32> labels;   ///< Addresses refereced by JMP instructions.
+
+    bool operator<(const Subroutine& rhs) const {
+        if (begin == rhs.begin) {
+            return end < rhs.end;
+        }
+        return begin < rhs.begin;
+    }
+};
+
+/// Analyzes shader code and produces a set of subroutines.
+class ControlFlowAnalyzer {
+public:
+    ControlFlowAnalyzer(const ProgramCode& program_code, u32 main_offset)
+        : program_code(program_code) {
+
+        // Recursively finds all subroutines.
+        const Subroutine& program_main = AddSubroutine(main_offset, PROGRAM_END);
+        ASSERT(program_main.exit_method == ExitMethod::AlwaysEnd);
+    }
+
+    std::set<Subroutine> GetSubroutines() {
+        return std::move(subroutines);
+    }
+
+private:
+    const ProgramCode& program_code;
+    std::set<Subroutine> subroutines;
+    std::map<std::pair<u32, u32>, ExitMethod> exit_method_map;
+
+    /// Adds and analyzes a new subroutine if it is not added yet.
+    const Subroutine& AddSubroutine(u32 begin, u32 end) {
+        auto iter = subroutines.find(Subroutine{begin, end});
+        if (iter != subroutines.end())
+            return *iter;
+
+        Subroutine subroutine{begin, end};
+        subroutine.exit_method = Scan(begin, end, subroutine.labels);
+        return *subroutines.insert(std::move(subroutine)).first;
+    }
+
+    /// Merges exit method of two parallel branches.
+    static ExitMethod ParallelExit(ExitMethod a, ExitMethod b) {
+        if (a == ExitMethod::Undetermined) {
+            return b;
+        }
+        if (b == ExitMethod::Undetermined) {
+            return a;
+        }
+        if (a == b) {
+            return a;
+        }
+        return ExitMethod::Conditional;
+    }
+
+    /// Cascades exit method of two blocks of code.
+    static ExitMethod SeriesExit(ExitMethod a, ExitMethod b) {
+        // This should be handled before evaluating b.
+        DEBUG_ASSERT(a != ExitMethod::AlwaysEnd);
+
+        if (a == ExitMethod::Undetermined) {
+            return ExitMethod::Undetermined;
+        }
+
+        if (a == ExitMethod::AlwaysReturn) {
+            return b;
+        }
+
+        if (b == ExitMethod::Undetermined || b == ExitMethod::AlwaysEnd) {
+            return ExitMethod::AlwaysEnd;
+        }
+
+        return ExitMethod::Conditional;
+    }
+
+    /// Scans a range of code for labels and determines the exit method.
+    ExitMethod Scan(u32 begin, u32 end, std::set<u32>& labels) {
+        auto [iter, inserted] =
+            exit_method_map.emplace(std::make_pair(begin, end), ExitMethod::Undetermined);
+        ExitMethod& exit_method = iter->second;
+        if (!inserted)
+            return exit_method;
+
+        u32 offset = begin;
+        for (u32 offset = begin; offset < (begin > end ? PROGRAM_END : end); ++offset) {
+            const Instruction instr = {program_code[offset]};
+            switch (instr.opcode.Value()) {
+            case OpCode::Id::END: {
+                return exit_method = ExitMethod::AlwaysEnd;
+            }
+            case OpCode::Id::JMPC:
+            case OpCode::Id::JMPU: {
+                labels.insert(instr.flow_control.dest_offset);
+                ExitMethod no_jmp = Scan(offset + 1, end, labels);
+                ExitMethod jmp = Scan(instr.flow_control.dest_offset, end, labels);
+                return exit_method = ParallelExit(no_jmp, jmp);
+            }
+            case OpCode::Id::CALL: {
+                auto& call = AddSubroutine(instr.flow_control.dest_offset,
+                                           instr.flow_control.dest_offset +
+                                               instr.flow_control.num_instructions);
+                if (call.exit_method == ExitMethod::AlwaysEnd)
+                    return exit_method = ExitMethod::AlwaysEnd;
+                ExitMethod after_call = Scan(offset + 1, end, labels);
+                return exit_method = SeriesExit(call.exit_method, after_call);
+            }
+            case OpCode::Id::LOOP: {
+                auto& loop = AddSubroutine(offset + 1, instr.flow_control.dest_offset + 1);
+                if (loop.exit_method == ExitMethod::AlwaysEnd)
+                    return exit_method = ExitMethod::AlwaysEnd;
+                ExitMethod after_loop = Scan(instr.flow_control.dest_offset + 1, end, labels);
+                return exit_method = SeriesExit(loop.exit_method, after_loop);
+            }
+            case OpCode::Id::CALLC:
+            case OpCode::Id::CALLU: {
+                auto& call = AddSubroutine(instr.flow_control.dest_offset,
+                                           instr.flow_control.dest_offset +
+                                               instr.flow_control.num_instructions);
+                ExitMethod after_call = Scan(offset + 1, end, labels);
+                return exit_method = SeriesExit(
+                           ParallelExit(call.exit_method, ExitMethod::AlwaysReturn), after_call);
+            }
+            case OpCode::Id::IFU:
+            case OpCode::Id::IFC: {
+                auto& if_sub = AddSubroutine(offset + 1, instr.flow_control.dest_offset);
+                ExitMethod else_method;
+                if (instr.flow_control.num_instructions != 0) {
+                    auto& else_sub = AddSubroutine(instr.flow_control.dest_offset,
+                                                   instr.flow_control.dest_offset +
+                                                       instr.flow_control.num_instructions);
+                    else_method = else_sub.exit_method;
+                } else {
+                    else_method = ExitMethod::AlwaysReturn;
+                }
+
+                ExitMethod both = ParallelExit(if_sub.exit_method, else_method);
+                if (both == ExitMethod::AlwaysEnd)
+                    return exit_method = ExitMethod::AlwaysEnd;
+                ExitMethod after_call =
+                    Scan(instr.flow_control.dest_offset + instr.flow_control.num_instructions, end,
+                         labels);
+                return exit_method = SeriesExit(both, after_call);
+            }
+            }
+        }
+        return exit_method = ExitMethod::AlwaysReturn;
+    }
+};
+
+class ShaderWriter {
+public:
+    void AddLine(const std::string& text) {
+        ASSERT(scope >= 0);
+        if (!text.empty()) {
+            shader_source += std::string(static_cast<size_t>(scope) * 4, ' ');
+        }
+        shader_source += text + '\n';
+    }
+
+    std::string GetResult() {
+        return std::move(shader_source);
+    }
+
+    int scope = 0;
+
+private:
+    std::string shader_source;
+};
+
+/// An adaptor for getting swizzle pattern string from nihstro interfaces.
 template <SwizzlePattern::Selector (SwizzlePattern::*getter)(int) const>
 std::string GetSelectorSrc(const SwizzlePattern& pattern) {
     std::string out;
@@ -50,300 +238,29 @@ constexpr auto GetSelectorSrc1 = GetSelectorSrc<&SwizzlePattern::GetSelectorSrc1
 constexpr auto GetSelectorSrc2 = GetSelectorSrc<&SwizzlePattern::GetSelectorSrc2>;
 constexpr auto GetSelectorSrc3 = GetSelectorSrc<&SwizzlePattern::GetSelectorSrc3>;
 
-std::string GetCommonDeclarations() {
-    return R"(
-struct pica_uniforms {
-    bool b[16];
-    uvec4 i[4];
-    vec4 f[96];
-};
-
-bool exec_shader();
-
-)";
-}
-
-constexpr u32 PROGRAM_END = MAX_PROGRAM_CODE_LENGTH;
-constexpr bool PRINT_DEBUG = true;
-
-class ShaderWriter {
+class GLSLGenerator {
 public:
-    void AddLine(const std::string& text) {
-        ASSERT(scope >= 0);
-        if (PRINT_DEBUG && !text.empty()) {
-            shader_source += std::string(static_cast<size_t>(scope) * 4, ' ');
-        }
-        shader_source += text + '\n';
+    GLSLGenerator(const std::set<Subroutine>& subroutines, const ProgramCode& program_code,
+                  const SwizzleData& swizzle_data, u32 main_offset,
+                  const RegGetter& inputreg_getter, const RegGetter& outputreg_getter,
+                  bool sanitize_mul, bool is_gs)
+        : subroutines(subroutines), program_code(program_code), swizzle_data(swizzle_data),
+          main_offset(main_offset), inputreg_getter(inputreg_getter),
+          outputreg_getter(outputreg_getter), sanitize_mul(sanitize_mul), is_gs(is_gs) {
+
+        Generate();
     }
 
-    std::string GetResult() const {
-        return shader_source;
+    std::string GetShaderCode() {
+        return shader.GetResult();
     }
-
-    int scope = 0;
 
 private:
-    std::string shader_source;
-};
-
-class Impl {
-private:
-    bool FindEndInstrImpl(u32 begin, u32 end, std::map<u32, bool>& checked_offsets) {
-        for (u32 offset = begin; offset < (begin > end ? PROGRAM_END : end); ++offset) {
-            const Instruction instr = {program_code[offset]};
-
-            auto [checked_offset_iter, inserted] = checked_offsets.emplace(offset, false);
-            if (!inserted) {
-                if (checked_offset_iter->second) {
-                    return true;
-                }
-                continue;
-            }
-
-            switch (instr.opcode.Value()) {
-            case OpCode::Id::END: {
-                checked_offset_iter->second = true;
-                return true;
-            }
-            case OpCode::Id::JMPC:
-            case OpCode::Id::JMPU: {
-                bool opt_end = FindEndInstrImpl(offset + 1, end, checked_offsets);
-                bool opt_jmp =
-                    FindEndInstrImpl(instr.flow_control.dest_offset, end, checked_offsets);
-                if (opt_end && opt_jmp) {
-                    checked_offset_iter->second = true;
-                    return true;
-                }
-                return false;
-            }
-            case OpCode::Id::CALL: {
-                bool opt = FindEndInstrImpl(instr.flow_control.dest_offset,
-                                            instr.flow_control.dest_offset +
-                                                instr.flow_control.num_instructions,
-                                            checked_offsets);
-                if (opt) {
-                    checked_offset_iter->second = true;
-                    return true;
-                }
-                break;
-            }
-            case OpCode::Id::IFU:
-            case OpCode::Id::IFC: {
-                if (instr.flow_control.num_instructions != 0) {
-                    bool opt_if = FindEndInstrImpl(offset + 1, instr.flow_control.dest_offset,
-                                                   checked_offsets);
-                    bool opt_else = FindEndInstrImpl(instr.flow_control.dest_offset,
-                                                     instr.flow_control.dest_offset +
-                                                         instr.flow_control.num_instructions,
-                                                     checked_offsets);
-                    if (opt_if && opt_else) {
-                        checked_offset_iter->second = true;
-                        return true;
-                    }
-                }
-                offset = instr.flow_control.dest_offset + instr.flow_control.num_instructions - 1;
-                break;
-            }
-            };
-        }
-        return false;
-    }
-
-    /**
-     * Finds if all code paths starting from a given point reach an "end" instruction.
-     * @param begin the code starting point.
-     * @end the farthest point to search for "end" instructions.
-     * @return whether the code path always reach an end instruction.
-     */
-    bool FindEndInstr(u32 begin, u32 end) {
-        // first: offset
-        // bool: found END
-        std::map<u32, bool> checked_offsets;
-        return FindEndInstrImpl(begin, end, checked_offsets);
-    }
-
-    struct Subroutine {
-        Subroutine(u32 begin_, u32 end_) : begin(begin_), end(end_) {}
-
-        /// Check if the specified Subroutine calls this Subroutine (directly or indirectly).
-        bool IsCalledBy(const Subroutine* caller, std::set<const Subroutine*> stack = {}) const {
-            for (auto& pair : callers) {
-                if (!stack.emplace(pair.second).second) {
-                    continue;
-                }
-                if (pair.second == caller || pair.second->IsCalledBy(caller, stack)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        bool HasRecursion() const {
-            for (auto& callee : calls) {
-                if (IsCalledBy(callee.second) || callee.second->HasRecursion()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        std::string GetName() const {
-            return "sub_" + std::to_string(begin) + "_" + std::to_string(end);
-        }
-
-        u32 begin;
-        u32 end;
-
-        std::set<std::pair<u32, u32>> discovered;
-        bool always_end;
-
-        using SubroutineMap = std::map<std::pair<u32 /*begin*/, u32 /*end*/>, const Subroutine*>;
-        SubroutineMap branches;
-        SubroutineMap calls;
-        std::map<u32 /*from*/, const Subroutine*> callers;
-        std::map<u32 /*from*/, u32 /*to*/> jumps;
-    };
-
-    std::map<std::pair<u32, u32>, Subroutine> subroutines;
-
-    /**
-     * Gets the Subroutine object corresponding to the specified address. If it is not in the
-     * subroutine list yet, adds it to the list
-     */
-    Subroutine& GetRoutine(u32 begin, u32 end) {
-        auto [iter, inserted] =
-            subroutines.emplace(std::make_pair(std::make_pair(begin, end), Subroutine{begin, end}));
-        auto& sub = iter->second;
-        if (inserted) {
-            sub.always_end = FindEndInstr(sub.begin, sub.end);
-        }
-        return sub;
-    }
-
-    Subroutine& AnalyzeControlFlow() {
-        auto& program_main = GetRoutine(main_offset, PROGRAM_END);
-
-        std::queue<std::tuple<u32, u32, Subroutine*>> discover_queue;
-        discover_queue.emplace(main_offset, PROGRAM_END, &program_main);
-
-        while (!discover_queue.empty()) {
-            u32 begin;
-            u32 end;
-            Subroutine* routine;
-            std::tie(begin, end, routine) = discover_queue.front();
-            discover_queue.pop();
-
-            if (!routine->discovered.emplace(begin, end).second) {
-                continue;
-            }
-
-            for (u32 offset = begin; offset < (begin > end ? PROGRAM_END : end); ++offset) {
-                const Instruction instr = {program_code[offset]};
-                switch (instr.opcode.Value()) {
-                case OpCode::Id::END: {
-                    // Breaks the outer for loop if the program ends
-                    offset = PROGRAM_END;
-                    break;
-                }
-
-                case OpCode::Id::JMPC:
-                case OpCode::Id::JMPU: {
-                    routine->jumps[offset] = instr.flow_control.dest_offset;
-                    discover_queue.emplace(instr.flow_control.dest_offset, routine->end, routine);
-                    break;
-                }
-
-                case OpCode::Id::CALL:
-                case OpCode::Id::CALLU:
-                case OpCode::Id::CALLC: {
-                    std::pair<u32, u32> sub_range{instr.flow_control.dest_offset,
-                                                  instr.flow_control.dest_offset +
-                                                      instr.flow_control.num_instructions};
-
-                    auto& sub = GetRoutine(sub_range.first, sub_range.second);
-
-                    sub.callers.emplace(offset, routine);
-                    routine->calls[sub_range] = &sub;
-                    discover_queue.emplace(sub_range.first, sub_range.second, &sub);
-
-                    if (instr.opcode.Value() == OpCode::Id::CALL && sub.always_end) {
-                        // Breaks the outer for loop if the unconditial subroutine ends the program
-                        offset = PROGRAM_END;
-                    }
-                    break;
-                }
-
-                case OpCode::Id::IFU:
-                case OpCode::Id::IFC: {
-                    const u32 if_offset = offset + 1;
-                    const u32 else_offset = instr.flow_control.dest_offset;
-                    const u32 endif_offset =
-                        instr.flow_control.dest_offset + instr.flow_control.num_instructions;
-                    ASSERT(else_offset > if_offset);
-
-                    // Both branches are treated as subroutine, so skips the if-else block in this
-                    // routine
-                    offset = endif_offset - 1;
-
-                    auto& sub_if = GetRoutine(if_offset, else_offset);
-
-                    sub_if.callers.emplace(offset, routine);
-                    routine->branches[{if_offset, else_offset}] = &sub_if;
-                    discover_queue.emplace(if_offset, else_offset, &sub_if);
-
-                    if (instr.flow_control.num_instructions != 0) {
-                        auto& sub_else = GetRoutine(else_offset, endif_offset);
-
-                        sub_else.callers.emplace(offset, routine);
-                        routine->branches[{else_offset, endif_offset}] = &sub_else;
-                        discover_queue.emplace(else_offset, endif_offset, &sub_else);
-
-                        if (sub_if.always_end && sub_else.always_end) {
-                            // Breaks the outer for loop if both branches end the program
-                            offset = PROGRAM_END;
-                        }
-                    }
-                    break;
-                }
-
-                case OpCode::Id::LOOP: {
-                    std::pair<u32, u32> sub_range{offset + 1, instr.flow_control.dest_offset + 1};
-                    ASSERT(sub_range.second > sub_range.first);
-
-                    auto& sub = GetRoutine(sub_range.first, sub_range.second);
-
-                    sub.callers.emplace(offset, routine);
-                    routine->branches[sub_range] = &sub;
-                    discover_queue.emplace(sub_range.first, sub_range.second, &sub);
-
-                    // The lopp block is treated as subroutine, so skips the if-else block in this
-                    // routine.
-                    // Note: the first instruction after the loop block is at dest_offset + 1 (due
-                    // to PICA design), and the next instruction to scan is at offset + 1 (due to
-                    // for loop increment). The two offset-by-one cancel each other here.
-                    offset = instr.flow_control.dest_offset;
-
-                    if (sub.always_end) {
-                        // Breaks the outer for loop if the loop block ends the program
-                        offset = PROGRAM_END;
-                    }
-                    break;
-                }
-                }
-            }
-        }
-        return program_main;
-    }
-
-    bool HasRecursion() {
-        for (auto& pair : subroutines) {
-            auto& subroutine = pair.second;
-            if (subroutine.HasRecursion()) {
-                return true;
-            }
-        }
-
-        return false;
+    /// Gets the Subroutine object corresponding to the specified address.
+    const Subroutine& GetSubroutine(u32 begin, u32 end) const {
+        auto iter = subroutines.find(Subroutine{begin, end});
+        ASSERT(iter != subroutines.end());
+        return *iter;
     }
 
     /// Generates condition evaluation code for the flow control instruction.
@@ -379,7 +296,7 @@ private:
         }
     };
 
-    /// Generates code representing the source register.
+    /// Generates code representing a source register.
     std::string GetSourceRegister(const SourceRegister& source_reg,
                                   u32 address_register_index) const {
         u32 index = static_cast<u32>(source_reg.GetIndex());
@@ -402,8 +319,24 @@ private:
         }
     };
 
+    /// Generates code representing a destination register.
+    std::string GetDestRegister(const DestRegister& dest_reg) const {
+        u32 index = static_cast<u32>(dest_reg.GetIndex());
+
+        switch (dest_reg.GetRegisterType()) {
+        case RegisterType::Output:
+            return outputreg_getter(index);
+        case RegisterType::Temporary:
+            return "reg_tmp" + std::to_string(index);
+        default:
+            UNREACHABLE();
+            return "";
+        }
+    };
+
+    /// Generates code representing a bool uniform
     std::string GetUniformBool(u32 index) const {
-        if (!emit_cb.empty() && index == 15) {
+        if (is_gs && index == 15) {
             // The uniform b15 is set to true after every geometry shader invocation.
             return "((gl_PrimitiveIDIn == 0) || uniforms.b[15])";
         }
@@ -412,29 +345,13 @@ private:
 
     /**
      * Adds code that calls a subroutine.
-     * @param shader a ShaderWriter object to write GLSL code.
      * @param subroutine the subroutine to call.
      */
-    static void CallSubroutine(ShaderWriter& shader, const Subroutine& subroutine) {
-        std::function<bool(const Subroutine&)> maybe_end_instr =
-            [&maybe_end_instr](const Subroutine& subroutine) -> bool {
-            for (auto& callee : subroutine.calls) {
-                if (maybe_end_instr(*callee.second)) {
-                    return true;
-                }
-            }
-            for (auto& branch : subroutine.branches) {
-                if (maybe_end_instr(*branch.second)) {
-                    return true;
-                }
-            }
-            return subroutine.always_end;
-        };
-
-        if (subroutine.always_end) {
+    void CallSubroutine(const Subroutine& subroutine) {
+        if (subroutine.exit_method == ExitMethod::AlwaysEnd) {
             shader.AddLine(subroutine.GetName() + "();");
             shader.AddLine("return true;");
-        } else if (maybe_end_instr(subroutine)) {
+        } else if (subroutine.exit_method == ExitMethod::Conditional) {
             shader.AddLine("if (" + subroutine.GetName() + "()) { return true; }");
         } else {
             shader.AddLine(subroutine.GetName() + "();");
@@ -442,14 +359,52 @@ private:
     };
 
     /**
+     * Writes code that does an assignment operation.
+     * @param swizzle the swizzle data of the current instruction.
+     * @param reg the destination register code.
+     * @param value the code representing the value to assign.
+     * @param dest_num_components number of components of the destination register.
+     * @param value_num_components number of components of the value to assign.
+     */
+    void SetDest(const SwizzlePattern& swizzle, const std::string& reg, const std::string& value,
+                 u32 dest_num_components, u32 value_num_components) {
+        u32 dest_mask_num_components = 0;
+        std::string dest_mask_swizzle = ".";
+
+        for (u32 i = 0; i < dest_num_components; ++i) {
+            if (swizzle.DestComponentEnabled(static_cast<int>(i))) {
+                dest_mask_swizzle += "xyzw"[i];
+                ++dest_mask_num_components;
+            }
+        }
+
+        if (reg.empty() || dest_mask_num_components == 0) {
+            return;
+        }
+        ASSERT(value_num_components >= dest_num_components || value_num_components == 1);
+
+        std::string dest = reg + (dest_num_components != 1 ? dest_mask_swizzle : "");
+
+        std::string src = value;
+        if (value_num_components == 1) {
+            if (dest_mask_num_components != 1) {
+                src = "vec" + std::to_string(dest_mask_num_components) + "(" + value + ")";
+            }
+        } else if (value_num_components != dest_mask_num_components) {
+            src = "(" + value + ")" + dest_mask_swizzle;
+        }
+
+        shader.AddLine(dest + " = " + src + ";");
+    };
+
+    /**
      * Compiles a single instruction from PICA to GLSL.
-     * @param shader a ShaderWriter object to write GLSL code.
      * @param offset the offset of the PICA shader instruction.
      * @return the offset of the next instruction to execute. Usually it is the current offset + 1.
      * If the current instruction is IF or LOOP, the next instruction is after the IF or LOOP block.
      * If the current instruction always terminates the program, returns PROGRAM_END.
      */
-    u32 CompileInstr(ShaderWriter& shader, u32 offset) {
+    u32 CompileInstr(u32 offset) {
         const Instruction instr = {program_code[offset]};
 
         size_t swizzle_offset = instr.opcode.Value().GetInfo().type == OpCode::Type::MultiplyAdd
@@ -457,41 +412,7 @@ private:
                                     : instr.common.operand_desc_id;
         const SwizzlePattern swizzle = {swizzle_data[swizzle_offset]};
 
-        if (PRINT_DEBUG) {
-            shader.AddLine("// " + std::to_string(offset) + ": " +
-                           instr.opcode.Value().GetInfo().name);
-        }
-
-        auto set_dest = [&shader, &swizzle](const std::string& reg, const std::string& value,
-                                            u32 dest_num_components, u32 value_num_components) {
-            u32 dest_mask_num_components = 0;
-            std::string dest_mask_swizzle = ".";
-
-            for (u32 i = 0; i < dest_num_components; ++i) {
-                if (swizzle.DestComponentEnabled(static_cast<int>(i))) {
-                    dest_mask_swizzle += "xyzw"[i];
-                    ++dest_mask_num_components;
-                }
-            }
-
-            if (reg.empty() || dest_mask_num_components == 0) {
-                return;
-            }
-            ASSERT(value_num_components >= dest_num_components || value_num_components == 1);
-
-            std::string dest = reg + (dest_num_components != 1 ? dest_mask_swizzle : "");
-
-            std::string src = value;
-            if (value_num_components == 1) {
-                if (dest_mask_num_components != 1) {
-                    src = "vec" + std::to_string(dest_mask_num_components) + "(" + value + ")";
-                }
-            } else if (value_num_components != dest_mask_num_components) {
-                src = "(" + value + ")" + dest_mask_swizzle;
-            }
-
-            shader.AddLine(dest + " = " + src + ";");
-        };
+        shader.AddLine("// " + std::to_string(offset) + ": " + instr.opcode.Value().GetInfo().name);
 
         switch (instr.opcode.Value().GetInfo().type) {
         case OpCode::Type::Arithmetic: {
@@ -508,40 +429,35 @@ private:
                                       is_inverted * instr.common.address_register_index);
             src2 += "." + GetSelectorSrc2(swizzle);
 
-            std::string dest_reg =
-                (instr.common.dest.Value() < 0x10)
-                    ? outputreg_getter(static_cast<u32>(instr.common.dest.Value().GetIndex()))
-                    : (instr.common.dest.Value() < 0x20)
-                          ? "reg_tmp" + std::to_string(instr.common.dest.Value().GetIndex())
-                          : "";
+            std::string dest_reg = GetDestRegister(instr.common.dest.Value());
 
             switch (instr.opcode.Value().EffectiveOpCode()) {
             case OpCode::Id::ADD: {
-                set_dest(dest_reg, src1 + " + " + src2, 4, 4);
+                SetDest(swizzle, dest_reg, src1 + " + " + src2, 4, 4);
                 break;
             }
 
             case OpCode::Id::MUL: {
                 if (sanitize_mul) {
-                    set_dest(dest_reg, "sanitize_mul(" + src1 + ", " + src2 + ")", 4, 4);
+                    SetDest(swizzle, dest_reg, "sanitize_mul(" + src1 + ", " + src2 + ")", 4, 4);
                 } else {
-                    set_dest(dest_reg, src1 + " * " + src2, 4, 4);
+                    SetDest(swizzle, dest_reg, src1 + " * " + src2, 4, 4);
                 }
                 break;
             }
 
             case OpCode::Id::FLR: {
-                set_dest(dest_reg, "floor(" + src1 + ")", 4, 4);
+                SetDest(swizzle, dest_reg, "floor(" + src1 + ")", 4, 4);
                 break;
             }
 
             case OpCode::Id::MAX: {
-                set_dest(dest_reg, "max(" + src1 + ", " + src2 + ")", 4, 4);
+                SetDest(swizzle, dest_reg, "max(" + src1 + ", " + src2 + ")", 4, 4);
                 break;
             }
 
             case OpCode::Id::MIN: {
-                set_dest(dest_reg, "min(" + src1 + ", " + src2 + ")", 4, 4);
+                SetDest(swizzle, dest_reg, "min(" + src1 + ", " + src2 + ")", 4, 4);
                 break;
             }
 
@@ -568,39 +484,40 @@ private:
                     }
                 }
 
-                set_dest(dest_reg, dot, 4, 1);
+                SetDest(swizzle, dest_reg, dot, 4, 1);
                 break;
             }
 
             case OpCode::Id::RCP: {
-                set_dest(dest_reg, "(1.0 / " + src1 + ".x)", 4, 1);
+                SetDest(swizzle, dest_reg, "(1.0 / " + src1 + ".x)", 4, 1);
                 break;
             }
 
             case OpCode::Id::RSQ: {
-                set_dest(dest_reg, "inversesqrt(" + src1 + ".x)", 4, 1);
+                SetDest(swizzle, dest_reg, "inversesqrt(" + src1 + ".x)", 4, 1);
                 break;
             }
 
             case OpCode::Id::MOVA: {
-                set_dest("address_registers", "ivec2(" + src1 + ")", 2, 2);
+                SetDest(swizzle, "address_registers", "ivec2(" + src1 + ")", 2, 2);
                 break;
             }
 
             case OpCode::Id::MOV: {
-                set_dest(dest_reg, src1, 4, 4);
+                SetDest(swizzle, dest_reg, src1, 4, 4);
                 break;
             }
 
             case OpCode::Id::SGE:
             case OpCode::Id::SGEI: {
-                set_dest(dest_reg, "vec4(greaterThanEqual(" + src1 + "," + src2 + "))", 4, 4);
+                SetDest(swizzle, dest_reg, "vec4(greaterThanEqual(" + src1 + "," + src2 + "))", 4,
+                        4);
                 break;
             }
 
             case OpCode::Id::SLT:
             case OpCode::Id::SLTI: {
-                set_dest(dest_reg, "vec4(lessThan(" + src1 + "," + src2 + "))", 4, 4);
+                SetDest(swizzle, dest_reg, "vec4(lessThan(" + src1 + "," + src2 + "))", 4, 4);
                 break;
             }
 
@@ -634,12 +551,12 @@ private:
             }
 
             case OpCode::Id::EX2: {
-                set_dest(dest_reg, "exp2(" + src1 + ".x)", 4, 1);
+                SetDest(swizzle, dest_reg, "exp2(" + src1 + ".x)", 4, 1);
                 break;
             }
 
             case OpCode::Id::LG2: {
-                set_dest(dest_reg, "log2(" + src1 + ".x)", 4, 1);
+                SetDest(swizzle, dest_reg, "log2(" + src1 + ".x)", 4, 1);
                 break;
             }
 
@@ -682,9 +599,10 @@ private:
                               : "";
 
                 if (sanitize_mul) {
-                    set_dest(dest_reg, "sanitize_mul(" + src1 + ", " + src2 + ") + " + src3, 4, 4);
+                    SetDest(swizzle, dest_reg, "sanitize_mul(" + src1 + ", " + src2 + ") + " + src3,
+                            4, 4);
                 } else {
-                    set_dest(dest_reg, src1 + " * " + src2 + " + " + src3, 4, 4);
+                    SetDest(swizzle, dest_reg, src1 + " * " + src2 + " + " + src3, 4, 4);
                 }
             } else {
                 LOG_ERROR(HW_GPU, "Unhandled multiply-add instruction: 0x%02x (%s): 0x%08x",
@@ -736,12 +654,13 @@ private:
                 shader.AddLine(condition.empty() ? "{" : "if (" + condition + ") {");
                 ++shader.scope;
 
-                auto& call_sub = GetRoutine(instr.flow_control.dest_offset,
-                                            instr.flow_control.dest_offset +
-                                                instr.flow_control.num_instructions);
+                auto& call_sub = GetSubroutine(instr.flow_control.dest_offset,
+                                               instr.flow_control.dest_offset +
+                                                   instr.flow_control.num_instructions);
 
-                CallSubroutine(shader, call_sub);
-                if (instr.opcode.Value() == OpCode::Id::CALL && call_sub.always_end) {
+                CallSubroutine(call_sub);
+                if (instr.opcode.Value() == OpCode::Id::CALL &&
+                    call_sub.exit_method == ExitMethod::AlwaysEnd) {
                     offset = PROGRAM_END - 1;
                 }
 
@@ -771,8 +690,8 @@ private:
                 shader.AddLine("if (" + condition + ") {");
                 ++shader.scope;
 
-                auto& if_sub = GetRoutine(if_offset, else_offset);
-                CallSubroutine(shader, if_sub);
+                auto& if_sub = GetSubroutine(if_offset, else_offset);
+                CallSubroutine(if_sub);
                 offset = else_offset - 1;
 
                 if (instr.flow_control.num_instructions != 0) {
@@ -780,11 +699,12 @@ private:
                     shader.AddLine("} else {");
                     ++shader.scope;
 
-                    auto& else_sub = GetRoutine(else_offset, endif_offset);
-                    CallSubroutine(shader, else_sub);
+                    auto& else_sub = GetSubroutine(else_offset, endif_offset);
+                    CallSubroutine(else_sub);
                     offset = endif_offset - 1;
 
-                    if (if_sub.always_end && else_sub.always_end) {
+                    if (if_sub.exit_method == ExitMethod::AlwaysEnd &&
+                        else_sub.exit_method == ExitMethod::AlwaysEnd) {
                         offset = PROGRAM_END - 1;
                     }
                 }
@@ -806,14 +726,14 @@ private:
                                int_uniform + ".z), ++" + loop_var + ") {");
                 ++shader.scope;
 
-                auto& loop_sub = GetRoutine(offset + 1, instr.flow_control.dest_offset + 1);
-                CallSubroutine(shader, loop_sub);
+                auto& loop_sub = GetSubroutine(offset + 1, instr.flow_control.dest_offset + 1);
+                CallSubroutine(loop_sub);
                 offset = instr.flow_control.dest_offset;
 
                 --shader.scope;
                 shader.AddLine("}");
 
-                if (loop_sub.always_end) {
+                if (loop_sub.exit_method == ExitMethod::AlwaysEnd) {
                     offset = PROGRAM_END - 1;
                 }
 
@@ -821,18 +741,18 @@ private:
             }
 
             case OpCode::Id::EMIT: {
-                if (!emit_cb.empty()) {
-                    shader.AddLine(emit_cb + "();");
+                if (is_gs) {
+                    shader.AddLine("emit();");
                 }
                 break;
             }
 
             case OpCode::Id::SETEMIT: {
-                if (!setemit_cb.empty()) {
+                if (is_gs) {
                     ASSERT(instr.setemit.vertex_id < 3);
-                    shader.AddLine(setemit_cb + "(" + std::to_string(instr.setemit.vertex_id) +
-                                   "u, " + ((instr.setemit.prim_emit != 0) ? "true" : "false") +
-                                   ", " + ((instr.setemit.winding != 0) ? "true" : "false") + ");");
+                    shader.AddLine("setemit(" + std::to_string(instr.setemit.vertex_id) + "u, " +
+                                   ((instr.setemit.prim_emit != 0) ? "true" : "false") + ", " +
+                                   ((instr.setemit.winding != 0) ? "true" : "false") + ");");
                 }
                 break;
             }
@@ -853,42 +773,19 @@ private:
 
     /**
      * Compiles a range of instructions from PICA to GLSL.
-     * @param shader a ShaderWriter object to write GLSL code.
      * @param begin the offset of the starting instruction.
      * @param end the offset where the compilation should stop (exclusive).
      * @return the offset of the next instruction to compile. PROGRAM_END if the program terminates.
      */
-    u32 CompileRange(ShaderWriter& shader, u32 begin, u32 end) {
+    u32 CompileRange(u32 begin, u32 end) {
         u32 program_counter;
         for (program_counter = begin; program_counter < (begin > end ? PROGRAM_END : end);) {
-            program_counter = CompileInstr(shader, program_counter);
+            program_counter = CompileInstr(program_counter);
         }
         return program_counter;
     };
 
-public:
-    Impl(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>& program_code,
-         const std::array<u32, MAX_SWIZZLE_DATA_LENGTH>& swizzle_data, u32 main_offset,
-         const std::function<std::string(u32)>& inputreg_getter,
-         const std::function<std::string(u32)>& outputreg_getter, bool sanitize_mul,
-         const std::string& emit_cb, const std::string& setemit_cb)
-        : program_code(program_code), swizzle_data(swizzle_data), main_offset(main_offset),
-          inputreg_getter(inputreg_getter), outputreg_getter(outputreg_getter),
-          sanitize_mul(sanitize_mul), emit_cb(emit_cb), setemit_cb(setemit_cb) {}
-
-    std::string Decompile() {
-
-        if (!FindEndInstr(main_offset, PROGRAM_END)) {
-            return "";
-        }
-
-        auto& program_main = AnalyzeControlFlow();
-
-        if (HasRecursion())
-            return "";
-
-        ShaderWriter shader;
-
+    void Generate() {
         if (sanitize_mul) {
             shader.AddLine("vec4 sanitize_mul(vec4 lhs, vec4 rhs) {");
             ++shader.scope;
@@ -899,6 +796,7 @@ public:
             shader.AddLine("}\n");
         }
 
+        // Add declarations for registers
         shader.AddLine("bvec2 conditional_code = bvec2(false);");
         shader.AddLine("ivec3 address_registers = ivec3(0);");
         for (int i = 0; i < 16; ++i) {
@@ -906,31 +804,28 @@ public:
         }
         shader.AddLine("");
 
-        for (auto& pair : subroutines) {
-            auto& subroutine = pair.second;
+        // Add declarations for all subroutines
+        for (const auto& subroutine : subroutines) {
             shader.AddLine("bool " + subroutine.GetName() + "();");
         }
         shader.AddLine("");
 
+        // Add the main entry point
         shader.AddLine("bool exec_shader() {");
         ++shader.scope;
-        CallSubroutine(shader, program_main);
+        CallSubroutine(GetSubroutine(main_offset, PROGRAM_END));
         --shader.scope;
         shader.AddLine("}\n");
 
-        for (auto& pair : subroutines) {
-            auto& subroutine = pair.second;
-
-            std::set<u32> labels;
-            for (auto& jump : subroutine.jumps) {
-                labels.insert(jump.second);
-            }
+        // Add definitions for all subroutines
+        for (const auto& subroutine : subroutines) {
+            std::set<u32> labels = subroutine.labels;
 
             shader.AddLine("bool " + subroutine.GetName() + "() {");
             ++shader.scope;
 
             if (labels.empty()) {
-                if (CompileRange(shader, subroutine.begin, subroutine.end) != PROGRAM_END) {
+                if (CompileRange(subroutine.begin, subroutine.end) != PROGRAM_END) {
                     shader.AddLine("return false;");
                 }
             } else {
@@ -948,7 +843,7 @@ public:
                     auto next_it = labels.lower_bound(label + 1);
                     u32 next_label = next_it == labels.end() ? subroutine.end : *next_it;
 
-                    u32 compile_end = CompileRange(shader, label, next_label);
+                    u32 compile_end = CompileRange(label, next_label);
                     if (compile_end > next_label && compile_end != PROGRAM_END) {
                         // This happens only when there is a label inside a IF/LOOP block
                         shader.AddLine("{ jmp_to = " + std::to_string(compile_end) + "u; break; }");
@@ -973,31 +868,42 @@ public:
 
             ASSERT(shader.scope == 0);
         }
-
-        return shader.GetResult();
     }
 
 private:
-    const std::array<u32, MAX_PROGRAM_CODE_LENGTH>& program_code;
-    const std::array<u32, MAX_SWIZZLE_DATA_LENGTH>& swizzle_data;
-    u32 main_offset;
-    const std::function<std::string(u32)>& inputreg_getter;
-    const std::function<std::string(u32)>& outputreg_getter;
-    bool sanitize_mul;
-    const std::string& emit_cb;
-    const std::string& setemit_cb;
+    const std::set<Subroutine>& subroutines;
+    const ProgramCode& program_code;
+    const SwizzleData& swizzle_data;
+    const u32 main_offset;
+    const RegGetter& inputreg_getter;
+    const RegGetter& outputreg_getter;
+    const bool sanitize_mul;
+    const bool is_gs;
+
+    ShaderWriter shader;
 };
 
-std::string DecompileProgram(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>& program_code,
-                             const std::array<u32, MAX_SWIZZLE_DATA_LENGTH>& swizzle_data,
-                             u32 main_offset,
-                             const std::function<std::string(u32)>& inputreg_getter,
-                             const std::function<std::string(u32)>& outputreg_getter,
-                             bool sanitize_mul, const std::string& emit_cb,
-                             const std::string& setemit_cb) {
-    Impl impl(program_code, swizzle_data, main_offset, inputreg_getter, outputreg_getter,
-              sanitize_mul, emit_cb, setemit_cb);
-    return impl.Decompile();
+std::string GetCommonDeclarations() {
+    return R"(
+struct pica_uniforms {
+    bool b[16];
+    uvec4 i[4];
+    vec4 f[96];
+};
+
+bool exec_shader();
+
+)";
+}
+
+std::string DecompileProgram(const ProgramCode& program_code, const SwizzleData& swizzle_data,
+                             u32 main_offset, const RegGetter& inputreg_getter,
+                             const RegGetter& outputreg_getter, bool sanitize_mul, bool is_gs) {
+
+    auto subroutines = ControlFlowAnalyzer(program_code, main_offset).GetSubroutines();
+    GLSLGenerator generator(subroutines, program_code, swizzle_data, main_offset, inputreg_getter,
+                            outputreg_getter, sanitize_mul, is_gs);
+    return generator.GetShaderCode();
 }
 
 } // namespace Decompiler
