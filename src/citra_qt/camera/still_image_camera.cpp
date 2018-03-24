@@ -3,12 +3,10 @@
 // Refer to the license.txt file included.
 
 #include "citra_qt/camera/still_image_camera.h"
-#include "common/math_util.h"
-#include "core/settings.h"
 
 namespace Camera {
 
-StillImageCamera::StillImageCamera(int camera_id_) : camera_id(camera_id_) {}
+StillImageCamera::StillImageCamera(QImage image_) : image(image_) {}
 
 void StillImageCamera::StartCapture(){};
 
@@ -35,61 +33,50 @@ void StillImageCamera::SetEffect(Service::CAM::Effect effect) {
     }
 }
 
-std::vector<u16> StillImageCamera::ReceiveFrame() const {
-    const std::string camera_config = Settings::values.camera_config[camera_id];
-    QImage image(QString::fromStdString(camera_config));
-    if (!image.isNull()) {
-        std::vector<u16> buffer(width * height);
-        QImage scaled =
-            image.scaled(width, height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-        QImage transformed =
-            scaled.copy((scaled.width() - width) / 2, (scaled.height() - height) / 2, width, height)
-                .mirrored(flip_horizontal, flip_vertical);
-        if (output_rgb) {
-            QImage converted = transformed.convertToFormat(QImage::Format_RGB16);
-            std::memcpy(buffer.data(), converted.bits(), width * height * sizeof(u16));
-        } else {
-            auto dest = buffer.begin();
-            bool write = false;
-            int py, pu, pv;
-            for (int y = 0; y < height; ++y) {
-                for (int x = 0; x < width; ++x) {
-                    QRgb rgb = transformed.pixel(x, y);
-                    int r = qRed(rgb), g = qGreen(rgb), b = qBlue(rgb);
-
-                    // The following transformation is a reverse of the one in Y2R using ITU_Rec601
-                    r = (r << 5) - 0x18 + 0x166F;
-                    g = (g << 5) - 0x18 - 0x10EE;
-                    b = (b << 5) - 0x18 + 0x1C5B;
-                    int y, u, v;
-                    y = 0.00933073 * r + 0.0183538 * g + 0.00356543 * b;
-                    u = -0.00527299 * r - 0.0103722 * g + 0.0156451 * b;
-                    v = 0.0156741 * r - 0.0131245 * g - 0.00254958 * b;
-
-                    if (write) {
-                        pu = (pu + u) / 2;
-                        pv = (pv + v) / 2;
-                        using MathUtil::Clamp;
-                        *(dest++) = (u16)Clamp(py, 0, 0xFF) | ((u16)Clamp(pu, 0, 0xFF) << 8);
-                        *(dest++) = (u16)Clamp(y, 0, 0xFF) | ((u16)Clamp(pv, 0, 0xFF) << 8);
-                    } else {
-                        py = y;
-                        pu = u;
-                        pv = v;
-                    }
-                    write = !write;
-                }
-            }
-        }
-        return buffer;
-    } else {
-        LOG_ERROR(Service_CAM, "Couldn't load image \"%s\"", camera_config.c_str());
-        return std::vector<u16>(width * height, output_rgb ? 0 : 0x8000);
-    }
+std::vector<u16> StillImageCamera::ReceiveFrame() {
+    return CameraUtil::ProcessImage(image, width, height, output_rgb, flip_horizontal,
+                                    flip_vertical);
 }
 
-std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(int _camera_id) const {
-    return std::make_unique<StillImageCamera>(_camera_id);
+const std::string StillImageCameraFactory::getFilePath() {
+    QList<QByteArray> types = QImageReader::supportedImageFormats();
+    QList<QString> temp_filters = {};
+    for (QByteArray type : types) {
+        temp_filters << QString("*." + QString(type));
+    }
+
+    QString filter = QObject::tr("Supported image files (") + temp_filters.join(" ") + ")";
+
+    return QFileDialog::getOpenFileName(nullptr, QObject::tr("Open File"), ".", filter)
+        .toStdString();
+}
+
+std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::string& config) const {
+    std::string real_config = config;
+    if (config == "") {
+        real_config = getFilePath();
+    }
+    QImage image(QString::fromStdString(real_config));
+    if (image.isNull()) {
+        LOG_ERROR(Service_CAM, "Couldn't load image \"%s\"", real_config.c_str());
+    }
+    return std::make_unique<StillImageCamera>(image);
+}
+
+std::unique_ptr<CameraInterface> StillImageCameraFactory::CreatePreview(
+    const std::string& config) const {
+    std::string real_config = config;
+    if (config == "") {
+        real_config = getFilePath();
+    }
+    QImage image(QString::fromStdString(real_config));
+    if (image.isNull()) {
+        QMessageBox::critical(nullptr, QObject::tr("Error"),
+                              QObject::tr("Couldn't load image ") +
+                                  QString::fromStdString(real_config));
+        return nullptr;
+    }
+    return std::make_unique<StillImageCamera>(image);
 }
 
 } // namespace Camera

@@ -6,8 +6,6 @@
 #include "common/logging/log.h"
 #include "core/frontend/camera/blank_camera.h"
 #include "core/frontend/camera/factory.h"
-#include "core/frontend/camera/v4l2_camera.h"
-#include "core/settings.h"
 
 namespace Camera {
 
@@ -19,15 +17,27 @@ void RegisterFactory(const std::string& name, std::unique_ptr<CameraFactory> fac
     factories[name] = std::move(factory);
 }
 
-std::unique_ptr<CameraInterface> CreateCamera(int camera_id) {
-    const std::string camera_name = Settings::values.camera_name[camera_id];
-    auto pair = factories.find(camera_name);
+std::unique_ptr<CameraInterface> CreateCamera(const std::string& name, const std::string& config) {
+    auto pair = factories.find(name);
     if (pair != factories.end()) {
-        return pair->second->Create(camera_id);
+        return pair->second->Create(config);
     }
 
-    if (camera_name != "blank") {
-        LOG_ERROR(Service_CAM, "Unknown camera \"%s\"", camera_name.c_str());
+    if (name != "blank") {
+        LOG_ERROR(Service_CAM, "Unknown camera \"%s\"", name.c_str());
+    }
+    return std::make_unique<BlankCamera>();
+}
+
+std::unique_ptr<CameraInterface> CreateCameraPreview(const std::string& name,
+                                                     const std::string& config) {
+    auto pair = factories.find(name);
+    if (pair != factories.end()) {
+        return pair->second->CreatePreview(config);
+    }
+
+    if (name != "blank") {
+        LOG_ERROR(Service_CAM, "Unknown camera \"%s\"", name.c_str());
     }
     return std::make_unique<BlankCamera>();
 }

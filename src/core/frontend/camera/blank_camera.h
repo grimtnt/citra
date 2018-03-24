@@ -17,17 +17,13 @@ public:
     void SetFlip(Service::CAM::Flip) override;
     void SetEffect(Service::CAM::Effect) override;
     void SetFormat(Service::CAM::OutputFormat) override;
-    std::vector<u16> ReceiveFrame() const override;
+    void SetFrameRate(Service::CAM::FrameRate frame_rate) override{};
+    std::vector<u16> ReceiveFrame() override;
 
 private:
     int width = 0;
     int height = 0;
     bool output_rgb = false;
-};
-
-class BlankCameraFactory final : public CameraFactory {
-public:
-    std::unique_ptr<CameraInterface> Create(int camera_id) const override;
 };
 
 } // namespace Camera

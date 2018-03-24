@@ -124,7 +124,7 @@ ServiceFrameworkBase::~ServiceFrameworkBase() = default;
 
 void ServiceFrameworkBase::InstallAsService(SM::ServiceManager& service_manager) {
     ASSERT(port == nullptr);
-    port = service_manager.RegisterService(service_name, max_sessions).Unwrap();
+    port = service_manager.RegisterService(*this).Unwrap();
     port->SetHleHandler(shared_from_this());
 }
 
@@ -269,8 +269,17 @@ void Init() {
     LOG_DEBUG(Service, "initialized OK");
 }
 
+void Pause() {
+    SM::g_service_manager->PauseServices();
+}
+
+void Resume() {
+    SM::g_service_manager->ResumeServices();
+}
+
 /// Shutdown ServiceManager
 void Shutdown() {
+    SM::g_service_manager->StopServices();
     NIM::Shutdown();
     NDM::Shutdown();
     FRD::Shutdown();

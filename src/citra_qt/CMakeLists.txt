@@ -3,6 +3,25 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
 
+if (ENABLE_OPENCV)
+    set(CAMERA
+        camera/camera_util.cpp
+        camera/camera_util.h
+        camera/opencv_camera.cpp
+        camera/opencv_camera.h
+        camera/still_image_camera.cpp
+        camera/still_image_camera.h
+    )
+    add_definitions(-DENABLE_OPENCV_CAMERA)
+else()
+    set(CAMERA
+        camera/camera_util.cpp
+        camera/camera_util.h
+        camera/still_image_camera.cpp
+        camera/still_image_camera.h
+    )
+endif()
+
 add_executable(citra-qt
     Info.plist
     aboutdialog.cpp
@@ -13,6 +32,7 @@ add_executable(citra-qt
     cheat_gui.h
     cheatsearch.cpp
     cheatsearch.h
+    ${CAMERA}
     citra-qt.rc
     camera/still_image_camera.cpp
     camera/still_image_camera.h
@@ -59,8 +79,6 @@ add_executable(citra-qt
     debugger/registers.h
     debugger/wait_tree.cpp
     debugger/wait_tree.h
-    droparea.cpp
-    droparea.h
     multiplayer/chat_room.cpp
     multiplayer/chat_room.h
     multiplayer/client_room.cpp
@@ -186,6 +204,9 @@ create_target_directory_groups(citra-qt)
 
 target_link_libraries(citra-qt PRIVATE audio_core common core input_common network video_core)
 target_link_libraries(citra-qt PRIVATE Boost::boost glad nihstro-headers Qt5::OpenGL Qt5::Widgets)
+if (ENABLE_OPENCV)
+    target_link_libraries(citra-qt PRIVATE opencv_core opencv_videoio opencv_imgproc)
+endif()
 target_link_libraries(citra-qt PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 
 if(UNIX AND NOT APPLE)

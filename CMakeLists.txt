@@ -17,6 +17,11 @@ option(ENABLE_QT_TRANSLATION "Enable translations for the Qt frontend" OFF)
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "ENABLE_QT;MSVC" OFF)
 
 option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
+option(ENABLE_OPENCV "Enable the OpenCV camera implementation" OFF)
+
+if (NOT ENABLE_QT)
+    set(ENABLE_OPENCV OFF)
+endif()
 option(CITRA_ENABLE_COMPATIBILITY_REPORTING "Enable compatibility reporting" OFF)
 
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
@@ -162,13 +167,23 @@ add_definitions(-DEMU_ARCH_BITS=${EMU_ARCH_BITS})
 # System imported libraries
 # ======================
 
-find_package(Boost 1.63.0 QUIET)
+find_package(Boost 1.66.0 QUIET)
 if (NOT Boost_FOUND)
-    message(STATUS "Boost 1.63.0 or newer not found, falling back to externals")
+    message(STATUS "Boost 1.66.0 or newer not found, falling back to externals")
 
     set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/externals/boost")
     set(Boost_NO_SYSTEM_PATHS OFF)
     find_package(Boost QUIET REQUIRED)
+endif()
+
+if (ENABLE_OPENCV)
+    find_package(OpenCV QUIET COMPONENTS core videoio imgproc)
+    if (NOT OpenCV_FOUND)
+        message(STATUS "OpenCV not found, falling back to externals")
+
+        set(OpenCV_ROOT "${CMAKE_SOURCE_DIR}/externals/opencv")
+        find_package(OpenCV REQUIRED COMPONENTS core videoio imgproc)
+    endif()
 endif()
 
 # Prefer the -pthread flag on Linux.
