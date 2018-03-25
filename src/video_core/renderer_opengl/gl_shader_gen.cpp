@@ -1348,9 +1348,10 @@ std::string GenerateVertexShader(const Pica::Shader::ShaderSetup& setup,
         return "";
     };
 
+    // TODO: fallback to CPU on failure
     std::string program_source = Pica::Shader::Decompiler::DecompileProgram(
         setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
-        get_output_reg, config.state.sanitize_mul, false);
+        get_output_reg, config.state.sanitize_mul, false).get_value_or("");
 
     out += R"(
 layout (std140) uniform vs_config {
@@ -1559,9 +1560,10 @@ std::string GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
         return "";
     };
 
+    // TODO: fallback to CPU on failure
     std::string program_source = Pica::Shader::Decompiler::DecompileProgram(
         setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
-        get_output_reg, config.state.sanitize_mul, true);
+        get_output_reg, config.state.sanitize_mul, true).get_value_or("");
 
     out += R"(
 Vertex output_buffer;
