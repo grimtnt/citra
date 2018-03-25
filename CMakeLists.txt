@@ -177,12 +177,11 @@ if (NOT Boost_FOUND)
 endif()
 
 if (ENABLE_OPENCV)
-    find_package(OpenCV QUIET COMPONENTS core videoio imgproc)
+    find_package(OpenCV COMPONENTS core videoio imgproc)
     if (NOT OpenCV_FOUND)
-        message(STATUS "OpenCV not found, falling back to externals")
+        message(WARNING "OpenCV not found, turning it off")
 
-        set(OpenCV_ROOT "${CMAKE_SOURCE_DIR}/externals/opencv")
-        find_package(OpenCV REQUIRED COMPONENTS core videoio imgproc)
+        set(ENABLE_OPENCV OFF)
     endif()
 endif()
 
