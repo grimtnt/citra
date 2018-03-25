@@ -16,10 +16,11 @@ export PATH=/citra/cmake/cmake-3.10.1-Linux-x86_64/bin:$PATH
 git clone https://github.com/opencv/opencv.git
 cd opencv
 mkdir build && cd build
-cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/lib ..
+cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/lib -D BUILD_DOCS=OFF -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D BUILD_WITH_DEBUG_INFO=OFF -D BUILD_opencv_apps=OFF ..
 make -j7
 make install
 
+cd ..
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_QT_TRANSLATION=ON -DCITRA_ENABLE_COMPATIBILITY_REPORTING=${ENABLE_COMPATIBILITY_REPORTING:-"OFF"} -DENABLE_OPENCV=ON
 make -j4
