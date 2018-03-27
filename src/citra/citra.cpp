@@ -92,7 +92,7 @@ static void OnStateChanged(const Network::RoomMember::State& state) {
         break;
     case Network::RoomMember::State::MacCollision:
         NGLOG_ERROR(Network, "You tried to use the same MAC-Address then another user that is "
-                           "connected to the Room");
+                             "connected to the Room");
         exit(1);
         break;
     case Network::RoomMember::State::WrongPassword:
