@@ -195,11 +195,11 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 
 void SoftwareKeyboard::Update() {
     if (Settings::values.swkbd_mode == Settings::SwkbdMode::Qt &&
-        Core::System::GetInstance().GetSwkbdFactory().Exists("qt")) {
+        Core::System::GetInstance().GetSwkbdFactory().IsRegistered("qt")) {
         std::string text;
-        SwkbdResult result = SwkbdResult::NONE;
+        SwkbdResult result = SwkbdResult::OUTOFMEM;
         Core::System::GetInstance().GetSwkbdFactory().Launch("qt", &text, &result, config);
-        while (result == SwkbdResult::NONE) {
+        while (result == SwkbdResult::OUTOFMEM) {
             std::this_thread::sleep_for(std::chrono::nanoseconds{1});
         }
         std::u16string utf16_input = Common::UTF8ToUTF16(text);
