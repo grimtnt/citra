@@ -344,7 +344,7 @@ QStandardItemModel* GameList::GetModel() const {
 void GameList::PopulateAsync(const QString& dir_path, bool deep_scan) {
     if (!FileUtil::Exists(dir_path.toStdString()) ||
         !FileUtil::IsDirectory(dir_path.toStdString())) {
-        LOG_ERROR(Frontend, "Could not find game list folder at %s", dir_path.toLocal8Bit().data());
+        NGLOG_ERROR(Frontend, "Could not find game list folder at {}", dir_path.toStdString());
         search_field->setFilterResult(0, 0);
         return;
     }
@@ -394,7 +394,7 @@ static bool HasSupportedFileExtension(const std::string& file_name) {
 
 void GameList::RefreshGameDirectory() {
     if (!UISettings::values.gamedir.isEmpty() && current_worker != nullptr) {
-        LOG_INFO(Frontend, "Change detected in the games directory. Reloading game list.");
+        NGLOG_INFO(Frontend, "Change detected in the games directory. Reloading game list.");
         search_field->clear();
         PopulateAsync(UISettings::values.gamedir, UISettings::values.gamedir_deepscan);
     }
