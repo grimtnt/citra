@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <cinttypes>
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "core/hle/ipc.h"
@@ -28,7 +27,8 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0x64);
-    LOG_WARNING(Service_MCU, "(STUBBED) called");
+
+    NGLOG_WARNING(Service_MCU, "(STUBBED) called");
 }
 
 void Module::Interface::Set3DLEDState(Kernel::HLERequestContext& ctx) {
@@ -44,7 +44,8 @@ void Module::Interface::GetSoundVolume(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0x3F);
-    LOG_WARNING(Service_MCU, "(STUBBED) called");
+
+    NGLOG_WARNING(Service_MCU, "(STUBBED) called");
 }
 
 void Module::Interface::GetSoundVolume2(Kernel::HLERequestContext& ctx) {
@@ -52,7 +53,8 @@ void Module::Interface::GetSoundVolume2(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0x3F);
-    LOG_WARNING(Service_MCU, "(STUBBED) called");
+
+    NGLOG_WARNING(Service_MCU, "(STUBBED) called");
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> mcu, const char* name, u32 max_session)
