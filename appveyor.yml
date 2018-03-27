@@ -92,13 +92,16 @@ after_build:
           $env:BUILD_SYMBOLS = $MSVC_BUILD_PDB
           $env:BUILD_UPDATE = $MSVC_SEVENZIP
 
-          7z a -tzip $MSVC_BUILD_PDB .\msvc_build\bin\release\*.pdb
-          rm .\msvc_build\bin\release\*.pdb
-
           mkdir $RELEASE_DIST
           Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse
           Copy-Item .\license.txt -Destination $RELEASE_DIST\2.license.txt
           Copy-Item .\updater.ps1 -Destination $RELEASE_DIST\updater.ps1
+
+          # process PDBs
+          . "./.appveyor/ProcessPdb.ps1"
+          7z a -tzip $MSVC_BUILD_PDB $RELEASE_DIST\*.pdb
+          rm $RELEASE_DIST\*.pdb
+
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value 1
           Copy-Item ".\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
@@ -106,15 +109,12 @@ after_build:
           7z a $MSVC_SEVENZIP $RELEASE_DIST
         } else {
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
+          $MINGW_BUILD_PDB = "citra-windows-mingw-$GITDATE-$GITREV-debugsymbols.zip" -replace " ", ""
           $MINGW_SEVENZIP = "citra-windows-mingw-$GITDATE-$GITREV.7z" -replace " ", ""
-          # not going to bother adding separate debug symbols for mingw, so just upload a README for it
-          # if someone wants to add them, change mingw to compile with -g and use objdump and strip to separate the symbols from the binary
-          $MINGW_NO_DEBUG_SYMBOLS = "README_No_Debug_Symbols.txt"
-          Set-Content -Path $MINGW_NO_DEBUG_SYMBOLS -Value "This is a workaround for Appveyor since msvc has debug symbols but mingw doesnt" -Force
- 
+
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
-          $env:BUILD_SYMBOLS = $MINGW_NO_DEBUG_SYMBOLS
+          $env:BUILD_SYMBOLS = $MINGW_BUILD_PDB
           $env:BUILD_UPDATE = $MINGW_SEVENZIP
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
@@ -135,7 +135,7 @@ after_build:
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value 0
 
           # copy all the dll dependencies to the release folder
-          . "./.appveyor/UtilityFunctions.ps1"
+          . "./.appveyor/FindDependencies.ps1"
           $DLLSearchPath = "C:\msys64\mingw64\bin;$env:PATH"
           $MingwDLLs = RecursivelyGetDeps $DLLSearchPath "$RELEASE_DIST\citra.exe"
           $MingwDLLs += RecursivelyGetDeps $DLLSearchPath  "$RELEASE_DIST\citra-qt.exe"
@@ -147,6 +147,11 @@ after_build:
 
           # copy the qt windows plugin dll to platforms
           Copy-Item -path "C:/msys64/mingw64/share/qt5/plugins/platforms/qwindows.dll" -force -destination "$RELEASE_DIST/platforms"
+
+          # process PDBs
+          . "./.appveyor/ProcessPdb.ps1"
+          7z a -tzip $MINGW_BUILD_PDB $RELEASE_DIST\*.pdb
+          rm $RELEASE_DIST\*.pdb
 
           7z a -tzip $MINGW_BUILD_ZIP $RELEASE_DIST\*
           7z a $MINGW_SEVENZIP $RELEASE_DIST
