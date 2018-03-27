@@ -33,6 +33,7 @@
 #include "core/hle/service/http_c.h"
 #include "core/hle/service/ir/ir.h"
 #include "core/hle/service/ldr_ro/ldr_ro.h"
+#include "core/hle/service/mcu/mcu.h"
 #include "core/hle/service/mic_u.h"
 #include "core/hle/service/mvd/mvd.h"
 #include "core/hle/service/ndm/ndm.h"
@@ -231,6 +232,7 @@ void Init() {
     NS::InstallInterfaces(*SM::g_service_manager);
     AC::InstallInterfaces(*SM::g_service_manager);
     LDR::InstallInterfaces(*SM::g_service_manager);
+    MCU::InstallInterfaces(*SM::g_service_manager);
     MIC::InstallInterfaces(*SM::g_service_manager);
     NWM::InstallInterfaces(*SM::g_service_manager);
 
