@@ -128,11 +128,11 @@ public:
     template <typename... O>
     void PushMoveObjects(Kernel::SharedPtr<O>... pointers);
 
-    [[deprecated]] void PushStaticBuffer(VAddr buffer_vaddr, size_t size, u8 buffer_id);
+    void PushStaticBuffer(VAddr buffer_vaddr, size_t size, u8 buffer_id);
     void PushStaticBuffer(const std::vector<u8>& buffer, u8 buffer_id);
 
-    [[deprecated]] void PushMappedBuffer(VAddr buffer_vaddr, size_t size,
-                                         MappedBufferPermissions perms);
+    void PushMappedBuffer(VAddr buffer_vaddr, size_t size,
+                          MappedBufferPermissions perms);
 
     /// Pushes an HLE MappedBuffer interface back to unmapped the buffer.
     void PushMappedBuffer(const Kernel::MappedBuffer& mapped_buffer);
@@ -343,7 +343,7 @@ public:
      * buffer information. Our HLE services do not need to set up the buffers beforehand.
      * Please note that the setup uses virtual addresses.
      */
-    [[deprecated]] VAddr PopStaticBuffer(size_t* data_size);
+     VAddr PopStaticBuffer(size_t* data_size);
 
     /**
      * @brief Pops a static buffer from the IPC request buffer.
@@ -363,8 +363,7 @@ public:
      * @param[out] buffer_perms If non-null, the pointed value will be set to the permissions of the
      * buffer
      */
-    [[deprecated]] VAddr PopMappedBuffer(size_t* data_size,
-                                         MappedBufferPermissions* buffer_perms = nullptr);
+    VAddr PopMappedBuffer(size_t* data_size, MappedBufferPermissions* buffer_perms = nullptr);
 
     /// Pops a mapped buffer descriptor with its vaddr and resolves it to an HLE interface
     Kernel::MappedBuffer& PopMappedBuffer();
