@@ -270,6 +270,26 @@ add_library(core STATIC
     hle/service/ldr_ro/ldr_ro.h
     hle/service/ldr_ro/memory_synchronizer.cpp
     hle/service/ldr_ro/memory_synchronizer.h
+    hle/service/mcu/cam.cpp
+    hle/service/mcu/cam.h
+    hle/service/mcu/cdc.cpp
+    hle/service/mcu/cdc.h
+    hle/service/mcu/gpu.cpp
+    hle/service/mcu/gpu.h
+    hle/service/mcu/hid.cpp
+    hle/service/mcu/hid.h
+    hle/service/mcu/hwc.cpp
+    hle/service/mcu/hwc.h
+    hle/service/mcu/mcu.cpp
+    hle/service/mcu/mcu.h
+    hle/service/mcu/nwm.cpp
+    hle/service/mcu/nwm.h
+    hle/service/mcu/pls.cpp
+    hle/service/mcu/pls.h
+    hle/service/mcu/rtc.cpp
+    hle/service/mcu/rtc.h
+    hle/service/mcu/snd.cpp
+    hle/service/mcu/snd.h
     hle/service/mic_u.cpp
     hle/service/mic_u.h
     hle/service/mvd/mvd.cpp
