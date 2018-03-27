@@ -213,13 +213,6 @@ public:
         Clear();
     }
 
-    bool Exists(std::string name) {
-        auto it = callbacks.find(name);
-        if (it != callbacks.end())
-            return true;
-        return false;
-    }
-
     void Clear() {
         callbacks.clear();
     }
@@ -228,6 +221,13 @@ public:
         std::string name,
         std::function<void(std::string*, SwkbdResult*, SoftwareKeyboardConfig)> callback) {
         callbacks.emplace(name, callback);
+    }
+
+    bool IsRegistered(std::string name) {
+        auto it = callbacks.find(name);
+        if (it != callbacks.end())
+            return true;
+        return false;
     }
 
     void Launch(std::string name, std::string* text, SwkbdResult* result,
