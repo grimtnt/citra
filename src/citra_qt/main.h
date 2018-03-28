@@ -53,6 +53,8 @@ namespace Core {
 class AnnounceMultiplayerSession;
 }
 
+using namespace HLE::Applets;
+
 class GMainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -114,8 +116,7 @@ private:
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
-    void SwkbdCallback(std::string* textp, HLE::Applets::SwkbdResult* result,
-                       HLE::Applets::SoftwareKeyboardConfig config);
+    std::pair<std::string, SwkbdResult> SwkbdCallback(const SoftwareKeyboardConfig& config);
     void SyncMenuUISettings();
     void RestoreUIState();
 

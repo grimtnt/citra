@@ -77,8 +77,6 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
     // TODO(Subv): Verify if this is the correct behavior
     memset(text_memory->GetPointer(), 0, text_memory->size);
 
-    DrawScreenKeyboard();
-
     is_running = true;
     return RESULT_SUCCESS;
 }
@@ -86,36 +84,36 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 static bool ValidateFilters(const u32 filters, const std::string& input) {
     bool valid = true;
     bool local_filter = true;
-    if ((filters & SWKBDFILTER_DIGITS) == SWKBDFILTER_DIGITS) {
+    if ((filters & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
         valid &= local_filter =
             std::all_of(input.begin(), input.end(), [](const char c) { return !std::isdigit(c); });
         if (!local_filter) {
             std::cout << "Input must not contain any digits" << std::endl;
         }
     }
-    if ((filters & SWKBDFILTER_AT) == SWKBDFILTER_AT) {
+    if ((filters & SwkbdFilter_At) == SwkbdFilter_At) {
         valid &= local_filter = input.find("@") == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the @ symbol" << std::endl;
         }
     }
-    if ((filters & SWKBDFILTER_PERCENT) == SWKBDFILTER_PERCENT) {
+    if ((filters & SwkbdFilter_Percent) == SwkbdFilter_Percent) {
         valid &= local_filter = input.find("%") == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the % symbol" << std::endl;
         }
     }
-    if ((filters & SWKBDFILTER_BACKSLASH) == SWKBDFILTER_BACKSLASH) {
+    if ((filters & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) {
         valid &= local_filter = input.find("\\") == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the \\ symbol" << std::endl;
         }
     }
-    if ((filters & SWKBDFILTER_PROFANITY) == SWKBDFILTER_PROFANITY) {
+    if ((filters & SwkbdFilter_Profanity) == SwkbdFilter_Profanity) {
         // TODO: check the profanity filter
         LOG_WARNING(Service_APT, "App requested profanity filter, but its not implemented.");
     }
-    if ((filters & SWKBDFILTER_CALLBACK) == SWKBDFILTER_CALLBACK) {
+    if ((filters & SwkbdFilter_Callback) == SwkbdFilter_Callback) {
         // TODO: check the callback
         LOG_WARNING(Service_APT, "App requested a callback check, but its not implemented.");
     }
@@ -137,7 +135,7 @@ static bool ValidateInput(const SoftwareKeyboardConfig& config, const std::strin
 
     bool valid;
     switch (config.valid_input) {
-    case SwkbdValidInput::FIXEDLEN:
+    case SwkbdValidInput::FixedLen:
         valid = input.size() == config.max_text_length;
         if (!valid) {
             std::cout << Common::StringFromFormat("Input must be exactly %u characters.",
@@ -145,21 +143,21 @@ static bool ValidateInput(const SoftwareKeyboardConfig& config, const std::strin
                       << std::endl;
         }
         break;
-    case SwkbdValidInput::NOTEMPTY_NOTBLANK:
-    case SwkbdValidInput::NOTBLANK:
+    case SwkbdValidInput::NotEmptyNotBlank:
+    case SwkbdValidInput::NotBlank:
         valid =
             std::any_of(input.begin(), input.end(), [](const char c) { return !std::isspace(c); });
         if (!valid) {
             std::cout << "Input must not be blank." << std::endl;
         }
         break;
-    case SwkbdValidInput::NOTEMPTY:
+    case SwkbdValidInput::NotEmpty:
         valid = input.empty();
         if (!valid) {
             std::cout << "Input must not be empty." << std::endl;
         }
         break;
-    case SwkbdValidInput::ANYTHING:
+    case SwkbdValidInput::Anything:
         valid = true;
         break;
     default:
@@ -196,16 +194,11 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 void SoftwareKeyboard::Update() {
     if (Settings::values.swkbd_mode == Settings::SwkbdMode::Qt &&
         Core::System::GetInstance().GetSwkbdFactory().IsRegistered("qt")) {
-        std::string text;
-        SwkbdResult result = SwkbdResult::OUTOFMEM;
-        Core::System::GetInstance().GetSwkbdFactory().Launch("qt", &text, &result, config);
-        while (result == SwkbdResult::OUTOFMEM) {
-            std::this_thread::sleep_for(std::chrono::nanoseconds{1});
-        }
-        std::u16string utf16_input = Common::UTF8ToUTF16(text);
+        auto res = Core::System::GetInstance().GetSwkbdFactory().Launch("qt", config);
+        std::u16string utf16_input = Common::UTF8ToUTF16(res.first);
         memcpy(text_memory->GetPointer(), utf16_input.c_str(),
                utf16_input.length() * sizeof(char16_t));
-        config.return_code = result;
+        config.return_code = res.second;
         config.text_length = static_cast<u16>(utf16_input.size());
         config.text_offset = 0;
         Finalize();
@@ -257,30 +250,30 @@ void SoftwareKeyboard::Update() {
 
     s32 button = std::stol(option);
     switch (config.num_buttons_m1) {
-    case SwkbdButtonConfig::SINGLE_BUTTON:
-        config.return_code = SwkbdResult::D0_CLICK;
+    case SwkbdButtonConfig::SingleButton:
+        config.return_code = SwkbdResult::D0Click;
         break;
-    case SwkbdButtonConfig::DUAL_BUTTON:
+    case SwkbdButtonConfig::DualButton:
         if (button == 0) {
-            config.return_code = SwkbdResult::D1_CLICK0;
+            config.return_code = SwkbdResult::D1Click0;
         } else {
-            config.return_code = SwkbdResult::D1_CLICK1;
+            config.return_code = SwkbdResult::D1Click1;
         }
         break;
-    case SwkbdButtonConfig::TRIPLE_BUTTON:
+    case SwkbdButtonConfig::TripleButton:
         if (button == 0) {
-            config.return_code = SwkbdResult::D2_CLICK0;
+            config.return_code = SwkbdResult::D2Click0;
         } else if (button == 1) {
-            config.return_code = SwkbdResult::D2_CLICK1;
+            config.return_code = SwkbdResult::D2Click1;
         } else {
-            config.return_code = SwkbdResult::D2_CLICK2;
+            config.return_code = SwkbdResult::D2Click2;
         }
         break;
     default:
         // TODO: what does the hardware do
         LOG_WARNING(Service_APT, "Unknown option for num_buttons_m1: %u",
                     static_cast<u32>(config.num_buttons_m1));
-        config.return_code = SwkbdResult::NONE;
+        config.return_code = SwkbdResult::None;
         break;
     }
 
@@ -294,16 +287,6 @@ void SoftwareKeyboard::Update() {
     Finalize();
 }
 
-void SoftwareKeyboard::DrawScreenKeyboard() {
-    auto bottom_screen = Service::GSP::GetFrameBufferInfo(0, 1);
-    auto info = bottom_screen->framebuffer_info[bottom_screen->index];
-
-    // TODO(Subv): Draw the HLE keyboard, for now just zero-fill the framebuffer
-    Memory::ZeroBlock(info.address_left, info.stride * 320);
-
-    Service::GSP::SetBufferSwap(1, info);
-}
-
 void SoftwareKeyboard::Finalize() {
     // Let the application know that we're closing
     Service::APT::MessageParameter message;
@@ -315,6 +298,31 @@ void SoftwareKeyboard::Finalize() {
     SendParameter(message);
 
     is_running = false;
+}
+
+SwkbdFactory::~SwkbdFactory() {
+    Clear();
+}
+
+void SwkbdFactory::Clear() {
+    callbacks.clear();
+}
+
+void SwkbdFactory::Register(const std::string& name, SwkbdCallback callback) {
+    callbacks.emplace(std::move(name), std::move(callback));
+}
+
+bool SwkbdFactory::IsRegistered(const std::string& name) const {
+    auto it = callbacks.find(name);
+    return it != callbacks.end();
+}
+
+std::pair<std::string, SwkbdResult> SwkbdFactory::Launch(const std::string& name,
+                                                         const SoftwareKeyboardConfig& config) {
+    auto it = callbacks.find(name);
+    if (it != callbacks.end())
+        return it->second(config);
+    return std::make_pair("", SwkbdResult::None);
 }
 } // namespace Applets
 } // namespace HLE

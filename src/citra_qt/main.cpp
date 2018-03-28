@@ -369,11 +369,10 @@ void GMainWindow::InitializeHotkeys() {
             ToggleFullscreen();
         }
     });
-    connect(GetHotkey("Main Window", "Toggle Speed Limit", this), &QShortcut::activated, this,
-            [&] {
-                Settings::values.use_frame_limit = !Settings::values.use_frame_limit;
-                UpdateStatusBar();
-            });
+    connect(GetHotkey("Main Window", "Toggle Speed Limit", this), &QShortcut::activated, this, [&] {
+        Settings::values.use_frame_limit = !Settings::values.use_frame_limit;
+        UpdateStatusBar();
+    });
     constexpr u16 SPEED_LIMIT_STEP = 5;
     connect(GetHotkey("Main Window", "Increase Speed Limit", this), &QShortcut::activated, this,
             [&] {
@@ -801,15 +800,14 @@ void GMainWindow::StoreRecentFile(const QString& filename) {
     UpdateRecentFiles();
 }
 
-void GMainWindow::SwkbdCallback(std::string* textp, HLE::Applets::SwkbdResult* result,
-                                HLE::Applets::SoftwareKeyboardConfig config) {
-    bool valid = false;
-    while (!valid) {
+std::pair<std::string, SwkbdResult> GMainWindow::SwkbdCallback(
+    const SoftwareKeyboardConfig& config) {
+    while (true) {
         bool ok;
         u16 max_length = config.max_text_length;
-        std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
-        std::u16string cancel_text(reinterpret_cast<char16_t*>(config.button_text[0]));
-        std::u16string ok_text(reinterpret_cast<char16_t*>(config.button_text[1]));
+        std::u16string hint(reinterpret_cast<const char16_t*>(config.hint_text));
+        std::u16string cancel_text(reinterpret_cast<const char16_t*>(config.button_text[0]));
+        std::u16string ok_text(reinterpret_cast<const char16_t*>(config.button_text[1]));
         QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
 
         dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
@@ -825,78 +823,60 @@ void GMainWindow::SwkbdCallback(std::string* textp, HLE::Applets::SwkbdResult* r
                 QMessageBox::critical(
                     this, tr("Invalid input"),
                     tr("Input is longer than the maximum length. Max: %1").arg(max_length));
-            else if (((config.filter_flags & HLE::Applets::SWKBDFILTER_DIGITS) ==
-                      HLE::Applets::SWKBDFILTER_DIGITS) &&
+            else if (((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) &&
                      Common::ContainsDigits(text))
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must not contain any digits"));
-            else if (((config.filter_flags & HLE::Applets::SWKBDFILTER_AT) ==
-                      HLE::Applets::SWKBDFILTER_AT) &&
+            else if (((config.filter_flags & SwkbdFilter_At) == SwkbdFilter_At) &&
                      (text.find("@") != std::string::npos))
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must not contain the @ symbol"));
-            else if (((config.filter_flags & HLE::Applets::SWKBDFILTER_PERCENT) ==
-                      HLE::Applets::SWKBDFILTER_PERCENT) &&
+            else if (((config.filter_flags & SwkbdFilter_Percent) == SwkbdFilter_Percent) &&
                      (text.find("%") != std::string::npos))
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must not contain the % symbol"));
-            else if (((config.filter_flags & HLE::Applets::SWKBDFILTER_BACKSLASH) ==
-                      HLE::Applets::SWKBDFILTER_BACKSLASH) &&
+            else if (((config.filter_flags & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) &&
                      (text.find("\\") != std::string::npos))
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must not contain the \\ symbol"));
-            else if ((config.valid_input == HLE::Applets::SwkbdValidInput::FIXEDLEN) &&
+            else if ((config.valid_input == SwkbdValidInput::FixedLen) &&
                      (text.length() != config.max_text_length))
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must be exactly %1 characters.").arg(max_length));
-            else if ((config.valid_input == HLE::Applets::SwkbdValidInput::NOTEMPTY_NOTBLANK) &&
-                         text.empty() ||
+            else if ((config.valid_input == SwkbdValidInput::NotEmptyNotBlank) && text.empty() ||
                      (std::all_of(text.begin(), text.end(),
                                   [](const char c) { return std::isspace(c); })))
                 QMessageBox::critical(this, tr("Invalid input"),
                                       tr("Input must not be empty or blank."));
-            else if ((config.valid_input == HLE::Applets::SwkbdValidInput::NOTBLANK) &&
+            else if ((config.valid_input == SwkbdValidInput::NotBlank) &&
                      (std::all_of(text.begin(), text.end(),
                                   [](const char c) { return std::isspace(c); })))
                 QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be blank."));
-            else if ((config.valid_input == HLE::Applets::SwkbdValidInput::NOTEMPTY) &&
-                     text.empty())
+            else if ((config.valid_input == SwkbdValidInput::NotEmpty) && text.empty())
                 QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be empty."));
             else {
-                *textp = text.substr(0, max_length);
                 switch (config.num_buttons_m1) {
-                case HLE::Applets::SwkbdButtonConfig::NO_BUTTON:
-                    *result = HLE::Applets::SwkbdResult::NONE;
-                    break;
-                case HLE::Applets::SwkbdButtonConfig::SINGLE_BUTTON:
-                    *result = HLE::Applets::SwkbdResult::D0_CLICK;
-                    break;
-                case HLE::Applets::SwkbdButtonConfig::DUAL_BUTTON:
-                    *result = HLE::Applets::SwkbdResult::D1_CLICK1;
-                    break;
-                case HLE::Applets::SwkbdButtonConfig::TRIPLE_BUTTON:
-                    *result = HLE::Applets::SwkbdResult::D2_CLICK2;
-                    break;
+                case SwkbdButtonConfig::NoButton:
+                    return std::make_pair(text.substr(0, max_length), SwkbdResult::None);
+                case SwkbdButtonConfig::SingleButton:
+                    return std::make_pair(text.substr(0, max_length), SwkbdResult::D0Click);
+                case SwkbdButtonConfig::DualButton:
+                    return std::make_pair(text.substr(0, max_length), SwkbdResult::D1Click1);
+                case SwkbdButtonConfig::TripleButton:
+                    return std::make_pair(text.substr(0, max_length), SwkbdResult::D2Click2);
                 }
-                valid = true;
             }
         } else {
-            textp->clear();
             switch (config.num_buttons_m1) {
-            case HLE::Applets::SwkbdButtonConfig::NO_BUTTON:
-                *result = HLE::Applets::SwkbdResult::NONE;
-                break;
-            case HLE::Applets::SwkbdButtonConfig::SINGLE_BUTTON:
-                *result = HLE::Applets::SwkbdResult::D0_CLICK;
-                break;
-            case HLE::Applets::SwkbdButtonConfig::DUAL_BUTTON:
-                *result = HLE::Applets::SwkbdResult::D1_CLICK0;
-                break;
-            case HLE::Applets::SwkbdButtonConfig::TRIPLE_BUTTON:
-                *result = HLE::Applets::SwkbdResult::D2_CLICK0;
-                break;
+            case SwkbdButtonConfig::NoButton:
+                return std::make_pair("", SwkbdResult::None);
+            case SwkbdButtonConfig::SingleButton:
+                return std::make_pair("", SwkbdResult::D0Click);
+            case SwkbdButtonConfig::DualButton:
+                return std::make_pair("", SwkbdResult::D1Click0);
+            case SwkbdButtonConfig::TripleButton:
+                return std::make_pair("", SwkbdResult::D2Click0);
             }
-            valid = true;
         }
     }
 }
@@ -1116,10 +1096,9 @@ void GMainWindow::OnStartGame() {
     ui.action_Play->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(true);
 
-    using namespace HLE::Applets;
     Core::System::GetInstance().GetSwkbdFactory().Register(
-        "qt", [this](std::string* textp, SwkbdResult* result, SoftwareKeyboardConfig config) {
-            SwkbdCallback(textp, result, config);
+        "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
+            return SwkbdCallback(config);
         });
 }
 
