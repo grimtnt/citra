@@ -187,7 +187,8 @@ void LoadKeysFromDB() {
             continue;
         }
         if (key_info.id[0] != 0x00) {
-            NGLOG_WARNING(HW_AES, "Key with slot ID {:#X} is a special key, ignoring", key_info.slot);
+            NGLOG_WARNING(HW_AES, "Key with slot ID {:#X} is a special key, ignoring",
+                          key_info.slot);
             continue;
         }
         SetKeySlot(key_info.key, key_info.slot, key_info.type);

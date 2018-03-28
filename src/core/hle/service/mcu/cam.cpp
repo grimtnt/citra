@@ -9,7 +9,8 @@ namespace MCU {
 
 CAM::CAM(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::CAM", 1) {
     static const FunctionInfo functions[] = {
-        {0x00010040, nullptr, "WriteCameraLedState"}, {0x00020080, nullptr, "ReadCameraLedState"},
+        {0x00010040, nullptr, "WriteCameraLedState"},
+        {0x00020080, nullptr, "ReadCameraLedState"},
     };
     RegisterHandlers(functions);
 }
