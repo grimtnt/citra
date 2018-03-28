@@ -338,6 +338,7 @@ void GMainWindow::InitializeRecentFileMenuActions() {
 void GMainWindow::InitializeHotkeys() {
     RegisterHotkey("Main Window", "Load File", QKeySequence::Open);
     RegisterHotkey("Main Window", "Start Emulation");
+    RegisterHotkey("Main Window", "Continue/Pause", QKeySequence(Qt::Key_F4));
     RegisterHotkey("Main Window", "Swap Screens", QKeySequence(tr("F9")));
     RegisterHotkey("Main Window", "Toggle Screen Layout", QKeySequence(tr("F10")));
     RegisterHotkey("Main Window", "Fullscreen", QKeySequence::FullScreen);
@@ -355,6 +356,15 @@ void GMainWindow::InitializeHotkeys() {
             &GMainWindow::OnMenuLoadFile);
     connect(GetHotkey("Main Window", "Start Emulation", this), &QShortcut::activated, this,
             &GMainWindow::OnStartGame);
+    connect(GetHotkey("Main Window", "Continue/Pause", this), &QShortcut::activated, this, [&] {
+        if (emulation_running) {
+            if (emu_thread->IsRunning()) {
+                OnPauseGame();
+            } else {
+                OnStartGame();
+            }
+        }
+    });
     connect(GetHotkey("Main Window", "Swap Screens", render_window), &QShortcut::activated,
             ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
     connect(GetHotkey("Main Window", "Toggle Screen Layout", render_window), &QShortcut::activated,
@@ -741,6 +751,12 @@ void GMainWindow::BootGame(const QString& filename) {
         ShowFullscreen();
     }
     OnStartGame();
+
+    Core::System::GetInstance().GetSwkbdFactory().Clear();
+    Core::System::GetInstance().GetSwkbdFactory().Register(
+        "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
+            return SwkbdCallback(config);
+        });
 }
 
 void GMainWindow::ShutdownGame() {
@@ -1095,11 +1111,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Record->setEnabled(false);
     ui.action_Play->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(true);
-
-    Core::System::GetInstance().GetSwkbdFactory().Register(
-        "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
-            return SwkbdCallback(config);
-        });
 }
 
 void GMainWindow::OnPauseGame() {
