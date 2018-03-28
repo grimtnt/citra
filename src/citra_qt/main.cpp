@@ -343,6 +343,8 @@ void GMainWindow::InitializeHotkeys() {
     RegisterHotkey("Main Window", "Fullscreen", QKeySequence::FullScreen);
     RegisterHotkey("Main Window", "Exit Fullscreen", QKeySequence(Qt::Key_Escape),
                    Qt::ApplicationShortcut);
+    RegisterHotkey("Main Window", "Toggle Speed Limit", QKeySequence("CTRL+Z"),
+                   Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Increase Speed Limit", QKeySequence("+"),
                    Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Decrease Speed Limit", QKeySequence("-"),
@@ -367,6 +369,11 @@ void GMainWindow::InitializeHotkeys() {
             ToggleFullscreen();
         }
     });
+    connect(GetHotkey("Main Window", "Toggle Speed Limit", this), &QShortcut::activated, this,
+            [&] {
+                Settings::values.use_frame_limit = !Settings::values.use_frame_limit;
+                UpdateStatusBar();
+            });
     constexpr u16 SPEED_LIMIT_STEP = 5;
     connect(GetHotkey("Main Window", "Increase Speed Limit", this), &QShortcut::activated, this,
             [&] {
