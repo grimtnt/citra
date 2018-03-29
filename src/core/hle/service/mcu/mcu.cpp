@@ -18,6 +18,7 @@
 #include "core/hle/service/mcu/rtc.h"
 #include "core/hle/service/mcu/snd.h"
 #include "core/hle/shared_page.h"
+#include "core/settings.h"
 
 namespace Service {
 namespace MCU {
@@ -34,7 +35,8 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
 void Module::Interface::Set3DLEDState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x0009, 1, 0);
     u8 state = rp.Pop<u8>();
-    SharedPage::shared_page.ledstate_3d = state;
+    Settings::values.sp_enable_3d = state == 0 ? false : true;
+    SharedPage::shared_page_handler->shared_page.ledstate_3d = state;
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 }

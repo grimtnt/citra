@@ -15,7 +15,6 @@
 #include "core/cheat_core.h"
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "core/gdbstub/gdbstub.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/thread.h"
@@ -38,25 +37,9 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         return ResultStatus::ErrorNotInitialized;
     }
 
-    if (GDBStub::IsServerEnabled()) {
-        GDBStub::HandlePacket();
-
-        // If the loop is halted and we want to step, use a tiny (1) number of instructions to
-        // execute. Otherwise, get out of the loop function.
-        if (GDBStub::GetCpuHaltFlag()) {
-            if (GDBStub::GetCpuStepFlag()) {
-                GDBStub::SetCpuStepFlag(false);
-                tight_loop = 1;
-            } else {
-                return ResultStatus::Success;
-            }
-        }
-    }
-
     // If we don't have a currently active thread then don't execute instructions,
     // instead advance to the next event and try to yield to the next thread
     if (Kernel::GetCurrentThread() == nullptr) {
-        LOG_TRACE(Core_ARM11, "Idling");
         CoreTiming::Idle();
         CoreTiming::Advance();
         PrepareReschedule();
@@ -176,7 +159,6 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     Kernel::Init(system_mode);
     Service::Init();
     CheatCore::Init();
-    GDBStub::Init();
     Movie::GetInstance().Init();
 
     if (!VideoCore::Init(emu_window)) {
@@ -204,7 +186,6 @@ void System::Shutdown() {
 
     // Shutdown emulation session
     Movie::GetInstance().Shutdown();
-    GDBStub::Shutdown();
     CheatCore::Shutdown();
     VideoCore::Shutdown();
     Service::Shutdown();

@@ -20,7 +20,7 @@ unsigned int Object::next_object_id;
 /// Initialize the kernel
 void Init(u32 system_mode) {
     ConfigMem::Init();
-    SharedPage::Init();
+    SharedPage::shared_page_handler = std::make_unique<SharedPage::Module>();
 
     if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
         Service::CFG::GetSystemModelID() == 5) {
@@ -49,6 +49,7 @@ void Shutdown() {
     Kernel::TimersShutdown();
     Kernel::ResourceLimitsShutdown();
     Kernel::MemoryShutdown();
+    SharedPage::shared_page_handler.reset();
 }
 
 } // namespace Kernel

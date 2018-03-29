@@ -9,7 +9,6 @@
 #include <cstdio>
 #include "common/common_types.h"
 #include "common/logging/log.h"
-#include "common/microprofile.h"
 #include "core/arm/dyncom/arm_dyncom_dec.h"
 #include "core/arm/dyncom/arm_dyncom_interpreter.h"
 #include "core/arm/dyncom/arm_dyncom_run.h"
@@ -19,7 +18,6 @@
 #include "core/arm/skyeye_common/armsupp.h"
 #include "core/arm/skyeye_common/vfp/vfp.h"
 #include "core/core_timing.h"
-#include "core/gdbstub/gdbstub.h"
 #include "core/hle/kernel/svc.h"
 #include "core/memory.h"
 
@@ -805,8 +803,6 @@ static ThumbDecodeStatus DecodeThumbInstruction(u32 inst, u32 addr, u32* arm_ins
 
 enum { KEEP_GOING, FETCH_EXCEPTION };
 
-MICROPROFILE_DEFINE(DynCom_Decode, "DynCom", "Decode", MP_RGB(255, 64, 64));
-
 static unsigned int InterpreterTranslateInstruction(const ARMul_State* cpu, const u32 phys_addr,
                                                     ARM_INST_PTR& inst_base) {
     u32 inst_size = 4;
@@ -840,8 +836,6 @@ static unsigned int InterpreterTranslateInstruction(const ARMul_State* cpu, cons
 }
 
 static int InterpreterTranslateBlock(ARMul_State* cpu, std::size_t& bb_start, u32 addr) {
-    MICROPROFILE_SCOPE(DynCom_Decode);
-
     // Decode instruction, get index
     // Allocate memory and init InsCream
     // Go on next, until terminal instruction
@@ -873,8 +867,6 @@ static int InterpreterTranslateBlock(ARMul_State* cpu, std::size_t& bb_start, u3
 }
 
 static int InterpreterTranslateSingle(ARMul_State* cpu, std::size_t& bb_start, u32 addr) {
-    MICROPROFILE_SCOPE(DynCom_Decode);
-
     ARM_INST_PTR inst_base = nullptr;
     bb_start = trans_cache_buf_top;
 
@@ -917,13 +909,7 @@ static int clz(unsigned int x) {
     return n;
 }
 
-MICROPROFILE_DEFINE(DynCom_Execute, "DynCom", "Execute", MP_RGB(255, 0, 0));
-
 unsigned InterpreterMainLoop(ARMul_State* cpu) {
-    MICROPROFILE_SCOPE(DynCom_Execute);
-
-    GDBStub::BreakpointAddress breakpoint_data;
-
 #undef RM
 #undef RS
 
@@ -950,29 +936,16 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
 #define INC_PC(l) ptr += sizeof(arm_inst) + l
 #define INC_PC_STUB ptr += sizeof(arm_inst)
 
-#define GDB_BP_CHECK                                                                               \
-    cpu->Cpsr &= ~(1 << 5);                                                                        \
-    cpu->Cpsr |= cpu->TFlag << 5;                                                                  \
-    if (GDBStub::IsServerEnabled()) {                                                              \
-        if (GDBStub::IsMemoryBreak() || (breakpoint_data.type != GDBStub::BreakpointType::None &&  \
-                                         PC == breakpoint_data.address)) {                         \
-            GDBStub::Break();                                                                      \
-            goto END;                                                                              \
-        }                                                                                          \
-    }
-
 // GCC and Clang have a C++ extension to support a lookup table of labels. Otherwise, fallback to a
 // clunky switch statement.
 #if defined __GNUC__ || defined __clang__
 #define GOTO_NEXT_INST                                                                             \
-    GDB_BP_CHECK;                                                                                  \
     if (num_instrs >= cpu->NumInstrsToExecute)                                                     \
         goto END;                                                                                  \
     num_instrs++;                                                                                  \
     goto* InstLabel[inst_base->idx]
 #else
 #define GOTO_NEXT_INST                                                                             \
-    GDB_BP_CHECK;                                                                                  \
     if (num_instrs >= cpu->NumInstrsToExecute)                                                     \
         goto END;                                                                                  \
     num_instrs++;                                                                                  \
@@ -1645,12 +1618,6 @@ DISPATCH : {
     } else {
         if (InterpreterTranslateSingle(cpu, ptr, cpu->Reg[15]) == FETCH_EXCEPTION)
             goto END;
-    }
-
-    // Find breakpoint if one exists within the block
-    if (GDBStub::IsConnected()) {
-        breakpoint_data =
-            GDBStub::GetNextBreakpointFromAddress(cpu->Reg[15], GDBStub::BreakpointType::Execute);
     }
 
     inst_base = (arm_inst*)&trans_cache_buf[ptr];

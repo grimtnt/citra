@@ -333,8 +333,13 @@ private:
     std::array<SamplerInfo, 3> texture_samplers;
     static constexpr size_t VERTEX_BUFFER_SIZE = 128 * 1024 * 1024;
     std::unique_ptr<OGLStreamBuffer> vertex_buffer;
+    GLsizeiptr vertex_buffer_size;
     OGLBuffer uniform_buffer;
     OGLFramebuffer framebuffer;
+
+    // TODO (wwylele): consider caching texture cube in the rasterizer cache
+    OGLTexture texture_cube;
+    SamplerInfo texture_cube_sampler;
 
     OGLBuffer lighting_lut_buffer;
     OGLTexture lighting_lut;

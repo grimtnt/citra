@@ -7,10 +7,6 @@
 #include <regex>
 #include <string>
 #include <thread>
-
-// This needs to be included before getopt.h because the latter #defines symbols used by it
-#include "common/microprofile.h"
-
 #include <getopt.h>
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -36,7 +32,6 @@
 #include "core/core.h"
 #include "core/file_sys/cia_container.h"
 #include "core/frontend/camera/factory.h"
-#include "core/gdbstub/gdbstub.h"
 #include "core/hle/service/am/am.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
@@ -52,7 +47,6 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 static void PrintHelp(const char* argv0) {
     std::cout << "Usage: " << argv0
               << " [options] <filename>\n"
-                 "-g, --gdbport=NUMBER Enable gdb stub on port NUMBER\n"
                  "-i, --install=FILE    Installs a specified CIA file\n"
                  "-m, --multiplayer=nick:password@address:port"
                  " Nickname, password, address and port for multiplayer\n"
@@ -117,8 +111,6 @@ static void OnMessageReceived(const Network::ChatEntry& msg) {
 int main(int argc, char** argv) {
     Config config;
     int option_index = 0;
-    bool use_gdbstub = Settings::values.use_gdbstub;
-    u32 gdb_port = static_cast<u32>(Settings::values.gdbstub_port);
     std::string movie_record;
     std::string movie_play;
 
@@ -141,27 +133,19 @@ int main(int argc, char** argv) {
     u16 port = Network::DefaultRoomPort;
 
     static struct option long_options[] = {
-        {"gdbport", required_argument, 0, 'g'},     {"install", required_argument, 0, 'i'},
-        {"multiplayer", required_argument, 0, 'm'}, {"movie-record", required_argument, 0, 'r'},
-        {"movie-play", required_argument, 0, 'p'},  {"help", no_argument, 0, 'h'},
-        {"version", no_argument, 0, 'v'},           {0, 0, 0, 0},
+        {"install", required_argument, 0, 'i'},
+        {"multiplayer", required_argument, 0, 'm'},
+        {"movie-record", required_argument, 0, 'r'},
+        {"movie-play", required_argument, 0, 'p'},
+        {"help", no_argument, 0, 'h'},
+        {"version", no_argument, 0, 'v'},
+        {0, 0, 0, 0},
     };
 
     while (optind < argc) {
-        char arg = getopt_long(argc, argv, "g:i:m:r:p:hv", long_options, &option_index);
+        char arg = getopt_long(argc, argv, "i:m:r:p:hv", long_options, &option_index);
         if (arg != -1) {
             switch (arg) {
-            case 'g':
-                errno = 0;
-                gdb_port = strtoul(optarg, &endarg, 0);
-                use_gdbstub = true;
-                if (endarg == optarg)
-                    errno = EINVAL;
-                if (errno != 0) {
-                    perror("--gdbport");
-                    exit(1);
-                }
-                break;
             case 'i': {
                 const auto cia_progress = [](size_t written, size_t total) {
                     NGLOG_INFO(Frontend, "{:02d}%", (written * 100 / total));
@@ -232,9 +216,6 @@ int main(int argc, char** argv) {
     LocalFree(argv_w);
 #endif
 
-    MicroProfileOnThreadCreate("EmuThread");
-    SCOPE_EXIT({ MicroProfileShutdown(); });
-
     if (filepath.empty()) {
         NGLOG_CRITICAL(Frontend, "Failed to load ROM: No ROM specified");
         return -1;
@@ -250,8 +231,6 @@ int main(int argc, char** argv) {
     Log::SetFilter(&log_filter);
 
     // Apply the command line arguments
-    Settings::values.gdbstub_port = gdb_port;
-    Settings::values.use_gdbstub = use_gdbstub;
     Settings::values.movie_play = std::move(movie_play);
     Settings::values.movie_record = std::move(movie_record);
     Settings::Apply();

@@ -76,25 +76,26 @@ u8 ControlPanel::itns(int index) {
 
 void ControlPanel::On3DEnabledChanged() {
     Settings::values.sp_enable_3d = ui->shared_page_enable_3d->isChecked();
-    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 0 : 1;
+    SharedPage::shared_page_handler->shared_page.ledstate_3d =
+        Settings::values.sp_enable_3d ? 0 : 1;
 }
 
 void ControlPanel::OnAdapterConnectedChanged() {
     Settings::values.p_adapter_connected = ui->power_adapter_connected->isChecked();
-    SharedPage::shared_page.battery_state.is_adapter_connected.Assign(
+    SharedPage::shared_page_handler->shared_page.battery_state.is_adapter_connected.Assign(
         static_cast<u8>(Settings::values.p_adapter_connected));
 }
 
 void ControlPanel::OnBatteryChargingChanged() {
     Settings::values.p_battery_charging = ui->power_battery_charging->isChecked();
-    SharedPage::shared_page.battery_state.is_charging.Assign(
+    SharedPage::shared_page_handler->shared_page.battery_state.is_charging.Assign(
         static_cast<u8>(Settings::values.p_battery_charging));
 }
 
 void ControlPanel::OnBatteryLevelChanged() {
     Settings::values.p_battery_level =
         static_cast<u32>(ui->power_battery_level->currentIndex() + 1);
-    SharedPage::shared_page.battery_state.charge_level.Assign(
+    SharedPage::shared_page_handler->shared_page.battery_state.charge_level.Assign(
         static_cast<u8>(Settings::values.p_battery_level));
 }
 
@@ -104,10 +105,12 @@ void ControlPanel::OnWifiStatusChanged() {
 
 void ControlPanel::OnWifiLinkLevelChanged() {
     Settings::values.n_wifi_link_level = static_cast<u8>(ui->network_link_level->value());
-    SharedPage::shared_page.wifi_link_level = static_cast<u8>(ui->network_link_level->value());
+    SharedPage::shared_page_handler->shared_page.wifi_link_level =
+        static_cast<u8>(ui->network_link_level->value());
 }
 
 void ControlPanel::OnNetworkStateChanged() {
     Settings::values.n_state = itns(ui->network_state->currentIndex());
-    SharedPage::shared_page.network_state = itns(ui->network_state->currentIndex());
+    SharedPage::shared_page_handler->shared_page.network_state =
+        itns(ui->network_state->currentIndex());
 }

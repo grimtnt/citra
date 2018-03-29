@@ -49,11 +49,6 @@
         <string>Camera</string>
        </attribute>
       </widget>
-     <widget class="ConfigureDebug" name="debugTab">
-      <attribute name="title">
-       <string>Debug</string>
-      </attribute>
-     </widget>
      <widget class="ConfigureWeb" name="webTab">
       <attribute name="title">
        <string>Web</string>
@@ -100,12 +95,6 @@
    <header>configuration/configure_camera.h</header>
    <container>1</container>
    </customwidget>
-   <customwidget>
-   <class>ConfigureDebug</class>
-   <extends>QWidget</extends>
-   <header>configuration/configure_debug.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>ConfigureInput</class>
    <extends>QWidget</extends>

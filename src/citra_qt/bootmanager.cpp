@@ -5,7 +5,6 @@
 #include <QWindow>
 
 #include "citra_qt/bootmanager.h"
-#include "common/microprofile.h"
 #include "common/scm_rev.h"
 #include "common/string_util.h"
 #include "core/3ds.h"
@@ -20,9 +19,6 @@ EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window
 
 void EmuThread::run() {
     render_window->MakeCurrent();
-
-    MicroProfileOnThreadCreate("EmuThread");
-
     stop_run = false;
 
     // Holds whether the cpu was running during the last iteration,
@@ -61,11 +57,6 @@ void EmuThread::run() {
 
     // Shutdown the core emulation
     Core::System::GetInstance().Shutdown();
-
-#if MICROPROFILE_ENABLED
-    MicroProfileOnThreadExit();
-#endif
-
     render_window->moveContext();
 }
 

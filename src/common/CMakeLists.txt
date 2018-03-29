@@ -54,9 +54,6 @@ add_library(common STATIC
     math_util.h
     memory_util.cpp
     memory_util.h
-    microprofile.cpp
-    microprofile.h
-    microprofileui.h
     misc.cpp
     param_package.cpp
     param_package.h
@@ -72,6 +69,7 @@ add_library(common STATIC
     telemetry.h
     thread.cpp
     thread.h
+    thread_pool.h
     thread_queue_list.h
     threadsafe_queue.h
     timer.cpp

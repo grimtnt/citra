@@ -5,6 +5,7 @@
 #include <catch.hpp>
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/process.h"
+#include "core/hle/shared_page.h"
 #include "core/memory.h"
 
 TEST_CASE("Memory::IsValidVirtualAddress", "[core][memory]") {
@@ -21,6 +22,7 @@ TEST_CASE("Memory::IsValidVirtualAddress", "[core][memory]") {
 
     SECTION("CONFIG_MEMORY_VADDR and SHARED_PAGE_VADDR should be valid after mapping them") {
         auto process = Kernel::Process::Create(Kernel::CodeSet::Create("", 0));
+        SharedPage::shared_page_handler = std::make_unique<SharedPage::Module>();
         Kernel::MapSharedPages(process->vm_manager);
         CHECK(Memory::IsValidVirtualAddress(*process, Memory::CONFIG_MEMORY_VADDR) == true);
         CHECK(Memory::IsValidVirtualAddress(*process, Memory::SHARED_PAGE_VADDR) == true);

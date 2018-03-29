@@ -17,6 +17,11 @@ enum class RenderBackend { Software, OpenGL };
 
 enum class SwkbdMode { StdIn, Qt };
 
+enum class InitClock : u8 {
+    SystemTime = 0,
+    FixedTime = 1,
+};
+
 enum class LayoutOption {
     Default,
     SingleScreen,
@@ -115,8 +120,10 @@ struct Values {
     // Data Storage
     bool use_virtual_sd;
 
-    // System Region
+    // System
     int region_value;
+    InitClock init_clock;
+    time_t init_time;
 
     // Renderer
     RenderBackend renderer;
@@ -155,10 +162,6 @@ struct Values {
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;
     std::array<std::string, Service::CAM::NumCameras> camera_config;
-
-    // Debugging
-    bool use_gdbstub;
-    u16 gdbstub_port;
 
     // Movie
     std::string movie_play;

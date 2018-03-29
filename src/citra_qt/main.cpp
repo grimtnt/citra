@@ -26,15 +26,6 @@
 #include "citra_qt/configuration/config.h"
 #include "citra_qt/configuration/configure_dialog.h"
 #include "citra_qt/control_panel.h"
-#include "citra_qt/debugger/graphics/graphics.h"
-#include "citra_qt/debugger/graphics/graphics_breakpoints.h"
-#include "citra_qt/debugger/graphics/graphics_cmdlists.h"
-#include "citra_qt/debugger/graphics/graphics_surface.h"
-#include "citra_qt/debugger/graphics/graphics_tracing.h"
-#include "citra_qt/debugger/graphics/graphics_vertex_shader.h"
-#include "citra_qt/debugger/profiler.h"
-#include "citra_qt/debugger/registers.h"
-#include "citra_qt/debugger/wait_tree.h"
 #include "citra_qt/game_list.h"
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
@@ -51,13 +42,11 @@
 #include "common/logging/filter.h"
 #include "common/logging/log.h"
 #include "common/logging/text_formatter.h"
-#include "common/microprofile.h"
 #include "common/scm_rev.h"
 #include "common/scope_exit.h"
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
-#include "core/gdbstub/gdbstub.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
@@ -122,7 +111,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
 
     LoadTranslation();
 
-    Pica::g_debug_context = Pica::DebugContext::Construct();
     setAcceptDrops(true);
     ui.setupUi(this);
     statusBar()->hide();
@@ -176,8 +164,6 @@ GMainWindow::~GMainWindow() {
     // will get automatically deleted otherwise
     if (render_window->parent() == nullptr)
         delete render_window;
-
-    Pica::g_debug_context.reset();
 
     if (state_callback_handle) {
         if (auto member = Network::GetRoomMember().lock()) {
@@ -253,11 +239,6 @@ void GMainWindow::InitializeWidgets() {
 }
 
 void GMainWindow::InitializeDebugWidgets() {
-    connect(ui.action_Create_Pica_Surface_Viewer, &QAction::triggered, this,
-            &GMainWindow::OnCreateGraphicsSurfaceViewer);
-
-    QMenu* debug_menu = ui.menu_View_Debugging;
-
     stereoscopicControllerWidget = new StereoscopicControllerWidget(this);
     addDockWidget(Qt::LeftDockWidgetArea, stereoscopicControllerWidget);
     stereoscopicControllerWidget->setFloating(true);
@@ -265,59 +246,6 @@ void GMainWindow::InitializeDebugWidgets() {
             &StereoscopicControllerWidget::OnEmulationStarting);
     connect(this, &GMainWindow::EmulationStopping, stereoscopicControllerWidget,
             &StereoscopicControllerWidget::OnEmulationStopping);
-
-#if MICROPROFILE_ENABLED
-    microProfileDialog = new MicroProfileDialog(this);
-    microProfileDialog->hide();
-    debug_menu->addAction(microProfileDialog->toggleViewAction());
-#endif
-
-    registersWidget = new RegistersWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, registersWidget);
-    registersWidget->hide();
-    debug_menu->addAction(registersWidget->toggleViewAction());
-    connect(this, &GMainWindow::EmulationStarting, registersWidget,
-            &RegistersWidget::OnEmulationStarting);
-    connect(this, &GMainWindow::EmulationStopping, registersWidget,
-            &RegistersWidget::OnEmulationStopping);
-
-    graphicsWidget = new GPUCommandStreamWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, graphicsWidget);
-    graphicsWidget->hide();
-    debug_menu->addAction(graphicsWidget->toggleViewAction());
-
-    graphicsCommandsWidget = new GPUCommandListWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, graphicsCommandsWidget);
-    graphicsCommandsWidget->hide();
-    debug_menu->addAction(graphicsCommandsWidget->toggleViewAction());
-
-    graphicsBreakpointsWidget = new GraphicsBreakPointsWidget(Pica::g_debug_context, this);
-    addDockWidget(Qt::RightDockWidgetArea, graphicsBreakpointsWidget);
-    graphicsBreakpointsWidget->hide();
-    debug_menu->addAction(graphicsBreakpointsWidget->toggleViewAction());
-
-    graphicsVertexShaderWidget = new GraphicsVertexShaderWidget(Pica::g_debug_context, this);
-    addDockWidget(Qt::RightDockWidgetArea, graphicsVertexShaderWidget);
-    graphicsVertexShaderWidget->hide();
-    debug_menu->addAction(graphicsVertexShaderWidget->toggleViewAction());
-
-    graphicsTracingWidget = new GraphicsTracingWidget(Pica::g_debug_context, this);
-    addDockWidget(Qt::RightDockWidgetArea, graphicsTracingWidget);
-    graphicsTracingWidget->hide();
-    debug_menu->addAction(graphicsTracingWidget->toggleViewAction());
-    connect(this, &GMainWindow::EmulationStarting, graphicsTracingWidget,
-            &GraphicsTracingWidget::OnEmulationStarting);
-    connect(this, &GMainWindow::EmulationStopping, graphicsTracingWidget,
-            &GraphicsTracingWidget::OnEmulationStopping);
-
-    waitTreeWidget = new WaitTreeWidget(this);
-    addDockWidget(Qt::LeftDockWidgetArea, waitTreeWidget);
-    waitTreeWidget->hide();
-    debug_menu->addAction(waitTreeWidget->toggleViewAction());
-    connect(this, &GMainWindow::EmulationStarting, waitTreeWidget,
-            &WaitTreeWidget::OnEmulationStarting);
-    connect(this, &GMainWindow::EmulationStopping, waitTreeWidget,
-            &WaitTreeWidget::OnEmulationStopping);
 
     ui.menu_Emulation->addSeparator();
     ui.menu_Emulation->addAction(stereoscopicControllerWidget->toggleViewAction());
@@ -423,10 +351,6 @@ void GMainWindow::RestoreUIState() {
     restoreGeometry(UISettings::values.geometry);
     restoreState(UISettings::values.state);
     render_window->restoreGeometry(UISettings::values.renderwindow_geometry);
-#if MICROPROFILE_ENABLED
-    microProfileDialog->restoreGeometry(UISettings::values.microprofile_geometry);
-    microProfileDialog->setVisible(UISettings::values.microprofile_visible);
-#endif
 
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
@@ -724,19 +648,7 @@ void GMainWindow::BootGame(const QString& filename) {
     emu_thread->start();
 
     connect(render_window, &GRenderWindow::Closed, this, &GMainWindow::OnStopGame);
-    // BlockingQueuedConnection is important here, it makes sure we've finished refreshing our views
-    // before the CPU continues
-    connect(emu_thread.get(), &EmuThread::DebugModeEntered, registersWidget,
-            &RegistersWidget::OnDebugModeEntered, Qt::BlockingQueuedConnection);
-    connect(emu_thread.get(), &EmuThread::DebugModeEntered, waitTreeWidget,
-            &WaitTreeWidget::OnDebugModeEntered, Qt::BlockingQueuedConnection);
-    connect(emu_thread.get(), &EmuThread::DebugModeLeft, registersWidget,
-            &RegistersWidget::OnDebugModeLeft, Qt::BlockingQueuedConnection);
-    connect(emu_thread.get(), &EmuThread::DebugModeLeft, waitTreeWidget,
-            &WaitTreeWidget::OnDebugModeLeft, Qt::BlockingQueuedConnection);
-
     // Update the GUI
-    registersWidget->OnDebugModeEntered();
     if (ui.action_Single_Window_Mode->isChecked()) {
         game_list->hide();
     }
@@ -761,13 +673,6 @@ void GMainWindow::BootGame(const QString& filename) {
 
 void GMainWindow::ShutdownGame() {
     emu_thread->RequestStop();
-
-    // Release emu threads from any breakpoints
-    // This belongs after RequestStop() and before wait() because if emulation stops on a GPU
-    // breakpoint after (or before) RequestStop() is called, the emulation would never be able
-    // to continue out to the main loop and terminate. Thus wait() would hang forever.
-    // TODO(bunnei): This function is not thread safe, but it's being used as if it were
-    Pica::g_debug_context->ClearBreakpoints();
 
     emit EmulationStopping();
 
@@ -1285,13 +1190,6 @@ void GMainWindow::OnControlPanel() {
     controlPanel->show();
 }
 
-void GMainWindow::OnCreateGraphicsSurfaceViewer() {
-    auto graphicsSurfaceViewerWidget = new GraphicsSurfaceWidget(Pica::g_debug_context, this);
-    addDockWidget(Qt::RightDockWidgetArea, graphicsSurfaceViewerWidget);
-    // TODO: Maybe graphicsSurfaceViewerWidget->setFloating(true);
-    graphicsSurfaceViewerWidget->show();
-}
-
 void GMainWindow::OnRecordMovie() {
     QString path = QFileDialog::getSaveFileName(this, tr("Save Movie"));
     if (path.isEmpty())
@@ -1489,10 +1387,6 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
     UISettings::values.geometry = saveGeometry();
     UISettings::values.state = saveState();
     UISettings::values.renderwindow_geometry = render_window->saveGeometry();
-#if MICROPROFILE_ENABLED
-    UISettings::values.microprofile_geometry = microProfileDialog->saveGeometry();
-    UISettings::values.microprofile_visible = microProfileDialog->isVisible();
-#endif
     UISettings::values.single_window_mode = ui.action_Single_Window_Mode->isChecked();
     UISettings::values.fullscreen = ui.action_Fullscreen->isChecked();
     UISettings::values.display_titlebar = ui.action_Display_Dock_Widget_Headers->isChecked();
@@ -1649,9 +1543,6 @@ void GMainWindow::SyncMenuUISettings() {
 int main(int argc, char* argv[]) {
     Log::Filter log_filter(Log::Level::Info);
     Log::SetFilter(&log_filter);
-
-    MicroProfileOnThreadCreate("Frontend");
-    SCOPE_EXIT({ MicroProfileShutdown(); });
 
     // Init settings params
     QCoreApplication::setOrganizationName("Citra team");

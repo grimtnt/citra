@@ -5,7 +5,6 @@
 #include "audio_core/dsp_interface.h"
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
-#include "core/gdbstub/gdbstub.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir.h"
 #include "core/settings.h"
@@ -16,10 +15,6 @@ namespace Settings {
 Values values = {};
 
 void Apply() {
-
-    GDBStub::SetServerPort(values.gdbstub_port);
-    GDBStub::ToggleServer(values.use_gdbstub);
-
     VideoCore::g_renderer_selection = static_cast<VideoCore::Renderer>(values.renderer);
     VideoCore::g_shader_jit_enabled = values.use_shader_jit;
 

@@ -81,8 +81,6 @@ add_library(core STATIC
     frontend/framebuffer_layout.cpp
     frontend/framebuffer_layout.h
     frontend/input.h
-    gdbstub/gdbstub.cpp
-    gdbstub/gdbstub.h
     hle/applets/applet.cpp
     hle/applets/applet.h
     hle/applets/erreula.cpp

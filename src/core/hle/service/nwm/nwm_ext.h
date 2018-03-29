@@ -12,11 +12,6 @@ class HLERequestContext;
 
 namespace Service {
 namespace NWM {
-namespace ErrCodes {
-enum {
-    D_13 = 13,
-};
-} // namespace ErrCodes
 
 class NWM_EXT final : public ServiceFramework<NWM_EXT> {
 public:

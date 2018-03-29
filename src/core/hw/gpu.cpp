@@ -9,7 +9,6 @@
 #include "common/color.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
-#include "common/microprofile.h"
 #include "common/vector_math.h"
 #include "core/core_timing.h"
 #include "core/hle/service/gsp/gsp.h"
@@ -70,9 +69,6 @@ static Math::Vec4<u8> DecodePixel(Regs::PixelFormat input_format, const u8* src_
         return {0, 0, 0, 0};
     }
 }
-
-MICROPROFILE_DEFINE(GPU_DisplayTransfer, "GPU", "DisplayTransfer", MP_RGB(100, 100, 255));
-MICROPROFILE_DEFINE(GPU_CmdlistProcessing, "GPU", "Cmdlist Processing", MP_RGB(100, 255, 100));
 
 static void MemoryFill(const Regs::MemoryFillConfig& config) {
     const PAddr start_addr = config.GetStartAddress();
@@ -431,8 +427,6 @@ inline void Write(u32 addr, const T data) {
     }
 
     case GPU_REG_INDEX(display_transfer_config.trigger): {
-        MICROPROFILE_SCOPE(GPU_DisplayTransfer);
-
         const auto& config = g_regs.display_transfer_config;
         if (config.trigger & 1) {
 
@@ -471,17 +465,8 @@ inline void Write(u32 addr, const T data) {
     case GPU_REG_INDEX(command_processor_config.trigger): {
         const auto& config = g_regs.command_processor_config;
         if (config.trigger & 1) {
-            MICROPROFILE_SCOPE(GPU_CmdlistProcessing);
-
             u32* buffer = (u32*)Memory::GetPhysicalPointer(config.GetPhysicalAddress());
-
-            if (Pica::g_debug_context && Pica::g_debug_context->recorder) {
-                Pica::g_debug_context->recorder->MemoryAccessed((u8*)buffer, config.size,
-                                                                config.GetPhysicalAddress());
-            }
-
             Pica::CommandProcessor::ProcessCommandList(buffer, config.size);
-
             g_regs.command_processor_config.trigger = 0;
         }
         break;

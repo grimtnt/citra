@@ -4,7 +4,6 @@
 
 #include <vector>
 #include "common/bit_field.h"
-#include "common/microprofile.h"
 #include "common/swap.h"
 #include "core/core.h"
 #include "core/hle/ipc.h"
@@ -289,7 +288,6 @@ ResultCode SetBufferSwap(u32 screen_id, const FrameBufferInfo& info) {
         Pica::g_debug_context->OnEvent(Pica::DebugContext::Event::BufferSwapped, nullptr);
 
     if (screen_id == 0) {
-        MicroProfileFlip();
         Core::System::GetInstance().perf_stats.EndGameFrame();
     }
 
@@ -439,8 +437,6 @@ void GSP_GPU::SignalInterrupt(InterruptId interrupt_id) {
     SignalInterruptForThread(interrupt_id, active_thread_id);
 }
 
-MICROPROFILE_DEFINE(GPU_GSP_DMA, "GPU", "GSP DMA", MP_RGB(100, 0, 255));
-
 /// Executes the next GSP command
 static void ExecuteCommand(const Command& command, u32 thread_id) {
     // Utility function to convert register ID to address
@@ -452,8 +448,6 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
 
     // GX request DMA - typically used for copying memory from GSP heap to VRAM
     case CommandId::REQUEST_DMA: {
-        MICROPROFILE_SCOPE(GPU_GSP_DMA);
-
         // TODO: Consider attempting rasterizer-accelerated surface blit if that usage is ever
         // possible/likely
         Memory::RasterizerFlushVirtualRegion(command.dma_request.source_address,

@@ -11,7 +11,6 @@
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/math_util.h"
-#include "common/microprofile.h"
 #include "common/scope_exit.h"
 #include "common/vector_math.h"
 #include "core/hw/gpu.h"
@@ -27,13 +26,6 @@
 
 using PixelFormat = SurfaceParams::PixelFormat;
 using SurfaceType = SurfaceParams::SurfaceType;
-
-MICROPROFILE_DEFINE(OpenGL_VAO, "OpenGL", "Vertex Array Setup", MP_RGB(128, 128, 192));
-MICROPROFILE_DEFINE(OpenGL_VS, "OpenGL", "Vertex Shader Setup", MP_RGB(128, 128, 192));
-MICROPROFILE_DEFINE(OpenGL_GS, "OpenGL", "Geometry Shader Setup", MP_RGB(128, 128, 192));
-MICROPROFILE_DEFINE(OpenGL_Drawing, "OpenGL", "Drawing", MP_RGB(128, 128, 192));
-MICROPROFILE_DEFINE(OpenGL_Blits, "OpenGL", "Blits", MP_RGB(100, 100, 255));
-MICROPROFILE_DEFINE(OpenGL_CacheManagement, "OpenGL", "Cache Mgmt", MP_RGB(100, 255, 100));
 
 enum class UniformBindings : GLuint { Common, VS, GS };
 
@@ -106,6 +98,12 @@ RasterizerOpenGL::RasterizerOpenGL() {
         state.texture_units[i].sampler = texture_samplers[i].sampler.handle;
     }
 
+    // Create cubemap texture and sampler objects
+    texture_cube_sampler.Create();
+    state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
+    texture_cube.Create();
+    state.texture_cube_unit.texture_cube = texture_cube.handle;
+
     // Generate VBO, VAO and UBO
     vertex_buffer = OGLStreamBuffer::MakeBuffer(GLAD_GL_ARB_buffer_storage, GL_ARRAY_BUFFER);
     vertex_buffer->Create(VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE / 2);
@@ -117,7 +115,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.draw.uniform_buffer = uniform_buffer.handle;
     state.Apply();
 
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(UniformData), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(UniformData), nullptr, GL_STATIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniform_buffer.handle);
 
     uniform_block_data.dirty = true;
@@ -174,7 +172,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     glBindBuffer(GL_TEXTURE_BUFFER, lighting_lut_buffer.handle);
     glBufferData(GL_TEXTURE_BUFFER,
                  sizeof(GLfloat) * 2 * 256 * Pica::LightingRegs::NumLightingSampler, nullptr,
-                 GL_DYNAMIC_DRAW);
+                 GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::LightingLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, lighting_lut_buffer.handle);
 
@@ -184,7 +182,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.Apply();
     fog_lut_buffer.Create();
     glBindBuffer(GL_TEXTURE_BUFFER, fog_lut_buffer.handle);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::FogLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, fog_lut_buffer.handle);
 
@@ -194,7 +192,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.Apply();
     proctex_noise_lut_buffer.Create();
     glBindBuffer(GL_TEXTURE_BUFFER, proctex_noise_lut_buffer.handle);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::ProcTexNoiseLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, proctex_noise_lut_buffer.handle);
 
@@ -204,7 +202,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.Apply();
     proctex_color_map_buffer.Create();
     glBindBuffer(GL_TEXTURE_BUFFER, proctex_color_map_buffer.handle);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::ProcTexColorMap.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, proctex_color_map_buffer.handle);
 
@@ -214,7 +212,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.Apply();
     proctex_alpha_map_buffer.Create();
     glBindBuffer(GL_TEXTURE_BUFFER, proctex_alpha_map_buffer.handle);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::ProcTexAlphaMap.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, proctex_alpha_map_buffer.handle);
 
@@ -224,7 +222,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.Apply();
     proctex_lut_buffer.Create();
     glBindBuffer(GL_TEXTURE_BUFFER, proctex_lut_buffer.handle);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 4 * 256, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 4 * 256, nullptr, GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::ProcTexLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, proctex_lut_buffer.handle);
 
@@ -234,7 +232,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
     state.Apply();
     proctex_diff_lut_buffer.Create();
     glBindBuffer(GL_TEXTURE_BUFFER, proctex_diff_lut_buffer.handle);
-    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 4 * 256, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 4 * 256, nullptr, GL_STATIC_DRAW);
     glActiveTexture(TextureUnits::ProcTexDiffLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, proctex_diff_lut_buffer.handle);
 
@@ -379,7 +377,6 @@ void RasterizerOpenGL::AnalyzeVertexArray(bool is_indexed) {
 }
 
 void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset) {
-    MICROPROFILE_SCOPE(OpenGL_VAO);
     const auto& regs = Pica::g_state.regs;
     const auto& vertex_attributes = regs.pipeline.vertex_attributes;
 
@@ -465,8 +462,6 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset) {
 }
 
 void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_offset) {
-    MICROPROFILE_SCOPE(OpenGL_VS);
-
     ub_ptr->uniforms.SetFromRegs(Pica::g_state.regs.vs, Pica::g_state.vs);
 
     GLuint shader;
@@ -492,7 +487,6 @@ void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_
 }
 
 void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffer_offset) {
-    MICROPROFILE_SCOPE(OpenGL_GS);
     const auto& regs = Pica::g_state.regs;
 
     GLuint shader;
@@ -576,7 +570,6 @@ void RasterizerOpenGL::DrawTriangles() {
     if (vertex_batch.empty() && accelerate_draw == AccelDraw::Disabled)
         return;
 
-    MICROPROFILE_SCOPE(OpenGL_Drawing);
     const auto& regs = Pica::g_state.regs;
 
     const bool has_stencil =
@@ -701,6 +694,25 @@ void RasterizerOpenGL::DrawTriangles() {
         const auto& texture = pica_textures[texture_index];
 
         if (texture.enabled) {
+            if (texture_index == 0) {
+                using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
+                switch (texture.config.type.Value()) {
+                case TextureType::TextureCube:
+                    using CubeFace = Pica::TexturingRegs::CubeFace;
+                    res_cache.FillTextureCube(
+                        texture_cube.handle, texture,
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX),
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX),
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY),
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY),
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ),
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ));
+                    texture_cube_sampler.SyncWithConfig(texture.config);
+                    state.texture_units[texture_index].texture_2d = 0;
+                    continue; // Texture unit 0 setup finished. Continue to next unit
+                }
+            }
+
             texture_samplers[texture_index].SyncWithConfig(texture.config);
             Surface surface = res_cache.GetTextureSurface(texture);
             if (surface != nullptr) {
@@ -928,6 +940,7 @@ void RasterizerOpenGL::DrawTriangles() {
     state.scissor.enabled = false;
 
     vertex_batch.clear();
+
     accelerate_draw = AccelDraw::Disabled;
 
     // Unbind textures for potential future use as framebuffer attachments
@@ -1433,29 +1446,23 @@ void RasterizerOpenGL::NotifyPicaRegisterChanged(u32 id) {
 }
 
 void RasterizerOpenGL::FlushAll() {
-    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
     res_cache.FlushAll();
 }
 
 void RasterizerOpenGL::FlushRegion(PAddr addr, u32 size) {
-    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
     res_cache.FlushRegion(addr, size);
 }
 
 void RasterizerOpenGL::InvalidateRegion(PAddr addr, u32 size) {
-    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
     res_cache.InvalidateRegion(addr, size, nullptr);
 }
 
 void RasterizerOpenGL::FlushAndInvalidateRegion(PAddr addr, u32 size) {
-    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
     res_cache.FlushRegion(addr, size);
     res_cache.InvalidateRegion(addr, size, nullptr);
 }
 
 bool RasterizerOpenGL::AccelerateDisplayTransfer(const GPU::Regs::DisplayTransferConfig& config) {
-    MICROPROFILE_SCOPE(OpenGL_Blits);
-
     SurfaceParams src_params;
     src_params.addr = config.GetPhysicalInputAddress();
     src_params.width = config.output_width;
@@ -1604,7 +1611,6 @@ bool RasterizerOpenGL::AccelerateDisplay(const GPU::Regs::FramebufferConfig& con
     if (framebuffer_addr == 0) {
         return false;
     }
-    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
 
     SurfaceParams src_params;
     src_params.addr = framebuffer_addr;
@@ -1717,6 +1723,10 @@ void RasterizerOpenGL::SetShader() {
         uniform_tex = glGetUniformLocation(shader.shader.handle, "tex2");
         if (uniform_tex != -1) {
             glUniform1i(uniform_tex, TextureUnits::PicaTexture(2).id);
+        }
+        uniform_tex = glGetUniformLocation(shader.shader.handle, "tex_cube");
+        if (uniform_tex != -1) {
+            glUniform1i(uniform_tex, TextureUnits::TextureCube.id);
         }
 
         // Set the texture samplers to correspond to different lookup table texture units

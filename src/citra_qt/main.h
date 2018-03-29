@@ -27,21 +27,12 @@ class EmuThread;
 class GameList;
 enum class GameListOpenTarget;
 class GImageInfo;
-class GPUCommandListWidget;
-class GPUCommandStreamWidget;
-class GraphicsBreakPointsWidget;
-class GraphicsTracingWidget;
-class GraphicsVertexShaderWidget;
 class GRenderWindow;
-class MicroProfileDialog;
-class ProfilerWidget;
 template <typename>
 class QFutureWatcher;
 class QProgressBar;
-class RegistersWidget;
 class Updater;
 class StereoscopicControllerWidget;
-class WaitTreeWidget;
 
 // Multiplayer forward declarations
 class Lobby;
@@ -194,7 +185,6 @@ private slots:
     void ShowFullscreen();
     void HideFullscreen();
     void ToggleWindowMode();
-    void OnCreateGraphicsSurfaceViewer();
     void OnRecordMovie();
     void OnPlayMovie();
     void OnCoreError(Core::System::ResultStatus, std::string);
@@ -232,17 +222,7 @@ private:
     bool emulation_running = false;
     std::unique_ptr<EmuThread> emu_thread;
 
-    // Debugger panes
     StereoscopicControllerWidget* stereoscopicControllerWidget;
-    ProfilerWidget* profilerWidget;
-    MicroProfileDialog* microProfileDialog;
-    RegistersWidget* registersWidget;
-    GPUCommandStreamWidget* graphicsWidget;
-    GPUCommandListWidget* graphicsCommandsWidget;
-    GraphicsBreakPointsWidget* graphicsBreakpointsWidget;
-    GraphicsVertexShaderWidget* graphicsVertexShaderWidget;
-    GraphicsTracingWidget* graphicsTracingWidget;
-    WaitTreeWidget* waitTreeWidget;
     Updater* updater;
 
     bool explicit_update_check = false;

@@ -160,15 +160,13 @@ void Config::ReadValues() {
     qt_config->beginGroup("System");
     Settings::values.region_value =
         qt_config->value("region_value", Settings::REGION_VALUE_AUTO_SELECT).toInt();
+    Settings::values.init_clock =
+        static_cast<Settings::InitClock>(qt_config->value("init_clock", 0).toInt());
+    Settings::values.init_time = qt_config->value("init_time", 946681277ULL).toULongLong();
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");
     Settings::values.log_filter = qt_config->value("log_filter", "*:Info").toString().toStdString();
-    qt_config->endGroup();
-
-    qt_config->beginGroup("Debugging");
-    Settings::values.use_gdbstub = qt_config->value("use_gdbstub", false).toBool();
-    Settings::values.gdbstub_port = qt_config->value("gdbstub_port", 24689).toInt();
     qt_config->endGroup();
 
     qt_config->beginGroup("WebService");
@@ -211,10 +209,6 @@ void Config::ReadValues() {
         qt_config->value("geometryRenderWindow").toByteArray();
     UISettings::values.gamelist_header_state =
         qt_config->value("gameListHeaderState").toByteArray();
-    UISettings::values.microprofile_geometry =
-        qt_config->value("microProfileDialogGeometry").toByteArray();
-    UISettings::values.microprofile_visible =
-        qt_config->value("microProfileDialogVisible", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Paths");
@@ -357,15 +351,12 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("System");
     qt_config->setValue("region_value", Settings::values.region_value);
+    qt_config->setValue("init_clock", static_cast<u8>(Settings::values.init_clock));
+    qt_config->setValue("init_time", static_cast<unsigned long long>(Settings::values.init_time));
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");
     qt_config->setValue("log_filter", QString::fromStdString(Settings::values.log_filter));
-    qt_config->endGroup();
-
-    qt_config->beginGroup("Debugging");
-    qt_config->setValue("use_gdbstub", Settings::values.use_gdbstub);
-    qt_config->setValue("gdbstub_port", Settings::values.gdbstub_port);
     qt_config->endGroup();
 
     qt_config->beginGroup("WebService");
@@ -398,8 +389,6 @@ void Config::SaveValues() {
     qt_config->setValue("state", UISettings::values.state);
     qt_config->setValue("geometryRenderWindow", UISettings::values.renderwindow_geometry);
     qt_config->setValue("gameListHeaderState", UISettings::values.gamelist_header_state);
-    qt_config->setValue("microProfileDialogGeometry", UISettings::values.microprofile_geometry);
-    qt_config->setValue("microProfileDialogVisible", UISettings::values.microprofile_visible);
     qt_config->endGroup();
 
     qt_config->beginGroup("Paths");

@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cstring>
 #include <iterator>
@@ -18,7 +19,6 @@
 #include "common/color.h"
 #include "common/logging/log.h"
 #include "common/math_util.h"
-#include "common/microprofile.h"
 #include "common/scope_exit.h"
 #include "common/vector_math.h"
 #include "core/frontend/emu_window.h"
@@ -453,12 +453,23 @@ bool SurfaceParams::ExactMatch(const SurfaceParams& other_surface) const {
 }
 
 bool SurfaceParams::CanSubRect(const SurfaceParams& sub_surface) const {
-    return sub_surface.addr >= addr && sub_surface.end <= end &&
-           sub_surface.pixel_format == pixel_format && pixel_format != PixelFormat::Invalid &&
-           sub_surface.is_tiled == is_tiled &&
-           (sub_surface.addr - addr) % BytesInPixels(is_tiled ? 64 : 1) == 0 &&
-           (sub_surface.stride == stride || sub_surface.height <= (is_tiled ? 8u : 1u)) &&
-           GetSubRect(sub_surface).left + sub_surface.width <= stride;
+    if (sub_surface.addr < addr || sub_surface.end > end || sub_surface.stride != stride ||
+        sub_surface.pixel_format != pixel_format || sub_surface.is_tiled != is_tiled ||
+        (sub_surface.addr - addr) * 8 % GetFormatBpp() != 0)
+        return false;
+
+    auto rect = GetSubRect(sub_surface);
+
+    if (rect.left + sub_surface.width > stride) {
+        return false;
+    }
+
+    if (is_tiled) {
+        return PixelsInBytes(sub_surface.addr - addr) % 64 == 0 && sub_surface.height % 8 == 0 &&
+               sub_surface.width % 8 == 0;
+    }
+
+    return true;
 }
 
 bool SurfaceParams::CanExpand(const SurfaceParams& expanded_surface) const {
@@ -598,7 +609,6 @@ void RasterizerCacheOpenGL::CopySurface(const Surface& src_surface, const Surfac
     UNREACHABLE();
 }
 
-MICROPROFILE_DEFINE(OpenGL_SurfaceLoad, "OpenGL", "Surface Load", MP_RGB(128, 64, 192));
 void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
     ASSERT(type != SurfaceType::Fill);
 
@@ -617,8 +627,6 @@ void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
 
     if (load_start < Memory::VRAM_VADDR && load_end > Memory::VRAM_VADDR)
         load_start = Memory::VRAM_VADDR;
-
-    MICROPROFILE_SCOPE(OpenGL_SurfaceLoad);
 
     ASSERT(load_start >= addr && load_end <= end);
     const u32 start_offset = load_start - addr;
@@ -655,7 +663,6 @@ void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
     }
 }
 
-MICROPROFILE_DEFINE(OpenGL_SurfaceFlush, "OpenGL", "Surface Flush", MP_RGB(128, 192, 64));
 void CachedSurface::FlushGLBuffer(PAddr flush_start, PAddr flush_end) {
     u8* const dst_buffer = Memory::GetPhysicalPointer(addr);
     if (dst_buffer == nullptr)
@@ -670,8 +677,6 @@ void CachedSurface::FlushGLBuffer(PAddr flush_start, PAddr flush_end) {
 
     if (flush_start < Memory::VRAM_VADDR && flush_end > Memory::VRAM_VADDR)
         flush_start = Memory::VRAM_VADDR;
-
-    MICROPROFILE_SCOPE(OpenGL_SurfaceFlush);
 
     ASSERT(flush_start >= addr && flush_end <= end);
     const u32 start_offset = flush_start - addr;
@@ -700,13 +705,10 @@ void CachedSurface::FlushGLBuffer(PAddr flush_start, PAddr flush_end) {
     }
 }
 
-MICROPROFILE_DEFINE(OpenGL_TextureUL, "OpenGL", "Texture Upload", MP_RGB(128, 64, 192));
 void CachedSurface::UploadGLTexture(const MathUtil::Rectangle<u32>& rect, GLuint read_fb_handle,
                                     GLuint draw_fb_handle) {
     if (type == SurfaceType::Fill)
         return;
-
-    MICROPROFILE_SCOPE(OpenGL_TextureUL);
 
     ASSERT(gl_buffer_size == width * height * GetGLBytesPerPixel(pixel_format));
 
@@ -762,13 +764,10 @@ void CachedSurface::UploadGLTexture(const MathUtil::Rectangle<u32>& rect, GLuint
     }
 }
 
-MICROPROFILE_DEFINE(OpenGL_TextureDL, "OpenGL", "Texture Download", MP_RGB(128, 192, 64));
 void CachedSurface::DownloadGLTexture(const MathUtil::Rectangle<u32>& rect, GLuint read_fb_handle,
                                       GLuint draw_fb_handle) {
     if (type == SurfaceType::Fill)
         return;
-
-    MICROPROFILE_SCOPE(OpenGL_TextureDL);
 
     if (gl_buffer == nullptr) {
         gl_buffer_size = width * height * GetGLBytesPerPixel(pixel_format);
@@ -1072,8 +1071,6 @@ Surface RasterizerCacheOpenGL::GetSurface(const SurfaceParams& params, ScaleMatc
     // Use GetSurfaceSubRect instead
     ASSERT(params.width == params.stride);
 
-    ASSERT(!params.is_tiled || (params.width % 8 == 0 && params.height % 8 == 0));
-
     // Check for an exact match in existing surfaces
     Surface surface =
         FindMatch<MatchFlags::Exact | MatchFlags::Invalid>(surface_cache, params, match_res_scale);
@@ -1140,29 +1137,17 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetSurfaceSubRect(const SurfaceParams& 
         }
     }
 
-    SurfaceParams aligned_params = params;
-    if (params.is_tiled) {
-        aligned_params.height = Common::AlignUp(params.height, 8);
-        aligned_params.width = Common::AlignUp(params.width, 8);
-        aligned_params.stride = Common::AlignUp(params.stride, 8);
-        aligned_params.UpdateParams();
-    }
-
     // Check for a surface we can expand before creating a new one
     if (surface == nullptr) {
-        surface = FindMatch<MatchFlags::Expand | MatchFlags::Invalid>(surface_cache, aligned_params,
+        surface = FindMatch<MatchFlags::Expand | MatchFlags::Invalid>(surface_cache, params,
                                                                       match_res_scale);
         if (surface != nullptr) {
-            aligned_params.width = aligned_params.stride;
-            aligned_params.UpdateParams();
-
             SurfaceParams new_params = *surface;
-            new_params.addr = std::min(aligned_params.addr, surface->addr);
-            new_params.end = std::max(aligned_params.end, surface->end);
+            new_params.addr = std::min(params.addr, surface->addr);
+            new_params.end = std::max(params.end, surface->end);
             new_params.size = new_params.end - new_params.addr;
-            new_params.height =
-                new_params.size / aligned_params.BytesInPixels(aligned_params.stride);
-            ASSERT(new_params.size % aligned_params.BytesInPixels(aligned_params.stride) == 0);
+            new_params.height = new_params.size / params.BytesInPixels(params.stride);
+            ASSERT(new_params.size % params.BytesInPixels(params.stride) == 0);
 
             Surface new_surface = CreateSurface(new_params);
             DuplicateSurface(surface, new_surface);
@@ -1178,23 +1163,27 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetSurfaceSubRect(const SurfaceParams& 
 
     // No subrect found - create and return a new surface
     if (surface == nullptr) {
-        SurfaceParams new_params = aligned_params;
+        SurfaceParams new_params = params;
         // Can't have gaps in a surface
-        new_params.width = aligned_params.stride;
+        new_params.width = params.stride;
         new_params.UpdateParams();
         // GetSurface will create the new surface and possibly adjust res_scale if necessary
         surface = GetSurface(new_params, match_res_scale, load_if_create);
     } else if (load_if_create) {
-        ValidateSurface(surface, aligned_params.addr, aligned_params.size);
+        ValidateSurface(surface, params.addr, params.size);
     }
 
     return std::make_tuple(surface, surface->GetScaledSubRect(params));
 }
 
 Surface RasterizerCacheOpenGL::GetTextureSurface(
-    const Pica::TexturingRegs::FullTextureConfig& config) {
+    const Pica::TexturingRegs::FullTextureConfig& config, PAddr addr_override) {
     Pica::Texture::TextureInfo info =
         Pica::Texture::TextureInfo::FromPicaRegister(config.config, config.format);
+
+    if (addr_override != 0) {
+        info.physical_address = addr_override;
+    }
 
     SurfaceParams params;
     params.addr = info.physical_address;
@@ -1221,6 +1210,78 @@ Surface RasterizerCacheOpenGL::GetTextureSurface(
     }
 
     return GetSurface(params, ScaleMatch::Ignore, true);
+}
+
+void RasterizerCacheOpenGL::FillTextureCube(GLuint dest_handle,
+                                            const Pica::TexturingRegs::FullTextureConfig& config,
+                                            PAddr px, PAddr nx, PAddr py, PAddr ny, PAddr pz,
+                                            PAddr nz) {
+    ASSERT(config.config.width == config.config.height);
+    struct FaceTuple {
+        PAddr address;
+        GLenum gl_face;
+        Surface surface;
+    };
+    std::array<FaceTuple, 6> faces{{
+        {px, GL_TEXTURE_CUBE_MAP_POSITIVE_X},
+        {nx, GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
+        {py, GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
+        {ny, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y},
+        {pz, GL_TEXTURE_CUBE_MAP_POSITIVE_Z},
+        {nz, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z},
+    }};
+
+    u16 res_scale = 1;
+    for (auto& face : faces) {
+        face.surface = GetTextureSurface(config, face.address);
+        res_scale = std::max(res_scale, face.surface->res_scale);
+    }
+
+    u32 scaled_size = res_scale * config.config.width;
+
+    OpenGLState state = OpenGLState::GetCurState();
+
+    OpenGLState prev_state = state;
+    SCOPE_EXIT({ prev_state.Apply(); });
+
+    state.texture_cube_unit.texture_cube = dest_handle;
+    state.Apply();
+    glActiveTexture(TextureUnits::TextureCube.Enum());
+    FormatTuple format_tuple = GetFormatTuple(faces[0].surface->pixel_format);
+
+    GLint cur_size, cur_format;
+    glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_TEXTURE_WIDTH, &cur_size);
+    glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_TEXTURE_INTERNAL_FORMAT,
+                             &cur_format);
+
+    if (cur_size != scaled_size || cur_format != format_tuple.internal_format) {
+        for (auto& face : faces) {
+            glTexImage2D(face.gl_face, 0, format_tuple.internal_format, scaled_size, scaled_size, 0,
+                         format_tuple.format, format_tuple.type, nullptr);
+        }
+    }
+
+    state.draw.read_framebuffer = read_framebuffer.handle;
+    state.draw.draw_framebuffer = draw_framebuffer.handle;
+    state.ResetTexture(dest_handle);
+
+    for (auto& face : faces) {
+        state.ResetTexture(face.surface->texture.handle);
+        state.Apply();
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               face.surface->texture.handle, 0);
+        glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0,
+                               0);
+
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face.gl_face, dest_handle,
+                               0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0,
+                               0);
+
+        auto src_rect = face.surface->GetScaledRect();
+        glBlitFramebuffer(src_rect.left, src_rect.bottom, src_rect.right, src_rect.top, 0, 0,
+                          scaled_size, scaled_size, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    }
 }
 
 SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
@@ -1290,8 +1351,8 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
     if (color_surface != nullptr && depth_surface != nullptr) {
         fb_rect = color_rect;
         // Color and Depth surfaces must have the same dimensions and offsets
-        if (color_rect.bottom != depth_rect.bottom || color_rect.top != depth_rect.top ||
-            color_rect.left != depth_rect.left || color_rect.right != depth_rect.right) {
+        if (color_rect.bottom != depth_rect.bottom ||
+            color_surface->height != depth_surface->height) {
             color_surface = GetSurface(color_params, ScaleMatch::Exact, false);
             depth_surface = GetSurface(depth_params, ScaleMatch::Exact, false);
             fb_rect = color_surface->GetScaledRect();
@@ -1301,6 +1362,7 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
     } else if (depth_surface != nullptr) {
         fb_rect = depth_rect;
     }
+    ASSERT(!fb_rect.left && fb_rect.right == config.GetWidth() * resolution_scale_factor);
 
     if (color_surface != nullptr) {
         ValidateSurface(color_surface, boost::icl::first(color_vp_interval),

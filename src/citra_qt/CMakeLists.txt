@@ -42,8 +42,6 @@ add_executable(citra-qt
     configuration/configure_audio.h
     configuration/configure_camera.cpp
     configuration/configure_camera.h
-    configuration/configure_debug.cpp
-    configuration/configure_debug.h
     configuration/configure_dialog.cpp
     configuration/configure_dialog.h
     configuration/configure_general.cpp
@@ -58,27 +56,6 @@ add_executable(citra-qt
     configuration/configure_web.h
     configuration/configure_hacks.cpp
     configuration/configure_hacks.h
-    debugger/graphics/graphics.cpp
-    debugger/graphics/graphics.h
-    debugger/graphics/graphics_breakpoint_observer.cpp
-    debugger/graphics/graphics_breakpoint_observer.h
-    debugger/graphics/graphics_breakpoints.cpp
-    debugger/graphics/graphics_breakpoints.h
-    debugger/graphics/graphics_breakpoints_p.h
-    debugger/graphics/graphics_cmdlists.cpp
-    debugger/graphics/graphics_cmdlists.h
-    debugger/graphics/graphics_surface.cpp
-    debugger/graphics/graphics_surface.h
-    debugger/graphics/graphics_tracing.cpp
-    debugger/graphics/graphics_tracing.h
-    debugger/graphics/graphics_vertex_shader.cpp
-    debugger/graphics/graphics_vertex_shader.h
-    debugger/profiler.cpp
-    debugger/profiler.h
-    debugger/registers.cpp
-    debugger/registers.h
-    debugger/wait_tree.cpp
-    debugger/wait_tree.h
     multiplayer/chat_room.cpp
     multiplayer/chat_room.h
     multiplayer/client_room.cpp
@@ -123,14 +100,12 @@ set(UIS
     configuration/configure.ui
     configuration/configure_audio.ui
     configuration/configure_camera.ui
-    configuration/configure_debug.ui
     configuration/configure_general.ui
     configuration/configure_graphics.ui
     configuration/configure_input.ui
     configuration/configure_system.ui
     configuration/configure_web.ui
     configuration/configure_hacks.ui
-    debugger/registers.ui
     aboutdialog.ui
     hotkeys.ui
     cheat_gui.ui
