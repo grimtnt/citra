@@ -80,7 +80,8 @@ inline GLenum WrapMode(Pica::TexturingRegs::TextureConfig::WrapMode mode) {
 
     if (index > 3) {
         Core::Telemetry().AddField(Telemetry::FieldType::Session,
-                                   "VideoCore_Pica_UnsupportedTextureWrapMode", index);
+                                   "VideoCore_Pica_UnsupportedTextureWrapMode",
+                                   static_cast<int>(index));
         LOG_WARNING(Render_OpenGL, "Using texture wrap mode %zu", index);
     }
 
@@ -110,8 +111,9 @@ inline GLenum BlendEquation(Pica::FramebufferRegs::BlendEquation equation) {
 
     // Range check table for input
     if (index >= blend_equation_table.size()) {
-        LOG_CRITICAL(Render_OpenGL, "Unknown blend equation %zu", index);
+        LOG_ERROR(Render_OpenGL, "Unknown blend equation %u", static_cast<u32>(equation));
 
+        // This return value is hwtested, not just a stub
         return GL_FUNC_ADD;
     }
 
