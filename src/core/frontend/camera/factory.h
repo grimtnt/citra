@@ -31,7 +31,8 @@ public:
      *       Implementations. For example, A dialog may be used instead of LOG_ERROR when error
      * occurs.
      */
-    virtual std::unique_ptr<CameraInterface> CreatePreview(const std::string& config) const {
+    virtual std::unique_ptr<CameraInterface> CreatePreview(const std::string& config, int width,
+                                                           int height) const {
         return Create(config);
     }
 };
@@ -58,6 +59,7 @@ std::unique_ptr<CameraInterface> CreateCamera(const std::string& name, const std
  *     defined by the factory.
  */
 std::unique_ptr<CameraInterface> CreateCameraPreview(const std::string& name,
-                                                     const std::string& config);
+                                                     const std::string& config, int width,
+                                                     int height);
 
 } // namespace Camera
