@@ -4,17 +4,13 @@
 
 #pragma once
 
-#include <QImage>
-#include <QMessageBox>
-#include <QThread>
+#include <vector>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
-#include "citra_qt/camera/camera_util.h"
-#include "citra_qt/main.h"
-#include "core/frontend/camera/factory.h"
+#include "citra_qt/camera/qt_camera_factory.h"
 #include "core/frontend/camera/interface.h"
 
 namespace Camera {
@@ -33,9 +29,9 @@ public:
     void OnServicePaused() override;
     void OnServiceResumed() override;
     void OnServiceStopped() override;
+    bool CanReceiveFrame() override;
 
 private:
-    static const double FrameRateList[];
     cv::VideoCapture capture;
     const std::string config;
     cv::Mat current_frame;
@@ -44,10 +40,9 @@ private:
     bool flip_horizontal, flip_vertical;
 };
 
-class OpenCVCameraFactory final : public CameraFactory {
+class OpenCVCameraFactory final : public QtCameraFactory {
 public:
     std::unique_ptr<CameraInterface> Create(const std::string& config) const override;
-    std::unique_ptr<CameraInterface> CreatePreview(const std::string& config) const override;
 };
 
 } // namespace Camera
