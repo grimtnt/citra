@@ -5,11 +5,6 @@
 #pragma once
 
 #include <array>
-#include <memory>
-#include <QFileDialog>
-#include <QImageReader>
-#include <QMessageBox>
-#include <QWidget>
 
 #include "core/frontend/camera/factory.h"
 #include "core/frontend/camera/interface.h"
@@ -43,19 +38,16 @@ private:
     void setUiDisplay();
     void startPreviewing();
     void stopPreviewing();
+    void connectEvents();
 
 private:
-#ifdef ENABLE_OPENCV_CAMERA
-    const static std::vector<QString> Implementations[4];
-#else
-    const static std::vector<QString> Implementations[2];
-#endif
     std::unique_ptr<Ui::ConfigureCamera> ui;
     std::array<std::string, 3> camera_name;
     std::array<std::string, 3> camera_config;
     int camera_selection = 0;
     int timer_id = 0;
-    int preview_width = 0, preview_height = 0;
+    int preview_width = 0;
+    int preview_height = 0;
     bool is_previewing = false;
     std::unique_ptr<Camera::CameraInterface> previewing_camera;
 };
