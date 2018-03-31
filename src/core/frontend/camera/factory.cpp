@@ -30,10 +30,11 @@ std::unique_ptr<CameraInterface> CreateCamera(const std::string& name, const std
 }
 
 std::unique_ptr<CameraInterface> CreateCameraPreview(const std::string& name,
-                                                     const std::string& config) {
+                                                     const std::string& config, int width,
+                                                     int height) {
     auto pair = factories.find(name);
     if (pair != factories.end()) {
-        return pair->second->CreatePreview(config);
+        return pair->second->CreatePreview(config, width, height);
     }
 
     if (name != "blank") {
