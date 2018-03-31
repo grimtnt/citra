@@ -3,7 +3,7 @@
 cd /citra
 
 apt-get update
-apt-get install -y build-essential libsdl2-dev qtbase5-dev libqt5opengl5-dev qttools5-dev qttools5-dev-tools wget git
+apt-get install -y build-essential libsdl2-dev qtbase5-dev libqt5opengl5-dev qtmultimedia5-dev qttools5-dev qttools5-dev-tools wget git
 apt-get install -y libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
 apt-get install -y python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev
 
