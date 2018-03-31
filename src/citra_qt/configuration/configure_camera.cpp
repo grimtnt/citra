@@ -1,8 +1,15 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <memory>
+
 #include <QDirIterator>
+#include <QFileDialog>
+#include <QImageReader>
+#include <QMessageBox>
+#include <QWidget>
+
 #include "citra_qt/configuration/configure_camera.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
@@ -10,14 +17,14 @@
 #include "ui_configure_camera.h"
 
 #ifdef ENABLE_OPENCV_CAMERA
-const std::vector<QString> ConfigureCamera::Implementations[4] = {
+const std::vector<QString> Implementations[4] = {
     /* blank */ {"blank"},
     /* still image */ {"image"},
     /* video & image sequence */ {"opencv"},
     /* camera */ {"opencv"},
 };
 #else
-const std::vector<QString> ConfigureCamera::Implementations[2] = {
+const std::vector<QString> Implementations[2] = {
     /* blank */ {"blank"},
     /* still image */ {"image"},
 };
@@ -36,6 +43,14 @@ ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::
     ui->image_source->addItem(tr("Video / Image sequence"));
     ui->image_source->addItem(tr("System camera"));
 #endif
+    connectEvents();
+
+    setConfiguration();
+}
+
+ConfigureCamera::~ConfigureCamera() = default;
+
+void ConfigureCamera::connectEvents() {
     connect(ui->image_source,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ConfigureCamera::onImageSourceChanged);
@@ -48,11 +63,7 @@ ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::
     connect(ui->preview_button, &QPushButton::clicked, this, [=] { startPreviewing(); });
     connect(ui->prompt_before_load, &QCheckBox::stateChanged, this,
             &ConfigureCamera::onPromptBeforeLoadChanged);
-
-    this->setConfiguration();
 }
-
-ConfigureCamera::~ConfigureCamera() {}
 
 void ConfigureCamera::setUiDisplay() {
     int index = ui->image_source->currentIndex();
@@ -100,26 +111,27 @@ void ConfigureCamera::setUiDisplay() {
 
 void ConfigureCamera::startPreviewing() {
     stopPreviewing();
-
     previewing_camera =
-        Camera::CreateCameraPreview(camera_name[camera_selection], camera_config[camera_selection]);
-
-    if (previewing_camera) {
-        ui->preview_box->setHidden(false);
-        ui->preview_button->setHidden(true);
-        preview_width = ui->preview_box->size().width();
-        preview_height = preview_width * 0.75;
-        ui->preview_box->setToolTip(tr("Resolution: ") + QString::number(preview_width) + "*" +
-                                    QString::number(preview_height));
-        previewing_camera->SetResolution({(u16)preview_width, (u16)preview_height});
-        previewing_camera->SetEffect(Service::CAM::Effect::None);
-        previewing_camera->SetFlip(Service::CAM::Flip::None);
-        previewing_camera->SetFormat(Service::CAM::OutputFormat::RGB565);
-        previewing_camera->SetFrameRate(Service::CAM::FrameRate::Rate_30);
-        previewing_camera->StartCapture();
-
-        timer_id = this->startTimer(1000 / 30);
+        Camera::CreateCameraPreview(camera_name[camera_selection], camera_config[camera_selection],
+                                    preview_width, preview_height);
+    if (!previewing_camera) {
+        return;
     }
+    ui->preview_box->setHidden(false);
+    ui->preview_button->setHidden(true);
+    preview_width = ui->preview_box->size().width();
+    preview_height = preview_width * 0.75;
+    ui->preview_box->setToolTip(tr("Resolution: ") + QString::number(preview_width) + "*" +
+                                QString::number(preview_height));
+    previewing_camera->SetResolution(
+        {static_cast<u16>(preview_width), static_cast<u16>(preview_height)});
+    previewing_camera->SetEffect(Service::CAM::Effect::None);
+    previewing_camera->SetFlip(Service::CAM::Flip::None);
+    previewing_camera->SetFormat(Service::CAM::OutputFormat::RGB565);
+    previewing_camera->SetFrameRate(Service::CAM::FrameRate::Rate_30);
+    previewing_camera->StartCapture();
+
+    timer_id = startTimer(1000 / 30);
 }
 
 void ConfigureCamera::stopPreviewing() {
@@ -132,28 +144,30 @@ void ConfigureCamera::stopPreviewing() {
     }
 
     if (timer_id != 0) {
-        this->killTimer(timer_id);
+        killTimer(timer_id);
         timer_id = 0;
     }
 }
 
 void ConfigureCamera::timerEvent(QTimerEvent* event) {
-    if (event->timerId() == timer_id) {
-        if (!previewing_camera) {
-            this->killTimer(timer_id);
-            timer_id = 0;
-        }
-        std::vector<u16> frame = previewing_camera->ReceiveFrame();
-        int width = ui->preview_box->size().width();
-        int height = width * 0.75;
-        if (width != preview_width || height != preview_height) {
-            stopPreviewing();
-            return;
-        }
-        QImage image(width, height, QImage::Format::Format_RGB16);
-        std::memcpy(image.bits(), frame.data(), width * height * sizeof(u16));
-        ui->preview_box->setPixmap(QPixmap::fromImage(image));
+    if (event->timerId() != timer_id) {
+        return;
     }
+    if (!previewing_camera) {
+        killTimer(timer_id);
+        timer_id = 0;
+        return;
+    }
+    std::vector<u16> frame = previewing_camera->ReceiveFrame();
+    int width = ui->preview_box->size().width();
+    int height = width * 0.75;
+    if (width != preview_width || height != preview_height) {
+        stopPreviewing();
+        return;
+    }
+    QImage image(width, height, QImage::Format::Format_RGB16);
+    std::memcpy(image.bits(), frame.data(), width * height * sizeof(u16));
+    ui->preview_box->setPixmap(QPixmap::fromImage(image));
 }
 
 void ConfigureCamera::onCameraChanged(int index) {
@@ -200,7 +214,7 @@ void ConfigureCamera::onToolButtonClicked() {
     }
 #endif
     QString path = QFileDialog::getOpenFileName(this, tr("Open File"), ".", filter);
-    if (path.length() != 0) {
+    if (!path.isEmpty()) {
         ui->camera_file->setText(path);
     }
 }
@@ -223,16 +237,17 @@ void ConfigureCamera::setConfiguration() {
         ui->image_source->setCurrentIndex(0);
     } else if (camera_name[index] == "image") {
         ui->image_source->setCurrentIndex(1);
-        if (camera_config[index] == "") {
+        if (camera_config[index].empty()) {
             ui->prompt_before_load->setChecked(true);
         }
     }
 #ifdef ENABLE_OPENCV_CAMERA
     else if (camera_name[index] == "opencv") {
-        if (camera_config[index] == "") {
+        if (camera_config[index].empty()) {
             ui->image_source->setCurrentIndex(3);
-        } else
+        } else {
             ui->image_source->setCurrentIndex(2);
+        }
     }
 #endif
     else {
