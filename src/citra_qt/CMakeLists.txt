@@ -3,25 +3,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
 
-if (ENABLE_OPENCV)
-    set(CAMERA
-        camera/camera_util.cpp
-        camera/camera_util.h
-        camera/opencv_camera.cpp
-        camera/opencv_camera.h
-        camera/still_image_camera.cpp
-        camera/still_image_camera.h
-    )
-    add_definitions(-DENABLE_OPENCV_CAMERA)
-else()
-    set(CAMERA
-        camera/camera_util.cpp
-        camera/camera_util.h
-        camera/still_image_camera.cpp
-        camera/still_image_camera.h
-    )
-endif()
-
 add_executable(citra-qt
     Info.plist
     aboutdialog.cpp
@@ -32,7 +13,12 @@ add_executable(citra-qt
     cheat_gui.h
     cheatsearch.cpp
     cheatsearch.h
-    ${CAMERA}
+    camera/camera_util.cpp
+    camera/camera_util.h
+    camera/still_image_camera.cpp
+    camera/still_image_camera.h
+    camera/qt_camera_factory.cpp
+    camera/qt_camera_factory.h
     citra-qt.rc
     camera/still_image_camera.cpp
     camera/still_image_camera.h
@@ -173,6 +159,14 @@ if (APPLE)
     target_sources(citra-qt PRIVATE ${MACOSX_ICON})
     set_target_properties(citra-qt PROPERTIES MACOSX_BUNDLE TRUE)
     set_target_properties(citra-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
+endif()
+
+if (ENABLE_OPENCV)
+    target_sources(citra-qt PRIVATE
+        camera/opencv_camera.cpp
+        camera/opencv_camera.h
+    )
+    target_compile_definitions(citra-qt PRIVATE -DENABLE_OPENCV_CAMERA)
 endif()
 
 create_target_directory_groups(citra-qt)
