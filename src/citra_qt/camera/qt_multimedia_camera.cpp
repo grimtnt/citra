@@ -47,6 +47,8 @@ QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) : camera_
         camera = new QCamera;
         camera->setViewfinder(&camera_surface);
     });
+
+    t.rotate(180);
 }
 
 void QtMultimediaCamera::StartCapture() {
@@ -80,9 +82,8 @@ void QtMultimediaCamera::SetEffect(Service::CAM::Effect effect) {
 }
 
 std::vector<u16> QtMultimediaCamera::ReceiveFrame() {
-    return CameraUtil::ProcessImage(
-        camera_surface.current_frame.mirrored(flip_horizontal, flip_vertical), width, height,
-        output_rgb, flip_horizontal, flip_vertical);
+    return CameraUtil::ProcessImage(camera_surface.current_frame.transformed(t), width, height,
+                                    output_rgb, flip_horizontal, flip_vertical);
 }
 
 void QtMultimediaCamera::OnServicePaused() {
