@@ -2,11 +2,16 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <QImage>
+#include <QMessageBox>
+
+#include "citra_qt/camera/camera_util.h"
 #include "citra_qt/camera/opencv_camera.h"
+#include "citra_qt/main.h"
 
 namespace Camera {
 
-OpenCVCamera::OpenCVCamera(const std::string& config_) : config(config_), capture() {}
+OpenCVCamera::OpenCVCamera(const std::string& config_) : config(std::move(config_)) {}
 
 OpenCVCamera::~OpenCVCamera() {
     if (capture.isOpened()) {
@@ -15,10 +20,10 @@ OpenCVCamera::~OpenCVCamera() {
 }
 
 void OpenCVCamera::StartCapture() {
-    if (config != "") {
-        capture.open(config);
-    } else {
+    if (config.empty()) {
         capture.open(0);
+    } else {
+        capture.open(config);
     }
 };
 
@@ -33,7 +38,7 @@ void OpenCVCamera::SetFormat(Service::CAM::OutputFormat output_format) {
     }
 }
 
-const double OpenCVCamera::FrameRateList[] = {
+constexpr std::array<double, 13> FrameRateList = {
     /* Rate_15 */ 15,
     /* Rate_15_To_5 */ 15,
     /* Rate_15_To_2 */ 15,
@@ -73,27 +78,27 @@ void OpenCVCamera::SetEffect(Service::CAM::Effect effect) {
 }
 
 std::vector<u16> OpenCVCamera::ReceiveFrame() {
-    if (capture.isOpened()) {
-        capture >> current_frame;
-        if (current_frame.empty()) {
-            // Reset frame position and retry (for video & image sequence)
-            capture.set(cv::CAP_PROP_POS_FRAMES, 0);
-            capture >> current_frame;
-            if (current_frame.empty()) {
-                LOG_ERROR(Service_CAM, "Cannot get a frame from camera, returning empty values");
-                return std::vector<u16>(width * height);
-            }
-        }
-        return CameraUtil::ProcessImage(CameraUtil::cvMat2QImage(current_frame), width, height,
-                                        output_rgb, flip_horizontal, flip_vertical);
-    } else {
+    if (!capture.isOpened()) {
         return std::vector<u16>(width * height);
     }
+    capture >> current_frame;
+    if (current_frame.empty()) {
+        // Reset frame position and retry (for video & image sequence)
+        capture.set(cv::CAP_PROP_POS_FRAMES, 0);
+        capture >> current_frame;
+        if (current_frame.empty()) {
+            LOG_ERROR(Service_CAM, "Cannot get a frame from camera, returning empty values");
+            return std::vector<u16>(width * height);
+        }
+    }
+    return CameraUtil::ProcessImage(CameraUtil::cvMat2QImage(current_frame), width, height,
+                                    output_rgb, flip_horizontal, flip_vertical);
 }
 
 void OpenCVCamera::OnServicePaused() {
-    if (capture.isOpened())
+    if (capture.isOpened()) {
         StopCapture();
+    }
 }
 
 void OpenCVCamera::OnServiceResumed() {
@@ -101,32 +106,19 @@ void OpenCVCamera::OnServiceResumed() {
 }
 
 void OpenCVCamera::OnServiceStopped() {
-    if (capture.isOpened())
+    if (capture.isOpened()) {
         StopCapture();
+    }
+}
+
+bool OpenCVCamera::CanReceiveFrame() {
+    StartCapture();
+    bool ret = capture.isOpened();
+    StopCapture();
+    return ret;
 }
 
 std::unique_ptr<CameraInterface> OpenCVCameraFactory::Create(const std::string& config) const {
-    return std::make_unique<OpenCVCamera>(config);
-}
-
-std::unique_ptr<CameraInterface> OpenCVCameraFactory::CreatePreview(
-    const std::string& config) const {
-    cv::VideoCapture capture;
-    if (config != "") {
-        capture.open(config);
-    } else {
-        capture.open(0);
-    }
-    cv::Mat frame;
-    capture >> frame;
-    if (frame.empty()) {
-        QMessageBox::critical(
-            nullptr, QObject::tr("Error"),
-            QObject::tr("Couldn't load ") +
-                (config == "" ? QObject::tr("the camera") : QString::fromStdString(config)));
-        return nullptr;
-    }
-    capture.release();
     return std::make_unique<OpenCVCamera>(config);
 }
 
