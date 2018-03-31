@@ -65,7 +65,7 @@ void QtMultimediaCamera::SetFormat(Service::CAM::OutputFormat output_format) {
 void QtMultimediaCamera::SetResolution(const Service::CAM::Resolution& resolution) {
     width = resolution.width;
     height = resolution.height;
-};
+}
 
 void QtMultimediaCamera::SetFlip(Service::CAM::Flip flip) {
     using namespace Service::CAM;
@@ -80,8 +80,9 @@ void QtMultimediaCamera::SetEffect(Service::CAM::Effect effect) {
 }
 
 std::vector<u16> QtMultimediaCamera::ReceiveFrame() {
-    return CameraUtil::ProcessImage(camera_surface.current_frame, width, height, output_rgb,
-                                    flip_horizontal, flip_vertical);
+    return CameraUtil::ProcessImage(
+        camera_surface.current_frame.mirrored(flip_horizontal, flip_vertical), width, height,
+        output_rgb, flip_horizontal, flip_vertical);
 }
 
 void QtMultimediaCamera::OnServicePaused() {

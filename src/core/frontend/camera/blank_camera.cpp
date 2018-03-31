@@ -17,7 +17,7 @@ void BlankCamera::SetFormat(Service::CAM::OutputFormat output_format) {
 void BlankCamera::SetResolution(const Service::CAM::Resolution& resolution) {
     width = resolution.width;
     height = resolution.height;
-};
+}
 
 void BlankCamera::SetFlip(Service::CAM::Flip) {}
 

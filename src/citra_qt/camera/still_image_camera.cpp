@@ -22,7 +22,7 @@ void StillImageCamera::SetFormat(Service::CAM::OutputFormat output_format) {
 void StillImageCamera::SetResolution(const Service::CAM::Resolution& resolution) {
     width = resolution.width;
     height = resolution.height;
-};
+}
 
 void StillImageCamera::SetFlip(Service::CAM::Flip flip) {
     using namespace Service::CAM;

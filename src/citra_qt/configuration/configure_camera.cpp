@@ -48,11 +48,12 @@ ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::
     }
 
     setConfiguration();
-
     connectEvents();
 }
 
-ConfigureCamera::~ConfigureCamera() = default;
+ConfigureCamera::~ConfigureCamera() {
+    stopPreviewing();
+}
 
 void ConfigureCamera::connectEvents() {
     connect(ui->image_source,
