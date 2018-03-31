@@ -52,15 +52,15 @@
 #include "core/settings.h"
 #include "video_core/video_core.h"
 
+#ifdef QT_STATICPLUGIN
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
+#endif
+
 #ifdef _WIN32
 extern "C" {
 // tells Nvidia drivers to use the dedicated GPU by default on laptops with switchable graphics
 __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 }
-#endif
-
-#ifdef QT_STATICPLUGIN
-Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #endif
 
 /**
