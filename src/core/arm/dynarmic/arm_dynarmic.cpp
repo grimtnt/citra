@@ -170,6 +170,7 @@ ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode) {
 
 void ARM_Dynarmic::Run() 
     ASSERT(Memory::GetCurrentPageTable() == current_page_table);
+
     jit->Run(GetTicksRemaining());
 }
 
