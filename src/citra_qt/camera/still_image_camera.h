@@ -34,7 +34,7 @@ private:
 
 class StillImageCameraFactory final : public QtCameraFactory {
 public:
-    std::unique_ptr<CameraInterface> Create(const std::string& config) const override;
+    std::unique_ptr<CameraInterface> Create(const std::string& config) override;
 
 private:
     static const std::string getFilePath();
