@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <QImage>
-#ifdef ENABLE_OPENCV_CAMERA
-#include <opencv2/core.hpp>
-#endif
-#include "common/math_util.h"
-#include "core/frontend/camera/factory.h"
-#include "core/frontend/camera/interface.h"
+#include <vector>
+#include "common/common_types.h"
+
+namespace cv {
+class Mat;
+}
+class QImage;
 
 namespace CameraUtil {
 
