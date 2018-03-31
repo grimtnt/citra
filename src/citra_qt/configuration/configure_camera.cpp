@@ -17,16 +17,18 @@
 #include "ui_configure_camera.h"
 
 #ifdef ENABLE_OPENCV_CAMERA
-const std::vector<QString> Implementations[4] = {
-    /* blank */ {"blank"},
-    /* still image */ {"image"},
-    /* video & image sequence */ {"opencv"},
-    /* camera */ {"opencv"},
+const std::map<QString, std::vector<QString>> Implementations = {
+    /* blank */ {QObject::tr("Blank"), {"blank"}},
+    /* still image */ {QObject::tr("Still Image"), {"image"}},
+    /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {"opencv"}},
+    /* camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
 };
 #else
-const std::vector<QString> Implementations[2] = {
-    /* blank */ {"blank"},
-    /* still image */ {"image"},
+const std::map<QString, std::vector<QString>> Implementations = {
+    /* blank */ {QObject::tr("Blank"), {"blank"}},
+    /* still image */ {QObject::tr("Still Image"), {"image"}},
+    /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
+    /* camera */ {QObject::tr("System Camera"), {"qt"}},
 };
 #endif
 
@@ -39,13 +41,15 @@ ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::
             &ConfigureCamera::onCameraChanged);
     camera_name = Settings::values.camera_name;
     camera_config = Settings::values.camera_config;
-#ifdef ENABLE_OPENCV_CAMERA
-    ui->image_source->addItem(tr("Video / Image sequence"));
-    ui->image_source->addItem(tr("System camera"));
-#endif
-    connectEvents();
+    for (auto pair : Implementations) {
+        if (!pair.second.empty()) {
+            ui->image_source->addItem(pair.first);
+        }
+    }
 
     setConfiguration();
+
+    connectEvents();
 }
 
 ConfigureCamera::~ConfigureCamera() = default;
@@ -66,41 +70,32 @@ void ConfigureCamera::connectEvents() {
 }
 
 void ConfigureCamera::setUiDisplay() {
-    int index = ui->image_source->currentIndex();
-    switch (index) {
-    case 0: /* blank */
-#ifdef ENABLE_OPENCV_CAMERA
-    case 3: /* camera */
-#endif
+    QString image_source = ui->image_source->currentText();
+    if (image_source == tr("Blank") || image_source == tr("System Camera")) {
         ui->prompt_before_load->setHidden(true);
         ui->prompt_before_load->setChecked(false);
         ui->camera_file_label->setHidden(true);
         ui->camera_file->setHidden(true);
         ui->camera_file->setText("");
         ui->toolButton->setHidden(true);
-        break;
-    case 1: /* still_image */
+    } else if (image_source == tr("Still Image")) {
         ui->prompt_before_load->setHidden(false);
         ui->camera_file_label->setHidden(false);
         ui->camera_file->setHidden(false);
         ui->toolButton->setHidden(false);
-        break;
-#ifdef ENABLE_OPENCV_CAMERA
-    case 2: /* video & image sequence */
+    } else if (image_source == tr("Video & Image Sequence")) {
         ui->prompt_before_load->setHidden(true);
         ui->prompt_before_load->setChecked(false);
         ui->camera_file_label->setHidden(false);
         ui->camera_file->setHidden(false);
         ui->toolButton->setHidden(false);
-        break;
-#endif
-    default:
+    } else {
         LOG_ERROR(Frontend, "Error: unknown image source");
     }
 
     // Get the implementations
     ui->implementation->clear();
-    for (QString implementation : Implementations[index]) {
+    for (auto implementation : Implementations.at(ui->image_source->currentText())) {
         ui->implementation->addItem(implementation);
     }
 
@@ -234,9 +229,9 @@ void ConfigureCamera::setConfiguration() {
     int index = camera_selection;
     // Convert camera name to image sources
     if (camera_name[index] == "blank") {
-        ui->image_source->setCurrentIndex(0);
+        ui->image_source->setCurrentText(tr("Blank"));
     } else if (camera_name[index] == "image") {
-        ui->image_source->setCurrentIndex(1);
+        ui->image_source->setCurrentText(tr("Still Image"));
         if (camera_config[index].empty()) {
             ui->prompt_before_load->setChecked(true);
         }
@@ -244,13 +239,15 @@ void ConfigureCamera::setConfiguration() {
 #ifdef ENABLE_OPENCV_CAMERA
     else if (camera_name[index] == "opencv") {
         if (camera_config[index].empty()) {
-            ui->image_source->setCurrentIndex(3);
+            ui->image_source->setCurrentText(tr("System Camera"));
         } else {
-            ui->image_source->setCurrentIndex(2);
+            ui->image_source->setCurrentText(tr("Video & Image Sequence"));
         }
     }
 #endif
-    else {
+    else if (camera_name[index] == "qt") {
+        ui->image_source->setCurrentText(tr("System Camera"));
+    } else {
         LOG_ERROR(Frontend, "Unknown camera type %s", camera_name[index].c_str());
         QString message =
             tr(("Sorry, but your configuration file seems to be invalid:\n\nUnknown camera type " +
@@ -262,13 +259,14 @@ void ConfigureCamera::setConfiguration() {
         }
 #endif
         QMessageBox::critical(this, tr("Error"), message);
-        ui->image_source->setCurrentIndex(0);
+        ui->image_source->setCurrentText(tr("Blank"));
     }
 
     setUiDisplay();
 }
 
 void ConfigureCamera::applyConfiguration() {
+    stopPreviewing();
     Settings::values.camera_name = camera_name;
     Settings::values.camera_config = camera_config;
     Settings::Apply();
