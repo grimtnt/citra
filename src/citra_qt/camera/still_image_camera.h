@@ -1,16 +1,13 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
 #pragma once
 
-#include <QFileDialog>
+#include <vector>
 #include <QImage>
-#include <QImageReader>
-#include <QMessageBox>
-
 #include "citra_qt/camera/camera_util.h"
-#include "core/frontend/camera/factory.h"
+#include "citra_qt/camera/qt_camera_factory.h"
 #include "core/frontend/camera/interface.h"
 
 namespace Camera {
@@ -26,6 +23,7 @@ public:
     void SetFormat(Service::CAM::OutputFormat) override;
     void SetFrameRate(Service::CAM::FrameRate frame_rate) override{};
     std::vector<u16> ReceiveFrame() override;
+    bool CanReceiveFrame() override;
 
 private:
     QImage image;
@@ -34,10 +32,9 @@ private:
     bool flip_horizontal, flip_vertical;
 };
 
-class StillImageCameraFactory final : public CameraFactory {
+class StillImageCameraFactory final : public QtCameraFactory {
 public:
     std::unique_ptr<CameraInterface> Create(const std::string& config) const override;
-    std::unique_ptr<CameraInterface> CreatePreview(const std::string& config) const override;
 
 private:
     static const std::string getFilePath();
