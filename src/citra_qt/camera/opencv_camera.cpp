@@ -118,7 +118,7 @@ bool OpenCVCamera::CanReceiveFrame() {
     return ret;
 }
 
-std::unique_ptr<CameraInterface> OpenCVCameraFactory::Create(const std::string& config) const {
+std::unique_ptr<CameraInterface> OpenCVCameraFactory::Create(const std::string& config) {
     return std::make_unique<OpenCVCamera>(config);
 }
 
