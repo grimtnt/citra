@@ -100,7 +100,8 @@ bool QtMultimediaCamera::CanReceiveFrame() {
     return camera->isAvailable();
 }
 
-std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(const std::string& config) {
+std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(
+    const std::string& config) const {
     return std::make_unique<QtMultimediaCamera>(config);
 }
 

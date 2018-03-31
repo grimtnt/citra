@@ -10,7 +10,7 @@
 namespace Camera {
 
 std::unique_ptr<CameraInterface> QtCameraFactory::CreatePreview(const std::string& config,
-                                                                int width, int height) {
+                                                                int width, int height) const {
     std::unique_ptr<CameraInterface> camera = Create(config);
 
     if (camera->CanReceiveFrame()) {
