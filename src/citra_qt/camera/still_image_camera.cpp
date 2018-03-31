@@ -1,16 +1,19 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <QFileDialog>
+#include <QImageReader>
+#include <QMessageBox>
 #include "citra_qt/camera/still_image_camera.h"
 
 namespace Camera {
 
-StillImageCamera::StillImageCamera(QImage image_) : image(image_) {}
+StillImageCamera::StillImageCamera(QImage image_) : image(std::move(image_)) {}
 
-void StillImageCamera::StartCapture(){};
+void StillImageCamera::StartCapture() {}
 
-void StillImageCamera::StopCapture(){};
+void StillImageCamera::StopCapture() {}
 
 void StillImageCamera::SetFormat(Service::CAM::OutputFormat output_format) {
     output_rgb = output_format == Service::CAM::OutputFormat::RGB565;
@@ -38,9 +41,13 @@ std::vector<u16> StillImageCamera::ReceiveFrame() {
                                     flip_vertical);
 }
 
+bool StillImageCamera::CanReceiveFrame() {
+    return !image.isNull();
+}
+
 const std::string StillImageCameraFactory::getFilePath() {
     QList<QByteArray> types = QImageReader::supportedImageFormats();
-    QList<QString> temp_filters = {};
+    QList<QString> temp_filters;
     for (QByteArray type : types) {
         temp_filters << QString("*." + QString(type));
     }
@@ -53,28 +60,12 @@ const std::string StillImageCameraFactory::getFilePath() {
 
 std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::string& config) const {
     std::string real_config = config;
-    if (config == "") {
+    if (config.empty()) {
         real_config = getFilePath();
     }
     QImage image(QString::fromStdString(real_config));
     if (image.isNull()) {
         LOG_ERROR(Service_CAM, "Couldn't load image \"%s\"", real_config.c_str());
-    }
-    return std::make_unique<StillImageCamera>(image);
-}
-
-std::unique_ptr<CameraInterface> StillImageCameraFactory::CreatePreview(
-    const std::string& config) const {
-    std::string real_config = config;
-    if (config == "") {
-        real_config = getFilePath();
-    }
-    QImage image(QString::fromStdString(real_config));
-    if (image.isNull()) {
-        QMessageBox::critical(nullptr, QObject::tr("Error"),
-                              QObject::tr("Couldn't load image ") +
-                                  QString::fromStdString(real_config));
-        return nullptr;
     }
     return std::make_unique<StillImageCamera>(image);
 }
