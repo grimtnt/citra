@@ -2,14 +2,22 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <QImage>
+#ifdef ENABLE_OPENCV_CAMERA
+#include <opencv2/core.hpp>
+#endif
+
 #include "citra_qt/camera/camera_util.h"
+#include "common/math_util.h"
+#include "core/frontend/camera/factory.h"
+#include "core/frontend/camera/interface.h"
 
 namespace CameraUtil {
 
-// The following is data table for RGB -> YUV conversions.
+// The following are data tables for RGB -> YUV conversions.
 namespace YuvTable {
 
-const int Y_R[256] = {
+constexpr std::array<int, 256> Y_R = {
     53,  53,  53,  54,  54,  54,  55,  55,  55,  56,  56,  56,  56,  57,  57,  57,  58,  58,  58,
     59,  59,  59,  59,  60,  60,  60,  61,  61,  61,  62,  62,  62,  62,  63,  63,  63,  64,  64,
     64,  65,  65,  65,  65,  66,  66,  66,  67,  67,  67,  67,  68,  68,  68,  69,  69,  69,  70,
@@ -26,7 +34,7 @@ const int Y_R[256] = {
     127, 127, 127, 128, 128, 128, 128, 129, 129,
 };
 
-const int Y_G[256] = {
+constexpr std::array<int, 256> Y_G = {
     -79, -79, -78, -78, -77, -77, -76, -75, -75, -74, -74, -73, -72, -72, -71, -71, -70, -70, -69,
     -68, -68, -67, -67, -66, -65, -65, -64, -64, -63, -62, -62, -61, -61, -60, -60, -59, -58, -58,
     -57, -57, -56, -55, -55, -54, -54, -53, -52, -52, -51, -51, -50, -50, -49, -48, -48, -47, -47,
@@ -43,7 +51,7 @@ const int Y_G[256] = {
     65,  65,  66,  66,  67,  68,  68,  69,  69,
 };
 
-const int Y_B[256] = {
+constexpr std::array<int, 256> Y_B = {
     25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28,
     28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31,
     31, 31, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 33, 33,
@@ -57,11 +65,11 @@ const int Y_B[256] = {
     53, 53, 53, 53, 53, 53, 53, 53, 54, 54, 54, 54, 54, 54, 54, 54,
 };
 
-inline int Y(int r, int g, int b) {
+static constexpr int Y(int r, int g, int b) {
     return Y_R[r] + Y_G[g] + Y_B[b];
 }
 
-const int U_R[256] = {
+constexpr std::array<int, 256> U_R = {
     30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34,
     34, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 37, 37, 37, 37, 37, 37, 38,
     38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 40, 41, 41, 41, 41, 41, 41, 42,
@@ -75,7 +83,7 @@ const int U_R[256] = {
     70, 70, 70, 71, 71, 71, 71, 71, 72, 72, 72, 72, 72, 72, 73, 73,
 };
 
-const int U_G[256] = {
+constexpr std::array<int, 256> U_G = {
     -45, -44, -44, -44, -43, -43, -43, -42, -42, -42, -41, -41, -41, -40, -40, -40, -39, -39, -39,
     -38, -38, -38, -37, -37, -37, -36, -36, -36, -35, -35, -35, -34, -34, -34, -33, -33, -33, -32,
     -32, -32, -31, -31, -31, -30, -30, -30, -29, -29, -29, -28, -28, -28, -27, -27, -27, -26, -26,
@@ -92,7 +100,7 @@ const int U_G[256] = {
     36,  37,  37,  37,  38,  38,  38,  39,  39,
 };
 
-const int U_B[256] = {
+constexpr std::array<int, 256> U_B = {
     113, 113, 114, 114, 115, 115, 116, 116, 117, 117, 118, 118, 119, 119, 120, 120, 121, 121, 122,
     122, 123, 123, 124, 124, 125, 125, 126, 126, 127, 127, 128, 128, 129, 129, 130, 130, 131, 131,
     132, 132, 133, 133, 134, 134, 135, 135, 136, 136, 137, 137, 138, 138, 139, 139, 140, 140, 141,
@@ -109,11 +117,11 @@ const int U_B[256] = {
     236, 237, 237, 238, 238, 239, 239, 240, 240,
 };
 
-inline int U(int r, int g, int b) {
+static constexpr int U(int r, int g, int b) {
     return -U_R[r] - U_G[g] + U_B[b];
 }
 
-const int V_R[256] = {
+constexpr std::array<int, 256> V_R = {
     89,  90,  90,  91,  91,  92,  92,  93,  93,  94,  94,  95,  95,  96,  96,  97,  97,  98,  98,
     99,  99,  100, 100, 101, 101, 102, 102, 103, 103, 104, 104, 105, 105, 106, 106, 107, 107, 108,
     108, 109, 109, 110, 110, 111, 111, 112, 112, 113, 113, 114, 114, 115, 115, 116, 116, 117, 117,
@@ -130,7 +138,7 @@ const int V_R[256] = {
     213, 214, 214, 215, 215, 216, 216, 217, 217,
 };
 
-const int V_G[256] = {
+constexpr std::array<int, 256> V_G = {
     -57, -56, -56, -55, -55, -55, -54, -54, -53, -53, -52, -52, -52, -51, -51, -50, -50, -50, -49,
     -49, -48, -48, -47, -47, -47, -46, -46, -45, -45, -45, -44, -44, -43, -43, -42, -42, -42, -41,
     -41, -40, -40, -39, -39, -39, -38, -38, -37, -37, -37, -36, -36, -35, -35, -34, -34, -34, -33,
@@ -147,7 +155,7 @@ const int V_G[256] = {
     46,  46,  47,  47,  48,  48,  49,  49,  49,
 };
 
-const int V_B[256] = {
+constexpr std::array<int, 256> V_B = {
     18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20,
     20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22,
     22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24,
@@ -161,7 +169,7 @@ const int V_B[256] = {
     38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39,
 };
 
-inline int V(int r, int g, int b) {
+static constexpr int V(int r, int g, int b) {
     return V_R[r] - V_G[g] - V_B[b];
 }
 } // namespace YuvTable
@@ -175,20 +183,21 @@ std::vector<u16> Rgb2Yuv(QImage source, int width, int height) {
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             QRgb rgb = source.pixel(x, y);
-            int r = qRed(rgb), g = qGreen(rgb), b = qBlue(rgb);
+            int r = qRed(rgb);
+            int g = qGreen(rgb);
+            int b = qBlue(rgb);
 
             // The following transformation is a reverse of the one in Y2R using ITU_Rec601
-            int y, u, v;
-            y = YuvTable::Y(r, g, b);
-            u = YuvTable::U(r, g, b);
-            v = YuvTable::V(r, g, b);
+            int y = YuvTable::Y(r, g, b);
+            int u = YuvTable::U(r, g, b);
+            int v = YuvTable::V(r, g, b);
 
             if (write) {
                 pu = (pu + u) / 2;
                 pv = (pv + v) / 2;
                 using MathUtil::Clamp;
-                *(dest++) = (u16)Clamp(py, 0, 0xFF) | ((u16)Clamp(pu, 0, 0xFF) << 8);
-                *(dest++) = (u16)Clamp(y, 0, 0xFF) | ((u16)Clamp(pv, 0, 0xFF) << 8);
+                *(dest++) = static_cast<u16>(Clamp(py, 0, 0xFF) | (Clamp(pu, 0, 0xFF) << 8));
+                *(dest++) = static_cast<u16>(Clamp(y, 0, 0xFF) | (Clamp(pv, 0, 0xFF) << 8));
             } else {
                 py = y;
                 pu = u;
@@ -204,18 +213,19 @@ std::vector<u16> Rgb2Yuv(QImage source, int width, int height) {
 std::vector<u16> ProcessImage(QImage image, int width, int height, bool output_rgb = false,
                               bool flip_horizontal = false, bool flip_vertical = false) {
     std::vector<u16> buffer(width * height);
-    if (!image.isNull()) {
-        QImage scaled =
-            image.scaled(width, height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-        QImage transformed =
-            scaled.copy((scaled.width() - width) / 2, (scaled.height() - height) / 2, width, height)
-                .mirrored(flip_horizontal, flip_vertical);
-        if (output_rgb) {
-            QImage converted = transformed.convertToFormat(QImage::Format_RGB16);
-            std::memcpy(buffer.data(), converted.bits(), width * height * sizeof(u16));
-        } else {
-            return CameraUtil::Rgb2Yuv(transformed, width, height);
-        }
+    if (image.isNull()) {
+        return buffer;
+    }
+    QImage scaled =
+        image.scaled(width, height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    QImage transformed =
+        scaled.copy((scaled.width() - width) / 2, (scaled.height() - height) / 2, width, height)
+            .mirrored(flip_horizontal, flip_vertical);
+    if (output_rgb) {
+        QImage converted = transformed.convertToFormat(QImage::Format_RGB16);
+        std::memcpy(buffer.data(), converted.bits(), width * height * sizeof(u16));
+    } else {
+        return CameraUtil::Rgb2Yuv(transformed, width, height);
     }
     return buffer;
 }
