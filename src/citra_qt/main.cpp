@@ -115,6 +115,9 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     ui.setupUi(this);
     statusBar()->hide();
 
+    default_theme_paths = QIcon::themeSearchPaths();
+    UpdateUITheme();
+
     InitializeWidgets();
     InitializeDebugWidgets();
     InitializeRecentFileMenuActions();
@@ -144,8 +147,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     show();
 
     game_list->PopulateAsync(UISettings::values.gamedir, UISettings::values.gamedir_deepscan);
-
-    UpdateUITheme();
 
     // Show one-time "callout" messages to the user
     ShowCallouts();
@@ -1456,7 +1457,9 @@ void GMainWindow::filterBarSetChecked(bool state) {
 }
 
 void GMainWindow::UpdateUITheme() {
-    if (UISettings::values.theme != UISettings::themes[0].second) {
+    QStringList theme_paths(default_theme_paths);
+    if (UISettings::values.theme != UISettings::themes[0].second &&
+        !UISettings::values.theme.isEmpty()) {
         QString theme_uri(":" + UISettings::values.theme + "/style.qss");
         QFile f(theme_uri);
         if (!f.exists()) {
@@ -1467,10 +1470,16 @@ void GMainWindow::UpdateUITheme() {
             qApp->setStyleSheet(ts.readAll());
             GMainWindow::setStyleSheet(ts.readAll());
         }
+        theme_paths.append(QStringList{":/icons/default", ":/icons/" + UISettings::values.theme});
+        QIcon::setThemeName(":/icons/" + UISettings::values.theme);
     } else {
         qApp->setStyleSheet("");
         GMainWindow::setStyleSheet("");
+        theme_paths.append(QStringList{":/icons/default"});
+        QIcon::setThemeName(":/icons/default");
     }
+    QIcon::setThemeSearchPaths(theme_paths);
+    emit UpdateThemedIcons();
 }
 
 void GMainWindow::LoadTranslation() {
