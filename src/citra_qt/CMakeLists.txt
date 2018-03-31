@@ -19,8 +19,6 @@ add_executable(citra-qt
     camera/still_image_camera.h
     camera/qt_camera_factory.cpp
     camera/qt_camera_factory.h
-    camera/qt_multimedia_camera.cpp
-    camera/qt_multimedia_camera.h
     citra-qt.rc
     camera/still_image_camera.cpp
     camera/still_image_camera.h
@@ -169,6 +167,14 @@ if (ENABLE_OPENCV)
         camera/opencv_camera.h
     )
     target_compile_definitions(citra-qt PRIVATE -DENABLE_OPENCV_CAMERA)
+endif()
+
+if (ENABLE_QT_CAMERA)
+    target_sources(citra-qt PRIVATE
+        camera/qt_multimedia_camera.cpp
+        camera/qt_multimedia_camera.h
+    )
+    target_compile_definitions(citra-qt PRIVATE -DENABLE_QT_CAMERA)
 endif()
 
 create_target_directory_groups(citra-qt)

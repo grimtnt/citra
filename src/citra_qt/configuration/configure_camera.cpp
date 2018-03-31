@@ -24,12 +24,21 @@ const std::map<QString, std::vector<QString>> Implementations = {
     /* camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
 };
 #else
+#ifdef ENABLE_QT_CAMERA
 const std::map<QString, std::vector<QString>> Implementations = {
     /* blank */ {QObject::tr("Blank"), {"blank"}},
     /* still image */ {QObject::tr("Still Image"), {"image"}},
     /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
     /* camera */ {QObject::tr("System Camera"), {"qt"}},
 };
+#else
+const std::map<QString, std::vector<QString>> Implementations = {
+    /* blank */ {QObject::tr("Blank"), {"blank"}},
+    /* still image */ {QObject::tr("Still Image"), {"image"}},
+    /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
+    /* camera */ {QObject::tr("System Camera"), {}},
+};
+#endif
 #endif
 
 ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureCamera) {
@@ -246,9 +255,12 @@ void ConfigureCamera::setConfiguration() {
         }
     }
 #endif
+#ifdef ENABLE_QT_CAMERA
     else if (camera_name[index] == "qt") {
         ui->image_source->setCurrentText(tr("System Camera"));
-    } else {
+    }
+#endif
+    else {
         LOG_ERROR(Frontend, "Unknown camera type %s", camera_name[index].c_str());
         QString message =
             tr(("Sorry, but your configuration file seems to be invalid:\n\nUnknown camera type " +
