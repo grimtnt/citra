@@ -48,7 +48,7 @@ QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) : camera_
         camera->setViewfinder(&camera_surface);
     });
 
-    t.rotate(360);
+    t.rotate(540);
 }
 
 void QtMultimediaCamera::StartCapture() {
