@@ -20,7 +20,7 @@ public:
      *               meaning of this string.
      * @returns a unique_ptr to the created camera object.
      */
-    virtual std::unique_ptr<CameraInterface> Create(const std::string& config) = 0;
+    virtual std::unique_ptr<CameraInterface> Create(const std::string& config) const = 0;
 
     /**
      * Creates a camera object for preview based on the configuration string.
@@ -32,7 +32,7 @@ public:
      * occurs.
      */
     virtual std::unique_ptr<CameraInterface> CreatePreview(const std::string& config, int width,
-                                                           int height) {
+                                                           int height) const {
         return Create(config);
     }
 };
