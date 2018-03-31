@@ -21,24 +21,23 @@ const std::map<QString, std::vector<QString>> Implementations = {
     /* blank */ {QObject::tr("Blank"), {"blank"}},
     /* still image */ {QObject::tr("Still Image"), {"image"}},
     /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {"opencv"}},
-    /* camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
-};
-#else
 #ifdef ENABLE_QT_CAMERA
-const std::map<QString, std::vector<QString>> Implementations = {
-    /* blank */ {QObject::tr("Blank"), {"blank"}},
-    /* still image */ {QObject::tr("Still Image"), {"image"}},
-    /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
-    /* camera */ {QObject::tr("System Camera"), {"qt"}},
+    /* camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
+#else
+    /* camera */ {QObject::tr("System Camera"), {"opencv"}},
+#endif
 };
 #else
 const std::map<QString, std::vector<QString>> Implementations = {
     /* blank */ {QObject::tr("Blank"), {"blank"}},
     /* still image */ {QObject::tr("Still Image"), {"image"}},
     /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
+#ifdef ENABLE_QT_CAMERA
+    /* camera */ {QObject::tr("System Camera"), {"qt"}},
+#else
     /* camera */ {QObject::tr("System Camera"), {}},
-};
 #endif
+};
 #endif
 
 ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureCamera) {
