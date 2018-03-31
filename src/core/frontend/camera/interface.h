@@ -22,13 +22,13 @@ public:
     virtual void StopCapture() = 0;
 
     /// Called when Service::CAM is paused. Usually does nothing.
-    virtual void OnServicePaused(){};
+    virtual void OnServicePaused() {}
 
     /// Called when Service::CAM resumes. Usually does nothing.
-    virtual void OnServiceResumed(){};
+    virtual void OnServiceResumed() {}
 
     /// Called when Service::CAM is stopped. Usually does nothing.
-    virtual void OnServiceStopped(){};
+    virtual void OnServiceStopped() {}
 
     /**
      * Sets the video resolution from raw CAM service parameters.
@@ -59,7 +59,7 @@ public:
     virtual void SetFormat(Service::CAM::OutputFormat format) = 0;
 
     /**
-     * Configures the recommended framerate of the camera.
+     * Sets the recommended framerate of the camera.
      * @param frame_rate Recommended framerate
      */
     virtual void SetFrameRate(Service::CAM::FrameRate frame_rate) = 0;
@@ -71,6 +71,13 @@ public:
      *     where width and height are set by a call to SetResolution.
      */
     virtual std::vector<u16> ReceiveFrame() = 0;
+
+    /**
+     * Test if the camera is opened successfully. Only used for preview.
+     * This function should be only called between a StartCapture call and a StopCapture call.
+     * @returns true if the camera is opened successfully and false otherwise
+     */
+    virtual bool CanReceiveFrame() = 0;
 };
 
 } // namespace Camera
