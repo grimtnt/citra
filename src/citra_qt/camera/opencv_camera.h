@@ -42,7 +42,7 @@ private:
 
 class OpenCVCameraFactory final : public QtCameraFactory {
 public:
-    std::unique_ptr<CameraInterface> Create(const std::string& config) override;
+    std::unique_ptr<CameraInterface> Create(const std::string& config) const override;
 };
 
 } // namespace Camera
