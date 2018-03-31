@@ -240,8 +240,11 @@ if (ENABLE_QT)
         set(QT_PREFIX_HINT)
     endif()
 
-    find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
+    find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL ${QT_PREFIX_HINT})
 
+    if (ENABLE_QT_CAMERA)
+        find_package(Qt5 REQUIRED COMPONENTS Multimedia ${QT_PREFIX_HINT})
+    endif()
     if (ENABLE_QT_TRANSLATION)
         find_package(Qt5 REQUIRED COMPONENTS LinguistTools ${QT_PREFIX_HINT})
     endif()
