@@ -58,7 +58,7 @@ const std::string StillImageCameraFactory::getFilePath() {
         .toStdString();
 }
 
-std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::string& config) const {
+std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::string& config) {
     std::string real_config = config;
     if (config.empty()) {
         real_config = getFilePath();
