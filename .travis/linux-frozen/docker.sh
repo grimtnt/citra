@@ -12,6 +12,7 @@ apt-get install -y build-essential wget git python-launchpadlib
     libsdl2-dev 2.0.7+dfsg1-3ubuntu1 bionic          \
     qtbase5-dev 5.9.3+dfsg-0ubuntu2 bionic           \
     libqt5opengl5-dev 5.9.3+dfsg-0ubuntu2 bionic     \
+    qtmultimedia5-dev 5.9.3-0ubuntu3 bionic     \
     libicu57 57.1-6ubuntu0.2 bionic
 
 # Get a recent version of CMake
