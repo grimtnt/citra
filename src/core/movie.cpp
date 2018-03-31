@@ -237,9 +237,9 @@ void Movie::Play(Service::IR::ExtraHIDResponse& extra_hid_response) {
     current_byte += sizeof(ControllerState);
 
     if (s.type != ControllerStateType::ExtraHidResponse) {
-        NGLOG_ERROR(Movie,
-                    "Expected to read type {}, but found {}. Your playback will be out of sync",
-                    static_cast<int>(ControllerStateType::ExtraHidResponse), static_cast<int>(s.type));
+        NGLOG_ERROR(
+            Movie, "Expected to read type {}, but found {}. Your playback will be out of sync",
+            static_cast<int>(ControllerStateType::ExtraHidResponse), static_cast<int>(s.type));
         return;
     }
 
@@ -352,8 +352,8 @@ bool Movie::ValidateHeader(const CTMHeader& header) {
     revision = Common::ToLower(revision);
 
     if (revision != Common::g_scm_rev) {
-        NGLOG_WARNING(Movie,
-                      "This movie was created on a different version of Citra, playback may desync");
+        NGLOG_WARNING(
+            Movie, "This movie was created on a different version of Citra, playback may desync");
     }
 
     u64 program_id;
