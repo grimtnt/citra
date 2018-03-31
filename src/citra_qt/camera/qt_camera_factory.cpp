@@ -2,8 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#pragma once
-
 #include <QMessageBox>
 #include "citra_qt/camera/qt_camera_factory.h"
 
