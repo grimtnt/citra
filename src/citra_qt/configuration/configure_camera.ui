@@ -68,16 +68,6 @@
               <property name="toolTip">
                <string>Select where the image of the emulated camera come from. It may be an image, a video or a real camera.</string>
               </property>
-              <item>
-               <property name="text">
-                <string>Blank</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Image file</string>
-               </property>
-              </item>
              </widget>
             </item>
            </layout>
