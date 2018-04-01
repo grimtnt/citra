@@ -24,7 +24,7 @@ CheatSearch::CheatSearch(QWidget* parent) : QDialog(parent), ui(new Ui::CheatSea
     ui->txtSearchTo->setVisible(false);
     ui->tableFound->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableFound->setSelectionBehavior(QAbstractItemView::SelectRows);
-    previous_found = make_shared<std::vector<FoundItems>>();
+    previous_found.clear();
     connect(ui->btnNextScan, &QPushButton::clicked, this, [this] { OnScan(true); });
     connect(ui->btnFirstScan, &QPushButton::clicked, this, [this] { OnScan(false); });
     connect(ui->cbScanType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
@@ -77,10 +77,10 @@ T Read(const VAddr addr) {
 }
 #endif
 
-string int_to_hex(int i) {
-    std::stringstream stream;
-    stream << setfill('0') << setw(sizeof(int) * 2) << std::hex << i;
-    return stream.str();
+std::string int_to_hex(int i) {
+    std::stringstream ss;
+    ss << setfill('0') << setw(sizeof(int) * 2) << std::hex << i;
+    return ss.str();
 }
 
 int hex_to_int(std::string hex_value) {
