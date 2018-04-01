@@ -79,7 +79,7 @@ T Read(const VAddr addr) {
 
 std::string int_to_hex(int i) {
     std::stringstream ss;
-    ss << setfill('0') << setw(sizeof(int) * 2) << std::hex << i;
+    ss << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << i;
     return ss.str();
 }
 
@@ -200,14 +200,14 @@ void CheatSearch::OnScan(bool isNextScan) {
     }
     }
     ui->tableFound->setRowCount(0);
-    if (previous_found->size() > 50000) {
+    if (previous_found.size() > 50000) {
         ui->lblCount->setText(tr("Found: 50000+"));
     } else {
         LoadTable(previous_found);
-        ui->lblCount->setText(tr("Found: %1").arg(previous_found->size()));
+        ui->lblCount->setText(tr("Found: %1").arg(previous_found.size()));
     }
 
-    ui->btnNextScan->setEnabled(previous_found->size() > 0);
+    ui->btnNextScan->setEnabled(previous_found.size() > 0);
 }
 
 void CheatSearch::OnValueTypeChanged(int index) {
@@ -267,8 +267,8 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
 }
 
 void CheatSearch::LoadTable(std::vector<FoundItem> items) {
-    ui->tableFound->setRowCount(items->size());
-    for (int i = 0; i < items->size(); i++) {
+    ui->tableFound->setRowCount(items.size());
+    for (int i = 0; i < items.size(); i++) {
         ui->tableFound->setItem(i, 0,
                                 new QTableWidgetItem(QString::fromStdString(items[i].address).toUpper()));
         ui->tableFound->setItem(i, 1,
