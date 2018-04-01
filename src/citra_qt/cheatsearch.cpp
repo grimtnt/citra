@@ -368,11 +368,11 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, string address, int ty
     address_block->setReadOnly(true);
     address_block->setText(QString::fromStdString(address));
 
-    type_select->addItem("Int32");
-    type_select->addItem("Int16");
-    type_select->addItem("Int8");
-    type_select->addItem("Float");
-    type_select->addItem("Double");
+    type_select->addItem("u32");
+    type_select->addItem("u16");
+    type_select->addItem("u8");
+    type_select->addItem("float");
+    type_select->addItem("double");
     type_select->setCurrentIndex(type);
 
     value_block->setText(QString::fromStdString(value));
@@ -405,21 +405,21 @@ void ModifyAddressDialog::OnOkayClicked() {
 
     int base = 10;
     switch (valueType) {
-    case 0: // int32
+    case 0: // u32
     {
-        u32 value = newValue.toInt(nullptr, base);
+        u32 value = newValue.toUInt(nullptr, base);
         Memory::Write32(address, value);
         break;
     }
-    case 1: // int16
+    case 1: // u16
     {
-        u16 value = newValue.toInt(nullptr, base);
+        u16 value = newValue.toUShort(nullptr, base);
         Memory::Write16(address, value);
         break;
     }
-    case 2: // int8
+    case 2: // u8
     {
-        u8 value = newValue.toInt(nullptr, base);
+        u8 value = static_cast<u8>(newValue.toUShort(nullptr, base));
         Memory::Write8(address, value);
         break;
     }
