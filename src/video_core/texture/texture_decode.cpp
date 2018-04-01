@@ -67,8 +67,8 @@ Math::Vec4<u8> LookupTexture(const u8* source, unsigned int x, unsigned int y,
     const unsigned int fine_x = x % 8;
     const unsigned int fine_y = y % 8;
 
-    const u8* line = source + coarse_y * inf.stride;
-    const u8* tile = line + coarse_x * CalculateTileSize(inf.format);
+    const u8* line = source + coarse_y * info.stride;
+    const u8* tile = line + coarse_x * CalculateTileSize(info.format);
     return LookupTexelInTile(tile, fine_x, fine_y, info);
 }
 
