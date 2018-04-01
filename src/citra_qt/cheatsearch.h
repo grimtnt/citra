@@ -10,7 +10,13 @@
 namespace Ui {
 class CheatSearch;
 }
-class FoundItems;
+
+class FoundItem {
+public:
+    std::string address;
+    std::string value;
+};
+
 class CheatSearch : public QDialog {
     Q_OBJECT
 
@@ -20,7 +26,7 @@ public:
 
 private:
     Ui::CheatSearch* ui;
-    std::shared_ptr<std::vector<FoundItems>> previous_found;
+    std::vector<FoundItem> previous_found;
     void OnScan(bool isNextScan);
     void OnScanTypeChanged(int index);
     void OnValueTypeChanged(int index);
@@ -55,9 +61,4 @@ private:
     QLineEdit* value_block;
 
     void OnOkayClicked();
-};
-class FoundItem {
-public:
-    std::string address;
-    std::string value;
 };
