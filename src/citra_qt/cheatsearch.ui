@@ -69,17 +69,17 @@
    </property>
    <item>
     <property name="text">
-     <string>Int32</string>
+     <string>u32</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Int16</string>
+     <string>u16</string>
     </property>
    </item>
    <item>
     <property name="text">
-     <string>Int8</string>
+     <string>u8</string>
     </property>
    </item>
   </widget>
