@@ -11,16 +11,12 @@
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/result.h"
+#include "core/hle/service/gsp/gsp.h"
 #include "core/hle/service/gsp/gsp_gpu.h"
 #include "core/hw/gpu.h"
 #include "core/hw/hw.h"
 #include "core/hw/lcd.h"
 #include "core/memory.h"
-#include "video_core/debug_utils/debug_utils.h"
-#include "video_core/gpu_debugger.h"
-
-// Main graphics debugger object - TODO: Here is probably not the best place for this
-GraphicsDebugger g_debugger;
 
 namespace Service {
 namespace GSP {
@@ -586,8 +582,6 @@ void GSP_GPU::TriggerCmdReqQueue(Kernel::HLERequestContext& ctx) {
 
         // Iterate through each command...
         for (unsigned i = 0; i < command_buffer->number_commands; ++i) {
-            g_debugger.GXCommandProcessed((u8*)&command_buffer->commands[i]);
-
             // Decode and execute command
             ExecuteCommand(command_buffer->commands[i], thread_id);
 
