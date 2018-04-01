@@ -201,11 +201,10 @@ void CheatSearch::OnScan(bool isNextScan) {
     }
     ui->tableFound->setRowCount(0);
     if (previous_found->size() > 50000) {
-        ui->lblCount->setText(QString::fromStdString("Found: 50000+"));
+        ui->lblCount->setText(tr("Found: 50000+"));
     } else {
         LoadTable(previous_found);
-        ui->lblCount->setText(
-            QString::fromStdString("Found: " + to_string(previous_found->size())));
+        ui->lblCount->setText(tr("Found: %1").arg(previous_found->size()));
     }
 
     ui->btnNextScan->setEnabled(previous_found->size() > 0);
@@ -255,10 +254,10 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
             }
         } else {
             if (text.length() > 0) {
-                ui->txtSearch->setText(QString::fromStdString(to_string(hex_to_int(text))));
+                ui->txtSearch->setText(QString::fromStdString(std::to_string(hex_to_int(text))));
             }
             if (text2.length() > 0) {
-                ui->txtSearchTo->setText(QString::fromStdString(to_string(hex_to_int(text2))));
+                ui->txtSearchTo->setText(QString::fromStdString(std::to_string(hex_to_int(text2))));
             }
         }
     } catch (const std::exception&) {
@@ -271,7 +270,7 @@ void CheatSearch::LoadTable(std::vector<FoundItems> items) {
     ui->tableFound->setRowCount(items->size());
     for (int i = 0; i < items->size(); i++) {
         ui->tableFound->setItem(i, 0,
-                                new QTableWidgetItem(QString::fromStdString(items[i].address)));
+                                new QTableWidgetItem(QString::fromStdString(items[i].address).toUpper()));
         ui->tableFound->setItem(i, 1,
                                 new QTableWidgetItem(QString::fromStdString(items[i].value)));
         ui->tableFound->setRowHeight(i, 23);
@@ -299,7 +298,7 @@ std::vector<FoundItems> CheatSearch::FirstSearch(
             if (comparer(result, value, searchToValue)) {
                 FoundItem item;
                 item.address = int_to_hex(i);
-                item.value = to_string(result);
+                item.value = std::to_string(result);
                 results.push_back(item);
             }
         }
@@ -313,14 +312,14 @@ std::vector<FoundItems> CheatSearch::NextSearch(
     std::vector<FoundItem> previousFound) {
     std::vector<FoundItem> results;
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
-    T searchToValue = static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base));
+    T searchToValue = static_cast<T>(ui->txtSearchTo->text().toUInt(nullptr, base));
     for (auto& f : *previousFound) {
-        int addr = std::stoul(f.address, nullptr, 16);
+        VAddr addr = std::stoul(f.address, nullptr, 16);
         T result = Read<T>(addr);
         if (comparer(result, value, searchToValue)) {
             FoundItem item;
             item.address = int_to_hex(addr);
-            item.value = to_string(result);
+            item.value = std::to_string(result);
             results.push_back(item);
         }
     }
