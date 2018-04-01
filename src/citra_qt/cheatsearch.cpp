@@ -269,17 +269,16 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
 void CheatSearch::LoadTable(std::vector<FoundItem> items) {
     ui->tableFound->setRowCount(items.size());
     for (int i = 0; i < items.size(); i++) {
-        ui->tableFound->setItem(i, 0,
-                                new QTableWidgetItem(QString::fromStdString(items[i].address).toUpper()));
-        ui->tableFound->setItem(i, 1,
-                                new QTableWidgetItem(QString::fromStdString(items[i].value)));
+        ui->tableFound->setItem(
+            i, 0, new QTableWidgetItem(QString::fromStdString(items[i].address).toUpper()));
+        ui->tableFound->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(items[i].value)));
         ui->tableFound->setRowHeight(i, 23);
     }
 }
 
 template <typename T>
-std::vector<FoundItem> CheatSearch::FirstSearch(
-    const T value, std::function<bool(int, int, int)> comparer) {
+std::vector<FoundItem> CheatSearch::FirstSearch(const T value,
+                                                std::function<bool(int, int, int)> comparer) {
     u32 start_address = 0x00000000;
     u32 end_address = 0x08000000 + 0x08000000;
     std::vector<int> address_in_use;
@@ -307,9 +306,9 @@ std::vector<FoundItem> CheatSearch::FirstSearch(
 }
 
 template <typename T>
-std::vector<FoundItem> CheatSearch::NextSearch(
-    const T value, std::function<bool(int, int, int)> comparer,
-    std::vector<FoundItem> previousFound) {
+std::vector<FoundItem> CheatSearch::NextSearch(const T value,
+                                               std::function<bool(int, int, int)> comparer,
+                                               std::vector<FoundItem> previousFound) {
     std::vector<FoundItem> results;
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
     T searchToValue = static_cast<T>(ui->txtSearchTo->text().toUInt(nullptr, base));
@@ -343,7 +342,8 @@ bool CheatSearch::Between(int value, int min, int max) {
     return min < value && value < max;
 }
 
-ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, std::string address, int type, std::string value)
+ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, std::string address, int type,
+                                         std::string value)
     : QDialog(parent) {
     resize(300, 30);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);

@@ -36,9 +36,8 @@ private:
     std::vector<FoundItem> FirstSearch(const T value, std::function<bool(int, int, int)> comparer);
 
     template <typename T>
-    std::vector<FoundItem> NextSearch(
-        const T value, std::function<bool(int, int, int)> comparer,
-        const std::vector<FoundItem> previous_found);
+    std::vector<FoundItem> NextSearch(const T value, std::function<bool(int, int, int)> comparer,
+                                      const std::vector<FoundItem> previous_found);
 
     bool Equals(int a, int b, int c);
     bool LessThan(int a, int b, int c);
