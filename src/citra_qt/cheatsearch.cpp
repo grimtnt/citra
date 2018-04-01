@@ -266,7 +266,7 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
     }
 }
 
-void CheatSearch::LoadTable(std::vector<FoundItems> items) {
+void CheatSearch::LoadTable(std::vector<FoundItem> items) {
     ui->tableFound->setRowCount(items->size());
     for (int i = 0; i < items->size(); i++) {
         ui->tableFound->setItem(i, 0,
@@ -278,7 +278,7 @@ void CheatSearch::LoadTable(std::vector<FoundItems> items) {
 }
 
 template <typename T>
-std::vector<FoundItems> CheatSearch::FirstSearch(
+std::vector<FoundItem> CheatSearch::FirstSearch(
     const T value, std::function<bool(int, int, int)> comparer) {
     u32 start_address = 0x00000000;
     u32 end_address = 0x08000000 + 0x08000000;
@@ -307,7 +307,7 @@ std::vector<FoundItems> CheatSearch::FirstSearch(
 }
 
 template <typename T>
-std::vector<FoundItems> CheatSearch::NextSearch(
+std::vector<FoundItem> CheatSearch::NextSearch(
     const T value, std::function<bool(int, int, int)> comparer,
     std::vector<FoundItem> previousFound) {
     std::vector<FoundItem> results;
@@ -343,7 +343,7 @@ bool CheatSearch::Between(int value, int min, int max) {
     return min < value && value < max;
 }
 
-ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, string address, int type, string value)
+ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, std::string address, int type, std::string value)
     : QDialog(parent) {
     resize(300, 30);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
