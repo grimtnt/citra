@@ -174,31 +174,31 @@ void CheatSearch::OnScan(bool isNextScan) {
     }
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
     switch (valueType) {
-    case 0: // int32
+    case 0: // u32
     {
-        u32 value = searchvalue.toInt(nullptr, base);
+        u32 value = searchvalue.toUInt(nullptr, base);
         if (!isNextScan)
-            previous_found = FirstSearch<u32, s32>(value, comparer);
+            previous_found = FirstSearch<u32>(value, comparer);
         else
-            previous_found = NextSearch<u32, s32>(value, comparer, previous_found);
+            previous_found = NextSearch<u32>(value, comparer, previous_found);
         break;
     }
-    case 1: // int16
+    case 1: // u16
     {
-        u16 value = searchvalue.toInt(nullptr, base);
+        u16 value = searchvalue.toUShort(nullptr, base);
         if (!isNextScan)
-            previous_found = FirstSearch<u16, s16>(value, comparer);
+            previous_found = FirstSearch<u16>(value, comparer);
         else
-            previous_found = NextSearch<u16, s16>(value, comparer, previous_found);
+            previous_found = NextSearch<u16>(value, comparer, previous_found);
         break;
     }
-    case 2: // int8
+    case 2: // u8
     {
-        u8 value = searchvalue.toInt(nullptr, base);
+        u8 value = static_cast<u8>(searchvalue.toUShort(nullptr, base));
         if (!isNextScan)
-            previous_found = FirstSearch<u8, s8>(value, comparer);
+            previous_found = FirstSearch<u8>(value, comparer);
         else
-            previous_found = NextSearch<u8, s8>(value, comparer, previous_found);
+            previous_found = NextSearch<u8>(value, comparer, previous_found);
         break;
     }
     }
@@ -281,7 +281,7 @@ void CheatSearch::LoadTable(std::shared_ptr<std::vector<FoundItems>> items) {
     }
 }
 
-template <typename T, typename T2>
+template <typename T>
 shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
     const T value, std::function<bool(int, int, int)> comparer) {
     u32 start_address = 0x00000000;
@@ -289,7 +289,7 @@ shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
     vector<int> address_in_use;
     shared_ptr<vector<FoundItems>> results = make_shared<vector<FoundItems>>();
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
-    int searchToValue = ui->txtSearchTo->text().toInt(nullptr, base);
+    T searchToValue = static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base));
 
     for (u32 i = start_address; i < end_address; i += 4096) {
         if (Memory::IsValidVirtualAddress(i)) {
@@ -298,8 +298,7 @@ shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
     }
     for (auto& range : address_in_use) {
         for (u32 i = range; i < range + 4096; i++) {
-            T resultTemp = Read<T>(i);
-            T2 result = (T2)resultTemp;
+            T result = Read<T>(i);
             if (comparer(result, value, searchToValue)) {
                 FoundItems item = FoundItems();
                 item.address = int_to_hex(i);
@@ -311,17 +310,16 @@ shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
     return results;
 }
 
-template <typename T, typename T2>
+template <typename T>
 shared_ptr<vector<FoundItems>> CheatSearch::NextSearch(
     const T value, std::function<bool(int, int, int)> comparer,
     shared_ptr<vector<FoundItems>> previousFound) {
     shared_ptr<vector<FoundItems>> results = make_shared<vector<FoundItems>>();
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
-    int searchToValue = ui->txtSearchTo->text().toInt(nullptr, base);
+    T searchToValue = static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base));
     for (auto& f : *previousFound) {
         int addr = std::stoul(f.address, nullptr, 16);
-        T resultTemp = Read<T>(addr);
-        T2 result = (T2)resultTemp;
+        T result = Read<T>(addr);
         if (comparer(result, value, searchToValue)) {
             FoundItems item = FoundItems();
             item.address = int_to_hex(addr);
