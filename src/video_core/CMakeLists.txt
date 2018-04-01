@@ -1,8 +1,6 @@
 add_library(video_core STATIC
     command_processor.cpp
     command_processor.h
-    debug_utils/debug_utils.cpp
-    debug_utils/debug_utils.h
     geometry_pipeline.cpp
     geometry_pipeline.h
     gpu_debugger.h
