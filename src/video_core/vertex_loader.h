@@ -6,10 +6,6 @@
 
 namespace Pica {
 
-namespace DebugUtils {
-class MemoryAccessTracker;
-}
-
 namespace Shader {
 struct AttributeBuffer;
 }
