@@ -22,9 +22,9 @@ const std::map<QString, std::vector<QString>> Implementations = {
     /* still image */ {QObject::tr("Still Image"), {"image"}},
     /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {"opencv"}},
 #ifdef ENABLE_QT_CAMERA
-    /* camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
+    /* system camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
 #else
-    /* camera */ {QObject::tr("System Camera"), {"opencv"}},
+    /* system camera */ {QObject::tr("System Camera"), {"opencv"}},
 #endif
 };
 #else
@@ -33,9 +33,9 @@ const std::map<QString, std::vector<QString>> Implementations = {
     /* still image */ {QObject::tr("Still Image"), {"image"}},
     /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
 #ifdef ENABLE_QT_CAMERA
-    /* camera */ {QObject::tr("System Camera"), {"qt"}},
+    /* system camera */ {QObject::tr("System Camera"), {"qt"}},
 #else
-    /* camera */ {QObject::tr("System Camera"), {}},
+    /* system camera */ {QObject::tr("System Camera"), {}},
 #endif
 };
 #endif
@@ -109,7 +109,6 @@ void ConfigureCamera::setUiDisplay() {
     }
 
     ui->implementation->setCurrentText(QString::fromStdString(camera_name[camera_selection]));
-
     ui->camera_file->setText(QString::fromStdString(camera_config[camera_selection]));
 }
 
@@ -176,7 +175,6 @@ void ConfigureCamera::timerEvent(QTimerEvent* event) {
 
 void ConfigureCamera::onCameraChanged(int index) {
     camera_selection = index;
-
     stopPreviewing();
 
     // Load configuration
@@ -185,19 +183,16 @@ void ConfigureCamera::onCameraChanged(int index) {
 
 void ConfigureCamera::onCameraConfigChanged(const QString& text) {
     camera_config[camera_selection] = text.toStdString();
-
     stopPreviewing();
 }
 
 void ConfigureCamera::onImageSourceChanged(int index) {
     setUiDisplay();
-
     stopPreviewing();
 }
 
 void ConfigureCamera::onImplementationChanged(const QString& text) {
     camera_name[camera_selection] = text.toStdString();
-
     stopPreviewing();
 }
 
