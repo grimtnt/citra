@@ -58,7 +58,7 @@ size_t CalculateTileSize(TextureFormat format) {
 }
 
 Math::Vec4<u8> LookupTexture(const u8* source, unsigned int x, unsigned int y,
-                             const TextureInfo& info, bool disable_alpha) {
+                             const TextureInfo& info) {
     // Coordinate in tiles
     const unsigned int coarse_x = x / 8;
     const unsigned int coarse_y = y / 8;
@@ -67,13 +67,13 @@ Math::Vec4<u8> LookupTexture(const u8* source, unsigned int x, unsigned int y,
     const unsigned int fine_x = x % 8;
     const unsigned int fine_y = y % 8;
 
-    const u8* line = source + coarse_y * info.stride;
-    const u8* tile = line + coarse_x * CalculateTileSize(info.format);
-    return LookupTexelInTile(tile, fine_x, fine_y, info, disable_alpha);
+    const u8* line = source + coarse_y * inf.stride;
+    const u8* tile = line + coarse_x * CalculateTileSize(inf.format);
+    return LookupTexelInTile(tile, fine_x, fine_y, info);
 }
 
 Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int y,
-                                 const TextureInfo& info, bool disable_alpha) {
+                                 const TextureInfo& info) {
     DEBUG_ASSERT(x < 8);
     DEBUG_ASSERT(y < 8);
 
@@ -82,7 +82,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
     switch (info.format) {
     case TextureFormat::RGBA8: {
         auto res = Color::DecodeRGBA8(source + MortonInterleave(x, y) * 4);
-        return {res.r(), res.g(), res.b(), static_cast<u8>(disable_alpha ? 255 : res.a())};
+        return {res.r(), res.g(), res.b(), res.a()};
     }
 
     case TextureFormat::RGB8: {
@@ -92,7 +92,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
 
     case TextureFormat::RGB5A1: {
         auto res = Color::DecodeRGB5A1(source + MortonInterleave(x, y) * 2);
-        return {res.r(), res.g(), res.b(), static_cast<u8>(disable_alpha ? 255 : res.a())};
+        return {res.r(), res.g(), res.b(), res.a()};
     }
 
     case TextureFormat::RGB565: {
@@ -102,18 +102,13 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
 
     case TextureFormat::RGBA4: {
         auto res = Color::DecodeRGBA4(source + MortonInterleave(x, y) * 2);
-        return {res.r(), res.g(), res.b(), static_cast<u8>(disable_alpha ? 255 : res.a())};
+        return {res.r(), res.g(), res.b(), res.a()};
     }
 
     case TextureFormat::IA8: {
         const u8* source_ptr = source + MortonInterleave(x, y) * 2;
 
-        if (disable_alpha) {
-            // Show intensity as red, alpha as green
-            return {source_ptr[1], source_ptr[0], 0, 255};
-        } else {
-            return {source_ptr[1], source_ptr[1], source_ptr[1], source_ptr[0]};
-        }
+        return {source_ptr[1], source_ptr[1], source_ptr[1], source_ptr[0]};
     }
 
     case TextureFormat::RG8: {
@@ -129,11 +124,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
     case TextureFormat::A8: {
         const u8* source_ptr = source + MortonInterleave(x, y);
 
-        if (disable_alpha) {
-            return {*source_ptr, *source_ptr, *source_ptr, 255};
-        } else {
-            return {0, 0, 0, *source_ptr};
-        }
+        return {0, 0, 0, *source_ptr};
     }
 
     case TextureFormat::IA4: {
@@ -142,12 +133,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
         u8 i = Color::Convert4To8(((*source_ptr) & 0xF0) >> 4);
         u8 a = Color::Convert4To8((*source_ptr) & 0xF);
 
-        if (disable_alpha) {
-            // Show intensity as red, alpha as green
-            return {i, a, 0, 255};
-        } else {
-            return {i, i, i, a};
-        }
+        return {i, i, i, a};
     }
 
     case TextureFormat::I4: {
@@ -167,11 +153,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
         u8 a = (morton_offset % 2) ? ((*source_ptr & 0xF0) >> 4) : (*source_ptr & 0xF);
         a = Color::Convert4To8(a);
 
-        if (disable_alpha) {
-            return {a, a, a, 255};
-        } else {
-            return {0, 0, 0, a};
-        }
+        return {0, 0, 0, a};
     }
 
     case TextureFormat::ETC1:
@@ -202,7 +184,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
         memcpy(&subtile_data, subtile_ptr, sizeof(u64));
 
         return Math::MakeVec(SampleETC1Subtile(subtile_data, x, y),
-                             disable_alpha ? (u8)255 : alpha);
+                             alpha);
     }
 
     default:

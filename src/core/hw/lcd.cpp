@@ -8,7 +8,6 @@
 #include "core/hw/hw.h"
 #include "core/hw/lcd.h"
 #include "core/tracer/recorder.h"
-#include "video_core/debug_utils/debug_utils.h"
 
 namespace LCD {
 

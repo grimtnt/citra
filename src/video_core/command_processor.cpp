@@ -17,7 +17,6 @@
 #include "core/settings.h"
 #include "core/tracer/recorder.h"
 #include "video_core/command_processor.h"
-#include "video_core/debug_utils/debug_utils.h"
 #include "video_core/pica_state.h"
 #include "video_core/pica_types.h"
 #include "video_core/primitive_assembly.h"

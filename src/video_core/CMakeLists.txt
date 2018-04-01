@@ -3,7 +3,6 @@ add_library(video_core STATIC
     command_processor.h
     geometry_pipeline.cpp
     geometry_pipeline.h
-    gpu_debugger.h
     pica.cpp
     pica.h
     pica_state.h
@@ -39,7 +38,6 @@ add_library(video_core STATIC
     renderer_opengl/pica_to_gl.h
     renderer_opengl/renderer_opengl.cpp
     renderer_opengl/renderer_opengl.h
-    shader/debug_data.h
     shader/shader.cpp
     shader/shader.h
     shader/shader_interpreter.cpp
