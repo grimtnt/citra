@@ -313,7 +313,7 @@ std::vector<FoundItem> CheatSearch::NextSearch(
     std::vector<FoundItem> results;
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
     T searchToValue = static_cast<T>(ui->txtSearchTo->text().toUInt(nullptr, base));
-    for (auto& f : *previousFound) {
+    for (auto& f : previousFound) {
         VAddr addr = std::stoul(f.address, nullptr, 16);
         T result = Read<T>(addr);
         if (comparer(result, value, searchToValue)) {
