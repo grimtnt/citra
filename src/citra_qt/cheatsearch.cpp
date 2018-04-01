@@ -14,8 +14,6 @@
 #include "core/memory.h"
 #include "ui_cheatsearch.h"
 
-using namespace std;
-
 CheatSearch::CheatSearch(QWidget* parent) : QDialog(parent), ui(new Ui::CheatSearch) {
     setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
     setSizeGripEnabled(false);
@@ -105,7 +103,6 @@ double hexstr2double(const std::string& hexstr) {
 }
 
 std::string double2hexstr(double x) {
-
     union {
         long long i;
         double d;
@@ -113,10 +110,10 @@ std::string double2hexstr(double x) {
 
     value.d = x;
 
-    std::ostringstream buf;
-    buf << std::hex << std::setfill('0') << std::setw(16) << value.i;
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0') << std::setw(16) << value.i;
 
-    return buf.str();
+    return oss.str();
 }
 
 std::string ieee_float_to_hex(float f) {
@@ -126,10 +123,10 @@ std::string ieee_float_to_hex(float f) {
     };
     fval = f;
 
-    std::ostringstream stm;
-    stm << std::hex << std::uppercase << ival;
+    std::ostringstream oss;
+    oss << std::hex << std::uppercase << ival;
 
-    return stm.str();
+    return oss.str();
 }
 
 void CheatSearch::OnScan(bool isNextScan) {
@@ -270,24 +267,24 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
     }
 }
 
-void CheatSearch::LoadTable(std::shared_ptr<std::vector<FoundItems>> items) {
+void CheatSearch::LoadTable(std::vector<FoundItems> items) {
     ui->tableFound->setRowCount(items->size());
     for (int i = 0; i < items->size(); i++) {
         ui->tableFound->setItem(i, 0,
-                                new QTableWidgetItem(QString::fromStdString(items->at(i).address)));
+                                new QTableWidgetItem(QString::fromStdString(items[i].address)));
         ui->tableFound->setItem(i, 1,
-                                new QTableWidgetItem(QString::fromStdString(items->at(i).value)));
+                                new QTableWidgetItem(QString::fromStdString(items[i].value)));
         ui->tableFound->setRowHeight(i, 23);
     }
 }
 
 template <typename T>
-shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
+std::vector<FoundItems> CheatSearch::FirstSearch(
     const T value, std::function<bool(int, int, int)> comparer) {
     u32 start_address = 0x00000000;
     u32 end_address = 0x08000000 + 0x08000000;
-    vector<int> address_in_use;
-    shared_ptr<vector<FoundItems>> results = make_shared<vector<FoundItems>>();
+    std::vector<int> address_in_use;
+    std::vector<FoundItem> results;
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
     T searchToValue = static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base));
 
@@ -300,10 +297,10 @@ shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
         for (u32 i = range; i < range + 4096; i++) {
             T result = Read<T>(i);
             if (comparer(result, value, searchToValue)) {
-                FoundItems item = FoundItems();
+                FoundItem item;
                 item.address = int_to_hex(i);
                 item.value = to_string(result);
-                results->push_back(item);
+                results.push_back(item);
             }
         }
     }
@@ -311,20 +308,20 @@ shared_ptr<vector<FoundItems>> CheatSearch::FirstSearch(
 }
 
 template <typename T>
-shared_ptr<vector<FoundItems>> CheatSearch::NextSearch(
+std::vector<FoundItems> CheatSearch::NextSearch(
     const T value, std::function<bool(int, int, int)> comparer,
-    shared_ptr<vector<FoundItems>> previousFound) {
-    shared_ptr<vector<FoundItems>> results = make_shared<vector<FoundItems>>();
+    std::vector<FoundItem> previousFound) {
+    std::vector<FoundItem> results;
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
     T searchToValue = static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base));
     for (auto& f : *previousFound) {
         int addr = std::stoul(f.address, nullptr, 16);
         T result = Read<T>(addr);
         if (comparer(result, value, searchToValue)) {
-            FoundItems item = FoundItems();
+            FoundItem item;
             item.address = int_to_hex(addr);
             item.value = to_string(result);
-            results->push_back(item);
+            results.push_back(item);
         }
     }
 
@@ -332,10 +329,7 @@ shared_ptr<vector<FoundItems>> CheatSearch::NextSearch(
 }
 
 bool CheatSearch::Equals(int a, int b, int c) {
-    if (ui->chkNot->isChecked())
-        return a != b;
-    else
-        return a == b;
+    return ui->chkNot->isChecked() ? (a != b) : (a == b);
 }
 
 bool CheatSearch::LessThan(int a, int b, int c) {
@@ -380,7 +374,7 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, string address, int ty
     editPanel->addWidget(value_block);
 
     auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok);
-    connect(button_box, &QDialogButtonBox::accepted, this, [=]() { OnOkayClicked(); });
+    connect(button_box, &QDialogButtonBox::accepted, this, [=]() { OnOkClicked(); });
     QHBoxLayout* confirmationPanel = new QHBoxLayout();
     confirmationPanel->addWidget(button_box);
     mainLayout->addLayout(editPanel);
@@ -389,7 +383,7 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, string address, int ty
 
 ModifyAddressDialog::~ModifyAddressDialog() {}
 
-void ModifyAddressDialog::OnOkayClicked() {
+void ModifyAddressDialog::OnOkClicked() {
     int valueType;
     QString newValue;
     int address;
@@ -424,14 +418,14 @@ void ModifyAddressDialog::OnOkayClicked() {
     case 3: // float
     {
         float value = newValue.toFloat();
-        u32 converted = stoi(ieee_float_to_hex(value), nullptr, 10);
+        u32 converted = std::stoul(ieee_float_to_hex(value), nullptr, 10);
         Memory::Write32(address, converted);
         break;
     }
     case 4: // double
     {
         double value = newValue.toDouble();
-        u64 converted = strtoull(double2hexstr(value).c_str(), nullptr, 10);
+        u64 converted = std::stoull(double2hexstr(value), nullptr, 10);
         Memory::Write64(address, converted);
         break;
     }
