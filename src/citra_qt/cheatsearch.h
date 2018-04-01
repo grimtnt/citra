@@ -56,7 +56,7 @@ private:
 
     void OnOkayClicked();
 };
-class FoundItems {
+class FoundItem {
 public:
     std::string address;
     std::string value;
