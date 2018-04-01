@@ -27,11 +27,11 @@ private:
     void OnHexCheckedChanged(bool checked);
     void LoadTable(std::shared_ptr<std::vector<FoundItems>> items);
 
-    template <typename T, typename T2>
+    template <typename T>
     std::shared_ptr<std::vector<FoundItems>> FirstSearch(
         const T value, std::function<bool(int, int, int)> comparer);
 
-    template <typename T, typename T2>
+    template <typename T>
     std::shared_ptr<std::vector<FoundItems>> NextSearch(
         const T value, std::function<bool(int, int, int)> comparer,
         const std::shared_ptr<std::vector<FoundItems>> previous_found);
