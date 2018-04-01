@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include <QAbstractVideoSurface>
-#include <QTransform>
 #include <QCamera>
 #include <QImage>
 #include "citra_qt/camera/camera_util.h"
@@ -49,7 +48,6 @@ public:
 private:
     QCamera* camera;
     QtCameraSurface camera_surface;
-    QTransform t;
     int width, height;
     bool output_rgb;
     bool flip_horizontal, flip_vertical;
