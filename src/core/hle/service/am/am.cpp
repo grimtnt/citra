@@ -729,13 +729,19 @@ void GetProductCode(Service::Interface* self) {
     if (!FileUtil::Exists(path)) {
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::AM, ErrorSummary::InvalidState,
                            ErrorLevel::Permanent));
-        return;
-    }
+    } else {
+        struct ProductCode {
+            u8 code[0x10];
+        };
 
-    FileUtil::IOFile f(path, "rb");
-    f.Seek(0x150, 0);
-    f.ReadBytes(&Kernel::GetCommandBuffer()[2], 0x10);
-    rb.Push(RESULT_SUCCESS);
+        ProductCode product_code;
+
+        FileSys::NCCHContainer ncch(path);
+        ncch.Load();
+        std::memcpy(&product_code.code, &ncch.ncch_header.product_code, 0x10);
+        rb.Push(RESULT_SUCCESS);
+        rb.PushRaw(product_code);
+    }
 }
 
 void GetDLCTitleInfos(Service::Interface* self) {
