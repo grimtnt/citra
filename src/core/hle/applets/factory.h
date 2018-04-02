@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
-#include <utility>
 #include <map>
 #include <string>
+#include <utility>
 
 namespace HLE {
 namespace Applets {
