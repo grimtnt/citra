@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include <string>
 #include <map>
+#include <string>
 
 namespace HLE {
 namespace Applets {

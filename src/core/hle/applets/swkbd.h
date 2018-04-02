@@ -5,12 +5,12 @@
 #pragma once
 
 #include <functional>
-#include <utility>
 #include <string>
+#include <utility>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
-#include "core/hle/applets/factory.h"
 #include "core/hle/applets/applet.h"
+#include "core/hle/applets/factory.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/result.h"
@@ -204,7 +204,8 @@ private:
 using SwkbdCallback =
     std::function<std::pair<std::string, SwkbdResult>(const SoftwareKeyboardConfig&)>;
 
-class SwkbdFactory : public AppletFactory<SwkbdCallback, std::pair<std::string, SwkbdResult>, SoftwareKeyboardConfig> {
+class SwkbdFactory : public AppletFactory<SwkbdCallback, std::pair<std::string, SwkbdResult>,
+                                          SoftwareKeyboardConfig> {
 public:
     SwkbdFactory() {
         default_result = std::make_pair<std::string, SwkbdResult>("", SwkbdResult::None);

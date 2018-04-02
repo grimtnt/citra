@@ -183,8 +183,7 @@ Math::Vec4<u8> LookupTexelInTile(const u8* source, unsigned int x, unsigned int 
         u64_le subtile_data;
         memcpy(&subtile_data, subtile_ptr, sizeof(u64));
 
-        return Math::MakeVec(SampleETC1Subtile(subtile_data, x, y),
-                             alpha);
+        return Math::MakeVec(SampleETC1Subtile(subtile_data, x, y), alpha);
     }
 
     default:

@@ -6,8 +6,8 @@
 
 #include <functional>
 #include "common/common_types.h"
-#include "core/hle/applets/factory.h"
 #include "core/hle/applets/applet.h"
+#include "core/hle/applets/factory.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/apt/apt.h"
 

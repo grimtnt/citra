@@ -675,9 +675,8 @@ void GMainWindow::BootGame(const QString& filename) {
 
     Core::System::GetInstance().GetAppletFactories().erreula.Clear();
     Core::System::GetInstance().GetAppletFactories().erreula.Register(
-        "qt", [this](const ErrEulaConfig& config) -> ErrEulaResult {
-            return ErrEulaCallback(config);
-        });
+        "qt",
+        [this](const ErrEulaConfig& config) -> ErrEulaResult { return ErrEulaCallback(config); });
 
     Core::System::GetInstance().GetAppletFactories().swkbd.Clear();
     Core::System::GetInstance().GetAppletFactories().swkbd.Register(
@@ -739,20 +738,27 @@ void GMainWindow::StoreRecentFile(const QString& filename) {
 ErrEulaResult GMainWindow::ErrEulaCallback(const ErrEulaConfig& config) {
     switch (config.error_type) {
     case ErrEulaErrorType::ErrorCode:
-        QMessageBox::critical(this, tr("ErrEula"), tr("Error Code: %1").arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code))));
+        QMessageBox::critical(this, tr("ErrEula"),
+                              tr("Error Code: %1")
+                                  .arg(QString::fromStdString(
+                                      Common::StringFromFormat("0x%08X", config.error_code))));
         break;
     case ErrEulaErrorType::LocalizedErrorText:
     case ErrEulaErrorType::ErrorText: {
         std::string error = Common::UTF16ToUTF8(config.error_text);
-        QMessageBox::critical(this, tr("ErrEula"), tr("Error Code: %1\n\n%2").arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code)), QString::fromStdString(error)));
+        QMessageBox::critical(
+            this, tr("ErrEula"),
+            tr("Error Code: %1\n\n%2")
+                .arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code)),
+                     QString::fromStdString(error)));
         break;
     }
     case ErrEulaErrorType::Agree:
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:
     case ErrEulaErrorType::EulaFirstBoot:
-       QMessageBox::information(this, tr("ErrEula"), tr("Eula accepted"));
-       break;
+        QMessageBox::information(this, tr("ErrEula"), tr("Eula accepted"));
+        break;
     }
 
     return ErrEulaResult::Success;

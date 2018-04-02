@@ -3,8 +3,8 @@
 // Refer to the license.txt file included.
 
 #include "common/string_util.h"
-#include "core/hle/applets/erreula.h"
 #include "core/core.h"
+#include "core/hle/applets/erreula.h"
 
 namespace HLE {
 namespace Applets {
