@@ -314,8 +314,10 @@ private:
             return "reg_tmp" + index_str;
         case RegisterType::FloatUniform:
             if (address_register_index != 0) {
-                index_str +=
-                    std::string(" + address_registers.") + "xyz"[address_register_index - 1];
+                // The clamp is to prevent out-of-bound access, which has been seen in some games
+                // such as Mario Kart 7.
+                index_str = "clamp(" + index_str + " + address_registers." +
+                            "xyz"[address_register_index - 1] + ", 0, 95)";
             }
             return "uniforms.f[" + index_str + "]";
         default:
