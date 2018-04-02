@@ -5,11 +5,11 @@
 #pragma once
 
 #include <functional>
-#include <map>
-#include <string>
 #include <utility>
+#include <string>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
+#include "core/hle/applets/factory.h"
 #include "core/hle/applets/applet.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
@@ -171,7 +171,7 @@ struct SoftwareKeyboardConfig {
  * The size of this structure (0x400) has been verified via reverse engineering of multiple games
  * that use the software keyboard.
  */
-static_assert(sizeof(SoftwareKeyboardConfig) == 0x400, "Software Keyboard Config size is wrong");
+static_assert(sizeof(SoftwareKeyboardConfig) == 0x400, "SoftwareKeyboardConfig size is wrong");
 
 class SoftwareKeyboard final : public Applet {
 public:
@@ -204,17 +204,11 @@ private:
 using SwkbdCallback =
     std::function<std::pair<std::string, SwkbdResult>(const SoftwareKeyboardConfig&)>;
 
-class SwkbdFactory {
+class SwkbdFactory : public AppletFactory<SwkbdCallback, std::pair<std::string, SwkbdResult>, SoftwareKeyboardConfig> {
 public:
-    ~SwkbdFactory();
-    void Clear();
-    void Register(const std::string& name, SwkbdCallback callback);
-    bool IsRegistered(const std::string& name) const;
-    std::pair<std::string, SwkbdResult> Launch(const std::string& name,
-                                               const SoftwareKeyboardConfig& config);
-
-private:
-    std::map<std::string, SwkbdCallback> callbacks;
+    SwkbdFactory() {
+        default_result = std::make_pair<std::string, SwkbdResult>("", SwkbdResult::None);
+    }
 };
 } // namespace Applets
 } // namespace HLE

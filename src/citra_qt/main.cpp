@@ -673,8 +673,14 @@ void GMainWindow::BootGame(const QString& filename) {
     }
     OnStartGame();
 
-    Core::System::GetInstance().GetSwkbdFactory().Clear();
-    Core::System::GetInstance().GetSwkbdFactory().Register(
+    Core::System::GetInstance().GetAppletFactories().erreula.Clear();
+    Core::System::GetInstance().GetAppletFactories().erreula.Register(
+        "qt", [this](const ErrEulaConfig& config) -> ErrEulaResult {
+            return ErrEulaCallback(config);
+        });
+
+    Core::System::GetInstance().GetAppletFactories().swkbd.Clear();
+    Core::System::GetInstance().GetAppletFactories().swkbd.Register(
         "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
             return SwkbdCallback(config);
         });
@@ -728,6 +734,28 @@ void GMainWindow::StoreRecentFile(const QString& filename) {
     }
 
     UpdateRecentFiles();
+}
+
+ErrEulaResult GMainWindow::ErrEulaCallback(const ErrEulaConfig& config) {
+    switch (config.error_type) {
+    case ErrEulaErrorType::ErrorCode:
+        QMessageBox::critical(this, tr("ErrEula"), tr("Error Code: %1").arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code))));
+        break;
+    case ErrEulaErrorType::LocalizedErrorText:
+    case ErrEulaErrorType::ErrorText: {
+        std::string error = Common::UTF16ToUTF8(config.error_text);
+        QMessageBox::critical(this, tr("ErrEula"), tr("Error Code: %1\n\n%2").arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code)), QString::fromStdString(error)));
+        break;
+    }
+    case ErrEulaErrorType::Agree:
+    case ErrEulaErrorType::Eula:
+    case ErrEulaErrorType::EulaDrawOnly:
+    case ErrEulaErrorType::EulaFirstBoot:
+       QMessageBox::information(this, tr("ErrEula"), tr("Eula accepted"));
+       break;
+    }
+
+    return ErrEulaResult::Success;
 }
 
 std::pair<std::string, SwkbdResult> GMainWindow::SwkbdCallback(

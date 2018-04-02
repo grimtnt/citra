@@ -147,7 +147,7 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
         cpu_core = std::make_unique<ARM_DynCom>(USER32MODE);
     }
 
-    swkbd_factory = std::make_unique<HLE::Applets::SwkbdFactory>();
+    applet_factories = std::make_unique<AppletFactories>();
 
     dsp_core = std::make_unique<AudioCore::DspHle>();
     dsp_core->SetSink(Settings::values.sink_id);
@@ -196,7 +196,7 @@ void System::Shutdown() {
     cpu_core = nullptr;
     CoreTiming::Shutdown();
     app_loader = nullptr;
-    swkbd_factory = nullptr;
+    applet_factories = nullptr;
 
     if (auto room_member = Network::GetRoomMember().lock()) {
         Network::GameInfo game_info{};

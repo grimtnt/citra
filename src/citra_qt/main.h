@@ -12,6 +12,7 @@
 #include "common/announce_multiplayer_room.h"
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
+#include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/service/am/am.h"
 #include "network/network.h"
@@ -109,6 +110,7 @@ private:
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
+    ErrEulaResult ErrEulaCallback(const ErrEulaConfig& config);
     std::pair<std::string, SwkbdResult> SwkbdCallback(const SoftwareKeyboardConfig& config);
     void SyncMenuUISettings();
     void RestoreUIState();

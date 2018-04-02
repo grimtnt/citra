@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include "common/common_types.h"
+#include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/loader/loader.h"
 #include "core/memory.h"
@@ -21,6 +22,11 @@ class DspInterface;
 }
 
 namespace Core {
+
+struct AppletFactories {
+    HLE::Applets::ErrEulaFactory erreula;
+    HLE::Applets::SwkbdFactory swkbd;
+};
 
 class System {
 public:
@@ -133,8 +139,8 @@ public:
         return *app_loader;
     }
 
-    HLE::Applets::SwkbdFactory& GetSwkbdFactory() const {
-        return *swkbd_factory;
+    AppletFactories& GetAppletFactories() const {
+        return *applet_factories;
     }
 
 private:
@@ -152,8 +158,8 @@ private:
     /// AppLoader used to load the current executing application
     std::unique_ptr<Loader::AppLoader> app_loader;
 
-    /// Software keyboard factory
-    std::unique_ptr<HLE::Applets::SwkbdFactory> swkbd_factory;
+    /// Applet factories
+    std::unique_ptr<AppletFactories> applet_factories;
 
     ///< ARM11 CPU core
     std::unique_ptr<ARM_Interface> cpu_core;

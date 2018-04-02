@@ -5,9 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstring>
-#include <functional>
 #include <iostream>
-#include <string>
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -193,8 +191,8 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 
 void SoftwareKeyboard::Update() {
     if (Settings::values.swkbd_mode == Settings::SwkbdMode::Qt &&
-        Core::System::GetInstance().GetSwkbdFactory().IsRegistered("qt")) {
-        auto res = Core::System::GetInstance().GetSwkbdFactory().Launch("qt", config);
+        Core::System::GetInstance().GetAppletFactories().swkbd.IsRegistered("qt")) {
+        auto res = Core::System::GetInstance().GetAppletFactories().swkbd.Launch("qt", config);
         std::u16string utf16_input = Common::UTF8ToUTF16(res.first);
         memcpy(text_memory->GetPointer(), utf16_input.c_str(),
                utf16_input.length() * sizeof(char16_t));
@@ -298,31 +296,6 @@ void SoftwareKeyboard::Finalize() {
     SendParameter(message);
 
     is_running = false;
-}
-
-SwkbdFactory::~SwkbdFactory() {
-    Clear();
-}
-
-void SwkbdFactory::Clear() {
-    callbacks.clear();
-}
-
-void SwkbdFactory::Register(const std::string& name, SwkbdCallback callback) {
-    callbacks.emplace(std::move(name), std::move(callback));
-}
-
-bool SwkbdFactory::IsRegistered(const std::string& name) const {
-    auto it = callbacks.find(name);
-    return it != callbacks.end();
-}
-
-std::pair<std::string, SwkbdResult> SwkbdFactory::Launch(const std::string& name,
-                                                         const SoftwareKeyboardConfig& config) {
-    auto it = callbacks.find(name);
-    if (it != callbacks.end())
-        return it->second(config);
-    return std::make_pair("", SwkbdResult::None);
 }
 } // namespace Applets
 } // namespace HLE

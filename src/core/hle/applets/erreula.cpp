@@ -4,7 +4,7 @@
 
 #include "common/string_util.h"
 #include "core/hle/applets/erreula.h"
-#include "core/hle/service/apt/apt.h"
+#include "core/core.h"
 
 namespace HLE {
 namespace Applets {
@@ -49,24 +49,55 @@ ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& param
 ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parameter) {
     is_running = true;
 
-    // TODO(Subv): Set the expected fields in the response buffer before resending it to the
-    // application.
-    // TODO(Subv): Reverse the parameter format for the ErrEula applet
+    ASSERT_MSG(parameter.buffer.size() == sizeof(config),
+               "The size of the parameter (ErrEulaConfig) is wrong");
 
+    std::memcpy(&config, parameter.buffer.data(), parameter.buffer.size());
+
+    return RESULT_SUCCESS;
+}
+
+void ErrEula::Update() {
+    if (Core::System::GetInstance().GetAppletFactories().erreula.IsRegistered("qt")) {
+        auto res = Core::System::GetInstance().GetAppletFactories().erreula.Launch("qt", config);
+        config.result_code = res;
+        Finalize();
+        return;
+    }
+
+    switch (config.error_type) {
+    case ErrEulaErrorType::ErrorCode:
+        NGLOG_INFO(Service_APT, "Error code: {:#010X}", config.error_code);
+        break;
+    case ErrEulaErrorType::LocalizedErrorText:
+    case ErrEulaErrorType::ErrorText: {
+        NGLOG_INFO(Service_APT, "Error code: {:#x}", config.error_code);
+        NGLOG_INFO(Service_APT, "Error text: {}", Common::UTF16ToUTF8(config.error_text));
+        break;
+    }
+    case ErrEulaErrorType::Agree:
+    case ErrEulaErrorType::Eula:
+    case ErrEulaErrorType::EulaDrawOnly:
+    case ErrEulaErrorType::EulaFirstBoot:
+        NGLOG_INFO(Service_APT, "Eula accepted");
+        break;
+    }
+
+    Finalize();
+}
+
+void ErrEula::Finalize() {
     // Let the application know that we're closing
     Service::APT::MessageParameter message;
-    message.buffer.resize(parameter.buffer.size());
-    std::fill(message.buffer.begin(), message.buffer.end(), 0);
+    message.buffer.resize(sizeof(config));
+    config.result_code = ErrEulaResult::None;
+    std::memcpy(message.buffer.data(), &config, message.buffer.size());
     message.signal = Service::APT::SignalType::WakeupByExit;
     message.destination_id = Service::APT::AppletId::Application;
     message.sender_id = id;
     SendParameter(message);
 
     is_running = false;
-    return RESULT_SUCCESS;
 }
-
-void ErrEula::Update() {}
-
 } // namespace Applets
 } // namespace HLE
