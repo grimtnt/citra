@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
-    <height>516</height>
+    <width>409</width>
+    <height>602</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,6 +73,38 @@
                 <string>Qt</string>
                </property>
               </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <item>
+             <widget class="QLabel" name="label_global_log_filter">
+              <property name="text">
+               <string>Global Log Filter</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="log_filter_edit"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QCheckBox" name="toggle_console">
+              <property name="text">
+               <string>Show Log Console (Windows Only)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="open_log_button">
+              <property name="text">
+               <string>Open Log Location</string>
+              </property>
              </widget>
             </item>
            </layout>

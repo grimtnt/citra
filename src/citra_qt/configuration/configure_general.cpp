@@ -2,9 +2,16 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <QDesktopServices>
 #include <QDirIterator>
+#include <QUrl>
 #include "citra_qt/configuration/configure_general.h"
 #include "citra_qt/ui_settings.h"
+#include "citra_qt/util/console.h"
+#include "common/file_util.h"
+#include "common/logging/backend.h"
+#include "common/logging/filter.h"
+#include "common/logging/log.h"
 #include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_general.h"
@@ -37,6 +44,11 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     this->setConfiguration();
 
+    connect(ui->open_log_button, &QPushButton::pressed, []() {
+        QString path = QString::fromStdString(FileUtil::GetUserPath(D_LOGS_IDX));
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    });
+
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
@@ -58,6 +70,10 @@ void ConfigureGeneral::setConfiguration() {
     ui->language_combobox->setCurrentIndex(
         ui->language_combobox->findData(UISettings::values.language));
     ui->swkbd_mode_combobox->setCurrentIndex(static_cast<int>(Settings::values.swkbd_mode));
+
+    ui->toggle_console->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->toggle_console->setChecked(UISettings::values.show_console);
+    ui->log_filter_edit->setText(QString::fromStdString(Settings::values.log_filter));
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -73,6 +89,12 @@ void ConfigureGeneral::applyConfiguration() {
 
     Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
+    UISettings::values.show_console = ui->toggle_console->isChecked();
+    Settings::values.log_filter = ui->log_filter_edit->text().toStdString();
+    Debugger::ToggleConsole();
+    Log::Filter filter;
+    filter.ParseFilterString(Settings::values.log_filter);
+    Log::SetGlobalFilter(filter);
     Settings::Apply();
 }
 
