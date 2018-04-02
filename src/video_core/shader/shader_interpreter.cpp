@@ -260,7 +260,6 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
 
             // Reciprocal
             case OpCode::Id::RCP: {
-                ;
                 float24 rcp_res = float24::FromFloat32(1.0f / src1[0].ToFloat32());
                 for (int i = 0; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
