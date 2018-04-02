@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <utility>
 #include <map>
 #include <string>
 
@@ -10,21 +11,13 @@ namespace Applets {
 template <typename CallbackType, typename ResultType, typename ConfigType>
 class AppletFactory {
 public:
-    ~AppletFactory() {
-        Clear();
-    }
-
-    void Clear() {
-        callbacks.clear();
-    }
-
-    void Register(const std::string& name, CallbackType callback) {
-        callbacks.emplace(std::move(name), std::move(callback));
-    }
-
     bool IsRegistered(const std::string& name) const {
         auto it = callbacks.find(name);
         return it != callbacks.end();
+    }
+
+    void Register(std::string name, CallbackType callback) {
+        callbacks.emplace(std::move(name), std::move(callback));
     }
 
     ResultType Launch(const std::string& name, const ConfigType& config) {
