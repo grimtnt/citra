@@ -74,7 +74,7 @@ private:
     // OpenGL object IDs
     OGLVertexArray vertex_array;
     OGLBuffer vertex_buffer;
-    OGLShader shader;
+    OGLProgram shader;
 
     /// Display information for top-left, top-right, and bottom screens respectively
     std::array<ScreenInfo, 3> screen_infos;

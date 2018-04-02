@@ -98,12 +98,6 @@ RasterizerOpenGL::RasterizerOpenGL() {
         state.texture_units[i].sampler = texture_samplers[i].sampler.handle;
     }
 
-    // Create cubemap texture and sampler objects
-    texture_cube_sampler.Create();
-    state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
-    texture_cube.Create();
-    state.texture_cube_unit.texture_cube = texture_cube.handle;
-
     // Generate VBO, VAO and UBO
     vertex_buffer = OGLStreamBuffer::MakeBuffer(GLAD_GL_ARB_buffer_storage, GL_ARRAY_BUFFER);
     vertex_buffer->Create(VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE / 2);
@@ -267,7 +261,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
         glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer.handle);
 
         vs_default_shader.Create(GLShader::GenerateDefaultVertexShader(true).c_str(), nullptr,
-                                 nullptr, {}, true);
+                                 nullptr, true);
         SetShaderUniformBlockBindings(vs_default_shader.handle);
     }
 
@@ -473,8 +467,9 @@ void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_
 
         VertexShader& cached_shader = vs_shader_cache[vs_program];
         if (cached_shader.shader.handle == 0) {
-            cached_shader.shader.handle =
-                GLShader::LoadProgram(vs_program.c_str(), nullptr, nullptr, {}, true);
+            OGLShader shader;
+            shader.Create(vs_program.c_str(), GL_VERTEX_SHADER);
+            cached_shader.shader.Create(shader.handle, 0, 0, true);
             SetShaderUniformBlockBindings(cached_shader.shader.handle);
         }
         vs_shader_map[vs_config] = &cached_shader;
@@ -495,9 +490,10 @@ void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffe
         const GLShader::PicaGSConfigCommon gs_config(regs);
         GeometryShader& cached_shader = gs_default_shaders[gs_config];
         if (cached_shader.shader.handle == 0) {
-            cached_shader.shader.handle = GLShader::LoadProgram(
-                nullptr, GLShader::GenerateDefaultGeometryShader(gs_config).c_str(), nullptr, {},
-                true);
+            OGLShader shader;
+            shader.Create(GLShader::GenerateDefaultGeometryShader(gs_config).c_str(),
+                          GL_GEOMETRY_SHADER);
+            cached_shader.shader.Create(0, shader.handle, 0, true);
             SetShaderUniformBlockBindings(cached_shader.shader.handle);
         }
         shader = cached_shader.shader.handle;
@@ -515,8 +511,9 @@ void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffe
 
             GeometryShader& cached_shader = gs_shader_cache[gs_program];
             if (cached_shader.shader.handle == 0) {
-                cached_shader.shader.handle =
-                    GLShader::LoadProgram(nullptr, gs_program.c_str(), nullptr, {}, true);
+                OGLShader shader;
+                shader.Create(gs_program.c_str(), GL_GEOMETRY_SHADER);
+                cached_shader.shader.Create(0, shader.handle, 0, true);
                 SetShaderUniformBlockBindings(cached_shader.shader.handle);
             }
             gs_shader_map[gs_config] = &cached_shader;
@@ -694,25 +691,6 @@ void RasterizerOpenGL::DrawTriangles() {
         const auto& texture = pica_textures[texture_index];
 
         if (texture.enabled) {
-            if (texture_index == 0) {
-                using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
-                switch (texture.config.type.Value()) {
-                case TextureType::TextureCube:
-                    using CubeFace = Pica::TexturingRegs::CubeFace;
-                    res_cache.FillTextureCube(
-                        texture_cube.handle, texture,
-                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX),
-                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX),
-                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY),
-                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY),
-                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ),
-                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ));
-                    texture_cube_sampler.SyncWithConfig(texture.config);
-                    state.texture_units[texture_index].texture_2d = 0;
-                    continue; // Texture unit 0 setup finished. Continue to next unit
-                }
-            }
-
             texture_samplers[texture_index].SyncWithConfig(texture.config);
             Surface surface = res_cache.GetTextureSurface(texture);
             if (surface != nullptr) {
@@ -942,7 +920,6 @@ void RasterizerOpenGL::DrawTriangles() {
     state.scissor.enabled = false;
 
     vertex_batch.clear();
-
     accelerate_draw = AccelDraw::Disabled;
 
     // Unbind textures for potential future use as framebuffer attachments
@@ -1702,7 +1679,7 @@ void RasterizerOpenGL::SetShader() {
 
         if (has_ARB_separate_shader_objects) {
             shader.shader.Create(nullptr, nullptr,
-                                 GLShader::GenerateFragmentShader(config, true).c_str(), {}, true);
+                                 GLShader::GenerateFragmentShader(config, true).c_str(), true);
 
             glActiveShaderProgram(pipeline.handle, shader.shader.handle);
         } else {
@@ -1725,10 +1702,6 @@ void RasterizerOpenGL::SetShader() {
         uniform_tex = glGetUniformLocation(shader.shader.handle, "tex2");
         if (uniform_tex != -1) {
             glUniform1i(uniform_tex, TextureUnits::PicaTexture(2).id);
-        }
-        uniform_tex = glGetUniformLocation(shader.shader.handle, "tex_cube");
-        if (uniform_tex != -1) {
-            glUniform1i(uniform_tex, TextureUnits::TextureCube.id);
         }
 
         // Set the texture samplers to correspond to different lookup table texture units

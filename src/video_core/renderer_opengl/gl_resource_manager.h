@@ -96,14 +96,58 @@ public:
         return *this;
     }
 
-    /// Creates a new internal OpenGL resource and stores the handle
-    void Create(const char* vert_shader, const char* geo_shader, const char* frag_shader,
-                const std::vector<const char*>& feedback_vars = {},
+    void Create(const char* source, GLenum type) {
+        if (handle != 0)
+            return;
+        if (source == nullptr)
+            return;
+        handle = GLShader::LoadShader(source, type);
+    }
+
+    void Release() {
+        if (handle == 0)
+            return;
+        glDeleteShader(handle);
+        handle = 0;
+    }
+
+    GLuint handle = 0;
+};
+
+class OGLProgram : private NonCopyable {
+public:
+    OGLProgram() = default;
+
+    OGLProgram(OGLProgram&& o) : handle(std::exchange(o.handle, 0)) {}
+
+    ~OGLProgram() {
+        Release();
+    }
+
+    OGLProgram& operator=(OGLProgram&& o) {
+        Release();
+        handle = std::exchange(o.handle, 0);
+        return *this;
+    }
+
+    void Create(GLuint vert_shader, GLuint geo_shader, GLuint frag_shader,
                 bool separable_program = false) {
         if (handle != 0)
             return;
-        handle = GLShader::LoadProgram(vert_shader, geo_shader, frag_shader, feedback_vars,
-                                       separable_program);
+        handle = GLShader::LoadProgram(separable_program, vert_shader, geo_shader, frag_shader);
+    }
+
+    /// Creates a new internal OpenGL resource and stores the handle
+    void Create(const char* vert_shader, const char* geo_shader, const char* frag_shader,
+                bool separable_program = false) {
+        OGLShader vert, geo, frag;
+        if (vert_shader)
+            vert.Create(vert_shader, GL_VERTEX_SHADER);
+        if (geo_shader)
+            geo.Create(geo_shader, GL_GEOMETRY_SHADER);
+        if (frag_shader)
+            frag.Create(frag_shader, GL_FRAGMENT_SHADER);
+        Create(vert.handle, geo.handle, frag.handle, separable_program);
     }
 
     /// Deletes the internal OpenGL resource
