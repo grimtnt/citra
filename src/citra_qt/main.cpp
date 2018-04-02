@@ -673,12 +673,10 @@ void GMainWindow::BootGame(const QString& filename) {
     }
     OnStartGame();
 
-    Core::System::GetInstance().GetAppletFactories().erreula.Clear();
     Core::System::GetInstance().GetAppletFactories().erreula.Register(
         "qt",
         [this](const ErrEulaConfig& config) -> ErrEulaResult { return ErrEulaCallback(config); });
 
-    Core::System::GetInstance().GetAppletFactories().swkbd.Clear();
     Core::System::GetInstance().GetAppletFactories().swkbd.Register(
         "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
             return SwkbdCallback(config);
