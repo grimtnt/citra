@@ -27,6 +27,7 @@ public:
         return default_result;
     }
 
+protected:
     ResultType default_result;
 
 private:
