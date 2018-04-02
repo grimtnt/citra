@@ -83,6 +83,7 @@ void ErrEula::Update() {
         break;
     }
 
+    config.result_code = ErrEulaResult::Success;
     Finalize();
 }
 
@@ -90,7 +91,6 @@ void ErrEula::Finalize() {
     // Let the application know that we're closing
     Service::APT::MessageParameter message;
     message.buffer.resize(sizeof(config));
-    config.result_code = ErrEulaResult::None;
     std::memcpy(message.buffer.data(), &config, message.buffer.size());
     message.signal = Service::APT::SignalType::WakeupByExit;
     message.destination_id = Service::APT::AppletId::Application;
