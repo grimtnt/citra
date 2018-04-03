@@ -273,7 +273,6 @@ RasterizerOpenGL::RasterizerOpenGL() {
 
     // Sync fixed function OpenGL state
     SyncClipEnabled();
-    SyncClipCoef();
     SyncCullMode();
     SyncBlendEnabled();
     SyncBlendFuncs();
@@ -284,6 +283,30 @@ RasterizerOpenGL::RasterizerOpenGL() {
     SyncColorWriteMask();
     SyncStencilWriteMask();
     SyncDepthWriteMask();
+
+    // Sync uniforms
+    SyncClipCoef();
+    SyncDepthScale();
+    SyncDepthOffset();
+    SyncAlphaTest();
+    SyncCombinerColor();
+    auto& tev_stages = Pica::g_state.regs.texturing.GetTevStages();
+    for (std::size_t index = 0; index < tev_stages.size(); ++index)
+        SyncTevConstColor(index, tev_stages[index]);
+
+    SyncGlobalAmbient();
+    for (unsigned light_index = 0; light_index < 8; light_index++) {
+        SyncLightSpecular0(light_index);
+        SyncLightSpecular1(light_index);
+        SyncLightDiffuse(light_index);
+        SyncLightAmbient(light_index);
+        SyncLightPosition(light_index);
+        SyncLightDistanceAttenuationBias(light_index);
+        SyncLightDistanceAttenuationScale(light_index);
+    }
+
+    SyncFogColor();
+    SyncProcTexNoise();
 }
 
 RasterizerOpenGL::~RasterizerOpenGL() {
@@ -1736,30 +1759,6 @@ void RasterizerOpenGL::SetShader() {
         }
 
         SetShaderUniformBlockBindings(shader.shader.handle);
-
-        // TODO: why is this here ???
-        // Update uniforms
-        SyncDepthScale();
-        SyncDepthOffset();
-        SyncAlphaTest();
-        SyncCombinerColor();
-        auto& tev_stages = Pica::g_state.regs.texturing.GetTevStages();
-        for (int index = 0; index < tev_stages.size(); ++index)
-            SyncTevConstColor(index, tev_stages[index]);
-
-        SyncGlobalAmbient();
-        for (int light_index = 0; light_index < 8; light_index++) {
-            SyncLightSpecular0(light_index);
-            SyncLightSpecular1(light_index);
-            SyncLightDiffuse(light_index);
-            SyncLightAmbient(light_index);
-            SyncLightPosition(light_index);
-            SyncLightDistanceAttenuationBias(light_index);
-            SyncLightDistanceAttenuationScale(light_index);
-        }
-
-        SyncFogColor();
-        SyncProcTexNoise();
     }
 }
 
