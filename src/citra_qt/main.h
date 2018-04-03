@@ -19,7 +19,6 @@
 #include "ui_main.h"
 
 class AboutDialog;
-class CheatDialog;
 class CheatSearch;
 class Config;
 class ControlPanel;
@@ -242,7 +241,6 @@ private:
     Network::RoomMember::CallbackHandle<Network::RoomMember::State> state_callback_handle;
 
     std::shared_ptr<ControlPanel> controlPanel;
-    std::shared_ptr<CheatDialog> cheatWindow;
     std::shared_ptr<CheatSearch> cheatSearchWindow;
 
     QAction* actions_recent_files[max_recent_files_item];

@@ -4,6 +4,8 @@
 #include <QLineEdit>
 #include <QTableWidgetItem>
 #include "citra_qt/cheat_gui.h"
+#include "common/string_util.h"
+#include "core/hle/kernel/process.h"
 #include "ui_cheat_gui.h"
 
 CheatDialog::CheatDialog(QWidget* parent)
@@ -21,6 +23,9 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->textDetails->setEnabled(false);
+    ui->labelTitle->setText(tr("Title ID: %1")
+                                .arg(QString::fromStdString(Common::StringFromFormat(
+                                    "%016llX", Kernel::g_current_process->codeset->program_id))));
 
     connect(ui->buttonClose, &QPushButton::clicked, this, &CheatDialog::OnCancel);
     connect(ui->buttonNewCheat, &QPushButton::clicked, this, &CheatDialog::OnAddCheat);

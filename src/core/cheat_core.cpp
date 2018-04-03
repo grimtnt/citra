@@ -38,9 +38,16 @@ void RefreshCheats() {
 
 namespace CheatEngine {
 static std::string GetFilePath() {
-    return FileUtil::GetUserPath(D_USER_IDX) + "cheats.txt";
+    return FileUtil::GetUserPath(D_USER_IDX) + "cheats" + DIR_SEP +
+           Common::StringFromFormat("%016llX", Kernel::g_current_process->codeset->program_id) +
+           ".txt";
 }
+
 CheatEngine::CheatEngine() {
+    std::string cheats_dir = FileUtil::GetUserPath(D_USER_IDX) + "cheats";
+    if (!FileUtil::Exists(cheats_dir)) {
+        FileUtil::CreateDir(cheats_dir);
+    }
     const auto file_path = GetFilePath();
     if (!FileUtil::Exists(file_path))
         FileUtil::CreateEmptyFile(file_path);

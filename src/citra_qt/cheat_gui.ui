@@ -19,13 +19,13 @@
   <property name="windowTitle">
    <string>Cheats</string>
   </property>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="labelTitle">
    <property name="geometry">
     <rect>
      <x>9</x>
-     <y>40</y>
-     <width>162</width>
-     <height>18</height>
+     <y>35</y>
+     <width>175</width>
+     <height>25</height>
     </rect>
    </property>
    <property name="font">
@@ -34,7 +34,7 @@
     </font>
    </property>
    <property name="text">
-    <string>The cheats are for all titles.</string>
+    <string>Title ID:</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>

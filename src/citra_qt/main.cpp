@@ -1219,9 +1219,8 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnCheats() {
-    if (cheatWindow == nullptr)
-        cheatWindow = std::make_shared<CheatDialog>(this);
-    cheatWindow->show();
+    CheatDialog d;
+    d.exec();
 }
 
 void GMainWindow::OnCheatSearch() {
