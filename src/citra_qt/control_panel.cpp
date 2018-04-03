@@ -4,7 +4,6 @@
 
 #include <QCheckBox>
 #include <QComboBox>
-
 #include "control_panel.h"
 #include "core/hle/shared_page.h"
 #include "core/settings.h"
