@@ -1,5 +1,5 @@
 $progressPreference = 'silentlyContinue'
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 Write-Host "Updating to latest unstable version..."
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valentinvanelslande/citra/master/updater.ps1" -OutFile "updater.ps1"
 cls
