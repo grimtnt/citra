@@ -44,7 +44,7 @@ struct ErrEulaConfig {
     bool software_reset;
     bool app_jump;
     INSERT_PADDING_BYTES(137);
-    ErrEulaResult result_code;
+    ErrEulaResult return_code;
     u16 eula_version;
     INSERT_PADDING_BYTES(10);
 };
