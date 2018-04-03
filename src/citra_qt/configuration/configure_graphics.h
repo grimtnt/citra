@@ -23,7 +23,6 @@ public:
 
 private slots:
     void UpdateRenderer(int val);
-    void showLayoutBackgroundDialog();
 
 private:
     void setConfiguration();
