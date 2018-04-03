@@ -45,11 +45,11 @@ public:
     }
 
 protected:
-    /// The result of Launch if the callback was not found
+    /// Result of Launch if the callback was not found
     ResultType default_result;
 
 private:
-    /// The registered callbacks
+    /// Registered callbacks
     std::map<std::string, CallbackType> callbacks;
 };
 } // namespace Applets
