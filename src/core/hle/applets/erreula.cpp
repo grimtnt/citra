@@ -60,7 +60,7 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 void ErrEula::Update() {
     if (Core::System::GetInstance().GetAppletFactories().erreula.IsRegistered("qt")) {
         auto res = Core::System::GetInstance().GetAppletFactories().erreula.Launch("qt", config);
-        config.result_code = res;
+        config.return_code = res;
         Finalize();
         return;
     }
@@ -83,7 +83,7 @@ void ErrEula::Update() {
         break;
     }
 
-    config.result_code = ErrEulaResult::Success;
+    config.return_code = ErrEulaResult::Success;
     Finalize();
 }
 
