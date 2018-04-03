@@ -448,7 +448,7 @@ private:
     OGLBuffer vs_uniform_buffer;
     ShaderDoubleCache<GLShader::PicaVSConfig, &GLShader::GenerateVertexShader, GL_VERTEX_SHADER>
         vs_shader_cache;
-    OGLProgram vs_default_shader;
+    DefaultVertexShader vs_default_shader;
 
     void SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_offset);
 
