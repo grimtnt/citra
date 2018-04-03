@@ -28,7 +28,8 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
         QColor new_color = QColorDialog::getColor(bg_color, this);
         if (new_color.isValid()) {
             bg_color = new_color;
-            ui->layout_bg->setStyleSheet(QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
+            ui->layout_bg->setStyleSheet(
+                QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
         }
     });
 }
@@ -44,9 +45,9 @@ void ConfigureGraphics::setConfiguration() {
     ui->resolution_factor_combobox->setCurrentIndex(Settings::values.resolution_factor);
     ui->toggle_vsync->setChecked(Settings::values.use_vsync);
     ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
-    bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green,
-                     Settings::values.bg_blue);
-    ui->layout_bg->setStyleSheet(QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
+    bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue);
+    ui->layout_bg->setStyleSheet(
+        QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
     ui->frame_limit->setValue(Settings::values.frame_limit);
     ui->layout_combobox->setCurrentIndex(static_cast<int>(Settings::values.layout_option));
     ui->swap_screen->setChecked(Settings::values.swap_screen);
