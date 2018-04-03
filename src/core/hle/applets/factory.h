@@ -8,8 +8,10 @@
 namespace HLE {
 namespace Applets {
 
-// Factory class for applets.
 template <typename CallbackType, typename ResultType, typename ConfigType>
+/**
+ * @brief Factory class for applets
+ */
 class AppletFactory {
 public:
     /**
