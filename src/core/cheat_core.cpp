@@ -16,6 +16,8 @@ static const CoreTiming::EventType* tick_event;
 static std::unique_ptr<CheatEngine::CheatEngine> cheat_engine;
 
 static void CheatTickCallback(u64, int cycles_late) {
+    if (cheat_engine == nullptr)
+        cheat_engine = std::make_unique<CheatEngine::CheatEngine>();
     cheat_engine->Run();
     CoreTiming::ScheduleEvent(frame_ticks - cycles_late, tick_event);
 }
@@ -25,13 +27,11 @@ void Init() {
     if (!FileUtil::Exists(cheats_dir)) {
         FileUtil::CreateDir(cheats_dir);
     }
-    cheat_engine = std::make_unique<CheatEngine::CheatEngine>();
     tick_event = CoreTiming::RegisterEvent("CheatCore::tick_event", CheatTickCallback);
     CoreTiming::ScheduleEvent(frame_ticks, tick_event);
 }
 
 void Shutdown() {
-    cheat_engine = nullptr;
     CoreTiming::UnscheduleEvent(tick_event, 0);
 }
 
