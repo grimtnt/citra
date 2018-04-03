@@ -71,6 +71,7 @@ private:
 
 using ErrEulaCallback = std::function<ErrEulaResult(const ErrEulaConfig&)>;
 
+// Factory class for ErrEula applet
 class ErrEulaFactory : public AppletFactory<ErrEulaCallback, ErrEulaResult, ErrEulaConfig> {
 public:
     ErrEulaFactory() {

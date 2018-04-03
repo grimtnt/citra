@@ -204,6 +204,7 @@ private:
 using SwkbdCallback =
     std::function<std::pair<std::string, SwkbdResult>(const SoftwareKeyboardConfig&)>;
 
+// Factory class for swkbd applet
 class SwkbdFactory : public AppletFactory<SwkbdCallback, std::pair<std::string, SwkbdResult>,
                                           SoftwareKeyboardConfig> {
 public:
