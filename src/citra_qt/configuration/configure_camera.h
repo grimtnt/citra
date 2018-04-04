@@ -5,7 +5,6 @@
 #pragma once
 
 #include <array>
-
 #include "core/frontend/camera/factory.h"
 #include "core/frontend/camera/interface.h"
 
