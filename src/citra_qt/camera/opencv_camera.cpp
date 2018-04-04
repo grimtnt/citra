@@ -111,7 +111,7 @@ void OpenCVCamera::OnServiceStopped() {
     }
 }
 
-bool OpenCVCamera::CanReceiveFrame() {
+bool OpenCVCamera::IsPreviewAvailable() {
     StartCapture();
     bool ret = capture.isOpened();
     StopCapture();
