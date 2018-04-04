@@ -43,7 +43,7 @@ public:
     void OnServicePaused() override;
     void OnServiceResumed() override;
     void OnServiceStopped() override;
-    bool CanReceiveFrame() override;
+    bool IsPreviewAvailable() override;
 
 private:
     QCamera* camera;
