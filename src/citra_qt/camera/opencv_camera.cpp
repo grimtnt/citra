@@ -25,11 +25,11 @@ void OpenCVCamera::StartCapture() {
     } else {
         capture.open(config);
     }
-};
+}
 
 void OpenCVCamera::StopCapture() {
     capture.release();
-};
+}
 
 void OpenCVCamera::SetFormat(Service::CAM::OutputFormat output_format) {
     output_rgb = output_format == Service::CAM::OutputFormat::RGB565;
@@ -63,7 +63,7 @@ void OpenCVCamera::SetResolution(const Service::CAM::Resolution& resolution) {
     height = resolution.height;
     capture.set(cv::CAP_PROP_FRAME_WIDTH, width);
     capture.set(cv::CAP_PROP_FRAME_HEIGHT, height);
-};
+}
 
 void OpenCVCamera::SetFlip(Service::CAM::Flip flip) {
     using namespace Service::CAM;
