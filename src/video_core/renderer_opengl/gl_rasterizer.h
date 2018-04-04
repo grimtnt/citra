@@ -331,6 +331,9 @@ private:
         GLvec3 view;
     };
 
+    /// Syncs entire status to match PICA registers
+    void SyncEntireState();
+
     /// Syncs the clip enabled status to match the PICA register
     void SyncClipEnabled();
 
