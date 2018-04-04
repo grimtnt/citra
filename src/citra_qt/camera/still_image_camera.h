@@ -23,7 +23,7 @@ public:
     void SetFormat(Service::CAM::OutputFormat) override;
     void SetFrameRate(Service::CAM::FrameRate frame_rate) override {}
     std::vector<u16> ReceiveFrame() override;
-    bool CanReceiveFrame() override;
+    bool IsPreviewAvailable() override;
 
 private:
     QImage image;
