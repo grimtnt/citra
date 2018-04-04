@@ -15,30 +15,52 @@
 #include "ui_configure_camera.h"
 
 #ifdef ENABLE_OPENCV_CAMERA
-const std::map<QString, std::vector<QString>> Implementations = {
-    /* blank */ {QObject::tr("Blank"), {"blank"}},
-    /* still image */ {QObject::tr("Still Image"), {"image"}},
-    /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {"opencv"}},
+enum class ImageSource {
+    Blank,
+    StillImage,
+    Video, // Video & Image Sequence
+    SystemCamera,
+};
+const std::map<ImageSource, QString> Names = {
+    {ImageSource::Blank, QObject::tr("Blank")},
+    {ImageSource::StillImage, QObject::tr("Still Image")},
+    {ImageSource::Video, QObject::tr("Video & Image Sequence")},
+    {ImageSource::SystemCamera, QObject::tr("System Camera")},
+};
+const std::map<ImageSource, std::vector<QString>> Implementations = {
+    {ImageSource::Blank, {"blank"}},
+    {ImageSource::StillImage, {"image"}},
+    {ImageSource::Video, {"opencv"}},
 #ifdef ENABLE_QT_CAMERA
-    /* system camera */ {QObject::tr("System Camera"), {"opencv", "qt"}},
+    {ImageSource::SystemCamera, {"opencv", "qt"}},
 #else
-    /* system camera */ {QObject::tr("System Camera"), {"opencv"}},
+    {ImageSource::SystemCamera, {"opencv"}},
 #endif
 };
 #else
-const std::map<QString, std::vector<QString>> Implementations = {
-    /* blank */ {QObject::tr("Blank"), {"blank"}},
-    /* still image */ {QObject::tr("Still Image"), {"image"}},
-    /* video & image sequence */ {QObject::tr("Video & Image Sequence"), {}},
+enum class ImageSource {
+    Blank,
+    StillImage,
+    SystemCamera,
+};
+const std::map<ImageSource, QString> Names = {
+    {ImageSource::Blank, QObject::tr("Blank")},
+    {ImageSource::StillImage, QObject::tr("Still Image")},
+    {ImageSource::SystemCamera, QObject::tr("System Camera")},
+};
+const std::map<ImageSource, std::vector<QString>> Implementations = {
+    {ImageSource::Blank, {"blank"}},
+    {ImageSource::StillImage, {"image"}},
 #ifdef ENABLE_QT_CAMERA
-    /* system camera */ {QObject::tr("System Camera"), {"qt"}},
+    {ImageSource::SystemCamera, {"qt"}},
 #else
-    /* system camera */ {QObject::tr("System Camera"), {}},
+    {ImageSource::SystemCamera, {}},
 #endif
 };
 #endif
 
-ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureCamera) {
+ConfigureCamera::ConfigureCamera(QWidget* parent)
+    : QWidget(parent), ui(std::make_unique<Ui::ConfigureCamera>()) {
     ui->setupUi(this);
     ui->preview_box->setHidden(true);
     connect(ui->camera_selection,
@@ -48,10 +70,9 @@ ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::
     camera_config = Settings::values.camera_config;
     for (auto pair : Implementations) {
         if (!pair.second.empty()) {
-            ui->image_source->addItem(pair.first);
+            ui->image_source->addItem(Names.at(pair.first));
         }
     }
-
     setConfiguration();
     connectEvents();
 }
@@ -76,32 +97,40 @@ void ConfigureCamera::connectEvents() {
 }
 
 void ConfigureCamera::setUiDisplay() {
-    QString image_source = ui->image_source->currentText();
-    if (image_source == tr("Blank") || image_source == tr("System Camera")) {
+    ImageSource image_source = static_cast<ImageSource>(ui->image_source->currentIndex());
+    switch (image_source) {
+    case ImageSource::Blank:
+    case ImageSource::SystemCamera:
         ui->prompt_before_load->setHidden(true);
         ui->prompt_before_load->setChecked(false);
         ui->camera_file_label->setHidden(true);
         ui->camera_file->setHidden(true);
         ui->camera_file->setText("");
         ui->toolButton->setHidden(true);
-    } else if (image_source == tr("Still Image")) {
+        break;
+    case ImageSource::StillImage:
         ui->prompt_before_load->setHidden(false);
         ui->camera_file_label->setHidden(false);
         ui->camera_file->setHidden(false);
         ui->toolButton->setHidden(false);
-    } else if (image_source == tr("Video & Image Sequence")) {
+        break;
+#ifdef ENABLE_OPENCV_CAMERA
+    case ImageSource::Video:
         ui->prompt_before_load->setHidden(true);
         ui->prompt_before_load->setChecked(false);
         ui->camera_file_label->setHidden(false);
         ui->camera_file->setHidden(false);
         ui->toolButton->setHidden(false);
-    } else {
+        break;
+#endif
+    default:
         LOG_ERROR(Frontend, "Error: unknown image source");
     }
 
     // Get the implementations
     ui->implementation->clear();
-    for (auto implementation : Implementations.at(ui->image_source->currentText())) {
+    for (auto implementation :
+         Implementations.at(static_cast<ImageSource>(ui->image_source->currentIndex()))) {
         ui->implementation->addItem(implementation);
     }
 
@@ -197,16 +226,15 @@ void ConfigureCamera::onToolButtonClicked() {
     QString filter;
     if (camera_name[camera_selection] == "image") {
         QList<QByteArray> types = QImageReader::supportedImageFormats();
-        QList<QString> temp_filters = {};
+        QList<QString> temp_filters;
         for (QByteArray type : types) {
             temp_filters << QString("*." + QString(type));
         }
-
-        filter = tr("Supported image files (") + temp_filters.join(" ") + ")";
+        filter = tr("Supported image files (%1)").arg(temp_filters.join(" "));
     }
 #ifdef ENABLE_OPENCV_CAMERA
     else if (camera_name[camera_selection] == "opencv") {
-        filter = tr("Supported video files (") + "*.mpg *.avi)";
+        filter = tr("Supported video files (*.mpg *.avi)");
     }
 #endif
     QString path = QFileDialog::getOpenFileName(this, tr("Open File"), ".", filter);
