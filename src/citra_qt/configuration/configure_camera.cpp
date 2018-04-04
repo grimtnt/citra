@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <memory>
-
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QImageReader>
