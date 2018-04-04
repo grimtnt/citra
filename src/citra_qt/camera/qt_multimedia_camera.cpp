@@ -30,16 +30,16 @@ QList<QVideoFrame::PixelFormat> QtCameraSurface::supportedPixelFormats(
 }
 
 bool QtCameraSurface::present(const QVideoFrame& frame) {
-    if (frame.isValid()) {
-        QVideoFrame cloneFrame(frame);
-        cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
-        const QImage image(cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
-                           QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
-        current_frame = image.copy();
-        cloneFrame.unmap();
-        return true;
+    if (!frame.isValid()) {
+        return false;
     }
-    return false;
+    QVideoFrame cloneFrame(frame);
+    cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
+    const QImage image(cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
+                       QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
+    current_frame = image.copy();
+    cloneFrame.unmap();
+    return true;
 }
 
 QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) : camera_surface() {
@@ -51,7 +51,6 @@ QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) : camera_
 
 void QtMultimediaCamera::StartCapture() {
     QMetaObject::invokeMethod(QApplication::instance(), [this] { camera->start(); });
-    // camera.start();
 }
 
 void QtMultimediaCamera::StopCapture() {
@@ -96,7 +95,7 @@ void QtMultimediaCamera::OnServiceStopped() {
     camera->stop();
 }
 
-bool QtMultimediaCamera::CanReceiveFrame() {
+bool QtMultimediaCamera::IsPreviewAvailable() {
     return camera->isAvailable();
 }
 
