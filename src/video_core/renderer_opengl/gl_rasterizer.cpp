@@ -270,7 +270,18 @@ RasterizerOpenGL::RasterizerOpenGL() {
     accelerate_draw = AccelDraw::Disabled;
 
     glEnable(GL_BLEND);
+    SyncEntireState();
+}
 
+RasterizerOpenGL::~RasterizerOpenGL() {
+    if (stream_buffer != nullptr) {
+        state.draw.vertex_buffer = stream_buffer->GetHandle();
+        state.Apply();
+        stream_buffer->Release();
+    }
+}
+
+void RasterizerOpenGL::SyncEntireState() {
     // Sync fixed function OpenGL state
     SyncClipEnabled();
     SyncCullMode();
@@ -307,14 +318,6 @@ RasterizerOpenGL::RasterizerOpenGL() {
 
     SyncFogColor();
     SyncProcTexNoise();
-}
-
-RasterizerOpenGL::~RasterizerOpenGL() {
-    if (stream_buffer != nullptr) {
-        state.draw.vertex_buffer = stream_buffer->GetHandle();
-        state.Apply();
-        stream_buffer->Release();
-    }
 }
 
 /**
