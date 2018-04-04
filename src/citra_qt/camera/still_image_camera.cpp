@@ -41,7 +41,7 @@ std::vector<u16> StillImageCamera::ReceiveFrame() {
                                     flip_vertical);
 }
 
-bool StillImageCamera::CanReceiveFrame() {
+bool StillImageCamera::IsPreviewAvailable() {
     return !image.isNull();
 }
 
