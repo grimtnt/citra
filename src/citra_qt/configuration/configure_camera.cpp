@@ -9,7 +9,6 @@
 #include <QImageReader>
 #include <QMessageBox>
 #include <QWidget>
-
 #include "citra_qt/configuration/configure_camera.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
@@ -41,7 +40,6 @@ const std::map<QString, std::vector<QString>> Implementations = {
 #endif
 
 ConfigureCamera::ConfigureCamera(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureCamera) {
-
     ui->setupUi(this);
     ui->preview_box->setHidden(true);
     connect(ui->camera_selection,
