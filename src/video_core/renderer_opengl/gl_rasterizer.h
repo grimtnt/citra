@@ -36,6 +36,7 @@ struct ScreenInfo;
 
 // TODO(wwylele): deal with this
 static void SetShaderUniformBlockBindings(GLuint shader);
+static void SetShaderSamplerBindings(GLuint shader);
 
 enum class Separable {
     No,
@@ -67,6 +68,7 @@ public:
         shader.Create(source, type);
         program.Create(true, shader.handle);
         SetShaderUniformBlockBindings(program.handle);
+        SetShaderSamplerBindings(program.handle);
     }
     GLuint GetHandle() const {
         return program.handle;
@@ -171,6 +173,10 @@ using FixedGeometryShaders =
 template <Separable separable>
 using GeometryShaders =
     ComposeShaderGetter<ProgrammableGeometryShaders<separable>, FixedGeometryShaders<separable>>;
+
+template <Separable separable>
+using FragmentShaders = ShaderCache<separable, GLShader::PicaShaderConfig,
+                                    &GLShader::GenerateFragmentShader, GL_FRAGMENT_SHADER>;
 
 class RasterizerOpenGL : public VideoCore::RasterizerInterface {
 public:
@@ -446,6 +452,9 @@ private:
     std::unordered_map<GLShader::PicaShaderConfig, PicaShader> shader_cache;
     const PicaShader* current_shader = nullptr;
     bool shader_dirty;
+
+    FragmentShaders<Separable::Yes> fragment_shaders;
+    GLuint current_fragment_shader; // temporary
 
     struct {
         UniformData data;
