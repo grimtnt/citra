@@ -27,102 +27,6 @@
 using PixelFormat = SurfaceParams::PixelFormat;
 using SurfaceType = SurfaceParams::SurfaceType;
 
-enum class UniformBindings : GLuint { Common, VS, GS };
-
-static void SetShaderUniformBlockBinding(GLuint shader, const char* name, UniformBindings binding,
-                                         size_t expected_size) {
-    GLuint ub_index = glGetUniformBlockIndex(shader, name);
-    if (ub_index != GL_INVALID_INDEX) {
-        GLint ub_size = 0;
-        glGetActiveUniformBlockiv(shader, ub_index, GL_UNIFORM_BLOCK_DATA_SIZE, &ub_size);
-        ASSERT_MSG(ub_size == expected_size,
-                   "Uniform block size did not match! Got %d, expected %zu",
-                   static_cast<int>(ub_size), expected_size);
-        glUniformBlockBinding(shader, ub_index, static_cast<GLuint>(binding));
-    }
-}
-
-static void SetShaderUniformBlockBindings(GLuint shader) {
-    SetShaderUniformBlockBinding(shader, "shader_data", UniformBindings::Common,
-                                 sizeof(RasterizerOpenGL::UniformData));
-    SetShaderUniformBlockBinding(shader, "vs_config", UniformBindings::VS,
-                                 sizeof(RasterizerOpenGL::VSUniformData));
-    SetShaderUniformBlockBinding(shader, "gs_config", UniformBindings::GS,
-                                 sizeof(RasterizerOpenGL::GSUniformData));
-}
-
-static void SetShaderSamplerBindings(GLuint shader) {
-    OpenGLState cur_state = OpenGLState::GetCurState();
-    GLuint old_program = std::exchange(cur_state.draw.shader_program, shader);
-    cur_state.Apply();
-
-    // Set the texture samplers to correspond to different texture units+    GLint uniform_tex = glGetUniformLocation(shader, "tex0");
-    if (uniform_tex != -1) {
-        glUniform1i(uniform_tex, TextureUnits::PicaTexture(0).id);
-    }
-    uniform_tex = glGetUniformLocation(shader, "tex1");
-    if (uniform_tex != -1) {
-        glUniform1i(uniform_tex, TextureUnits::PicaTexture(1).id);
-    }
-    uniform_tex = glGetUniformLocation(shader, "tex2");
-    if (uniform_tex != -1) {
-        glUniform1i(uniform_tex, TextureUnits::PicaTexture(2).id);
-    }
-
-    // Set the texture samplers to correspond to different lookup table texture units
-    GLint uniform_lut = glGetUniformLocation(shader, "lighting_lut");
-    if (uniform_lut != -1) {
-        glUniform1i(uniform_lut, TextureUnits::LightingLUT.id);
-    }
-
-    GLint uniform_fog_lut = glGetUniformLocation(shader, "fog_lut");
-    if (uniform_fog_lut != -1) {
-        glUniform1i(uniform_fog_lut, TextureUnits::FogLUT.id);
-    }
-
-    GLint uniform_proctex_noise_lut = glGetUniformLocation(shader, "proctex_noise_lut");
-    if (uniform_proctex_noise_lut != -1) {
-        glUniform1i(uniform_proctex_noise_lut, TextureUnits::ProcTexNoiseLUT.id);
-    }
-
-    GLint uniform_proctex_color_map = glGetUniformLocation(shader, "proctex_color_map");
-    if (uniform_proctex_color_map != -1) {
-        glUniform1i(uniform_proctex_color_map, TextureUnits::ProcTexColorMap.id);
-    }
-
-    GLint uniform_proctex_alpha_map = glGetUniformLocation(shader, "proctex_alpha_map");
-    if (uniform_proctex_alpha_map != -1) {
-        glUniform1i(uniform_proctex_alpha_map, TextureUnits::ProcTexAlphaMap.id);
-    }
-
-    GLint uniform_proctex_lut = glGetUniformLocation(shader, "proctex_lut");
-    if (uniform_proctex_lut != -1) {
-        glUniform1i(uniform_proctex_lut, TextureUnits::ProcTexLUT.id);
-    }
-
-    GLint uniform_proctex_diff_lut = glGetUniformLocation(shader, "proctex_diff_lut");
-    if (uniform_proctex_diff_lut != -1) {
-        glUniform1i(uniform_proctex_diff_lut, TextureUnits::ProcTexDiffLUT.id);
-    }
-
-    cur_state.draw.shader_program = old_program;
-    cur_state.Apply();
-}
-
-void RasterizerOpenGL::PicaUniformsData::SetFromRegs(const Pica::ShaderRegs& regs,
-                                                     const Pica::Shader::ShaderSetup& setup) {
-    for (size_t it = 0; it < 16; ++it) {
-        bools[it].b = setup.uniforms.b[it] ? GL_TRUE : GL_FALSE;
-    }
-    for (size_t it = 0; it < 4; ++it) {
-        i[it][0] = regs.int_uniforms[it].x;
-        i[it][1] = regs.int_uniforms[it].y;
-        i[it][2] = regs.int_uniforms[it].z;
-        i[it][3] = regs.int_uniforms[it].w;
-    }
-    std::memcpy(&f[0], &setup.uniforms.f[0], sizeof(f));
-}
-
 RasterizerOpenGL::RasterizerOpenGL() {
     shader_dirty = true;
 
@@ -294,36 +198,34 @@ RasterizerOpenGL::RasterizerOpenGL() {
     glActiveTexture(TextureUnits::ProcTexDiffLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, proctex_diff_lut_buffer.handle);
 
-    if (has_ARB_separate_shader_objects) {
-        hw_vao.Create();
-        hw_vao_enabled_attributes.fill(false);
+    hw_vao.Create();
+    hw_vao_enabled_attributes.fill(false);
 
-        stream_buffer = OGLStreamBuffer::MakeBuffer(has_ARB_buffer_storage, GL_ARRAY_BUFFER);
-        stream_buffer->Create(STREAM_BUFFER_SIZE, STREAM_BUFFER_SIZE / 2);
-        state.draw.vertex_buffer = stream_buffer->GetHandle();
+    stream_buffer = OGLStreamBuffer::MakeBuffer(has_ARB_buffer_storage, GL_ARRAY_BUFFER);
+    stream_buffer->Create(STREAM_BUFFER_SIZE, STREAM_BUFFER_SIZE / 2);
+    state.draw.vertex_buffer = stream_buffer->GetHandle();
 
-        pipeline.Create();
-        vs_input_index_min = 0;
-        vs_input_index_max = 0;
-        state.draw.program_pipeline = pipeline.handle;
-        state.draw.shader_program = 0;
-        state.draw.vertex_array = hw_vao.handle;
-        state.Apply();
+    shader_program_manager =
+        std::make_unique<ShaderProgramManager>(has_ARB_separate_shader_objects);
+    vs_input_index_min = 0;
+    vs_input_index_max = 0;
+    state.draw.shader_program = 0;
+    state.draw.vertex_array = hw_vao.handle;
+    state.Apply();
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, stream_buffer->GetHandle());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, stream_buffer->GetHandle());
 
-        vs_uniform_buffer.Create();
-        glBindBuffer(GL_UNIFORM_BUFFER, vs_uniform_buffer.handle);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(VSUniformData), nullptr, GL_STREAM_COPY);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 1, vs_uniform_buffer.handle);
+    vs_uniform_buffer.Create();
+    glBindBuffer(GL_UNIFORM_BUFFER, vs_uniform_buffer.handle);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(VSUniformData), nullptr, GL_STREAM_COPY);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, vs_uniform_buffer.handle);
 
-        gs_uniform_buffer.Create();
-        glBindBuffer(GL_UNIFORM_BUFFER, gs_uniform_buffer.handle);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(GSUniformData), nullptr, GL_STREAM_COPY);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 2, gs_uniform_buffer.handle);
+    gs_uniform_buffer.Create();
+    glBindBuffer(GL_UNIFORM_BUFFER, gs_uniform_buffer.handle);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(GSUniformData), nullptr, GL_STREAM_COPY);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 2, gs_uniform_buffer.handle);
 
-        glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer.handle);
-    }
+    glBindBuffer(GL_UNIFORM_BUFFER, uniform_buffer.handle);
 
     accelerate_draw = AccelDraw::Disabled;
 
@@ -545,9 +447,7 @@ void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_
     ub_ptr->uniforms.SetFromRegs(Pica::g_state.regs.vs, Pica::g_state.vs);
 
     const GLShader::PicaVSConfig vs_config(Pica::g_state.regs, Pica::g_state.vs);
-    GLuint shader = vertex_shaders.Get(std::tie(vs_config, Pica::g_state.vs));
-
-    glUseProgramStages(pipeline.handle, GL_VERTEX_SHADER_BIT, shader);
+    shader_program_manager->UseVertexShader(std::tie(vs_config, Pica::g_state.vs));
 }
 
 void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffer_offset) {
@@ -557,7 +457,7 @@ void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffe
 
     if (regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::No) {
         const GLShader::PicaGSConfigCommon gs_config(regs);
-        shader = geometry_shaders.Get(gs_config);
+        shader_program_manager->UseGeometryShader(gs_config);
     } else {
         ub_ptr->uniforms.SetFromRegs(Pica::g_state.regs.gs, Pica::g_state.gs);
 
@@ -565,20 +465,11 @@ void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffe
         Pica::g_state.gs.uniforms.b[15] = true;
 
         const GLShader::PicaGSConfig gs_config(regs, Pica::g_state.gs);
-        shader = geometry_shaders.Get(std::tie(gs_config, Pica::g_state.gs));
+        shader_program_manager->UseGeometryShader(std::tie(gs_config, Pica::g_state.gs));
     }
-
-    glUseProgramStages(pipeline.handle, GL_GEOMETRY_SHADER_BIT, shader);
 }
 
 bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
-    if (!has_ARB_separate_shader_objects) {
-        LOG_CRITICAL(Render_OpenGL,
-                     "GL_ARB_separate_shader_objects extension unsupported, disabling HW shaders");
-        Settings::values.hw_shaders = Settings::HwShaders::Off;
-        return false;
-    }
-
     const auto& regs = Pica::g_state.regs;
     if (regs.pipeline.use_gs != Pica::PipelineRegs::UseGS::No) {
         if (regs.pipeline.gs_config.mode != Pica::PipelineRegs::GSMode::Point) {
@@ -835,8 +726,6 @@ void RasterizerOpenGL::DrawTriangles() {
     state.scissor.height = draw_rect.GetHeight();
     state.Apply();
 
-    glUseProgramStages(pipeline.handle,
-                       GL_VERTEX_SHADER_BIT | GL_GEOMETRY_SHADER_BIT | GL_FRAGMENT_SHADER_BIT, 0);
     // Draw the vertex batch
     if (accelerate_draw != AccelDraw::Disabled) {
         GLenum primitive_mode;
@@ -945,7 +834,8 @@ void RasterizerOpenGL::DrawTriangles() {
             copy_buffer(gs_uniform_buffer.handle, gs_ubo_offset, sizeof(GSUniformData));
         }
 
-        glUseProgramStages(pipeline.handle, GL_FRAGMENT_SHADER_BIT, current_shader->shader.handle);
+        shader_program_manager->ApplyTo(state);
+        state.Apply();
 
         if (is_indexed) {
             glDrawRangeElementsBaseVertex(
@@ -958,15 +848,9 @@ void RasterizerOpenGL::DrawTriangles() {
     } else {
         state.draw.vertex_array = sw_vao.handle;
         state.draw.vertex_buffer = vertex_buffer->GetHandle();
-        if (has_ARB_separate_shader_objects) {
-            glUseProgramStages(pipeline.handle, GL_VERTEX_SHADER_BIT,
-                               vertex_shaders.Get(DefaultVertexShaderTag{}));
-            glUseProgramStages(pipeline.handle, GL_GEOMETRY_SHADER_BIT, 0);
-            glUseProgramStages(pipeline.handle, GL_FRAGMENT_SHADER_BIT,
-                               current_shader->shader.handle);
-        } else {
-            state.draw.shader_program = current_shader->shader.handle;
-        }
+        shader_program_manager->UseVertexShader(DefaultVertexShaderTag{});
+        shader_program_manager->UseGeometryShader(DefaultGeometryShaderTag{});
+        shader_program_manager->ApplyTo(state);
         state.Apply();
 
         size_t max_vertices = 3 * (VERTEX_BUFFER_SIZE / (3 * sizeof(HardwareVertex)));
@@ -1731,96 +1615,7 @@ void RasterizerOpenGL::SamplerInfo::SyncWithConfig(
 
 void RasterizerOpenGL::SetShader() {
     auto config = GLShader::PicaShaderConfig::BuildFromRegs(Pica::g_state.regs);
-
-    // Find (or generate) the GLSL shader for the current TEV state
-    auto cached_shader = shader_cache.find(config);
-    if (cached_shader != shader_cache.end()) {
-        current_shader = &cached_shader->second;
-    } else {
-        LOG_DEBUG(Render_OpenGL, "Creating new shader");
-
-        auto& shader = shader_cache.emplace(config, PicaShader{}).first->second;
-        current_shader = &shader;
-
-        if (has_ARB_separate_shader_objects) {
-            shader.shader.CreateFromSource(
-                nullptr, nullptr, GLShader::GenerateFragmentShader(config, true).c_str(), true);
-
-            glActiveShaderProgram(pipeline.handle, shader.shader.handle);
-        } else {
-            shader.shader.CreateFromSource(GLShader::GenerateDefaultVertexShader(false).c_str(),
-                                           nullptr,
-                                           GLShader::GenerateFragmentShader(config, false).c_str());
-        }
-
-        state.draw.shader_program = shader.shader.handle;
-        state.Apply();
-
-        // Set the texture samplers to correspond to different texture units
-        GLint uniform_tex = glGetUniformLocation(shader.shader.handle, "tex0");
-        if (uniform_tex != -1) {
-            glUniform1i(uniform_tex, TextureUnits::PicaTexture(0).id);
-        }
-        uniform_tex = glGetUniformLocation(shader.shader.handle, "tex1");
-        if (uniform_tex != -1) {
-            glUniform1i(uniform_tex, TextureUnits::PicaTexture(1).id);
-        }
-        uniform_tex = glGetUniformLocation(shader.shader.handle, "tex2");
-        if (uniform_tex != -1) {
-            glUniform1i(uniform_tex, TextureUnits::PicaTexture(2).id);
-        }
-        uniform_tex = glGetUniformLocation(shader.shader.handle, "tex_cube");
-        if (uniform_tex != -1) {
-            glUniform1i(uniform_tex, TextureUnits::TextureCube.id);
-        }
-
-        // Set the texture samplers to correspond to different lookup table texture units
-        GLint uniform_lut = glGetUniformLocation(shader.shader.handle, "lighting_lut");
-        if (uniform_lut != -1) {
-            glUniform1i(uniform_lut, TextureUnits::LightingLUT.id);
-        }
-
-        GLint uniform_fog_lut = glGetUniformLocation(shader.shader.handle, "fog_lut");
-        if (uniform_fog_lut != -1) {
-            glUniform1i(uniform_fog_lut, TextureUnits::FogLUT.id);
-        }
-
-        GLint uniform_proctex_noise_lut =
-            glGetUniformLocation(shader.shader.handle, "proctex_noise_lut");
-        if (uniform_proctex_noise_lut != -1) {
-            glUniform1i(uniform_proctex_noise_lut, TextureUnits::ProcTexNoiseLUT.id);
-        }
-
-        GLint uniform_proctex_color_map =
-            glGetUniformLocation(shader.shader.handle, "proctex_color_map");
-        if (uniform_proctex_color_map != -1) {
-            glUniform1i(uniform_proctex_color_map, TextureUnits::ProcTexColorMap.id);
-        }
-
-        GLint uniform_proctex_alpha_map =
-            glGetUniformLocation(shader.shader.handle, "proctex_alpha_map");
-        if (uniform_proctex_alpha_map != -1) {
-            glUniform1i(uniform_proctex_alpha_map, TextureUnits::ProcTexAlphaMap.id);
-        }
-
-        GLint uniform_proctex_lut = glGetUniformLocation(shader.shader.handle, "proctex_lut");
-        if (uniform_proctex_lut != -1) {
-            glUniform1i(uniform_proctex_lut, TextureUnits::ProcTexLUT.id);
-        }
-
-        GLint uniform_proctex_diff_lut =
-            glGetUniformLocation(shader.shader.handle, "proctex_diff_lut");
-        if (uniform_proctex_diff_lut != -1) {
-            glUniform1i(uniform_proctex_diff_lut, TextureUnits::ProcTexDiffLUT.id);
-        }
-
-        if (has_ARB_separate_shader_objects) {
-            state.draw.shader_program = 0;
-            state.Apply();
-        }
-
-        SetShaderUniformBlockBindings(shader.shader.handle);
-    }
+    shader_program_manager->UseFragmentShader(config);
 }
 
 void RasterizerOpenGL::SyncClipEnabled() {

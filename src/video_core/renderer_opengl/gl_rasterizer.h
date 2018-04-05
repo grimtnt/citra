@@ -8,13 +8,10 @@
 #include <cstddef>
 #include <cstring>
 #include <memory>
-#include <tuple>
-#include <unordered_map>
 #include <vector>
 #include <glad/glad.h>
 #include "common/bit_field.h"
 #include "common/common_types.h"
-#include "common/hash.h"
 #include "common/vector_math.h"
 #include "core/hw/gpu.h"
 #include "video_core/pica_state.h"
@@ -26,157 +23,14 @@
 #include "video_core/regs_texturing.h"
 #include "video_core/renderer_opengl/gl_rasterizer_cache.h"
 #include "video_core/renderer_opengl/gl_resource_manager.h"
-#include "video_core/renderer_opengl/gl_shader_gen.h"
+#include "video_core/renderer_opengl/gl_shader_manager.h"
 #include "video_core/renderer_opengl/gl_state.h"
 #include "video_core/renderer_opengl/gl_stream_buffer.h"
 #include "video_core/renderer_opengl/pica_to_gl.h"
 #include "video_core/shader/shader.h"
 
 struct ScreenInfo;
-
-// TODO(wwylele): deal with this
-static void SetShaderUniformBlockBindings(GLuint shader);
-static void SetShaderSamplerBindings(GLuint shader);
-
-enum class Separable {
-    No,
-    Yes,
-};
-
-template <Separable separable>
-class OGLShaderStage;
-
-template <>
-class OGLShaderStage<Separable::No> {
-public:
-    void Create(const char* source, GLenum type) {
-        shader.Create(source, type);
-    }
-    GLuint GetHandle() const {
-        return shader.handle;
-    }
-
-private:
-    OGLShader shader;
-};
-
-template <>
-class OGLShaderStage<Separable::Yes> {
-public:
-    void Create(const char* source, GLenum type) {
-        OGLShader shader;
-        shader.Create(source, type);
-        program.Create(true, shader.handle);
-        SetShaderUniformBlockBindings(program.handle);
-        SetShaderSamplerBindings(program.handle);
-    }
-    GLuint GetHandle() const {
-        return program.handle;
-    }
-
-private:
-    OGLProgram program;
-};
-
-template <class... Ts>
-class ComposeShaderGetter : private Ts... {
-public:
-    using Ts::Get...;
-};
-
-struct DefaultVertexShaderTag {};
-
-template <Separable separable>
-class DefaultVertexShader {
-public:
-    DefaultVertexShader() {
-        program.Create(GLShader::GenerateDefaultVertexShader(separable == Separable::Yes).c_str(),
-                       GL_VERTEX_SHADER);
-    }
-    GLuint Get(DefaultVertexShaderTag) {
-        return program.GetHandle();
-    }
-
-private:
-    OGLShaderStage<separable> program;
-};
-
-template <Separable separable, typename KeyConfigType,
-          std::string (*CodeGenerator)(const KeyConfigType&, bool), GLenum ShaderType>
-class ShaderCache {
-public:
-    GLuint Get(const KeyConfigType& config) {
-        OGLShaderStage<separable>& cached_shader = shaders[config];
-        if (cached_shader.GetHandle() == 0) {
-            cached_shader.Create(CodeGenerator(config, separable == Separable::Yes).c_str(),
-                                 ShaderType);
-        }
-        return cached_shader.GetHandle();
-    }
-
-private:
-    std::unordered_map<KeyConfigType, OGLShaderStage<separable>> shaders;
-};
-
-// TODO(wwylele): beautify this doc
-// This is a shader cache designed for translating PICA shader to GLSL shader.
-// The double cache is needed because diffent KeyConfigType, which includes a hash of the code
-// region (including its leftover unused code) can generate the same GLSL code.
-template <Separable separable, typename KeyConfigType,
-          std::string (*CodeGenerator)(const Pica::Shader::ShaderSetup&, const KeyConfigType&,
-                                       bool),
-          GLenum ShaderType>
-class ShaderDoubleCache {
-public:
-    // Note: the tuple type is intentional, for use of visitor pattern later
-    GLuint Get(std::tuple<const KeyConfigType&, const Pica::Shader::ShaderSetup&> config) {
-        const auto& [key, setup] = config;
-        auto map_it = shader_map.find(key);
-        if (map_it == shader_map.end()) {
-            std::string program = CodeGenerator(setup, key, separable == Separable::Yes);
-
-            OGLShaderStage<separable>& cached_shader = shader_cache[program];
-            if (cached_shader.GetHandle() == 0) {
-                cached_shader.Create(program.c_str(), ShaderType);
-            }
-            shader_map[key] = &cached_shader;
-            return cached_shader.GetHandle();
-        } else {
-            return map_it->second->GetHandle();
-        }
-    }
-
-private:
-    std::unordered_map<KeyConfigType, OGLShaderStage<separable>*> shader_map;
-    std::unordered_map<std::string, OGLShaderStage<separable>> shader_cache;
-};
-
-template <Separable separable>
-using ProgrammableVertexShaders =
-    ShaderDoubleCache<separable, GLShader::PicaVSConfig, &GLShader::GenerateVertexShader,
-                      GL_VERTEX_SHADER>;
-
-template <Separable separable>
-using VertexShaders =
-    ComposeShaderGetter<ProgrammableVertexShaders<separable>, DefaultVertexShader<separable>>;
-
-template <Separable separable>
-using ProgrammableGeometryShaders =
-    ShaderDoubleCache<separable, GLShader::PicaGSConfig, &GLShader::GenerateGeometryShader,
-                      GL_GEOMETRY_SHADER>;
-
-template <Separable separable>
-using FixedGeometryShaders =
-    ShaderCache<separable, GLShader::PicaGSConfigCommon, &GLShader::GenerateDefaultGeometryShader,
-                GL_GEOMETRY_SHADER>;
-
-template <Separable separable>
-using GeometryShaders =
-    ComposeShaderGetter<ProgrammableGeometryShaders<separable>, FixedGeometryShaders<separable>>;
-
-template <Separable separable>
-using FragmentShaders = ShaderCache<separable, GLShader::PicaShaderConfig,
-                                    &GLShader::GenerateFragmentShader, GL_FRAGMENT_SHADER>;
+class ShaderProgramManager;
 
 class RasterizerOpenGL : public VideoCore::RasterizerInterface {
 public:
@@ -197,81 +51,6 @@ public:
     bool AccelerateDisplay(const GPU::Regs::FramebufferConfig& config, PAddr framebuffer_addr,
                            u32 pixel_stride, ScreenInfo& screen_info) override;
     bool AccelerateDrawBatch(bool is_indexed) override;
-
-    /// OpenGL shader generated for a given Pica register state
-    struct PicaShader {
-        /// OpenGL shader resource
-        OGLProgram shader;
-    };
-
-    struct LightSrc {
-        alignas(16) GLvec3 specular_0;
-        alignas(16) GLvec3 specular_1;
-        alignas(16) GLvec3 diffuse;
-        alignas(16) GLvec3 ambient;
-        alignas(16) GLvec3 position;
-        alignas(16) GLvec3 spot_direction; // negated
-        GLfloat dist_atten_bias;
-        GLfloat dist_atten_scale;
-    };
-
-    /// Uniform structure for the Uniform Buffer Object, all vectors must be 16-byte aligned
-    // NOTE: Always keep a vec4 at the end. The GL spec is not clear wether the alignment at
-    //       the end of a uniform block is included in UNIFORM_BLOCK_DATA_SIZE or not.
-    //       Not following that rule will cause problems on some AMD drivers.
-    struct UniformData {
-        GLint framebuffer_scale;
-        GLint alphatest_ref;
-        GLfloat depth_scale;
-        GLfloat depth_offset;
-        GLint scissor_x1;
-        GLint scissor_y1;
-        GLint scissor_x2;
-        GLint scissor_y2;
-        alignas(16) GLvec3 fog_color;
-        alignas(8) GLvec2 proctex_noise_f;
-        alignas(8) GLvec2 proctex_noise_a;
-        alignas(8) GLvec2 proctex_noise_p;
-        alignas(16) GLvec3 lighting_global_ambient;
-        LightSrc light_src[8];
-        alignas(16) GLvec4 const_color[6]; // A vec4 color for each of the six tev stages
-        alignas(16) GLvec4 tev_combiner_buffer_color;
-        alignas(16) GLvec4 clip_coef;
-    };
-
-    static_assert(
-        sizeof(UniformData) == 0x460,
-        "The size of the UniformData structure has changed, update the structure in the shader");
-    static_assert(sizeof(UniformData) < 16384,
-                  "UniformData structure must be less than 16kb as per the OpenGL spec");
-
-    struct PicaUniformsData {
-        void SetFromRegs(const Pica::ShaderRegs& regs, const Pica::Shader::ShaderSetup& setup);
-
-        struct {
-            alignas(16) GLuint b;
-        } bools[16];
-        alignas(16) std::array<GLuvec4, 4> i;
-        alignas(16) std::array<GLvec4, 96> f;
-    };
-
-    struct VSUniformData {
-        PicaUniformsData uniforms;
-    };
-    static_assert(
-        sizeof(VSUniformData) == 1856,
-        "The size of the VSUniformData structure has changed, update the structure in the shader");
-    static_assert(sizeof(VSUniformData) < 16384,
-                  "VSUniformData structure must be less than 16kb as per the OpenGL spec");
-
-    struct GSUniformData {
-        PicaUniformsData uniforms;
-    };
-    static_assert(
-        sizeof(GSUniformData) == 1856,
-        "The size of the GSUniformData structure has changed, update the structure in the shader");
-    static_assert(sizeof(GSUniformData) < 16384,
-                  "GSUniformData structure must be less than 16kb as per the OpenGL spec");
 
 private:
     struct SamplerInfo {
@@ -449,12 +228,7 @@ private:
 
     std::vector<HardwareVertex> vertex_batch;
 
-    std::unordered_map<GLShader::PicaShaderConfig, PicaShader> shader_cache;
-    const PicaShader* current_shader = nullptr;
     bool shader_dirty;
-
-    FragmentShaders<Separable::Yes> fragment_shaders;
-    GLuint current_fragment_shader; // temporary
 
     struct {
         UniformData data;
@@ -468,7 +242,8 @@ private:
         bool dirty;
     } uniform_block_data = {};
 
-    OGLPipeline pipeline;
+    // OGLPipeline pipeline;
+    std::unique_ptr<ShaderProgramManager> shader_program_manager;
     OGLVertexArray sw_vao;
     OGLVertexArray hw_vao;
     std::array<bool, 16> hw_vao_enabled_attributes;
@@ -522,12 +297,10 @@ private:
     void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset);
 
     OGLBuffer vs_uniform_buffer;
-    VertexShaders<Separable::Yes> vertex_shaders;
 
     void SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_offset);
 
     OGLBuffer gs_uniform_buffer;
-    GeometryShaders<Separable::Yes> geometry_shaders;
 
     void SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffer_offset);
 

@@ -1361,6 +1361,7 @@ std::string GenerateVertexShader(const Pica::Shader::ShaderSetup& setup, const P
             .get_value_or("");
 
     out += R"(
+#define uniforms vs_uniforms
 layout (std140) uniform vs_config {
     pica_uniforms uniforms;
 };
@@ -1377,8 +1378,8 @@ layout (std140) uniform vs_config {
 
     // output attributes declaration
     for (u32 i = 0; i < config.state.num_outputs; ++i) {
-        out += "layout(location = " + std::to_string(i) + ") out vec4 vs_out_attr" +
-               std::to_string(i) + ";\n";
+        out += (separable_shader ? "layout(location = " + std::to_string(i) + ")" : std::string{}) +
+               " out vec4 vs_out_attr" + std::to_string(i) + ";\n";
     }
 
     out += "\nvoid main() {\n";
@@ -1392,18 +1393,19 @@ layout (std140) uniform vs_config {
     return out;
 }
 
-static std::string GetGSCommonSource(const PicaGSConfigCommonRaw& config) {
-    std::string out = GetVertexInterfaceDeclaration(true, true);
+static std::string GetGSCommonSource(const PicaGSConfigCommonRaw& config, bool separable_shader) {
+    std::string out = GetVertexInterfaceDeclaration(true, separable_shader);
     out += UniformBlockDef;
     out += Pica::Shader::Decompiler::GetCommonDeclarations();
 
     out += '\n';
     for (u32 i = 0; i < config.vs_output_attributes; ++i) {
-        out += "layout(location = " + std::to_string(i) + ") in vec4 vs_out_attr" +
-               std::to_string(i) + "[];\n";
+        out += (separable_shader ? "layout(location = " + std::to_string(i) + ")" : std::string{}) +
+               " in vec4 vs_out_attr" + std::to_string(i) + "[];\n";
     }
 
     out += R"(
+#define uniforms gs_uniforms
 layout (std140) uniform gs_config {
     pica_uniforms uniforms;
 };
@@ -1499,7 +1501,7 @@ layout(triangle_strip, max_vertices = 3) out;
 
 )";
 
-    out += GetGSCommonSource(config.state);
+    out += GetGSCommonSource(config.state, separable_shader);
 
     out += R"(
 void main() {
@@ -1548,7 +1550,7 @@ std::string GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
     }
     out += "layout(triangle_strip, max_vertices = 30) out;\n\n";
 
-    out += GetGSCommonSource(config.state);
+    out += GetGSCommonSource(config.state, separable_shader);
 
     auto get_input_reg = [&](u32 reg) -> std::string {
         ASSERT(reg < 16);
