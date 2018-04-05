@@ -51,6 +51,64 @@ static void SetShaderUniformBlockBindings(GLuint shader) {
                                  sizeof(RasterizerOpenGL::GSUniformData));
 }
 
+static void SetShaderSamplerBindings(GLuint shader) {
+    OpenGLState cur_state = OpenGLState::GetCurState();
+    GLuint old_program = std::exchange(cur_state.draw.shader_program, shader);
+    cur_state.Apply();
+
+    // Set the texture samplers to correspond to different texture units+    GLint uniform_tex = glGetUniformLocation(shader, "tex0");
+    if (uniform_tex != -1) {
+        glUniform1i(uniform_tex, TextureUnits::PicaTexture(0).id);
+    }
+    uniform_tex = glGetUniformLocation(shader, "tex1");
+    if (uniform_tex != -1) {
+        glUniform1i(uniform_tex, TextureUnits::PicaTexture(1).id);
+    }
+    uniform_tex = glGetUniformLocation(shader, "tex2");
+    if (uniform_tex != -1) {
+        glUniform1i(uniform_tex, TextureUnits::PicaTexture(2).id);
+    }
+
+    // Set the texture samplers to correspond to different lookup table texture units
+    GLint uniform_lut = glGetUniformLocation(shader, "lighting_lut");
+    if (uniform_lut != -1) {
+        glUniform1i(uniform_lut, TextureUnits::LightingLUT.id);
+    }
+
+    GLint uniform_fog_lut = glGetUniformLocation(shader, "fog_lut");
+    if (uniform_fog_lut != -1) {
+        glUniform1i(uniform_fog_lut, TextureUnits::FogLUT.id);
+    }
+
+    GLint uniform_proctex_noise_lut = glGetUniformLocation(shader, "proctex_noise_lut");
+    if (uniform_proctex_noise_lut != -1) {
+        glUniform1i(uniform_proctex_noise_lut, TextureUnits::ProcTexNoiseLUT.id);
+    }
+
+    GLint uniform_proctex_color_map = glGetUniformLocation(shader, "proctex_color_map");
+    if (uniform_proctex_color_map != -1) {
+        glUniform1i(uniform_proctex_color_map, TextureUnits::ProcTexColorMap.id);
+    }
+
+    GLint uniform_proctex_alpha_map = glGetUniformLocation(shader, "proctex_alpha_map");
+    if (uniform_proctex_alpha_map != -1) {
+        glUniform1i(uniform_proctex_alpha_map, TextureUnits::ProcTexAlphaMap.id);
+    }
+
+    GLint uniform_proctex_lut = glGetUniformLocation(shader, "proctex_lut");
+    if (uniform_proctex_lut != -1) {
+        glUniform1i(uniform_proctex_lut, TextureUnits::ProcTexLUT.id);
+    }
+
+    GLint uniform_proctex_diff_lut = glGetUniformLocation(shader, "proctex_diff_lut");
+    if (uniform_proctex_diff_lut != -1) {
+        glUniform1i(uniform_proctex_diff_lut, TextureUnits::ProcTexDiffLUT.id);
+    }
+
+    cur_state.draw.shader_program = old_program;
+    cur_state.Apply();
+}
+
 void RasterizerOpenGL::PicaUniformsData::SetFromRegs(const Pica::ShaderRegs& regs,
                                                      const Pica::Shader::ShaderSetup& setup) {
     for (size_t it = 0; it < 16; ++it) {
