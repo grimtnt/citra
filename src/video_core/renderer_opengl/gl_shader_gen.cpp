@@ -291,7 +291,7 @@ static std::string SampleTexture(const PicaShaderConfig& config, unsigned textur
         case TexturingRegs::TextureConfig::Projection2D:
             return "textureProj(tex0, vec3(texcoord0, texcoord0_w))";
         case TexturingRegs::TextureConfig::TextureCube:
-            return "texture(tex_cube, vec3(texcoord[0], texcoord0_w))";
+            return "texture(tex_cube, vec3(texcoord0, texcoord0_w))";
         default:
             LOG_CRITICAL(HW_GPU, "Unhandled texture type %x",
                          static_cast<int>(state.texture0_type));
