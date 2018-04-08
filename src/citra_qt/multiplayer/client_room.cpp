@@ -96,8 +96,6 @@ void ClientRoomWindow::Disconnect() {
     if (auto member = Network::GetRoomMember().lock()) {
         member->Leave();
         ui->chat->AppendStatusMessage(tr("Disconnected"));
-        close();
-        emit Closed();
     }
 }
 
