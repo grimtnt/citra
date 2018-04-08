@@ -209,7 +209,7 @@ std::vector<u16> Rgb2Yuv(QImage source, int width, int height) {
     return buffer;
 }
 
-// Process the image and returns a std::vector
+/// Process the image and returns a std::vector
 std::vector<u16> ProcessImage(QImage image, int width, int height, bool output_rgb = false,
                               bool flip_horizontal = false, bool flip_vertical = false) {
     std::vector<u16> buffer(width * height);
@@ -232,8 +232,9 @@ std::vector<u16> ProcessImage(QImage image, int width, int height, bool output_r
 
 #ifdef ENABLE_OPENCV_CAMERA
 QImage cvMat2QImage(const cv::Mat& mat) {
-    // 8-bits unsigned, NO. OF CHANNELS = 1
-    if (mat.type() == CV_8UC1) {
+    switch (mat.type()) {
+    case CV_8UC1: // 8-bits unsigned, NO. OF CHANNELS = 1
+    {
         QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
         // Set the color table (used to translate colour indexes to qRgb values)
         image.setColorCount(256);
@@ -249,20 +250,22 @@ QImage cvMat2QImage(const cv::Mat& mat) {
         }
         return image;
     }
-    // 8-bits unsigned, NO. OF CHANNELS = 3
-    else if (mat.type() == CV_8UC3) {
+    case CV_8UC3: // 8-bits unsigned, NO. OF CHANNELS = 3
+    {
         // Copy input Mat
         const uchar* pSrc = (const uchar*)mat.data;
         // Create QImage with same dimensions as input Mat
         QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
         return image.rgbSwapped();
-    } else if (mat.type() == CV_8UC4) {
+    }
+    case CV_8UC4: {
         // Copy input Mat
         const uchar* pSrc = (const uchar*)mat.data;
         // Create QImage with same dimensions as input Mat
         QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
         return image.copy();
-    } else {
+    }
+    default:
         LOG_ERROR(Service_CAM, "ERROR: Mat could not be converted to QImage.");
         return QImage();
     }

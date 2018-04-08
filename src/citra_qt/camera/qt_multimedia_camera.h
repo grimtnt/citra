@@ -26,12 +26,14 @@ public:
 private:
     QImage current_frame;
 
-    friend class QtMultimediaCamera;
+    friend class QtMultimediaCamera; // For access to current_frame
 };
 
+/// This class is only an interface. It just calls QtMultimediaCameraHandler.
 class QtMultimediaCamera final : public CameraInterface {
 public:
     QtMultimediaCamera(const std::string& camera_name);
+    ~QtMultimediaCamera();
     void StartCapture() override;
     void StopCapture() override;
     void SetResolution(const Service::CAM::Resolution&) override;
@@ -56,6 +58,39 @@ private:
 class QtMultimediaCameraFactory final : public QtCameraFactory {
 public:
     std::unique_ptr<CameraInterface> Create(const std::string& config) const override;
+};
+
+class QtMultimediaCameraHandler final : public QObject {
+    Q_OBJECT
+
+public:
+    /// Creates the global handler. Must be called in UI thread.
+    static void Init();
+
+    /**
+     * Creates the camera.
+     * Note: This function must be called via QMetaObject::invokeMethod in UI thread.
+     */
+    Q_INVOKABLE void CreateCamera();
+
+    /**
+     * Starts the camera.
+     * Note: This function must be called via QMetaObject::invokeMethod in UI thread when
+     *       starting the camera for the first time. 'Resume' calls can be in other threads.
+     */
+    Q_INVOKABLE void StartCamera();
+
+    void StopCamera();
+    bool CameraAvailable() const;
+
+    /// Pointer to the global QtMultimediaCameraHandler
+    static std::unique_ptr<QtMultimediaCameraHandler> g_qt_multimedia_camera_handler;
+
+private:
+    std::unique_ptr<QCamera> camera;
+    QtCameraSurface camera_surface{};
+
+    friend class QtMultimediaCamera; // For access to camera_surface (and camera)
 };
 
 } // namespace Camera

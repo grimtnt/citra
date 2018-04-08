@@ -5,6 +5,7 @@
 #include <QCamera>
 #include <QImageReader>
 #include <QMessageBox>
+#include <QThread>
 #include "citra_qt/camera/qt_multimedia_camera.h"
 #include "citra_qt/main.h"
 
@@ -42,19 +43,32 @@ bool QtCameraSurface::present(const QVideoFrame& frame) {
     return true;
 }
 
-QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) : camera_surface() {
-    QMetaObject::invokeMethod(QApplication::instance(), [this] {
-        camera = new QCamera;
-        camera->setViewfinder(&camera_surface);
-    });
+QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) {
+    if (QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->thread() ==
+        QThread::currentThread()) {
+        QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->CreateCamera();
+    } else {
+        QMetaObject::invokeMethod(QtMultimediaCameraHandler::g_qt_multimedia_camera_handler.get(),
+                                  "CreateCamera", Qt::BlockingQueuedConnection);
+    }
+}
+
+QtMultimediaCamera::~QtMultimediaCamera() {
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
 }
 
 void QtMultimediaCamera::StartCapture() {
-    QMetaObject::invokeMethod(QApplication::instance(), [this] { camera->start(); });
+    if (QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->thread() ==
+        QThread::currentThread()) {
+        QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StartCamera();
+    } else {
+        QMetaObject::invokeMethod(QtMultimediaCameraHandler::g_qt_multimedia_camera_handler.get(),
+                                  "StartCamera", Qt::BlockingQueuedConnection);
+    }
 }
 
 void QtMultimediaCamera::StopCapture() {
-    camera->stop();
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
 }
 
 void QtMultimediaCamera::SetFormat(Service::CAM::OutputFormat output_format) {
@@ -79,29 +93,55 @@ void QtMultimediaCamera::SetEffect(Service::CAM::Effect effect) {
 }
 
 std::vector<u16> QtMultimediaCamera::ReceiveFrame() {
-    return CameraUtil::ProcessImage(camera_surface.current_frame, width, height, output_rgb,
-                                    flip_horizontal, flip_vertical);
+    return CameraUtil::ProcessImage(
+        QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->camera_surface.current_frame,
+        width, height, output_rgb, flip_horizontal, flip_vertical);
 }
 
 void QtMultimediaCamera::OnServicePaused() {
-    camera->stop();
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
 }
 
 void QtMultimediaCamera::OnServiceResumed() {
-    camera->start();
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StartCamera();
 }
 
 void QtMultimediaCamera::OnServiceStopped() {
-    camera->stop();
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
 }
 
 bool QtMultimediaCamera::IsPreviewAvailable() {
-    return camera->isAvailable();
+    return QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->CameraAvailable();
 }
 
 std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(
     const std::string& config) const {
     return std::make_unique<QtMultimediaCamera>(config);
+}
+
+std::unique_ptr<QtMultimediaCameraHandler>
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler;
+
+void QtMultimediaCameraHandler::Init() {
+    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler =
+        std::make_unique<QtMultimediaCameraHandler>();
+}
+
+void QtMultimediaCameraHandler::CreateCamera() {
+    camera = std::make_unique<QCamera>();
+    camera->setViewfinder(&camera_surface);
+}
+
+void QtMultimediaCameraHandler::StopCamera() {
+    camera->stop();
+}
+
+void QtMultimediaCameraHandler::StartCamera() {
+    camera->start();
+}
+
+bool QtMultimediaCameraHandler::CameraAvailable() const {
+    return camera->isAvailable();
 }
 
 } // namespace Camera

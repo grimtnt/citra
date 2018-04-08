@@ -676,7 +676,7 @@ void Module::Interface::Wrap(Kernel::HLERequestContext& ctx) {
     // Note: real 3DS still returns SUCCESS when the sizes don't match. It seems that it doesn't
     // check the buffer size and writes data with potential overflow.
     ASSERT_MSG(output_size == input_size + HW::AES::CCM_MAC_SIZE,
-               "input_size (%d) doesn't match to output_size (%d)", input_size, output_size);
+               "input_size ({}) doesn't match to output_size ({})", input_size, output_size);
 
     NGLOG_DEBUG(Service_APT,
                 "called, output_size={}, input_size={}, nonce_offset={}, nonce_size={}",
@@ -722,7 +722,7 @@ void Module::Interface::Unwrap(Kernel::HLERequestContext& ctx) {
     // Note: real 3DS still returns SUCCESS when the sizes don't match. It seems that it doesn't
     // check the buffer size and writes data with potential overflow.
     ASSERT_MSG(output_size == input_size - HW::AES::CCM_MAC_SIZE,
-               "input_size (%d) doesn't match to output_size (%d)", input_size, output_size);
+               "input_size ({}) doesn't match to output_size ({})", input_size, output_size);
 
     NGLOG_DEBUG(Service_APT,
                 "called, output_size={}, input_size={}, nonce_offset={}, nonce_size={}",

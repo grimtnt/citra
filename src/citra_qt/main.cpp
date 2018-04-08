@@ -19,9 +19,7 @@
 #ifdef ENABLE_OPENCV_CAMERA
 #include "citra_qt/camera/opencv_camera.h"
 #endif
-#ifdef ENABLE_QT_CAMERA
 #include "citra_qt/camera/qt_multimedia_camera.h"
-#endif
 #include "citra_qt/camera/still_image_camera.h"
 #include "citra_qt/cheat_gui.h"
 #include "citra_qt/cheatsearch.h"
@@ -1492,9 +1490,8 @@ int main(int argc, char* argv[]) {
 #ifdef ENABLE_OPENCV_CAMERA
     Camera::RegisterFactory("opencv", std::make_unique<Camera::OpenCVCameraFactory>());
 #endif
-#ifdef ENABLE_QT_CAMERA
     Camera::RegisterFactory("qt", std::make_unique<Camera::QtMultimediaCameraFactory>());
-#endif
+    Camera::QtMultimediaCameraHandler::Init();
     main_window.show();
     return app.exec();
 }
