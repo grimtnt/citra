@@ -117,8 +117,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     default_theme_paths = QIcon::themeSearchPaths();
     UpdateUITheme();
 
-    Network::Init();
-
     InitializeWidgets();
     InitializeDebugWidgets();
     InitializeRecentFileMenuActions();
@@ -130,6 +128,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
 
     ConnectMenuEvents();
     ConnectWidgetEvents();
+
+    Network::Init();
 
     SetupUIStrings();
 
