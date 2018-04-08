@@ -1306,11 +1306,9 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
         return;
     }
 
-    if (!ui.action_Fullscreen->isChecked()) {
-        UISettings::values.geometry = saveGeometry();
-        UISettings::values.renderwindow_geometry = render_window->saveGeometry();
-    }
+    UISettings::values.geometry = saveGeometry();
     UISettings::values.state = saveState();
+    UISettings::values.renderwindow_geometry = render_window->saveGeometry();
     UISettings::values.single_window_mode = ui.action_Single_Window_Mode->isChecked();
     UISettings::values.fullscreen = ui.action_Fullscreen->isChecked();
     UISettings::values.display_titlebar = ui.action_Display_Dock_Widget_Headers->isChecked();
