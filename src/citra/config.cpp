@@ -103,7 +103,7 @@ void Config::ReadValues() {
 
     Settings::values.motion_device =
         sdl2_config->Get("Controls", "motion_device",
-                         "engine:motion_emu,update_period:100,sensitivity:0.00125,tilt_clamp:90.0");
+                         "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0");
     Settings::values.touch_device =
         sdl2_config->Get("Controls", "touch_device", "engine:emu_window");
 
