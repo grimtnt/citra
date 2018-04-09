@@ -30,11 +30,7 @@
 #include "citra_qt/game_list.h"
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
-#include "citra_qt/multiplayer/client_room.h"
-#include "citra_qt/multiplayer/direct_connect.h"
-#include "citra_qt/multiplayer/host_room.h"
-#include "citra_qt/multiplayer/lobby.h"
-#include "citra_qt/multiplayer/message.h"
+#include "citra_qt/multiplayer/state.h"
 #include "citra_qt/stereoscopic_controller.h"
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/updater/updater.h"
@@ -121,6 +117,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     default_theme_paths = QIcon::themeSearchPaths();
     UpdateUITheme();
 
+    Network::Init();
+
     InitializeWidgets();
     InitializeDebugWidgets();
     InitializeRecentFileMenuActions();
@@ -132,18 +130,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
 
     ConnectMenuEvents();
     ConnectWidgetEvents();
-
-    Network::Init();
-
-    if (auto member = Network::GetRoomMember().lock()) {
-        // register the network structs to use in slots and signals
-        qRegisterMetaType<Network::RoomMember::State>();
-        state_callback_handle = member->BindOnStateChanged(
-            [this](const Network::RoomMember::State& state) { emit NetworkStateChanged(state); });
-        connect(this, &GMainWindow::NetworkStateChanged, this, &GMainWindow::OnNetworkStateChanged);
-    }
-
-    qRegisterMetaType<Common::WebResult>();
 
     SetupUIStrings();
 
@@ -168,12 +154,6 @@ GMainWindow::~GMainWindow() {
     // will get automatically deleted otherwise
     if (render_window->parent() == nullptr)
         delete render_window;
-
-    if (state_callback_handle) {
-        if (auto member = Network::GetRoomMember().lock()) {
-            member->Unbind(state_callback_handle);
-        }
-    }
     Network::Shutdown();
 }
 
@@ -186,6 +166,9 @@ void GMainWindow::InitializeWidgets() {
 
     game_list = new GameList(this);
     ui.horizontalLayout->addWidget(game_list);
+
+    multiplayer_state = new MultiplayerState(this, game_list->GetModel());
+    multiplayer_state->setVisible(false);
 
     // Setup updater
     updater = new Updater(this);
@@ -215,24 +198,14 @@ void GMainWindow::InitializeWidgets() {
         tr("Time taken to emulate a 3DS frame, not counting framelimiting or v-sync. For "
            "full-speed emulation this should be at most 16.67 ms."));
 
-    announce_multiplayer_session = std::make_shared<Core::AnnounceMultiplayerSession>();
-    announce_multiplayer_session->BindErrorCallback(
-        [this](const Common::WebResult& result) { emit AnnounceFailed(result); });
-    connect(this, &GMainWindow::AnnounceFailed, this, &GMainWindow::OnAnnounceFailed);
-    network_status_text = new ClickableLabel(this);
-    network_status_icon = new ClickableLabel(this);
-    network_status_text->setToolTip(tr("Current connection status"));
-
     for (auto& label : {emu_speed_label, game_fps_label, emu_frametime_label}) {
         label->setVisible(false);
         label->setFrameStyle(QFrame::NoFrame);
         label->setContentsMargins(4, 0, 4, 0);
         statusBar()->addPermanentWidget(label, 0);
     }
-    statusBar()->addPermanentWidget(network_status_text, 0);
-    statusBar()->addPermanentWidget(network_status_icon, 0);
-    network_status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
-    network_status_text->setText(tr("Not Connected. Click here to find a room!"));
+    statusBar()->addPermanentWidget(multiplayer_state->GetStatusText(), 0);
+    statusBar()->addPermanentWidget(multiplayer_state->GetStatusIcon(), 0);
     statusBar()->setVisible(true);
 
     // Removes an ugly inner border from the status bar widgets under Linux
@@ -400,9 +373,6 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(this, &GMainWindow::UpdateProgress, this, &GMainWindow::OnUpdateProgress);
     connect(this, &GMainWindow::CIAInstallReport, this, &GMainWindow::OnCIAInstallReport);
     connect(this, &GMainWindow::CIAInstallFinished, this, &GMainWindow::OnCIAInstallFinished);
-
-    connect(network_status_text, &ClickableLabel::clicked, this, &GMainWindow::OnOpenNetworkRoom);
-    connect(network_status_icon, &ClickableLabel::clicked, this, &GMainWindow::OnOpenNetworkRoom);
 }
 
 void GMainWindow::ConnectMenuEvents() {
@@ -454,12 +424,16 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Play, &QAction::triggered, this, &GMainWindow::OnPlayMovie);
 
     // Multiplayer
-    connect(ui.action_View_Lobby, &QAction::triggered, this, &GMainWindow::OnViewLobby);
-    connect(ui.action_Start_Room, &QAction::triggered, this, &GMainWindow::OnCreateRoom);
-    connect(ui.action_Stop_Room, &QAction::triggered, this, &GMainWindow::OnCloseRoom);
-    connect(ui.action_Connect_To_Room, &QAction::triggered, this,
-            &GMainWindow::OnDirectConnectToRoom);
-    connect(ui.action_Chat, &QAction::triggered, this, &GMainWindow::OnOpenNetworkRoom);
+    connect(ui.action_View_Lobby, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnViewLobby);
+    connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnCreateRoom);
+    connect(ui.action_Stop_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnCloseRoom);
+    connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnDirectConnectToRoom);
+    connect(ui.action_Chat, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnOpenNetworkRoom);
 
     // Help
     connect(ui.action_FAQ, &QAction::triggered,
@@ -1020,30 +994,6 @@ void GMainWindow::OnMenuRecentFile() {
     }
 }
 
-void GMainWindow::OnNetworkStateChanged(const Network::RoomMember::State& state) {
-    LOG_INFO(Frontend, "network state change");
-    if (state == Network::RoomMember::State::Joined) {
-        network_status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
-        network_status_text->setText(tr("Connected"));
-        ui.action_Chat->setEnabled(true);
-        return;
-    }
-    network_status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
-    network_status_text->setText(tr("Not Connected"));
-    ui.action_Chat->setDisabled(true);
-
-    ChangeRoomState();
-}
-
-void GMainWindow::OnAnnounceFailed(const Common::WebResult& result) {
-    announce_multiplayer_session->Stop();
-    QMessageBox::warning(
-        this, tr("Error"),
-        tr("Announcing the room failed.\nThe room will not get listed publicly.\nError: ") +
-            QString::fromStdString(result.result_string),
-        QMessageBox::Ok);
-}
-
 void GMainWindow::OnStartGame() {
     Service::Resume();
     emu_thread->SetRunning(true);
@@ -1249,80 +1199,6 @@ void GMainWindow::OnPlayMovie() {
     Settings::values.movie_play = path.toStdString();
 }
 
-static void BringWidgetToFront(QWidget* widget) {
-    widget->show();
-    widget->activateWindow();
-    widget->raise();
-}
-
-void GMainWindow::OnViewLobby() {
-    if (lobby == nullptr) {
-        lobby = new Lobby(this, game_list->GetModel(), announce_multiplayer_session);
-        connect(lobby, &Lobby::Closed, [&] {
-            LOG_INFO(Frontend, "Destroying lobby");
-            // lobby->close();
-            lobby = nullptr;
-        });
-    }
-    BringWidgetToFront(lobby);
-}
-
-void GMainWindow::OnCreateRoom() {
-    if (host_room == nullptr) {
-        host_room = new HostRoomWindow(this, game_list->GetModel(), announce_multiplayer_session);
-        connect(host_room, &HostRoomWindow::Closed, [&] {
-            // host_room->close();
-            LOG_INFO(Frontend, "Destroying host room");
-            host_room = nullptr;
-        });
-    }
-    BringWidgetToFront(host_room);
-}
-
-void GMainWindow::OnCloseRoom() {
-    if (auto room = Network::GetRoom().lock()) {
-        if (room->GetState() == Network::Room::State::Open) {
-            if (NetworkMessage::WarnCloseRoom()) {
-                room->Destroy();
-                announce_multiplayer_session->Stop();
-                // host_room->close();
-            }
-        }
-    }
-}
-
-void GMainWindow::OnOpenNetworkRoom() {
-    if (auto member = Network::GetRoomMember().lock()) {
-        if (member->IsConnected()) {
-            if (client_room == nullptr) {
-                client_room = new ClientRoomWindow(this);
-                connect(client_room, &ClientRoomWindow::Closed, [&] {
-                    LOG_INFO(Frontend, "Destroying client room");
-                    // client_room->close();
-                    client_room = nullptr;
-                });
-            }
-            BringWidgetToFront(client_room);
-            return;
-        }
-    }
-    // If the user is not a member of a room, show the lobby instead.
-    // This is currently only used on the clickable label in the status bar
-    OnViewLobby();
-}
-
-void GMainWindow::OnDirectConnectToRoom() {
-    if (direct_connect == nullptr) {
-        direct_connect = new DirectConnectWindow(this);
-        connect(direct_connect, &DirectConnectWindow::Closed, [&] {
-            LOG_INFO(Frontend, "Destroying direct connect");
-            // direct_connect->close();
-            direct_connect = nullptr;
-        });
-    }
-    BringWidgetToFront(direct_connect);
-}
-
 void GMainWindow::UpdateStatusBar() {
     if (emu_thread == nullptr) {
         status_bar_update_timer.stop();
@@ -1451,17 +1327,7 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
         ShutdownGame();
 
     render_window->close();
-
-    // Close Multiplayer windows
-    if (host_room)
-        host_room->close();
-    if (direct_connect)
-        direct_connect->close();
-    if (client_room)
-        client_room->close();
-    if (lobby)
-        lobby->close();
-
+    multiplayer_state->Close();
     QWidget::closeEvent(event);
 }
 
