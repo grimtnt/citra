@@ -20,7 +20,7 @@ ConfigureHacks::~ConfigureHacks() {}
 
 void ConfigureHacks::setConfiguration() {
     ui->toggle_priority_boost->setChecked(Settings::values.priority_boost);
-    ui->toggle_cpu_jit_hacks->setChecked(Settings::values.enable_cpu_jit_hacks);
+    ui->toggle_cpu_jit_hacks->setChecked(Settings::values.cpu_jit_hacks);
 }
 
 void ConfigureHacks::applyConfiguration() {
