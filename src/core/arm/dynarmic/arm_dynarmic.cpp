@@ -97,16 +97,9 @@ static void AddTicks(u64 ticks) {
     CoreTiming::AddTicks(ticks);
 }
 
-static void AddTicksTL(u64 ticks) {
-    CoreTiming::AddTicks(570);
-}
-
-static void AddTicksSMW(u64 ticks) {
-    CoreTiming::AddTicks(18000);
-}
-
-static void AddTicksPKM(u64 ticks) {
-    CoreTiming::AddTicks(17000);
+template <u64 custom>
+static void AddTicksCustom(u64 ticks) {
+    CoreTiming::AddTicks(custom);
 }
 
 static u64 GetTicksRemaining() {
@@ -138,10 +131,10 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
     case 0x000400000008C500:
     case 0x0004000000126A00:
     case 0x0004000200120C01:
-        user_callbacks.AddTicks = &AddTicksTL;
+        user_callbacks.AddTicks = &AddTicksCustom<570>;
         break;
     case 0x000400000F700E00:
-        user_callbacks.AddTicks = &AddTicksSMW;
+        user_callbacks.AddTicks = &AddTicksCustom<18000>;
         break;
     case 0x0004000000055D00:
     case 0x0004000000055E00:
@@ -151,7 +144,12 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
     case 0x0004000000175E00:
     case 0x00040000001B5000:
     case 0x00040000001B5100:
-        user_callbacks.AddTicks = &AddTicksPKM;
+        user_callbacks.AddTicks = &AddTicksCustom<17000>;
+        break;
+    case 0x00040000001BC500:
+    case 0x00040000001BC600:
+    case 0x000400000016E100:
+        user_callbacks.AddTicks = &AddTicksCustom<27000>;
         break;
     default:
         user_callbacks.AddTicks = &AddTicks;
