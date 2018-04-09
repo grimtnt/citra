@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <map>
 #include <string>
 #include <utility>
@@ -15,7 +14,7 @@ template <typename CallbackType, typename ResultType, typename ConfigType>
 class AppletFactory {
 public:
     /**
-     * @brief IsRegistered Checks if a callback is registered
+     * @brief Checks if a callback is registered
      * @param name The name of the callback
      * @return true if the callback is registered, otherwise false
      */
@@ -25,7 +24,7 @@ public:
     }
 
     /**
-     * @brief Register Registers a callback
+     * @brief Registers a callback
      * @param name Name of the callback
      * @param callback The callback
      */
@@ -34,7 +33,7 @@ public:
     }
 
     /**
-     * @brief Launch Launches a applet
+     * @brief Launches a applet
      * @param name The callback name
      * @param config The configuration of the applet
      * @return The result of the callback
