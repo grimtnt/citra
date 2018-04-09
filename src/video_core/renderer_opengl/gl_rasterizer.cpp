@@ -194,8 +194,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
 
     state.draw.vertex_array = hw_vao.handle;
     state.Apply();
-    index_buffer = OGLStreamBuffer::MakeBuffer(GLAD_GL_ARB_buffer_storage, GL_ELEMENT_ARRAY_BUFFER);
-    index_buffer->Create(INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE / 2);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, stream_buffer->GetHandle());
 
     shader_program_manager =
         std::make_unique<ShaderProgramManager>(GLAD_GL_ARB_separate_shader_objects);
@@ -776,11 +775,9 @@ void RasterizerOpenGL::DrawTriangles() {
                 regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
                 regs.pipeline.index_array.offset);
 
-            auto [ptr, offset] = index_buffer->Map(index_buffer_size, 4);
-            index_buffer_offset = offset;
-            std::memcpy(ptr, index_data, index_buffer_size);
-            index_buffer->Unmap();
+            std::memcpy(&buffer_ptr[ptr_pos], index_data, index_buffer_size);
 
+            index_buffer_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
             ptr_pos += index_buffer_size;
         }
 
