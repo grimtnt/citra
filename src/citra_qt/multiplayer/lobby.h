@@ -31,7 +31,7 @@ class Lobby : public QDialog {
 public:
     explicit Lobby(QWidget* parent, QStandardItemModel* list,
                    std::shared_ptr<Core::AnnounceMultiplayerSession> session);
-    ~Lobby();
+    ~Lobby() = default;
 
 public slots:
     /**
@@ -45,6 +45,14 @@ private slots:
      * Pulls the list of rooms from network and fills out the lobby model with the results
      */
     void OnRefreshLobby();
+
+    /**
+     * Handler for single clicking on a room in the list. Expands the treeitem to show player
+     * information for the people in the room
+     *
+     * index - The row of the proxy model that the user wants to join.
+     */
+    void OnExpandRoom(const QModelIndex&);
 
     /**
      * Handler for double clicking on a room in the list. Gathers the host ip and port and attempts
@@ -99,7 +107,7 @@ private:
 
     std::future<AnnounceMultiplayerRoom::RoomList> room_list_future;
     std::weak_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
-    std::unique_ptr<Ui::Lobby> ui;
+    Ui::Lobby* ui;
     QFutureWatcher<void>* watcher;
 };
 
