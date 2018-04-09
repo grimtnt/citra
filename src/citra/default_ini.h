@@ -133,6 +133,7 @@ use_frame_limit =
 frame_limit =
 
 # Ignore format reinterpretation
+# 0 (default): disabled, 1: enabled
 use_bos =
 
 # The clear color for the renderer. What shows up on the sides of the bottom screen.
@@ -147,7 +148,7 @@ bg_green =
 layout_option =
 
 # Toggle custom layout (using the settings below) on or off.
-# 0 (default): Off , 1: On
+# 0 (default): Off, 1: On
 custom_layout =
 
 # Screen placement when using Custom layout option
