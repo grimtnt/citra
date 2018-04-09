@@ -12,7 +12,6 @@
 #include "citra_qt/multiplayer/client_room.h"
 #include "citra_qt/multiplayer/direct_connect.h"
 #include "citra_qt/multiplayer/message.h"
-#include "citra_qt/multiplayer/state.h"
 #include "citra_qt/multiplayer/validation.h"
 #include "citra_qt/ui_settings.h"
 #include "core/settings.h"
@@ -125,7 +124,7 @@ void DirectConnectWindow::OnConnection() {
             ShowError(NetworkMessage::USERNAME_IN_USE);
             break;
         case Network::RoomMember::State::Joining:
-            auto parent = static_cast<MultiplayerState*>(parentWidget());
+            auto parent = static_cast<GMainWindow*>(parentWidget());
             parent->OnOpenNetworkRoom();
             close();
         }
