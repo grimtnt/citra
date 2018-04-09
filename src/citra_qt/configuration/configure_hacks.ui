@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>926</width>
+    <width>374</width>
     <height>561</height>
    </rect>
   </property>
@@ -19,13 +19,20 @@
      <item>
       <widget class="QGroupBox" name="groupbox_kernel">
        <property name="title">
-        <string>Kernel</string>
+        <string>Hacks</string>
        </property>
        <layout class="QVBoxLayout" name="Hacks">
         <item>
          <widget class="QCheckBox" name="toggle_priority_boost">
           <property name="text">
-           <string>Priority Boost</string>
+           <string>Enable Priority Boost</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="toggle_cpu_jit_hacks">
+          <property name="text">
+           <string>Enable CPU JIT Hacks</string>
           </property>
          </widget>
         </item>

@@ -126,6 +126,7 @@ void Config::ReadValues() {
     Settings::values.use_frame_limit = sdl2_config->GetBoolean("Renderer", "use_frame_limit", true);
     Settings::values.frame_limit =
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "frame_limit", 100));
+    Settings::values.use_bos = sdl2_config->GetBoolean("Renderer", "use_bos", true);
 
     Settings::values.bg_red = (float)sdl2_config->GetReal("Renderer", "bg_red", 0.0);
     Settings::values.bg_green = (float)sdl2_config->GetReal("Renderer", "bg_green", 0.0);
@@ -220,6 +221,7 @@ void Config::ReadValues() {
 
     // Hacks
     Settings::values.priority_boost = sdl2_config->GetBoolean("Hacks", "priority_boost", false);
+    Settings::values.cpu_jit_hacks = sdl2_config->GetBoolean("Hacks", "cpu_jit_hacks", true);
 }
 
 void Config::Reload() {

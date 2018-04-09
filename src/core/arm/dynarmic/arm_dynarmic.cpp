@@ -11,8 +11,11 @@
 #include "core/arm/dyncom/arm_dyncom_interpreter.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/hle/kernel/process.h"
 #include "core/hle/kernel/svc.h"
+#include "core/hle/kernel/vm_manager.h"
 #include "core/memory.h"
+#include "core/settings.h"
 
 class DynarmicThreadContext final : public ARM_Interface::ThreadContext {
 public:
@@ -88,6 +91,15 @@ static void InterpreterFallback(u32 pc, Dynarmic::Jit* jit, void* user_arg) {
     jit->SetFpscr(state->VFP[VFP_FPSCR]);
 }
 
+static bool IsCodeMemory(u32 vaddr) {
+    auto it = Kernel::g_current_process->vm_manager.FindVMA(vaddr);
+    if (it == Kernel::g_current_process->vm_manager.vma_map.end())
+        return false;
+    if (static_cast<int>(it->second.permissions) & static_cast<int>(Kernel::VMAPermission::Write))
+        return false;
+    return it->second.meminfo_state == Kernel::MemoryState::Code;
+}
+
 static bool IsReadOnlyMemory(u32 vaddr) {
     // TODO(bunnei): ImplementMe
     return false;
@@ -107,6 +119,14 @@ static u64 GetTicksRemaining() {
     return static_cast<u64>(ticks <= 0 ? 0 : ticks);
 }
 
+static u32 ReadCode(u32 vaddr) {
+    if (!IsCodeMemory(vaddr)) {
+        LOG_CRITICAL(Core_ARM11, "Tried to execute PC=0x%08x", vaddr);
+        return 0xEAFFFFFE; // b +#0 ; infinite loop
+    }
+    return Memory::Read32(vaddr);
+}
+
 static Dynarmic::UserCallbacks GetUserCallbacks(
     const std::shared_ptr<ARMul_State>& interpreter_state, Memory::PageTable* current_page_table) {
     Dynarmic::UserCallbacks user_callbacks{};
@@ -114,7 +134,7 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
     user_callbacks.user_arg = static_cast<void*>(interpreter_state.get());
     user_callbacks.CallSVC = &Kernel::CallSVC;
     user_callbacks.memory.IsReadOnlyMemory = &IsReadOnlyMemory;
-    user_callbacks.memory.ReadCode = &Memory::Read32;
+    user_callbacks.memory.ReadCode = &ReadCode;
     user_callbacks.memory.Read8 = &Memory::Read8;
     user_callbacks.memory.Read16 = &Memory::Read16;
     user_callbacks.memory.Read32 = &Memory::Read32;
@@ -123,37 +143,45 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
     user_callbacks.memory.Write16 = &Memory::Write16;
     user_callbacks.memory.Write32 = &Memory::Write32;
     user_callbacks.memory.Write64 = &Memory::Write64;
-    u64 title_id;
-    Core::System::GetInstance().GetAppLoader().ReadProgramId(title_id);
-    switch (title_id) {
-    case 0x000400000008C300:
-    case 0x000400000008C400:
-    case 0x000400000008C500:
-    case 0x0004000000126A00:
-    case 0x0004000200120C01:
-        user_callbacks.AddTicks = &AddTicksCustom<570>;
-        break;
-    case 0x000400000F700E00:
-        user_callbacks.AddTicks = &AddTicksCustom<18000>;
-        break;
-    case 0x0004000000055D00:
-    case 0x0004000000055E00:
-    case 0x000400000011C400:
-    case 0x000400000011C500:
-    case 0x0004000000164800:
-    case 0x0004000000175E00:
-    case 0x00040000001B5000:
-    case 0x00040000001B5100:
-        user_callbacks.AddTicks = &AddTicksCustom<17000>;
-        break;
-    case 0x00040000001BC500:
-    case 0x00040000001BC600:
-    case 0x000400000016E100:
-        user_callbacks.AddTicks = &AddTicksCustom<53000>;
-        break;
-    default:
+    if (Settings::values.cpu_jit_hacks) {
+        u64 title_id;
+        Core::System::GetInstance().GetAppLoader().ReadProgramId(title_id);
+        switch (title_id) {
+        case 0x000400000008C300:
+        case 0x000400000008C400:
+        case 0x000400000008C500:
+        case 0x0004000000126A00:
+        case 0x0004000200120C01:
+            user_callbacks.AddTicks = &AddTicksCustom<570>;
+            break;
+        case 0x000400000F700E00:
+            user_callbacks.AddTicks = &AddTicksCustom<18000>;
+            break;
+        case 0x0004000000055D00:
+        case 0x0004000000055E00:
+        case 0x000400000011C400:
+        case 0x000400000011C500:
+        case 0x0004000000164800:
+        case 0x0004000000175E00:
+        case 0x00040000001B5000:
+        case 0x00040000001B5100:
+            user_callbacks.AddTicks = &AddTicksCustom<17000>;
+            break;
+        case 0x00040000001BC500:
+        case 0x00040000001BC600:
+        case 0x000400000016E100:
+        case 0x0004000000055F00:
+        case 0x0004000000076500:
+        case 0x0004000000076400:
+        case 0x00040000000D0000:
+            user_callbacks.AddTicks = &AddTicksCustom<27000>;
+            break;
+        default:
+            user_callbacks.AddTicks = &AddTicks;
+            break;
+        }
+    } else {
         user_callbacks.AddTicks = &AddTicks;
-        break;
     }
     user_callbacks.GetTicksRemaining = &GetTicksRemaining;
     user_callbacks.page_table = &current_page_table->pointers;

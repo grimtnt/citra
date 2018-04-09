@@ -132,6 +132,9 @@ use_frame_limit =
 # 1 - 9999: Speed limit as a percentage of target game speed. 100 (default)
 frame_limit =
 
+# Ignore format reinterpretation
+use_bos =
+
 # The clear color for the renderer. What shows up on the sides of the bottom screen.
 # Must be in range of 0.0-1.0. Defaults to 1.0 for all.
 bg_red =
@@ -240,5 +243,9 @@ citra_token =
 # Priority Boost
 # 0: (default) disable, 1: enable
 priority_boost =
+
+# CPU JIT Hacks
+# 0: disable, 1 (default): enable
+cpu_jit_hacks =
 )";
 }

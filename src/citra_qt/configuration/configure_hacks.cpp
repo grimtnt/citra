@@ -13,16 +13,19 @@ ConfigureHacks::ConfigureHacks(QWidget* parent)
 
     this->setConfiguration();
     ui->toggle_priority_boost->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->toggle_cpu_jit_hacks->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 }
 
 ConfigureHacks::~ConfigureHacks() {}
 
 void ConfigureHacks::setConfiguration() {
     ui->toggle_priority_boost->setChecked(Settings::values.priority_boost);
+    ui->toggle_cpu_jit_hacks->setChecked(Settings::values.enable_cpu_jit_hacks);
 }
 
 void ConfigureHacks::applyConfiguration() {
     Settings::values.priority_boost = ui->toggle_priority_boost->isChecked();
+    Settings::values.cpu_jit_hacks = ui->toggle_cpu_jit_hacks->isChecked();
     Settings::Apply();
 }
 

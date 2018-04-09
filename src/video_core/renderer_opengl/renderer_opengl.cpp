@@ -18,7 +18,6 @@
 #include "core/hw/lcd.h"
 #include "core/memory.h"
 #include "core/settings.h"
-#include "core/tracer/recorder.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/renderer_opengl/renderer_opengl.h"
 #include "video_core/video_core.h"

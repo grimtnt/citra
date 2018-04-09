@@ -56,6 +56,13 @@
           </item>
          </layout>
         </item>
+        <item>
+         <widget class="QCheckBox" name="toggle_bos">
+          <property name="text">
+           <string>Ignore format reinterpretation</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -156,6 +163,11 @@
                <item>
                 <property name="text">
                  <string>GPU</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>GPU (Partial)</string>
                 </property>
                </item>
               </widget>

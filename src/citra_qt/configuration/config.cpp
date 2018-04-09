@@ -107,6 +107,7 @@ void Config::ReadValues() {
     Settings::values.use_vsync = qt_config->value("use_vsync", false).toBool();
     Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
     Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
+    Settings::values.use_bos = qt_config->value("use_bos", true).toBool();
 
     Settings::values.bg_red = qt_config->value("bg_red", 0.0).toFloat();
     Settings::values.bg_green = qt_config->value("bg_green", 0.0).toFloat();
@@ -191,6 +192,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Hacks");
     Settings::values.priority_boost = qt_config->value("priority_boost", false).toBool();
+    Settings::values.cpu_jit_hacks = qt_config->value("cpu_jit_hacks", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");
@@ -302,6 +304,7 @@ void Config::SaveValues() {
     qt_config->setValue("use_vsync", Settings::values.use_vsync);
     qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);
+    qt_config->setValue("use_bos", Settings::values.use_bos);
 
     // Cast to double because Qt's written float values are not human-readable
     qt_config->setValue("bg_red", (double)Settings::values.bg_red);
@@ -375,6 +378,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Hacks");
     qt_config->setValue("priority_boost", Settings::values.priority_boost);
+    qt_config->setValue("cpu_jit_hacks", Settings::values.cpu_jit_hacks);
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");

@@ -15,7 +15,6 @@
 #include "core/hw/gpu.h"
 #include "core/hw/hw.h"
 #include "core/memory.h"
-#include "core/tracer/recorder.h"
 #include "video_core/command_processor.h"
 #include "video_core/rasterizer_interface.h"
 #include "video_core/renderer_base.h"
@@ -249,6 +248,11 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
                     dst_offset = VideoCore::GetMortonOffset(x, output_y, dst_bytes_per_pixel) +
                                  out_coarse_y * out_stride;
                 }
+            }
+
+            if (!dst_pointer) {
+                LOG_CRITICAL(HW_GPU, "Invalid address %08x", dst_pointer);
+                break;
             }
 
             const u8* src_pixel = src_pointer + src_offset;

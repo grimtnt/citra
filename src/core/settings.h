@@ -134,6 +134,7 @@ struct Values {
     bool use_vsync;
     bool use_frame_limit;
     u16 frame_limit;
+    bool use_bos;
 
     LayoutOption layout_option;
     bool swap_screen;
@@ -177,6 +178,7 @@ struct Values {
 
     // Hacks
     bool priority_boost;
+    bool cpu_jit_hacks;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region
