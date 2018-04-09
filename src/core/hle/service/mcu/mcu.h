@@ -21,7 +21,7 @@ public:
          * MCU::GetBatteryLevel service function
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Battery level (0-64)
+         *      2 : Battery level (0-0x64)
          */
         void GetBatteryLevel(Kernel::HLERequestContext& ctx);
 
@@ -38,7 +38,7 @@ public:
          * MCU::GetSoundVolume service function
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Sound volume
+         *      2 : Sound volume (0-0x3F)
          */
         void GetSoundVolume(Kernel::HLERequestContext& ctx);
 
@@ -46,7 +46,7 @@ public:
          * MCU::GetSoundVolume2 service function
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Sound volume
+         *      2 : Sound volume (0-0x3F)
          */
         void GetSoundVolume2(Kernel::HLERequestContext& ctx);
 
