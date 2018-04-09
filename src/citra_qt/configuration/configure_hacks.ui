@@ -17,7 +17,7 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QGroupBox" name="groupbox_kernel">
+      <widget class="QGroupBox" name="groupbox_hacks">
        <property name="title">
         <string>Hacks</string>
        </property>
