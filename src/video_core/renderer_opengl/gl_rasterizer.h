@@ -283,8 +283,6 @@ private:
 
     static constexpr size_t STREAM_BUFFER_SIZE = 4 * 1024 * 1024;
     std::unique_ptr<OGLStreamBuffer> stream_buffer;
-    static constexpr size_t INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
-    std::unique_ptr<OGLStreamBuffer> index_buffer;
 
     GLint vs_input_index_min = 0;
     GLint vs_input_index_max = 0;
