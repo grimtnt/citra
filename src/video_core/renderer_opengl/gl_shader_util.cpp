@@ -40,6 +40,7 @@ GLuint LoadShader(const char* source, GLenum type) {
             NGLOG_DEBUG(Render_OpenGL, "{}", shader_error);
         } else {
             NGLOG_ERROR(Render_OpenGL, "Error compiling {} shader:\n{}", debug_type, shader_error);
+            NGLOG_ERROR(Render_OpenGL, "Shader source code:\n{}", source);
         }
     }
     return shader_id;
