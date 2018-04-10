@@ -195,7 +195,7 @@ struct PicaGSConfig : Common::HashableStruct<PicaGSConfigRaw> {
  * Generates the GLSL default vertex shader program source code for the SW pipeline
  * @returns String of the shader source code
  */
-std::string GenerateDefaultVertexShader(bool separable_shader);
+std::string GenerateTrivialVertexShader(bool separable_shader);
 
 /**
  * Generates the GLSL vertex shader program source code for the given VS program and its main offset
