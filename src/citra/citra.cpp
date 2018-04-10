@@ -31,7 +31,6 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/cia_container.h"
-#include "core/frontend/camera/factory.h"
 #include "core/hle/service/am/am.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
