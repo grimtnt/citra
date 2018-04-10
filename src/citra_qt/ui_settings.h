@@ -54,8 +54,6 @@ struct Values {
 
     uint32_t callout_flags;
 
-    bool show_console;
-
     // multiplayer settings
     QString nickname;
     QString ip;

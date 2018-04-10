@@ -152,6 +152,8 @@ struct Values {
     float bg_green;
     float bg_blue;
 
+    std::string log_filter;
+
     // Audio
     std::string sink_id;
     bool enable_pipe3;
@@ -161,8 +163,6 @@ struct Values {
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;
     std::array<std::string, Service::CAM::NumCameras> camera_config;
-
-    std::string log_filter;
 
     // Movie
     std::string movie_play;
