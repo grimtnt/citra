@@ -237,8 +237,8 @@ private:
         bool dirty;
     } uniform_block_data = {};
 
-    // OGLPipeline pipeline;
     std::unique_ptr<ShaderProgramManager> shader_program_manager;
+
     OGLVertexArray sw_vao;
     OGLVertexArray hw_vao;
     std::array<bool, 16> hw_vao_enabled_attributes;
