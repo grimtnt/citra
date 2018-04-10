@@ -73,6 +73,10 @@ void PicaUniformsData::SetFromRegs(const Pica::ShaderRegs& regs,
     std::memcpy(&f[0], &setup.uniforms.f[0], sizeof(f));
 }
 
+/**
+ * An object representing a shader program staging. It can be either a shader object or a program
+ * object, depending on whether separable program is used.
+ */
 class OGLShaderStage {
 public:
     OGLShaderStage(bool separable) {
@@ -82,6 +86,7 @@ public:
             shader_or_program = OGLShader();
         }
     }
+
     void Create(const char* source, GLenum type) {
         if (shader_or_program.which() == 0) {
             boost::get<OGLShader>(shader_or_program).Create(source, type);
@@ -94,6 +99,7 @@ public:
             SetShaderSamplerBindings(program.handle);
         }
     }
+
     GLuint GetHandle() const {
         if (shader_or_program.which() == 0) {
             return boost::get<OGLShader>(shader_or_program).handle;
@@ -106,10 +112,10 @@ private:
     boost::variant<OGLShader, OGLProgram> shader_or_program;
 };
 
-class DefaultVertexShader {
+class TrivialVertexShader {
 public:
-    DefaultVertexShader(bool separable) : program(separable) {
-        program.Create(GLShader::GenerateDefaultVertexShader(separable).c_str(), GL_VERTEX_SHADER);
+    TrivialVertexShader(bool separable) : program(separable) {
+        program.Create(GLShader::GenerateTrivialVertexShader(separable).c_str(), GL_VERTEX_SHADER);
     }
     GLuint Get() {
         return program.GetHandle();
@@ -190,7 +196,7 @@ class ShaderProgramManager::Impl {
 public:
     Impl(bool separable)
         : separable(separable), programmable_vertex_shaders(separable),
-          default_vertex_shader(separable), programmable_geometry_shaders(separable),
+          trivial_vertex_shader(separable), programmable_geometry_shaders(separable),
           fixed_geometry_shaders(separable), fragment_shaders(separable) {
         if (separable)
             pipeline.Create();
@@ -215,7 +221,7 @@ public:
     ShaderTuple current;
 
     ProgrammableVertexShaders programmable_vertex_shaders;
-    DefaultVertexShader default_vertex_shader;
+    TrivialVertexShader trivial_vertex_shader;
 
     ProgrammableGeometryShaders programmable_geometry_shaders;
     FixedGeometryShaders fixed_geometry_shaders;
@@ -238,7 +244,7 @@ void ShaderProgramManager::UseProgrammableVertexShader(const GLShader::PicaVSCon
 }
 
 void ShaderProgramManager::UseTrivialVertexShader() {
-    impl->current.vs = impl->default_vertex_shader.Get();
+    impl->current.vs = impl->trivial_vertex_shader.Get();
 }
 
 void ShaderProgramManager::UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
