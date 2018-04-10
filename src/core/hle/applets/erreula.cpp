@@ -67,19 +67,19 @@ void ErrEula::Update() {
 
     switch (config.error_type) {
     case ErrEulaErrorType::ErrorCode:
-        NGLOG_INFO(Service_APT, "Error code: {:#010X}", config.error_code);
+        NGLOG_INFO(Service_APT, "Error Code: {:#010X}", config.error_code);
         break;
     case ErrEulaErrorType::LocalizedErrorText:
     case ErrEulaErrorType::ErrorText: {
-        NGLOG_INFO(Service_APT, "Error code: {:#x}", config.error_code);
-        NGLOG_INFO(Service_APT, "Error text: {}", Common::UTF16ToUTF8(config.error_text));
+        NGLOG_INFO(Service_APT, "Error Code: {:#x}", config.error_code);
+        NGLOG_INFO(Service_APT, "Error Text: {}", Common::UTF16ToUTF8(config.error_text));
         break;
     }
     case ErrEulaErrorType::Agree:
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:
     case ErrEulaErrorType::EulaFirstBoot:
-        NGLOG_INFO(Service_APT, "Eula accepted");
+        NGLOG_INFO(Service_APT, "EULA accepted");
         break;
     }
 

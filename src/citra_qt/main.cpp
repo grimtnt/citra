@@ -730,7 +730,7 @@ ErrEulaResult GMainWindow::ErrEulaCallback(const ErrEulaConfig& config) {
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:
     case ErrEulaErrorType::EulaFirstBoot:
-        QMessageBox::information(this, tr("ErrEula"), tr("Eula accepted"));
+        QMessageBox::information(this, tr("ErrEula"), tr("EULA accepted"));
         break;
     }
 
