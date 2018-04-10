@@ -410,14 +410,14 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset) {
     }
 }
 
-void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr, GLintptr buffer_offset) {
+void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr) {
     ub_ptr->uniforms.SetFromRegs(Pica::g_state.regs.vs, Pica::g_state.vs);
 
     const GLShader::PicaVSConfig vs_config(Pica::g_state.regs, Pica::g_state.vs);
     shader_program_manager->UseProgrammableVertexShader(vs_config, Pica::g_state.vs);
 }
 
-void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr, GLintptr buffer_offset) {
+void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr) {
     const auto& regs = Pica::g_state.regs;
 
     GLuint shader;
@@ -781,14 +781,12 @@ void RasterizerOpenGL::DrawTriangles() {
             ptr_pos += index_buffer_size;
         }
 
-        SetupVertexShader(reinterpret_cast<VSUniformData*>(&buffer_ptr[ptr_pos]),
-                          buffer_offset + static_cast<GLintptr>(ptr_pos));
+        SetupVertexShader(reinterpret_cast<VSUniformData*>(&buffer_ptr[ptr_pos]));
         const GLintptr vs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
         ptr_pos += sizeof(VSUniformData);
 
         SetupGeometryShader(use_gs ? reinterpret_cast<GSUniformData*>(&buffer_ptr[ptr_pos])
-                                   : nullptr,
-                            buffer_offset + static_cast<GLintptr>(ptr_pos));
+                                   : nullptr);
         const GLintptr gs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
 
         stream_buffer->Unmap();
