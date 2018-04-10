@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>461</width>
-    <height>500</height>
+    <width>464</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,10 +45,10 @@
       </attribute>
      </widget>
      <widget class="ConfigureCamera" name="cameraTab">
-       <attribute name="title">
-        <string>Camera</string>
-       </attribute>
-      </widget>
+      <attribute name="title">
+       <string>Camera</string>
+      </attribute>
+     </widget>
      <widget class="ConfigureWeb" name="webTab">
       <attribute name="title">
        <string>Web</string>
@@ -94,7 +94,7 @@
    <extends>QWidget</extends>
    <header>configuration/configure_camera.h</header>
    <container>1</container>
-   </customwidget>
+  </customwidget>
   <customwidget>
    <class>ConfigureInput</class>
    <extends>QWidget</extends>
