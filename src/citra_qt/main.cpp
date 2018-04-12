@@ -392,13 +392,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
-    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, [&] {
-        bool ok;
-        u16 play_coins = static_cast<u16>(
-            QInputDialog::getInt(this, tr("Set Play Coins"), "Play Coins:", 0, 0, 300, 1, &ok));
-        if (ok)
-            Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
-    });
+    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, &GMainWindow::OnSetPlayCoins);
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -1189,6 +1183,15 @@ void GMainWindow::OnControlPanel() {
     if (controlPanel == nullptr)
         controlPanel = std::make_shared<ControlPanel>(this);
     controlPanel->show();
+}
+
+void GMainWindow::OnSetPlayCoins() {
+    bool ok;
+    u16 play_coins = static_cast<u16>(
+        QInputDialog::getInt(this, tr("Set Play Coins"), "Play Coins:", 0, 0, 300, 1, &ok,
+                             Qt::WindowSystemMenuHint | Qt::WindowTitleHint));
+    if (ok)
+        Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
 }
 
 void GMainWindow::OnRecordMovie() {
