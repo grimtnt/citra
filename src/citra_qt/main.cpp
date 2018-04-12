@@ -1159,15 +1159,6 @@ void GMainWindow::OnConfigure() {
     }
 }
 
-void GMainWindow::OnToggleFilterBar() {
-    game_list->setFilterVisible(ui.action_Show_Filter_Bar->isChecked());
-    if (ui.action_Show_Filter_Bar->isChecked()) {
-        game_list->setFilterFocus();
-    } else {
-        game_list->clearFilter();
-    }
-}
-
 void GMainWindow::OnCheats() {
     CheatDialog d;
     d.exec();
@@ -1192,6 +1183,15 @@ void GMainWindow::OnSetPlayCoins() {
                              Qt::WindowSystemMenuHint | Qt::WindowTitleHint));
     if (ok)
         Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
+}
+
+void GMainWindow::OnToggleFilterBar() {
+    game_list->setFilterVisible(ui.action_Show_Filter_Bar->isChecked());
+    if (ui.action_Show_Filter_Bar->isChecked()) {
+        game_list->setFilterFocus();
+    } else {
+        game_list->clearFilter();
+    }
 }
 
 void GMainWindow::OnRecordMovie() {
