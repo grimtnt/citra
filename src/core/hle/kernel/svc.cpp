@@ -1270,7 +1270,7 @@ ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
     case KernelSetStateType::ConfigureNew3DSCPU: {
         enable_higher_core_clock = (Settings::values.enable_new_mode && param0 & 0x00000001);
         enable_additional_cache = (Settings::values.enable_new_mode && (param0 >> 1) & 0x00000001);
-        NGLOG_TRACE(Kernel_SVC, "called, enables_higher_core_clock={}, enables_additional_cache={}",
+        NGLOG_TRACE(Kernel_SVC, "called, enable_higher_core_clock={}, enable_additional_cache={}",
                     enable_higher_core_clock, enable_additional_cache);
     } break;
     default: {
