@@ -5,7 +5,6 @@
 #include <chrono>
 #include <cstring>
 #include "core/core_timing.h"
-#include "core/hle/service/ptm/ptm.h"
 #include "core/hle/shared_page.h"
 #include "core/settings.h"
 

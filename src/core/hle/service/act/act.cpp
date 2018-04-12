@@ -11,6 +11,7 @@
 #include "core/hle/service/act/act_a.h"
 #include "core/hle/service/act/act_u.h"
 #include "core/hle/service/cfg/cfg.h"
+#include "core/hle/service/fs/archive.h"
 
 namespace Service {
 namespace ACT {
@@ -43,22 +44,18 @@ void Module::Interface::GetErrorCode(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
-    // TODO: find out why direct command buffer modifying is needed to this to work correctly
-    IPC::RequestParser rp(Kernel::GetCommandBuffer(), 0x0006, 3, 2);
+    IPC::RequestParser rp(ctx, 0x0006, 3, 2);
     u8 unk = rp.Pop<u8>();
     u32 size = rp.Pop<u32>();
     BlkID id = rp.PopEnum<BlkID>();
     ASSERT(rp.Pop<u32>() == ((size << 4) | 0xC));
-    VAddr addr = rp.Pop<VAddr>();
+    VAddr addr = (VAddr)Kernel::GetCommandBuffer()[5];
     switch (id) {
     case BlkID::NNID: {
-        std::string nnid = Common::UTF16ToUTF8(Service::CFG::GetUsername());
-        // TODO: find out why max length is 7 in citra
-        if (nnid.length() > 7)
-            nnid = nnid.substr(0, 7);
+        std::string nnid = Common::UTF16ToUTF8(Service::CFG::GetCurrentModule()->GetUsername());
+        nnid.resize(0x11);
         boost::algorithm::replace_all(nnid, " ", "_");
-        const char* network_id = nnid.c_str();
-        Memory::WriteBlock(addr, network_id, sizeof(network_id));
+        Memory::WriteBlock(addr, nnid.c_str(), nnid.length());
         break;
     }
     case BlkID::Unknown6: {
@@ -67,8 +64,8 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
         break;
     }
     case BlkID::U16MiiName: {
-        const char16_t* mii_name = Service::CFG::GetUsername().c_str();
-        Memory::WriteBlock(addr, mii_name, sizeof(mii_name));
+        std::u16string username = Service::CFG::GetCurrentModule()->GetUsername();
+        Memory::WriteBlock(addr, username.c_str(), username.length());
         break;
     }
     case BlkID::PrincipalID: {
@@ -77,29 +74,21 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
         break;
     }
     case BlkID::CountryName: {
-        std::tuple<unsigned char*, u8> country_tuple = Service::CFG::GetCountryInfo();
-        u8 country_code = std::get<1>(country_tuple);
+        u8 country_code = std::get<1>(Service::CFG::GetCurrentModule()->GetCountryInfo());
         Memory::Write16(addr, Service::CFG::country_codes[country_code]);
         break;
     }
     case BlkID::MiiImageURL: {
-        char url[0x101] = "https://avatars0.githubusercontent.com/u/4592895";
-        Memory::WriteBlock(addr, url, sizeof(url));
+        const char* url = "https://avatars0.githubusercontent.com/u/4592895";
+        Memory::WriteBlock(addr, url, std::strlen(url));
         break;
     }
     case BlkID::Age: {
-        if (unk == 0xFE) {
-            char age[2] = {0x00, 0x00};
-            Memory::WriteBlock(addr, age, sizeof(age));
-            break;
-        } else {
-            char age[2] = {0x00, 0x0C};
-            Memory::WriteBlock(addr, age, sizeof(age));
-            break;
-        }
+        u16 age = unk == 0xFE ? 0x00 : 0x0C;
+        Memory::WriteBlock(addr, &age, sizeof(age));
     }
     default: {
-        LOG_ERROR(Service_ACT, "Unimplemented block ID");
+        NGLOG_ERROR(Service_ACT, "Unimplemented block ID");
         UNIMPLEMENTED();
         break;
     }

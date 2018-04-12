@@ -8,6 +8,12 @@
 #include <QWidget>
 #include "common/common_types.h"
 
+namespace Service {
+namespace CFG {
+class Module;
+} // namespace CFG
+} // namespace Service
+
 namespace Ui {
 class ConfigureSystem;
 }
@@ -35,11 +41,12 @@ private:
     std::unique_ptr<Ui::ConfigureSystem> ui;
     bool enabled;
 
+    std::shared_ptr<Service::CFG::Module> cfg;
     std::u16string username;
     int birthmonth, birthday;
     int language_index;
     unsigned char* unknown;
     int country_index;
     int sound_index;
-    u32 model_index;
+    int model_index;
 };

@@ -4,13 +4,21 @@
 
 #include "common/logging/log.h"
 #include "core/hle/ipc_helpers.h"
-#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/nwm/nwm_ext.h"
 #include "core/hle/shared_page.h"
 #include "core/settings.h"
 
 namespace Service {
 namespace NWM {
+
+NWM_EXT::NWM_EXT() : ServiceFramework("nwm::EXT") {
+    static const FunctionInfo functions[] = {
+        {0x00080040, &NWM_EXT::ControlWirelessEnabled, "ControlWirelessEnabled"},
+    };
+    RegisterHandlers(functions);
+}
+
+NWM_EXT::~NWM_EXT() = default;
 
 void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x0008, 1, 0);
@@ -25,18 +33,8 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
             break;
         }
-        switch (static_cast<CFG::SystemModel>(CFG::GetSystemModelID())) {
-        case CFG::SystemModel::NINTENDO_3DS:
-        case CFG::SystemModel::NINTENDO_3DS_XL:
-        case CFG::SystemModel::NINTENDO_2DS:
-            Settings::values.n_wifi_status = 1;
-            break;
-        case CFG::SystemModel::NEW_NINTENDO_3DS:
-        case CFG::SystemModel::NEW_NINTENDO_3DS_XL:
-        case CFG::SystemModel::NEW_NINTENDO_2DS_XL:
-            Settings::values.n_wifi_status = 2;
-            break;
-        }
+
+        Settings::values.n_wifi_status = Settings::values.enable_new_mode ? 1 : 2;
         Settings::values.n_wifi_link_level = 3;
         Settings::values.n_state = 2;
         SharedPage::shared_page_handler->shared_page.wifi_link_level = 3;
@@ -67,15 +65,5 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(result);
 }
-
-NWM_EXT::NWM_EXT() : ServiceFramework("nwm::EXT") {
-    static const FunctionInfo functions[] = {
-        {0x00080040, &NWM_EXT::ControlWirelessEnabled, "ControlWirelessEnabled"},
-    };
-    RegisterHandlers(functions);
-}
-
-NWM_EXT::~NWM_EXT() = default;
-
 } // namespace NWM
 } // namespace Service

@@ -122,6 +122,7 @@ struct Values {
 
     // System
     int region_value;
+    bool enable_new_mode;
     InitClock init_clock;
     time_t init_time;
 

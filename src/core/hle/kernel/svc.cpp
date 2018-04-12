@@ -33,7 +33,6 @@
 #include "core/hle/kernel/wait_object.h"
 #include "core/hle/lock.h"
 #include "core/hle/result.h"
-#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/service.h"
 #include "core/settings.h"
 
@@ -1253,12 +1252,6 @@ static ResultCode GetProcessInfo(s64* out, Handle process_handle, u32 type) {
 }
 
 ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
-    bool is_new_3ds = false;
-    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
-        Service::CFG::GetSystemModelID() == 5) {
-        is_new_3ds = true;
-    }
-
     switch (static_cast<KernelSetStateType>(type)) {
     case KernelSetStateType::Type0:
     case KernelSetStateType::Type1:
@@ -1269,29 +1262,22 @@ ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
     case KernelSetStateType::Type6:
     case KernelSetStateType::Type7:
     case KernelSetStateType::Type8:
-    case KernelSetStateType::Type9:
-        LOG_ERROR(Kernel_SVC, "unimplemented KernelSetState type=%u", type);
+    case KernelSetStateType::Type9: {
+        NGLOG_ERROR(Kernel_SVC, "unimplemented KernelSetState type={}", static_cast<u32>(type));
         UNIMPLEMENTED();
         break;
-    case KernelSetStateType::ConfigureNew3DSCPU:
-        enable_higher_core_clock = (is_new_3ds && param0 & 0x00000001);
-        enable_additional_cache = (is_new_3ds && (param0 >> 1) & 0x00000001);
-        LOG_WARNING(Kernel_SVC, "called, enables_higher_core_clock=%u, enables_additional_cache=%u",
+    }
+    case KernelSetStateType::ConfigureNew3DSCPU: {
+        enable_higher_core_clock = (Settings::values.enable_new_mode && param0 & 0x00000001);
+        enable_additional_cache = (Settings::values.enable_new_mode && (param0 >> 1) & 0x00000001);
+        NGLOG_TRACE(Kernel_SVC, "called, enables_higher_core_clock={}, enables_additional_cache={}",
                     enable_higher_core_clock, enable_additional_cache);
+    } break;
+    default: {
+        return ResultCode(ErrorDescription::InvalidEnumValue, ErrorModule::Kernel,
+                          ErrorSummary::InvalidArgument, ErrorLevel::Permanent); // 0xF8C007F4
         break;
-    default:
-        return ResultCode( // 0xF8C007F4
-            ErrorDescription::InvalidEnumValue, ErrorModule::Kernel, ErrorSummary::InvalidArgument,
-            ErrorLevel::Permanent);
-        break;
-        LOG_WARNING(Kernel_SVC, "called, enables_higher_core_clock=%u, enables_additional_cache=%u",
-                    enable_higher_core_clock, enable_additional_cache);
-        break;
-
-        return ResultCode( // 0xF8C007F4
-            ErrorDescription::InvalidEnumValue, ErrorModule::Kernel, ErrorSummary::InvalidArgument,
-            ErrorLevel::Permanent);
-        break;
+    }
     }
     return RESULT_SUCCESS;
 }

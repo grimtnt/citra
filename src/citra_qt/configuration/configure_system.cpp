@@ -58,6 +58,7 @@ void ConfigureSystem::setConfiguration() {
     ui->edit_init_time->setDateTime(date_time);
 
     if (!enabled) {
+        cfg = Service::CFG::GetCurrentModule();
         ReadSystemSettings();
         ui->group_system_settings->setEnabled(false);
         ui->link_country_codes->hide();
@@ -65,15 +66,8 @@ void ConfigureSystem::setConfiguration() {
         // This tab is enabled only when game is not running (i.e. all service are not initialized).
         // Temporarily register archive types and load the config savegame file to memory.
         Service::FS::RegisterArchiveTypes();
-        ResultCode result = Service::CFG::LoadConfigNANDSaveFile();
+        cfg = std::make_shared<Service::CFG::Module>();
         Service::FS::UnregisterArchiveTypes();
-
-        if (result.IsError()) {
-            ui->label_disable_info->setText(tr("Failed to load system settings data."));
-            ui->group_system_settings->setEnabled(false);
-            enabled = false;
-            return;
-        }
 
         ReadSystemSettings();
         ui->label_disable_info->hide();
@@ -86,14 +80,14 @@ void ConfigureSystem::setConfiguration() {
 
 void ConfigureSystem::ReadSystemSettings() {
     // set username
-    username = Service::CFG::GetUsername();
+    username = cfg->GetUsername();
     // TODO(wwylele): Use this when we move to Qt 5.5
     // ui->edit_username->setText(QString::fromStdU16String(username));
     ui->edit_username->setText(
         QString::fromUtf16(reinterpret_cast<const ushort*>(username.data())));
 
     // set birthday
-    std::tie(birthmonth, birthday) = Service::CFG::GetBirthday();
+    std::tie(birthmonth, birthday) = cfg->GetBirthday();
     ui->combo_birthmonth->setCurrentIndex(birthmonth - 1);
     updateBirthdayComboBox(
         birthmonth -
@@ -101,23 +95,23 @@ void ConfigureSystem::ReadSystemSettings() {
     ui->combo_birthday->setCurrentIndex(birthday - 1);
 
     // set system language
-    language_index = Service::CFG::GetSystemLanguage();
+    language_index = cfg->GetSystemLanguage();
     ui->combo_language->setCurrentIndex(language_index);
 
     // set model
-    model_index = Service::CFG::GetSystemModelID();
-    ui->combo_model->setCurrentIndex(Service::CFG::GetSystemModelID());
+    model_index = static_cast<int>(cfg->GetSystemModel());
+    ui->combo_model->setCurrentIndex(model_index);
 
     // set country
-    std::tie(unknown, country_index) = Service::CFG::GetCountryInfo();
+    std::tie(unknown, country_index) = cfg->GetCountryInfo();
     ui->spinbox_country->setValue(country_index);
 
     // set sound output mode
-    sound_index = Service::CFG::GetSoundOutputMode();
+    sound_index = cfg->GetSoundOutputMode();
     ui->combo_sound->setCurrentIndex(sound_index);
 
     // set the console id
-    u64 console_id = Service::CFG::GetConsoleUniqueId();
+    u64 console_id = cfg->GetConsoleUniqueId();
     ui->label_console_id->setText(
         tr("Console ID: 0x%1").arg(QString::number(console_id, 16).toUpper()));
 }
@@ -134,7 +128,7 @@ void ConfigureSystem::applyConfiguration() {
     std::u16string new_username(
         reinterpret_cast<const char16_t*>(ui->edit_username->text().utf16()));
     if (new_username != username) {
-        Service::CFG::SetUsername(new_username);
+        cfg->SetUsername(new_username);
         modified = true;
     }
 
@@ -142,21 +136,21 @@ void ConfigureSystem::applyConfiguration() {
     int new_birthmonth = ui->combo_birthmonth->currentIndex() + 1;
     int new_birthday = ui->combo_birthday->currentIndex() + 1;
     if (birthmonth != new_birthmonth || birthday != new_birthday) {
-        Service::CFG::SetBirthday(new_birthmonth, new_birthday);
+        cfg->SetBirthday(new_birthmonth, new_birthday);
         modified = true;
     }
 
     // apply language
     int new_language = ui->combo_language->currentIndex();
     if (language_index != new_language) {
-        Service::CFG::SetSystemLanguage(static_cast<Service::CFG::SystemLanguage>(new_language));
+        cfg->SetSystemLanguage(static_cast<Service::CFG::SystemLanguage>(new_language));
         modified = true;
     }
 
     // apply model
-    u32 new_model = ui->combo_model->currentIndex();
+    int new_model = ui->combo_model->currentIndex();
     if (model_index != new_model) {
-        Service::CFG::SetSystemModel(new_model);
+        cfg->SetSystemModel(static_cast<Service::CFG::SystemModel>(new_model));
         modified = true;
     }
 
@@ -169,20 +163,20 @@ void ConfigureSystem::applyConfiguration() {
 
     int new_country = ui->spinbox_country->value();
     if (country_index != new_country) {
-        Service::CFG::SetCountryInfo(unknown, ui->spinbox_country->value());
+        cfg->SetCountryInfo(unknown, static_cast<u8>(ui->spinbox_country->value()));
         modified = true;
     }
 
     // apply sound
     int new_sound = ui->combo_sound->currentIndex();
     if (sound_index != new_sound) {
-        Service::CFG::SetSoundOutputMode(static_cast<Service::CFG::SoundOutputMode>(new_sound));
+        cfg->SetSoundOutputMode(static_cast<Service::CFG::SoundOutputMode>(new_sound));
         modified = true;
     }
 
     // update the config savegame if any item is modified.
     if (modified)
-        Service::CFG::UpdateConfigNANDSavegame();
+        cfg->UpdateConfigNANDSavegame();
 
     Settings::values.init_clock =
         static_cast<Settings::InitClock>(ui->combo_init_clock->currentIndex());
@@ -236,9 +230,9 @@ void ConfigureSystem::refreshConsoleID() {
         return;
     u32 random_number;
     u64 console_id;
-    Service::CFG::GenerateConsoleUniqueId(random_number, console_id);
-    Service::CFG::SetConsoleUniqueId(random_number, console_id);
-    Service::CFG::UpdateConfigNANDSavegame();
+    cfg->GenerateConsoleUniqueId(random_number, console_id);
+    cfg->SetConsoleUniqueId(random_number, console_id);
+    cfg->UpdateConfigNANDSavegame();
     ui->label_console_id->setText("Console ID: 0x" + QString::number(console_id, 16).toUpper());
 }
 

@@ -15,10 +15,10 @@
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/vm_manager.h"
 #include "core/hle/result.h"
-#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/shared_page.h"
 #include "core/memory.h"
 #include "core/memory_setup.h"
+#include "core/settings.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,12 +43,12 @@ static const u32 memory_region_sizes[8][3] = {
 };
 
 void MemoryInit(u32 mem_type) {
-    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
-        Service::CFG::GetSystemModelID() == 5) {
+    if (Settings::values.enable_new_mode) {
         if (mem_type <= 5) {
             mem_type = 6;
         }
     }
+
     ASSERT(mem_type != 1);
 
     // The kernel allocation regions (APPLICATION, SYSTEM and BASE) are laid out in sequence, with

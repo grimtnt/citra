@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>345</width>
-    <height>516</height>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,6 +35,13 @@
            <widget class="QCheckBox" name="toggle_deepscan">
             <property name="text">
              <string>Search sub-directories for games</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="toggle_new_mode">
+            <property name="text">
+             <string>Enable New Mode</string>
             </property>
            </widget>
           </item>

@@ -38,6 +38,7 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     this->setConfiguration();
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->toggle_new_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
@@ -46,6 +47,7 @@ ConfigureGeneral::~ConfigureGeneral() {}
 void ConfigureGeneral::setConfiguration() {
     ui->toggle_deepscan->setChecked(UISettings::values.gamedir_deepscan);
     ui->toggle_check_exit->setChecked(UISettings::values.confirm_before_closing);
+    ui->toggle_new_mode->setChecked(Settings::values.enable_new_mode);
     ui->toggle_cpu_jit->setChecked(Settings::values.use_cpu_jit);
 
     ui->toggle_update_check->setChecked(UISettings::values.check_for_update_on_start);
@@ -63,6 +65,7 @@ void ConfigureGeneral::setConfiguration() {
 void ConfigureGeneral::applyConfiguration() {
     UISettings::values.gamedir_deepscan = ui->toggle_deepscan->isChecked();
     UISettings::values.confirm_before_closing = ui->toggle_check_exit->isChecked();
+    Settings::values.enable_new_mode = ui->toggle_new_mode->isChecked();
     Settings::values.swkbd_mode =
         static_cast<Settings::SwkbdMode>(ui->swkbd_mode_combobox->currentIndex());
     UISettings::values.theme =

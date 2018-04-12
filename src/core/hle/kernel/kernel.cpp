@@ -10,8 +10,8 @@
 #include "core/hle/kernel/resource_limit.h"
 #include "core/hle/kernel/thread.h"
 #include "core/hle/kernel/timer.h"
-#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/shared_page.h"
+#include "core/settings.h"
 
 namespace Kernel {
 
@@ -22,20 +22,14 @@ void Init(u32 system_mode) {
     ConfigMem::Init();
     SharedPage::shared_page_handler = std::make_unique<SharedPage::Module>();
 
-    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
-        Service::CFG::GetSystemModelID() == 5) {
-        Kernel::MemoryInit(6);
-    } else {
-        Kernel::MemoryInit(system_mode);
-    }
+    Kernel::MemoryInit(system_mode);
 
     Kernel::ResourceLimitsInit();
     Kernel::ThreadingInit();
     Kernel::TimersInit();
 
     Object::next_object_id = 0;
-    // TODO(Subv): Start the process ids from 10 for now, as lower PIDs are
-    // reserved for low-level services
+    // Start the process ids from 10 for now, as lower PIDs are reserved for low-level services
     Process::next_process_id = 10;
 }
 

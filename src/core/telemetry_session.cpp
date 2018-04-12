@@ -12,7 +12,6 @@
 #include "common/x64/cpu_detect.h"
 #endif
 #include "core/core.h"
-#include "core/hle/service/cfg/cfg.h"
 #include "core/settings.h"
 #include "core/telemetry_session.h"
 
@@ -178,7 +177,8 @@ TelemetrySession::TelemetrySession() {
     AddField(Telemetry::FieldType::UserConfig, "Renderer_UseShaderJit",
              Settings::values.use_shader_jit);
     AddField(Telemetry::FieldType::UserConfig, "Renderer_UseVsync", Settings::values.use_vsync);
-    AddField(Telemetry::FieldType::UserConfig, "System_Model", Service::CFG::GetSystemModelID());
+    AddField(Telemetry::FieldType::UserConfig, "System_EnableNewMode",
+             Settings::values.enable_new_mode);
     AddField(Telemetry::FieldType::UserConfig, "System_RegionValue", Settings::values.region_value);
 }
 

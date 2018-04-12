@@ -195,6 +195,10 @@ use_virtual_sd =
 # -1: Auto-select (default), 0: Japan, 1: USA, 2: Europe, 3: Australia, 4: China, 5: Korea, 6: Taiwan
 region_value =
 
+# Enable New Mode
+# 0 (default): disable, 1: enable
+enable_new_mode =
+
 # The clock to use when citra starts
 # 0: System clock (default), 1: fixed time
 init_clock =

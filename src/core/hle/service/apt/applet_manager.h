@@ -141,7 +141,7 @@ public:
 
     ResultVal<AppletInfo> GetAppletInfo(AppletId app_id);
     ResultCode PrepareToCloseLibraryApplet(bool not_pause, bool exiting, bool jump_to_home);
-    ResultCode CloseLibraryApplet(u32 parameter_size, Kernel::Handle handle, VAddr parameter_addr);
+    ResultCode CloseLibraryApplet(u32 parameter_size, u32 handle, VAddr parameter_addr);
 
 private:
     /// Parameter data to be returned in the next call to Glance/ReceiveParameter.

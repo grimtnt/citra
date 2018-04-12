@@ -20,29 +20,12 @@ enum class CecStateAbbreviated {
                                 /// OVER_BOSS and those listed here
 };
 
-void Open(Service::Interface* self);
-void Read(Service::Interface* self);
-void ReadMessage(Service::Interface* self);
-void ReadMessageWithHMAC(Service::Interface* self);
-void Write(Service::Interface* self);
-void WriteMessage(Service::Interface* self);
-void WriteMessageWithHMAC(Service::Interface* self);
-void Delete(Service::Interface* self);
-
-void cecd9(Service::Interface* self);
-void GetSystemInfo(Service::Interface* self);
-void cecdB(Service::Interface* self);
-void cecdC(Service::Interface* self);
-
-void OpenAndWrite(Service::Interface* self);
-void OpenAndRead(Service::Interface* self);
-
 /**
  * GetCecStateAbbreviated service function
  *  Inputs:
  *      0: 0x000E0000
  *  Outputs:
- *      1: ResultCode
+ *      1: Result code
  *      2: CecStateAbbreviated
  */
 void GetCecStateAbbreviated(Service::Interface* self);
@@ -52,7 +35,7 @@ void GetCecStateAbbreviated(Service::Interface* self);
  *  Inputs:
  *      0: 0x000F0000
  *  Outputs:
- *      1: ResultCode
+ *      1: Result code
  *      3: Event Handle
  */
 void GetCecInfoEventHandle(Service::Interface* self);
@@ -62,10 +45,30 @@ void GetCecInfoEventHandle(Service::Interface* self);
  *  Inputs:
  *      0: 0x00100000
  *  Outputs:
- *      1: ResultCode
+ *      1: Result code
  *      3: Event Handle
  */
 void GetChangeStateEventHandle(Service::Interface* self);
+
+/**
+ * OpenAndRead service function
+ *  Inputs:
+ *      0: 0x00120104
+ *      1: Buffer size
+ *      2: NCCH Program ID
+ *      3: Path type
+ *      4: File open flag
+ *      5: Descriptor for process ID
+ *      6: Placeholder for process ID
+ *      7: Descriptor for mapping a write-only buffer in the target process
+ *      8: Buffer address
+ *  Outputs:
+ *      1: Result code
+ *      2: Total bytes read
+ *      3: Descriptor for mapping a write-only buffer in the target process
+ *      4: Buffer address
+ */
+void OpenAndRead(Service::Interface* self);
 
 /// Initialize CECD service(s)
 void Init();

@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 #include "core/hle/ipc.h"
-#include "core/hle/kernel/handle_table.h"
 #include "core/hle/kernel/hle_ipc.h"
 #include "core/hle/kernel/kernel.h"
 
@@ -18,7 +17,7 @@ namespace IPC {
 
 class RequestHelperBase {
 protected:
-    Kernel::HLERequestContext* context = nullptr;
+    Kernel::HLERequestContext* context;
     u32* cmdbuf;
     ptrdiff_t index = 1;
     Header header;
@@ -26,9 +25,6 @@ protected:
 public:
     RequestHelperBase(Kernel::HLERequestContext& context, Header desired_header)
         : context(&context), cmdbuf(context.CommandBuffer()), header(desired_header) {}
-
-    RequestHelperBase(u32* command_buffer, Header command_header)
-        : cmdbuf(command_buffer), header(command_header) {}
 
     /// Returns the total size of the request in words
     size_t TotalSize() const {
@@ -44,18 +40,6 @@ public:
         if (set_to_null)
             memset(cmdbuf + index, 0, size_in_words * sizeof(u32));
         index += size_in_words;
-    }
-
-    /**
-     * @brief Retrieves the address of a static buffer, used when a buffer is needed for output
-     * @param buffer_id The index of the static buffer
-     * @param data_size If non-null, will store the size of the buffer
-     */
-    VAddr PeekStaticBuffer(u8 buffer_id, size_t* data_size = nullptr) const {
-        u32* static_buffer = cmdbuf + Kernel::kStaticBuffersOffset / sizeof(u32) + buffer_id * 2;
-        if (data_size)
-            *data_size = StaticBufferDescInfo{static_buffer[0]}.size;
-        return static_buffer[1];
     }
 };
 
@@ -73,19 +57,6 @@ public:
                    unsigned translate_params_size)
         : RequestBuilder(
               context, Header{MakeHeader(command_id, normal_params_size, translate_params_size)}) {}
-
-    RequestBuilder(u32* command_buffer, Header command_header)
-        : RequestHelperBase(command_buffer, command_header) {
-        cmdbuf[0] = header.raw;
-    }
-
-    explicit RequestBuilder(u32* command_buffer, u32 command_header)
-        : RequestBuilder(command_buffer, Header{command_header}) {}
-
-    RequestBuilder(u32* command_buffer, u16 command_id, unsigned normal_params_size,
-                   unsigned translate_params_size)
-        : RequestBuilder(command_buffer,
-                         MakeHeader(command_id, normal_params_size, translate_params_size)) {}
 
     // Validate on destruction, as there shouldn't be any case where we don't want it
     ~RequestBuilder() {
@@ -116,25 +87,23 @@ public:
     void PushRaw(const T& value);
 
     // TODO : ensure that translate params are added after all regular params
-    template <typename... H>
-    void PushCopyHandles(H... handles);
-
-    template <typename... H>
-    void PushMoveHandles(H... handles);
-
     template <typename... O>
     void PushCopyObjects(Kernel::SharedPtr<O>... pointers);
 
     template <typename... O>
     void PushMoveObjects(Kernel::SharedPtr<O>... pointers);
 
-    void PushStaticBuffer(VAddr buffer_vaddr, size_t size, u8 buffer_id);
     void PushStaticBuffer(const std::vector<u8>& buffer, u8 buffer_id);
-
-    void PushMappedBuffer(VAddr buffer_vaddr, size_t size, MappedBufferPermissions perms);
 
     /// Pushes an HLE MappedBuffer interface back to unmapped the buffer.
     void PushMappedBuffer(const Kernel::MappedBuffer& mapped_buffer);
+
+private:
+    template <typename... H>
+    void PushCopyHLEHandles(H... handles);
+
+    template <typename... H>
+    void PushMoveHLEHandles(H... handles);
 };
 
 /// Push ///
@@ -184,30 +153,25 @@ void RequestBuilder::Push(const First& first_value, const Other&... other_values
 }
 
 template <typename... H>
-inline void RequestBuilder::PushCopyHandles(H... handles) {
+inline void RequestBuilder::PushCopyHLEHandles(H... handles) {
     Push(CopyHandleDesc(sizeof...(H)));
-    Push(static_cast<Kernel::Handle>(handles)...);
+    Push(static_cast<u32>(handles)...);
 }
 
 template <typename... H>
-inline void RequestBuilder::PushMoveHandles(H... handles) {
+inline void RequestBuilder::PushMoveHLEHandles(H... handles) {
     Push(MoveHandleDesc(sizeof...(H)));
-    Push(static_cast<Kernel::Handle>(handles)...);
+    Push(static_cast<u32>(handles)...);
 }
 
 template <typename... O>
 inline void RequestBuilder::PushCopyObjects(Kernel::SharedPtr<O>... pointers) {
-    PushCopyHandles(context->AddOutgoingHandle(std::move(pointers))...);
+    PushCopyHLEHandles(context->AddOutgoingHandle(std::move(pointers))...);
 }
 
 template <typename... O>
 inline void RequestBuilder::PushMoveObjects(Kernel::SharedPtr<O>... pointers) {
-    PushMoveHandles(context->AddOutgoingHandle(std::move(pointers))...);
-}
-
-inline void RequestBuilder::PushStaticBuffer(VAddr buffer_vaddr, size_t size, u8 buffer_id) {
-    Push(StaticBufferDesc(size, buffer_id));
-    Push(buffer_vaddr);
+    PushMoveHLEHandles(context->AddOutgoingHandle(std::move(pointers))...);
 }
 
 inline void RequestBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 buffer_id) {
@@ -218,12 +182,6 @@ inline void RequestBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 b
     Push<VAddr>(0xDEADC0DE);
 
     context->AddStaticBuffer(buffer_id, buffer);
-}
-
-inline void RequestBuilder::PushMappedBuffer(VAddr buffer_vaddr, size_t size,
-                                             MappedBufferPermissions perms) {
-    Push(MappedBufferDesc(size, perms));
-    Push(buffer_vaddr);
 }
 
 inline void RequestBuilder::PushMappedBuffer(const Kernel::MappedBuffer& mapped_buffer) {
@@ -242,27 +200,13 @@ public:
                         Header{MakeHeader(command_id, normal_params_size, translate_params_size)}) {
     }
 
-    RequestParser(u32* command_buffer, Header command_header)
-        : RequestHelperBase(command_buffer, command_header) {}
-
-    explicit RequestParser(u32* command_buffer, u32 command_header)
-        : RequestParser(command_buffer, Header{command_header}) {}
-
-    RequestParser(u32* command_buffer, u16 command_id, unsigned normal_params_size,
-                  unsigned translate_params_size)
-        : RequestParser(command_buffer,
-                        MakeHeader(command_id, normal_params_size, translate_params_size)) {}
-
     RequestBuilder MakeBuilder(u32 normal_params_size, u32 translate_params_size,
                                bool validateHeader = true) {
         if (validateHeader)
             ValidateHeader();
         Header builderHeader{MakeHeader(static_cast<u16>(header.command_id), normal_params_size,
                                         translate_params_size)};
-        if (context != nullptr)
-            return {*context, builderHeader};
-        else
-            return {cmdbuf, builderHeader};
+        return {*context, builderHeader};
     }
 
     template <typename T>
@@ -283,24 +227,6 @@ public:
         return static_cast<T>(Pop<std::underlying_type_t<T>>());
     }
 
-    /// Equivalent to calling `PopHandles<1>()[0]`.
-    Kernel::Handle PopHandle();
-
-    /**
-     * Pops a descriptor containing `N` handles. The handles are returned as an array. The
-     * descriptor must contain exactly `N` handles, it is not permitted to, for example, call
-     * PopHandles<1>() twice to read a multi-handle descriptor with 2 handles, or to make a single
-     * PopHandles<2>() call to read 2 single-handle descriptors.
-     */
-    template <unsigned int N>
-    std::array<Kernel::Handle, N> PopHandles();
-
-    /// Convenience wrapper around PopHandles() which assigns the handles to the passed references.
-    template <typename... H>
-    void PopHandles(H&... handles) {
-        std::tie(handles...) = PopHandles<sizeof...(H)>();
-    }
-
     /// Equivalent to calling `PopGenericObjects<1>()[0]`.
     Kernel::SharedPtr<Kernel::Object> PopGenericObject();
 
@@ -310,8 +236,10 @@ public:
 
     /**
      * Pop a descriptor containing `N` handles and resolves them to Kernel::Object pointers. If a
-     * handle is invalid, null is returned for that object instead. The same caveats from
-     * PopHandles() apply regarding `N` matching the number of handles in the descriptor.
+     * handle is invalid, null is returned for that object instead. The descriptor must contain
+     * exactly `N` handles, it is not permitted to, for example, call PopGenericObjects<1>() twice
+     * to read a multi-handle descriptor with 2 handles, or to make a single PopGenericObjects<2>()
+     * call to read 2 single-handle descriptors.
      */
     template <unsigned int N>
     std::array<Kernel::SharedPtr<Kernel::Object>, N> PopGenericObjects();
@@ -333,18 +261,6 @@ public:
     u32 PopPID();
 
     /**
-     * @brief Pops the static buffer vaddr
-     * @return                  The virtual address of the buffer
-     * @param[out] data_size    If non-null, the pointed value will be set to the size of the data
-     *
-     * In real services, static buffers must be set up before any IPC request using those is sent.
-     * It is the duty of the process (usually services) to allocate and set up the receiving static
-     * buffer information. Our HLE services do not need to set up the buffers beforehand.
-     * Please note that the setup uses virtual addresses.
-     */
-    VAddr PopStaticBuffer(size_t* data_size);
-
-    /**
      * @brief Pops a static buffer from the IPC request buffer.
      * @return The buffer that was copied from the IPC request originator.
      *
@@ -353,16 +269,6 @@ public:
      * buffer information. Our HLE services do not need to set up the buffers beforehand.
      */
     const std::vector<u8>& PopStaticBuffer();
-
-    /**
-     * @brief Pops the mapped buffer vaddr
-     * @return                  The virtual address of the buffer
-     * @param[out] data_size    If non-null, the pointed value will be set to the size of the data
-     * given by the source process
-     * @param[out] buffer_perms If non-null, the pointed value will be set to the permissions of the
-     * buffer
-     */
-    VAddr PopMappedBuffer(size_t* data_size, MappedBufferPermissions* buffer_perms = nullptr);
 
     /// Pops a mapped buffer descriptor with its vaddr and resolves it to an HLE interface
     Kernel::MappedBuffer& PopMappedBuffer();
@@ -380,6 +286,9 @@ public:
      */
     template <typename T>
     T PopRaw();
+
+    template <unsigned int N>
+    std::array<u32, N> PopHLEHandles();
 };
 
 /// Pop ///
@@ -441,32 +350,23 @@ void RequestParser::Pop(First& first_value, Other&... other_values) {
     Pop(other_values...);
 }
 
-inline Kernel::Handle RequestParser::PopHandle() {
-    const u32 handle_descriptor = Pop<u32>();
-    DEBUG_ASSERT_MSG(IsHandleDescriptor(handle_descriptor),
-                     "Tried to pop handle(s) but the descriptor is not a handle descriptor");
-    DEBUG_ASSERT_MSG(HandleNumberFromDesc(handle_descriptor) == 1,
-                     "Descriptor indicates that there isn't exactly one handle");
-    return Pop<Kernel::Handle>();
-}
-
 template <unsigned int N>
-std::array<Kernel::Handle, N> RequestParser::PopHandles() {
+std::array<u32, N> RequestParser::PopHLEHandles() {
     u32 handle_descriptor = Pop<u32>();
     ASSERT_MSG(IsHandleDescriptor(handle_descriptor),
                "Tried to pop handle(s) but the descriptor is not a handle descriptor");
     ASSERT_MSG(N == HandleNumberFromDesc(handle_descriptor),
                "Number of handles doesn't match the descriptor");
 
-    std::array<Kernel::Handle, N> handles{};
-    for (Kernel::Handle& handle : handles) {
-        handle = Pop<Kernel::Handle>();
+    std::array<u32, N> handles{};
+    for (u32& handle : handles) {
+        handle = Pop<u32>();
     }
     return handles;
 }
 
 inline Kernel::SharedPtr<Kernel::Object> RequestParser::PopGenericObject() {
-    Kernel::Handle handle = PopHandle();
+    auto [handle] = PopHLEHandles<1>();
     return context->GetIncomingHandle(handle);
 }
 
@@ -477,7 +377,7 @@ Kernel::SharedPtr<T> RequestParser::PopObject() {
 
 template <unsigned int N>
 inline std::array<Kernel::SharedPtr<Kernel::Object>, N> RequestParser::PopGenericObjects() {
-    std::array<Kernel::Handle, N> handles = PopHandles<N>();
+    std::array<u32, N> handles = PopHLEHandles<N>();
     std::array<Kernel::SharedPtr<Kernel::Object>, N> pointers;
     for (int i = 0; i < N; ++i) {
         pointers[i] = context->GetIncomingHandle(handles[i]);
@@ -505,14 +405,6 @@ inline u32 RequestParser::PopPID() {
     return Pop<u32>();
 }
 
-inline VAddr RequestParser::PopStaticBuffer(size_t* data_size) {
-    const u32 sbuffer_descriptor = Pop<u32>();
-    StaticBufferDescInfo bufferInfo{sbuffer_descriptor};
-    if (data_size != nullptr)
-        *data_size = bufferInfo.size;
-    return Pop<VAddr>();
-}
-
 inline const std::vector<u8>& RequestParser::PopStaticBuffer() {
     const u32 sbuffer_descriptor = Pop<u32>();
     // Pop the address from the incoming request buffer
@@ -520,17 +412,6 @@ inline const std::vector<u8>& RequestParser::PopStaticBuffer() {
 
     StaticBufferDescInfo buffer_info{sbuffer_descriptor};
     return context->GetStaticBuffer(buffer_info.buffer_id);
-}
-
-inline VAddr RequestParser::PopMappedBuffer(size_t* data_size,
-                                            MappedBufferPermissions* buffer_perms) {
-    const u32 sbuffer_descriptor = Pop<u32>();
-    MappedBufferDescInfo bufferInfo{sbuffer_descriptor};
-    if (data_size != nullptr)
-        *data_size = bufferInfo.size;
-    if (buffer_perms != nullptr)
-        *buffer_perms = bufferInfo.perms;
-    return Pop<VAddr>();
 }
 
 inline Kernel::MappedBuffer& RequestParser::PopMappedBuffer() {

@@ -103,7 +103,7 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
 
 bool Module::LoadSharedFont() {
     u8 font_region_code;
-    switch (CFG::GetRegionValue()) {
+    switch (CFG::GetCurrentModule()->GetRegionValue()) {
     case 4: // CHN
         font_region_code = 2;
         break;
@@ -557,8 +557,9 @@ void Module::Interface::PrepareToCloseLibraryApplet(Kernel::HLERequestContext& c
 void Module::Interface::CloseLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x28, 1, 4); // 0x00280044
     u32 parameter_size = rp.Pop<u32>();
-    Kernel::Handle handle = rp.PopHandle();
-    VAddr parameter_addr = rp.PopStaticBuffer(nullptr);
+    u32 handle = rp.PopHLEHandles<1>()[0];
+    rp.Pop<u32>(); // Descriptor
+    VAddr parameter_addr = rp.Pop<VAddr>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(apt->applet_manager->CloseLibraryApplet(parameter_size, handle, parameter_addr));

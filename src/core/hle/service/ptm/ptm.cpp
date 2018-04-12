@@ -113,23 +113,16 @@ void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
 }
 
 void CheckNew3DS(IPC::RequestBuilder& rb) {
-    bool is_new_3ds = false;
-    if (Service::CFG::GetSystemModelID() == 2 || Service::CFG::GetSystemModelID() == 4 ||
-        Service::CFG::GetSystemModelID() == 5) {
-        is_new_3ds = true;
-    }
-
-    if (is_new_3ds) {
-        LOG_CRITICAL(
-            Service_PTM,
-            "The selected model in 'System' "
-            "settings is New 3DS/2DS. Citra does not fully support New 3DS/2DS emulation yet!");
+    if (Settings::values.enable_new_mode) {
+        NGLOG_WARNING(Service_PTM, "The New Mode is enabled. Citra "
+                                   "does not fully support New 3DS/2DS emulation yet!");
     }
 
     rb.Push(RESULT_SUCCESS);
-    rb.Push(is_new_3ds);
+    rb.Push(Settings::values.enable_new_mode);
 
-    LOG_WARNING(Service_PTM, "(STUBBED) called isNew3DS = 0x%08x", static_cast<u32>(is_new_3ds));
+    NGLOG_WARNING(Service_PTM, "(STUBBED) called, enable_new_mode={}",
+                  Settings::values.enable_new_mode);
 }
 
 void Module::Interface::ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx) {

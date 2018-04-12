@@ -47,6 +47,22 @@ enum class BlkID : u32 {
     CountryInfo = 0x2F
 };
 
+struct InfoBlock {
+    u32 PersistentID;
+    u32 padding;
+    u64 TransferableIDBase;
+    u8 MiiData[0x60];
+    char16_t MachinUserName[0xB];
+    char AccountID[0x11];
+    u8 padding2;
+    struct {
+        u16 year;
+        u8 month;
+        u8 day;
+    } Birthday;
+    u32 PrincipalID;
+};
+
 class Module final {
 public:
     class Interface : public ServiceFramework<Interface> {

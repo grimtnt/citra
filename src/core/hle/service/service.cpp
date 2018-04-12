@@ -9,6 +9,7 @@
 #include "common/string_util.h"
 #include "core/hle/ipc.h"
 #include "core/hle/kernel/client_port.h"
+#include "core/hle/kernel/handle_table.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/server_port.h"
 #include "core/hle/kernel/server_session.h"
@@ -239,14 +240,14 @@ void Init() {
     FS::InstallInterfaces(*SM::g_service_manager);
     FS::ArchiveInit();
     ACT::InstallInterfaces(*SM::g_service_manager);
-    AM::Init();
+    AM::InstallInterfaces(*SM::g_service_manager);
     APT::InstallInterfaces(*SM::g_service_manager);
     BOSS::Init();
     CAM::InstallInterfaces(*SM::g_service_manager);
     CECD::Init();
-    CFG::Init();
+    CFG::InstallInterfaces(*SM::g_service_manager);
     DLP::Init();
-    FRD::Init();
+    FRD::InstallInterfaces(*SM::g_service_manager);
     GSP::InstallInterfaces(*SM::g_service_manager);
     HID::InstallInterfaces(*SM::g_service_manager);
     IR::InstallInterfaces(*SM::g_service_manager);
@@ -254,7 +255,7 @@ void Init() {
     NDM::Init();
     NEWS::InstallInterfaces(*SM::g_service_manager);
     NFC::InstallInterfaces(*SM::g_service_manager);
-    NIM::Init();
+    NIM::InstallInterfaces(*SM::g_service_manager);
     NWM::Init();
     PTM::InstallInterfaces(*SM::g_service_manager);
     QTM::Init();
@@ -282,14 +283,10 @@ void Resume() {
 /// Shutdown ServiceManager
 void Shutdown() {
     SM::g_service_manager->StopServices();
-    NIM::Shutdown();
     NDM::Shutdown();
-    FRD::Shutdown();
     DLP::Shutdown();
-    CFG::Shutdown();
     CECD::Shutdown();
     BOSS::Shutdown();
-    AM::Shutdown();
     FS::ArchiveShutdown();
 
     SM::g_service_manager = nullptr;

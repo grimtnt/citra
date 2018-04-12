@@ -80,7 +80,7 @@ static u64 GetTitleIdForApplet(AppletId id) {
 
     ASSERT_MSG(itr != applet_titleids.end(), "Unknown applet id {:#05X}", static_cast<u32>(id));
 
-    return itr->title_ids[CFG::GetRegionValue()];
+    return itr->title_ids[CFG::GetCurrentModule()->GetRegionValue()];
 }
 
 AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {
@@ -419,9 +419,8 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
 
 ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiting,
                                                       bool jump_to_home) {
-    LOG_DEBUG(Service_APT, "called not_pause=%u exiting=%u jump_to_home=%u",
-              static_cast<u32>(not_pause), static_cast<u32>(exiting),
-              static_cast<u32>(jump_to_home));
+    NGLOG_DEBUG(Service_APT, "called not_pause={}, exiting={}, jump_to_home={}", not_pause, exiting,
+                jump_to_home);
 
     if (next_parameter) {
         return ResultCode(ErrCodes::ParameterPresent, ErrorModule::Applet,
@@ -440,9 +439,8 @@ ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiti
     return RESULT_SUCCESS;
 }
 
-ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, Kernel::Handle handle,
-                                             VAddr parameter_addr) {
-    LOG_DEBUG(Service_APT, "called size=%u handle=%u", parameter_size, static_cast<u32>(handle));
+ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, u32 handle, VAddr parameter_addr) {
+    LOG_DEBUG(Service_APT, "called, size={}, handle=%u", parameter_size, handle);
 
     auto& slot = applet_slots[static_cast<size_t>(AppletSlot::LibraryApplet)];
 
