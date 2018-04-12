@@ -26,6 +26,14 @@ static const GameCoin default_game_coin = {0x4F00, 42, 0, 0, 0, 2014, 12, 29};
 /// Id of the SharedExtData archive used by the PTM process
 static const std::vector<u8> ptm_shared_extdata_id = {0, 0, 0, 0, 0x0B, 0, 0, 0xF0, 0, 0, 0, 0};
 
+static std::weak_ptr<Module> current_ptm;
+
+std::shared_ptr<Module> GetCurrentModule() {
+    auto ptm = current_ptm.lock();
+    ASSERT_MSG(ptm, "No PTM module running!");
+    return ptm;
+}
+
 void Module::Interface::GetAdapterState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x5, 0, 0);
 
@@ -173,6 +181,43 @@ Module::Module() {
     }
 }
 
+void Module::SetPlayCoins(u16 play_coins) {
+    FileSys::Path archive_path(ptm_shared_extdata_id);
+    auto archive_result =
+        Service::FS::OpenArchive(Service::FS::ArchiveIdCode::SharedExtSaveData, archive_path);
+
+    // If the archive didn't exist, create it
+    if (archive_result.Code() == FileSys::ERR_NOT_FORMATTED) {
+        // Format the archive to create the directories
+        Service::FS::FormatArchive(Service::FS::ArchiveIdCode::SharedExtSaveData,
+                                   FileSys::ArchiveFormatInfo(), archive_path);
+
+        // Open it again to get a valid archive now that the folder exists
+        archive_result =
+            Service::FS::OpenArchive(Service::FS::ArchiveIdCode::SharedExtSaveData, archive_path);
+    }
+
+    ASSERT_MSG(archive_result.Succeeded(), "Could not open the PTM SharedExtSaveData archive!");
+
+    FileSys::Path gamecoin_path("/gamecoin.dat");
+    Service::FS::CreateFileInArchive(*archive_result, gamecoin_path, sizeof(GameCoin));
+    FileSys::Mode open_mode = {};
+    open_mode.read_flag.Assign(1);
+    open_mode.write_flag.Assign(1);
+    // Open the file and write the gamecoin information
+    auto gamecoin_result =
+        Service::FS::OpenFileFromArchive(*archive_result, gamecoin_path, open_mode);
+    if (gamecoin_result.Succeeded()) {
+        auto gamecoin = std::move(gamecoin_result).Unwrap();
+        GameCoin game_coin;
+        gamecoin->backend->Read(0, sizeof(GameCoin), reinterpret_cast<u8*>(&game_coin));
+        game_coin.total_coins = play_coins;
+        gamecoin->backend->Write(0, sizeof(GameCoin), true,
+                                 reinterpret_cast<const u8*>(&game_coin));
+        gamecoin->backend->Close();
+    }
+}
+
 Module::Interface::Interface(std::shared_ptr<Module> ptm, const char* name, u32 max_session)
     : ServiceFramework(name, max_session), ptm(std::move(ptm)) {}
 
@@ -184,6 +229,7 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<PTM_S>(ptm)->InstallAsService(service_manager);
     std::make_shared<PTM_Sysm>(ptm)->InstallAsService(service_manager);
     std::make_shared<PTM_U>(ptm)->InstallAsService(service_manager);
+    current_ptm = ptm;
 }
 
 } // namespace PTM

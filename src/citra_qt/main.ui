@@ -77,6 +77,8 @@
     <addaction name="action_Cheats"/>
     <addaction name="action_Cheat_Search"/>
     <addaction name="action_Control_Panel"/>
+    <addaction name="separator"/>
+    <addaction name="action_Set_Play_Coins"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -377,6 +379,11 @@
   <action name="action_Cheat_Search">
    <property name="text">
     <string>Cheat Search...</string>
+   </property>
+  </action>
+  <action name="action_Set_Play_Coins">
+   <property name="text">
+    <string>Set Play Coins</string>
    </property>
   </action>
  </widget>

@@ -45,6 +45,7 @@
 #include "core/core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
 #include "core/hle/service/fs/archive.h"
+#include "core/hle/service/ptm/ptm.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
 #include "video_core/video_core.h"
@@ -332,6 +333,7 @@ void GMainWindow::RestoreUIState() {
 
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
+    ui.action_Set_Play_Coins->setEnabled(false);
     game_list->LoadInterfaceLayout();
 
     ui.action_Single_Window_Mode->setChecked(UISettings::values.single_window_mode);
@@ -390,6 +392,13 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
+    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, [&] {
+        bool ok;
+        u16 play_coins = static_cast<u16>(
+            QInputDialog::getInt(this, tr("Set Play Coins"), "Play Coins:", 0, 0, 300, 1, &ok));
+        if (ok)
+            Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
+    });
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -675,6 +684,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Report_Compatibility->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
+    ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Record->setEnabled(true);
     ui.action_Play->setEnabled(true);
     render_window->hide();
@@ -1004,6 +1014,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Stop->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
+    ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Record->setEnabled(false);
     ui.action_Play->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(true);
