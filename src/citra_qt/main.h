@@ -156,6 +156,7 @@ private slots:
     void OnMenuSelectGameListRoot();
     void OnMenuRecentFile();
     void OnConfigure();
+    void OnSetPlayCoins();
     void OnCheats();
     void OnCheatSearch();
     void OnControlPanel();
