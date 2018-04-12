@@ -681,12 +681,12 @@ void GMainWindow::ShutdownGame() {
     ui.action_Start->setText(tr("Start"));
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(false);
-    ui.action_Report_Compatibility->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Record->setEnabled(true);
     ui.action_Play->setEnabled(true);
+    ui.action_Report_Compatibility->setEnabled(false);
     render_window->hide();
     game_list->show();
     game_list->setFilterFocus();
