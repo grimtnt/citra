@@ -19,7 +19,7 @@ class CameraInterface;
 
 namespace CoreTiming {
 struct EventType;
-}
+} // namespace CoreTiming
 
 namespace Kernel {
 class Process;
