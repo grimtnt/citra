@@ -15,7 +15,7 @@ enum class HwShaders { Off, All, VS };
 
 enum class RenderBackend { Software, OpenGL };
 
-enum class SwkbdMode { StdIn, Qt };
+enum class SwkbdImplementation { StdIn, Qt };
 
 enum class InitClock : u8 {
     SystemTime = 0,
@@ -115,7 +115,7 @@ struct Values {
 
     // Core
     bool use_cpu_jit;
-    SwkbdMode swkbd_mode;
+    SwkbdImplementation swkbd_implementation;
 
     // Data Storage
     bool use_virtual_sd;

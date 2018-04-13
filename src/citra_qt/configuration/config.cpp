@@ -91,8 +91,8 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
-    Settings::values.swkbd_mode =
-        static_cast<Settings::SwkbdMode>(qt_config->value("swkbd_mode", 1).toInt());
+    Settings::values.swkbd_implementation = static_cast<Settings::SwkbdImplementation>(
+        qt_config->value("swkbd_implementation", 1).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
@@ -292,7 +292,8 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
-    qt_config->setValue("swkbd_mode", static_cast<int>(Settings::values.swkbd_mode));
+    qt_config->setValue("swkbd_implementation",
+                        static_cast<int>(Settings::values.swkbd_implementation));
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");

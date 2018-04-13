@@ -59,15 +59,16 @@ void ConfigureGeneral::setConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->language_combobox->setCurrentIndex(
         ui->language_combobox->findData(UISettings::values.language));
-    ui->swkbd_mode_combobox->setCurrentIndex(static_cast<int>(Settings::values.swkbd_mode));
+    ui->swkbd_implementation_combobox->setCurrentIndex(
+        static_cast<int>(Settings::values.swkbd_implementation));
 }
 
 void ConfigureGeneral::applyConfiguration() {
     UISettings::values.gamedir_deepscan = ui->toggle_deepscan->isChecked();
     UISettings::values.confirm_before_closing = ui->toggle_check_exit->isChecked();
     Settings::values.enable_new_mode = ui->toggle_new_mode->isChecked();
-    Settings::values.swkbd_mode =
-        static_cast<Settings::SwkbdMode>(ui->swkbd_mode_combobox->currentIndex());
+    Settings::values.swkbd_implementation = static_cast<Settings::SwkbdImplementation>(
+        ui->swkbd_implementation_combobox->currentIndex());
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
 

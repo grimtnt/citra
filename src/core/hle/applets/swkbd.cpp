@@ -190,8 +190,9 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
 }
 
 void SoftwareKeyboard::Update() {
-    if (Settings::values.swkbd_mode == Settings::SwkbdMode::Qt &&
+    if (Settings::values.swkbd_implementation == Settings::SwkbdImplementation::Qt &&
         Core::System::GetInstance().GetAppletFactories().swkbd.IsRegistered("qt")) {
+        // Call the function registered by the frontend
         auto res = Core::System::GetInstance().GetAppletFactories().swkbd.Launch("qt", config);
         std::u16string utf16_input = Common::UTF8ToUTF16(res.first);
         memcpy(text_memory->GetPointer(), utf16_input.c_str(),
@@ -200,89 +201,85 @@ void SoftwareKeyboard::Update() {
         config.text_length = static_cast<u16>(utf16_input.size());
         config.text_offset = 0;
         Finalize();
-        return;
-    }
+    } else {
+        // Read from stdin
+        std::string input;
+        std::cout << "SOFTWARE KEYBOARD" << std::endl;
+        // Display hint text
+        std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
+        if (!hint.empty()) {
+            std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
+        }
+        do {
+            std::cout << "Enter the text you will send to the application:" << std::endl;
+            std::getline(std::cin, input);
+        } while (!ValidateInput(config, input));
 
-    // TODO(Subv): Handle input using the touch events from the HID module
-    // Until then, just read input from the terminal
-    std::string input;
-    std::cout << "SOFTWARE KEYBOARD" << std::endl;
-    // Display hint text
-    std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
-    if (!hint.empty()) {
-        std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
-    }
-    do {
-        std::cout << "Enter the text you will send to the application:" << std::endl;
-        std::getline(std::cin, input);
-    } while (!ValidateInput(config, input));
-
-    std::string option_text;
-    // convert all of the button texts into something we can output
-    // num_buttons is in the range of 0-2 so use <= instead of <
-    u32 num_buttons = static_cast<u32>(config.num_buttons_m1);
-    for (u32 i = 0; i <= num_buttons; ++i) {
-        std::string final_text;
-        // apps are allowed to set custom text to display on the button
-        std::u16string custom_button_text(reinterpret_cast<char16_t*>(config.button_text[i]));
-        if (custom_button_text.empty()) {
-            // Use the system default text for that button
-            if (num_buttons == 0) {
-                final_text = swkbd_default_1_button[i];
-            } else if (num_buttons == 1) {
-                final_text = swkbd_default_2_button[i];
+        std::string option_text;
+        // convert all of the button texts into something we can output
+        // num_buttons is in the range of 0-2 so use <= instead of <
+        u32 num_buttons = static_cast<u32>(config.num_buttons_m1);
+        for (u32 i = 0; i <= num_buttons; ++i) {
+            std::string final_text;
+            // apps are allowed to set custom text to display on the button
+            std::u16string custom_button_text(reinterpret_cast<char16_t*>(config.button_text[i]));
+            if (custom_button_text.empty()) {
+                // Use the system default text for that button
+                if (num_buttons == 0) {
+                    final_text = swkbd_default_1_button[i];
+                } else if (num_buttons == 1) {
+                    final_text = swkbd_default_2_button[i];
+                } else {
+                    final_text = swkbd_default_3_button[i];
+                }
             } else {
-                final_text = swkbd_default_3_button[i];
+                final_text = Common::UTF16ToUTF8(custom_button_text);
             }
-        } else {
-            final_text = Common::UTF16ToUTF8(custom_button_text);
+            option_text += "\t(" + std::to_string(i) + ") " + final_text + "\t";
         }
-        option_text += "\t(" + std::to_string(i) + ") " + final_text + "\t";
+        std::string option;
+        do {
+            std::cout << "\nPlease type the number of the button you will press: \n"
+                      << option_text << std::endl;
+            std::getline(std::cin, option);
+        } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
+
+        s32 button = std::stol(option);
+        switch (config.num_buttons_m1) {
+        case SwkbdButtonConfig::SingleButton:
+            config.return_code = SwkbdResult::D0Click;
+            break;
+        case SwkbdButtonConfig::DualButton:
+            if (button == 0) {
+                config.return_code = SwkbdResult::D1Click0;
+            } else {
+                config.return_code = SwkbdResult::D1Click1;
+            }
+            break;
+        case SwkbdButtonConfig::TripleButton:
+            if (button == 0) {
+                config.return_code = SwkbdResult::D2Click0;
+            } else if (button == 1) {
+                config.return_code = SwkbdResult::D2Click1;
+            } else {
+                config.return_code = SwkbdResult::D2Click2;
+            }
+            break;
+        default:
+            // TODO: what does the hardware do
+            LOG_WARNING(Service_APT, "Unknown option for num_buttons_m1: %u",
+                        static_cast<u32>(config.num_buttons_m1));
+            config.return_code = SwkbdResult::None;
+            break;
+        }
+
+        std::u16string utf16_input = Common::UTF8ToUTF16(input);
+        memcpy(text_memory->GetPointer(), utf16_input.c_str(),
+               utf16_input.length() * sizeof(char16_t));
+        config.text_length = static_cast<u16>(utf16_input.size());
+        config.text_offset = 0;
+        Finalize();
     }
-    std::string option;
-    do {
-        std::cout << "\nPlease type the number of the button you will press: \n"
-                  << option_text << std::endl;
-        std::getline(std::cin, option);
-    } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
-
-    s32 button = std::stol(option);
-    switch (config.num_buttons_m1) {
-    case SwkbdButtonConfig::SingleButton:
-        config.return_code = SwkbdResult::D0Click;
-        break;
-    case SwkbdButtonConfig::DualButton:
-        if (button == 0) {
-            config.return_code = SwkbdResult::D1Click0;
-        } else {
-            config.return_code = SwkbdResult::D1Click1;
-        }
-        break;
-    case SwkbdButtonConfig::TripleButton:
-        if (button == 0) {
-            config.return_code = SwkbdResult::D2Click0;
-        } else if (button == 1) {
-            config.return_code = SwkbdResult::D2Click1;
-        } else {
-            config.return_code = SwkbdResult::D2Click2;
-        }
-        break;
-    default:
-        // TODO: what does the hardware do
-        LOG_WARNING(Service_APT, "Unknown option for num_buttons_m1: %u",
-                    static_cast<u32>(config.num_buttons_m1));
-        config.return_code = SwkbdResult::None;
-        break;
-    }
-
-    std::u16string utf16_input = Common::UTF8ToUTF16(input);
-    memcpy(text_memory->GetPointer(), utf16_input.c_str(), utf16_input.length() * sizeof(char16_t));
-    config.text_length = static_cast<u16>(utf16_input.size());
-    config.text_offset = 0;
-
-    // TODO(Subv): We're finalizing the applet immediately after it's started,
-    // but we should defer this call until after all the input has been collected.
-    Finalize();
 }
 
 void SoftwareKeyboard::Finalize() {

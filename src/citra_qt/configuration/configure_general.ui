@@ -62,14 +62,14 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_8">
             <item>
-             <widget class="QLabel" name="swkbd_mode_label">
+             <widget class="QLabel" name="swkbd_implementation_label">
               <property name="text">
-               <string>Software keyboard mode</string>
+               <string>Software keyboard implementation</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="swkbd_mode_combobox">
+             <widget class="QComboBox" name="swkbd_implementation_combobox">
               <item>
                <property name="text">
                 <string>StdIn</string>
