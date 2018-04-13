@@ -24,8 +24,8 @@ class SharedMemory;
 } // namespace Kernel
 
 namespace CoreTiming {
-class EventType;
-};
+struct EventType;
+} // namespace CoreTiming
 
 namespace Service {
 
