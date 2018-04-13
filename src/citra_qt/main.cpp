@@ -1179,7 +1179,7 @@ void GMainWindow::OnControlPanel() {
 void GMainWindow::OnSetPlayCoins() {
     bool ok;
     u16 play_coins = static_cast<u16>(
-        QInputDialog::getInt(this, tr("Set Play Coins"), "Play Coins:", 0, 0, 300, 1, &ok,
+        QInputDialog::getInt(this, tr("Set Play Coins"), tr("Play Coins:"), 0, 0, 300, 1, &ok,
                              Qt::WindowSystemMenuHint | Qt::WindowTitleHint));
     if (ok)
         Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
