@@ -147,9 +147,6 @@ public:
     /// Resumes the service (after pausing). Usually does nothing.
     virtual void ResumeService() {}
 
-    /// Stops the service (when emulation stops). Usually does nothing.
-    virtual void StopService() {}
-
 protected:
     /// Member-function pointer type of SyncRequest handlers.
     template <typename Self>
