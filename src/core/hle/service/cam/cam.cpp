@@ -191,22 +191,6 @@ Module::Interface::Interface(std::shared_ptr<Module> cam, const char* name, u32 
 
 Module::Interface::~Interface() = default;
 
-void Module::Interface::PauseService() {
-    for (CameraConfig& camera : cam->cameras) {
-        if (camera.impl) {
-            camera.impl->OnServicePaused();
-        }
-    }
-}
-
-void Module::Interface::ResumeService() {
-    for (CameraConfig& camera : cam->cameras) {
-        if (camera.impl) {
-            camera.impl->OnServiceResumed();
-        }
-    }
-}
-
 void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x01, 1, 0);
     const PortSet port_select(rp.Pop<u8>());
