@@ -89,12 +89,6 @@ void ServiceManager::ResumeServices() {
     }
 }
 
-void ServiceManager::StopServices() {
-    for (const auto& service : registered_service_frameworks) {
-        service.second.StopService();
-    }
-}
-
 std::shared_ptr<ServiceManager> g_service_manager;
 
 } // namespace SM
