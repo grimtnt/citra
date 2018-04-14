@@ -247,7 +247,6 @@ public:
         ~Interface();
         void PauseService() override;
         void ResumeService() override;
-        void StopService() override;
 
     protected:
         /**
