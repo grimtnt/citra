@@ -32,7 +32,7 @@ void StillImageCamera::SetFlip(Service::CAM::Flip flip) {
 
 void StillImageCamera::SetEffect(Service::CAM::Effect effect) {
     if (effect != Service::CAM::Effect::None) {
-        LOG_ERROR(Service_CAM, "Unimplemented effect %d", static_cast<int>(effect));
+        NGLOG_ERROR(Service_CAM, "Unimplemented effect {}", static_cast<int>(effect));
     }
 }
 
@@ -65,7 +65,7 @@ std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::stri
     }
     QImage image(QString::fromStdString(real_config));
     if (image.isNull()) {
-        LOG_ERROR(Service_CAM, "Couldn't load image \"%s\"", real_config.c_str());
+        NGLOG_ERROR(Service_CAM, "Couldn't load image \"{}\"", real_config);
     }
     return std::make_unique<StillImageCamera>(image);
 }
