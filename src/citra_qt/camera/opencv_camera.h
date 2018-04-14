@@ -5,11 +5,9 @@
 #pragma once
 
 #include <vector>
-
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
-
 #include "citra_qt/camera/qt_camera_factory.h"
 #include "core/frontend/camera/interface.h"
 
