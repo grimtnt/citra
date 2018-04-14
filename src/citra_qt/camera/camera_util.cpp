@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <cstring>
 #include <QImage>
 #ifdef ENABLE_OPENCV_CAMERA
 #include <opencv2/core.hpp>
@@ -174,9 +175,8 @@ static constexpr int V(int r, int g, int b) {
 }
 } // namespace YuvTable
 
-// Converts QImage to a yuv formatted std::vector
-std::vector<u16> Rgb2Yuv(QImage source, int width, int height) {
-    auto buffer = std::vector<u16>(height * width);
+std::vector<u16> Rgb2Yuv(const QImage& source, int width, int height) {
+    auto buffer = std::vector<u16>(width * height);
     auto dest = buffer.begin();
     bool write = false;
     int py, pu, pv;
@@ -209,8 +209,7 @@ std::vector<u16> Rgb2Yuv(QImage source, int width, int height) {
     return buffer;
 }
 
-/// Process the image and returns a std::vector
-std::vector<u16> ProcessImage(QImage image, int width, int height, bool output_rgb = false,
+std::vector<u16> ProcessImage(const QImage& image, int width, int height, bool output_rgb = false,
                               bool flip_horizontal = false, bool flip_vertical = false) {
     std::vector<u16> buffer(width * height);
     if (image.isNull()) {
@@ -245,7 +244,7 @@ QImage cvMat2QImage(const cv::Mat& mat) {
         uchar* pSrc = mat.data;
         for (int row = 0; row < mat.rows; row++) {
             uchar* pDest = image.scanLine(row);
-            memcpy(pDest, pSrc, mat.cols);
+            std::memcpy(pDest, pSrc, mat.cols);
             pSrc += mat.step;
         }
         return image;
@@ -266,7 +265,7 @@ QImage cvMat2QImage(const cv::Mat& mat) {
         return image.copy();
     }
     default:
-        LOG_ERROR(Service_CAM, "ERROR: Mat could not be converted to QImage.");
+        NGLOG_ERROR(Service_CAM, "ERROR: Mat could not be converted to QImage.");
         return QImage();
     }
 }
