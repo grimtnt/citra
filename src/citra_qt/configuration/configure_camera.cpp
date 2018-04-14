@@ -105,7 +105,7 @@ void ConfigureCamera::connectEvents() {
 
 void ConfigureCamera::setUiDisplay() {
     int camera_selection = getSelectedCameraIndex();
-    ImageSource image_source = static_cast<ImageSource>(ui->image_source->currentIndex());
+    auto image_source = static_cast<ImageSource>(ui->image_source->currentIndex());
     switch (image_source) {
     case ImageSource::Blank:
     case ImageSource::SystemCamera:
@@ -132,12 +132,12 @@ void ConfigureCamera::setUiDisplay() {
         break;
 #endif
     default:
-        LOG_ERROR(Frontend, "Error: unknown image source");
+        NGLOG_ERROR(Frontend, "Error: unknown image source");
     }
 
     // Get the implementations
     ui->implementation->clear();
-    for (auto implementation :
+    for (const auto& implementation :
          Implementations.at(static_cast<ImageSource>(ui->image_source->currentIndex()))) {
         ui->implementation->addItem(implementation);
     }
@@ -179,7 +179,6 @@ void ConfigureCamera::stopPreviewing() {
 
     if (previewing_camera) {
         previewing_camera->StopCapture();
-        previewing_camera.release();
     }
 
     if (timer_id != 0) {
@@ -220,7 +219,7 @@ void ConfigureCamera::onToolButtonClicked() {
     if (camera_name[camera_selection] == "image") {
         QList<QByteArray> types = QImageReader::supportedImageFormats();
         QList<QString> temp_filters;
-        for (QByteArray type : types) {
+        for (const QByteArray& type : types) {
             temp_filters << QString("*." + QString(type));
         }
         filter = tr("Supported image files (%1)").arg(temp_filters.join(" "));
@@ -270,7 +269,7 @@ void ConfigureCamera::setConfiguration() {
     else if (camera_name[index] == "qt") {
         ui->image_source->setCurrentText(tr("System Camera"));
     } else {
-        LOG_ERROR(Frontend, "Unknown camera type %s", camera_name[index].c_str());
+        NGLOG_ERROR(Frontend, "Unknown camera type {}", camera_name[index]);
         QString message =
             tr(("Sorry, but your configuration file seems to be invalid:\n\nUnknown camera type " +
                 camera_name[index])
@@ -338,7 +337,7 @@ ConfigureCamera::CameraPosition ConfigureCamera::getCameraSelection() {
                                                               : CameraPosition::RearRight;
         }
     default:
-        LOG_ERROR(Frontend, "Unknown camera selection");
+        NGLOG_ERROR(Frontend, "Unknown camera selection");
         return CameraPosition::Front;
     }
 }
