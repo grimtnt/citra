@@ -26,7 +26,6 @@ public:
     std::vector<u16> ReceiveFrame() override;
     void OnServicePaused() override;
     void OnServiceResumed() override;
-    void OnServiceStopped() override;
     bool IsPreviewAvailable() override;
 
 private:
