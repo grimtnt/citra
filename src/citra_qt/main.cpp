@@ -996,7 +996,7 @@ void GMainWindow::OnMenuRecentFile() {
 }
 
 void GMainWindow::OnStartGame() {
-    Service::Resume();
+    Camera::QtMultimediaCameraHandler::onEmulationResume();
     emu_thread->SetRunning(true);
     qRegisterMetaType<Core::System::ResultStatus>("Core::System::ResultStatus");
     qRegisterMetaType<std::string>("std::string");
@@ -1017,7 +1017,7 @@ void GMainWindow::OnStartGame() {
 void GMainWindow::OnPauseGame() {
     emu_thread->SetRunning(false);
 
-    Service::Pause();
+    Camera::QtMultimediaCameraHandler::onEmulationPause();
     ui.action_Start->setEnabled(true);
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(true);
