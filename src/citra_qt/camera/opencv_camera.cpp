@@ -104,12 +104,6 @@ void OpenCVCamera::OnServiceResumed() {
     StartCapture();
 }
 
-void OpenCVCamera::OnServiceStopped() {
-    if (capture.isOpened()) {
-        StopCapture();
-    }
-}
-
 bool OpenCVCamera::IsPreviewAvailable() {
     StartCapture();
     bool ret = capture.isOpened();
