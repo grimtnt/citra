@@ -251,7 +251,7 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
             }
 
             if (!dst_pointer) {
-                LOG_CRITICAL(HW_GPU, "Invalid address %08x", dst_pointer);
+                NGLOG_CRITICAL(HW_GPU, "Invalid address 0x{:010X}", dst_pointer);
                 break;
             }
 
