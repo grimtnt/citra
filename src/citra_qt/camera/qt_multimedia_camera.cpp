@@ -161,7 +161,21 @@ void QtMultimediaCameraHandler::StartCamera() {
 }
 
 bool QtMultimediaCameraHandler::CameraAvailable() const {
-    return camera->isAvailable();
+    return camera && camera->isAvailable();
+}
+
+void QtMultimediaCameraHandler::onEmulationPause() {
+    for(auto& handler : handlers){
+        handler->StopCamera();
+    }
+}
+
+void QtMultimediaCameraHandler::onEmulationResume() {
+    for(auto& handler : handlers){
+        if(handler->CameraAvailable()) {
+            handler->StartCamera();
+        }
+    }
 }
 
 } // namespace Camera
