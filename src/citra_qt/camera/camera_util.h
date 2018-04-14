@@ -14,10 +14,15 @@ class QImage;
 
 namespace CameraUtil {
 
-std::vector<u16> Rgb2Yuv(QImage source, int width, int height);
-std::vector<u16> ProcessImage(QImage source, int width, int height, bool output_rgb,
+/// Converts QImage to a yuv formatted std::vector
+std::vector<u16> Rgb2Yuv(const QImage& source, int width, int height);
+
+/// Processes the QImage (resizing, flipping ...) and converts it to a std::vector
+std::vector<u16> ProcessImage(const QImage& source, int width, int height, bool output_rgb,
                               bool flip_horizontal, bool flip_vertical);
+
 #ifdef ENABLE_OPENCV_CAMERA
+/// Converts cv::Mat to a std::vector
 QImage cvMat2QImage(const cv::Mat& mat);
 #endif
 
