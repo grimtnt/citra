@@ -5,7 +5,6 @@
 #pragma once
 
 #include <memory>
-#include <QLabel>
 #include <QMainWindow>
 #include <QTimer>
 #include <QTranslator>
