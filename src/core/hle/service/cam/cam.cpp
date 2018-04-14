@@ -207,14 +207,6 @@ void Module::Interface::ResumeService() {
     }
 }
 
-void Module::Interface::StopService() {
-    for (CameraConfig& camera : cam->cameras) {
-        if (camera.impl) {
-            camera.impl->OnServiceStopped();
-        }
-    }
-}
-
 void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x01, 1, 0);
     const PortSet port_select(rp.Pop<u8>());
