@@ -47,7 +47,6 @@ public:
     ResultVal<Kernel::SharedPtr<Kernel::ClientSession>> ConnectToService(const std::string& name);
     void PauseServices();
     void ResumeServices();
-    void StopServices();
 
 private:
     std::weak_ptr<SRV> srv_interface;
