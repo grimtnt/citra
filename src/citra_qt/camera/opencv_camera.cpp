@@ -4,7 +4,6 @@
 
 #include <QImage>
 #include <QMessageBox>
-
 #include "citra_qt/camera/camera_util.h"
 #include "citra_qt/camera/opencv_camera.h"
 #include "citra_qt/main.h"
@@ -73,7 +72,7 @@ void OpenCVCamera::SetFlip(Service::CAM::Flip flip) {
 
 void OpenCVCamera::SetEffect(Service::CAM::Effect effect) {
     if (effect != Service::CAM::Effect::None) {
-        LOG_ERROR(Service_CAM, "Unimplemented effect %d", static_cast<int>(effect));
+        NGLOG_ERROR(Service_CAM, "Unimplemented effect {}", static_cast<int>(effect));
     }
 }
 
@@ -87,7 +86,7 @@ std::vector<u16> OpenCVCamera::ReceiveFrame() {
         capture.set(cv::CAP_PROP_POS_FRAMES, 0);
         capture >> current_frame;
         if (current_frame.empty()) {
-            LOG_ERROR(Service_CAM, "Cannot get a frame from camera, returning empty values");
+            NGLOG_ERROR(Service_CAM, "Cannot get a frame from camera, returning empty values");
             return std::vector<u16>(width * height);
         }
     }
