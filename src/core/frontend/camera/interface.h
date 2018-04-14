@@ -27,9 +27,6 @@ public:
     /// Called when Service::CAM resumes. Usually does nothing.
     virtual void OnServiceResumed() {}
 
-    /// Called when Service::CAM is stopped. Usually does nothing.
-    virtual void OnServiceStopped() {}
-
     /**
      * Sets the video resolution from raw CAM service parameters.
      * For the meaning of the parameters, please refer to Service::CAM::Resolution. Note that the
