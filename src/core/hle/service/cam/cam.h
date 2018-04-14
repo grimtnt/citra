@@ -15,7 +15,7 @@
 
 namespace Camera {
 class CameraInterface;
-}
+} // namespace Camera
 
 namespace CoreTiming {
 struct EventType;
@@ -23,7 +23,7 @@ struct EventType;
 
 namespace Kernel {
 class Process;
-}
+} // namespace Kernel
 
 namespace Service {
 namespace CAM {
@@ -245,8 +245,6 @@ public:
     public:
         Interface(std::shared_ptr<Module> cam, const char* name, u32 max_session);
         ~Interface();
-        void PauseService() override;
-        void ResumeService() override;
 
     protected:
         /**
