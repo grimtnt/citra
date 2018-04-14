@@ -282,7 +282,6 @@ void Resume() {
 
 /// Shutdown ServiceManager
 void Shutdown() {
-    SM::g_service_manager->StopServices();
     NDM::Shutdown();
     DLP::Shutdown();
     CECD::Shutdown();
