@@ -77,18 +77,6 @@ ResultVal<Kernel::SharedPtr<Kernel::ClientSession>> ServiceManager::ConnectToSer
     return client_port->Connect();
 }
 
-void ServiceManager::PauseServices() {
-    for (const auto& service : registered_service_frameworks) {
-        service.second.PauseService();
-    }
-}
-
-void ServiceManager::ResumeServices() {
-    for (const auto& service : registered_service_frameworks) {
-        service.second.ResumeService();
-    }
-}
-
 std::shared_ptr<ServiceManager> g_service_manager;
 
 } // namespace SM
