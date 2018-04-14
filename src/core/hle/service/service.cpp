@@ -272,14 +272,6 @@ void Init() {
     LOG_DEBUG(Service, "initialized OK");
 }
 
-void Pause() {
-    SM::g_service_manager->PauseServices();
-}
-
-void Resume() {
-    SM::g_service_manager->ResumeServices();
-}
-
 /// Shutdown ServiceManager
 void Shutdown() {
     NDM::Shutdown();
