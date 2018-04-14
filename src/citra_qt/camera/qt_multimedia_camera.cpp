@@ -38,37 +38,37 @@ bool QtCameraSurface::present(const QVideoFrame& frame) {
     cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
     const QImage image(cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
                        QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
+    QMutexLocker locker(&mutex);
     current_frame = image.copy();
+    locker.unlock();
     cloneFrame.unmap();
     return true;
 }
 
-QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name) {
-    if (QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->thread() ==
-        QThread::currentThread()) {
-        QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->CreateCamera();
+QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name)
+    : handler(QtMultimediaCameraHandler::GetHandler()) {
+    if (handler->thread() == QThread::currentThread()) {
+        handler->CreateCamera();
     } else {
-        QMetaObject::invokeMethod(QtMultimediaCameraHandler::g_qt_multimedia_camera_handler.get(),
-                                  "CreateCamera", Qt::BlockingQueuedConnection);
+        QMetaObject::invokeMethod(handler.get(), "CreateCamera", Qt::BlockingQueuedConnection);
     }
 }
 
 QtMultimediaCamera::~QtMultimediaCamera() {
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
+    handler->StopCamera();
+    QtMultimediaCameraHandler::ReleaseHandler(handler);
 }
 
 void QtMultimediaCamera::StartCapture() {
-    if (QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->thread() ==
-        QThread::currentThread()) {
-        QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StartCamera();
+    if (handler->thread() == QThread::currentThread()) {
+        handler->StartCamera();
     } else {
-        QMetaObject::invokeMethod(QtMultimediaCameraHandler::g_qt_multimedia_camera_handler.get(),
-                                  "StartCamera", Qt::BlockingQueuedConnection);
+        QMetaObject::invokeMethod(handler.get(), "StartCamera", Qt::BlockingQueuedConnection);
     }
 }
 
 void QtMultimediaCamera::StopCapture() {
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
+    handler->StopCamera();
 }
 
 void QtMultimediaCamera::SetFormat(Service::CAM::OutputFormat output_format) {
@@ -88,30 +88,26 @@ void QtMultimediaCamera::SetFlip(Service::CAM::Flip flip) {
 
 void QtMultimediaCamera::SetEffect(Service::CAM::Effect effect) {
     if (effect != Service::CAM::Effect::None) {
-        LOG_ERROR(Service_CAM, "Unimplemented effect %d", static_cast<int>(effect));
+        NGLOG_ERROR(Service_CAM, "Unimplemented effect {}", static_cast<int>(effect));
     }
 }
 
 std::vector<u16> QtMultimediaCamera::ReceiveFrame() {
-    return CameraUtil::ProcessImage(
-        QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->camera_surface.current_frame,
-        width, height, output_rgb, flip_horizontal, flip_vertical);
+    QMutexLocker locker(&handler->camera_surface.mutex);
+    return CameraUtil::ProcessImage(handler->camera_surface.current_frame, width, height,
+                                    output_rgb, flip_horizontal, flip_vertical);
 }
 
 void QtMultimediaCamera::OnServicePaused() {
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
+    handler->StopCamera();
 }
 
 void QtMultimediaCamera::OnServiceResumed() {
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StartCamera();
-}
-
-void QtMultimediaCamera::OnServiceStopped() {
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->StopCamera();
+    handler->StartCamera();
 }
 
 bool QtMultimediaCamera::IsPreviewAvailable() {
-    return QtMultimediaCameraHandler::g_qt_multimedia_camera_handler->CameraAvailable();
+    return handler->CameraAvailable();
 }
 
 std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(
@@ -119,12 +115,36 @@ std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(
     return std::make_unique<QtMultimediaCamera>(config);
 }
 
-std::unique_ptr<QtMultimediaCameraHandler>
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler;
+std::array<std::shared_ptr<QtMultimediaCameraHandler>, 2> QtMultimediaCameraHandler::handlers;
+
+std::array<bool, 2> QtMultimediaCameraHandler::status;
 
 void QtMultimediaCameraHandler::Init() {
-    QtMultimediaCameraHandler::g_qt_multimedia_camera_handler =
-        std::make_unique<QtMultimediaCameraHandler>();
+    QtMultimediaCameraHandler::handlers[0] = std::make_shared<QtMultimediaCameraHandler>();
+    QtMultimediaCameraHandler::handlers[1] = std::make_shared<QtMultimediaCameraHandler>();
+}
+
+std::shared_ptr<QtMultimediaCameraHandler> QtMultimediaCameraHandler::GetHandler() {
+    for (int i = 0; i < handlers.size(); i++) {
+        if (!status[i]) {
+            NGLOG_INFO(Service_CAM, "Successfully got handler {}", i);
+            status[i] = true;
+            return handlers[i];
+        }
+    }
+    NGLOG_ERROR(Service_CAM, "All handlers taken up");
+    return nullptr;
+}
+
+void QtMultimediaCameraHandler::ReleaseHandler(
+    const std::shared_ptr<Camera::QtMultimediaCameraHandler>& handler) {
+    for (int i = 0; i < handlers.size(); i++) {
+        if (handlers[i] == handler) {
+            NGLOG_INFO(Service_CAM, "Successfully released handler {}", i);
+            status[i] = false;
+            break;
+        }
+    }
 }
 
 void QtMultimediaCameraHandler::CreateCamera() {
