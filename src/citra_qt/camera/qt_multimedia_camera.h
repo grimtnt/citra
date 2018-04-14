@@ -86,6 +86,8 @@ public:
 
     void StopCamera();
     bool CameraAvailable() const;
+    static void onEmulationPause();
+    static void onEmulationResume();
 
 private:
     // QtMultimediaCameraHandler() = default;
