@@ -45,8 +45,6 @@ public:
     ResultVal<Kernel::SharedPtr<Kernel::ServerPort>> RegisterService(ServiceFrameworkBase& service);
     ResultVal<Kernel::SharedPtr<Kernel::ClientPort>> GetServicePort(const std::string& name);
     ResultVal<Kernel::SharedPtr<Kernel::ClientSession>> ConnectToService(const std::string& name);
-    void PauseServices();
-    void ResumeServices();
 
 private:
     std::weak_ptr<SRV> srv_interface;
