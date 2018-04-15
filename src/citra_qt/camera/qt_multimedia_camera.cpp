@@ -164,9 +164,11 @@ bool QtMultimediaCameraHandler::CameraAvailable() const {
     return camera && camera->isAvailable();
 }
 
-void QtMultimediaCameraHandler::onEmulationPause() {
+void QtMultimediaCameraHandler::onEmulationPauseOrStop() {
     for (auto& handler : handlers) {
-        handler->StopCamera();
+        if (handler->CameraAvailable()) {
+            handler->StopCamera();
+        }
     }
 }
 

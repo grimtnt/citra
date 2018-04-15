@@ -667,6 +667,8 @@ void GMainWindow::ShutdownGame() {
     emu_thread->wait();
     emu_thread = nullptr;
 
+    Camera::QtMultimediaCameraHandler::onEmulationPauseOrStop();
+
     // The emulation is stopped, so closing the window or not does not matter anymore
     disconnect(render_window, &GRenderWindow::Closed, this, &GMainWindow::OnStopGame);
 
@@ -1017,7 +1019,7 @@ void GMainWindow::OnStartGame() {
 void GMainWindow::OnPauseGame() {
     emu_thread->SetRunning(false);
 
-    Camera::QtMultimediaCameraHandler::onEmulationPause();
+    Camera::QtMultimediaCameraHandler::onEmulationPauseOrStop();
     ui.action_Start->setEnabled(true);
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(true);

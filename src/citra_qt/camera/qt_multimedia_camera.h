@@ -86,11 +86,10 @@ public:
 
     void StopCamera();
     bool CameraAvailable() const;
-    static void onEmulationPause();
+    static void onEmulationPauseOrStop();
     static void onEmulationResume();
 
 private:
-    // QtMultimediaCameraHandler() = default;
     std::unique_ptr<QCamera> camera;
     QtCameraSurface camera_surface{};
 
