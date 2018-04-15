@@ -26,7 +26,7 @@ namespace Service {
 
 namespace SM {
 class ServiceManager;
-}
+} // namespace SM
 
 static const int kMaxPortSize = 8; ///< Maximum size of a port name (8 characters)
 /// Arbitrary default number of maximum connections to an HLE service.
@@ -262,7 +262,7 @@ private:
 };
 
 /// Initialize ServiceManager
-void Init();
+void Init(std::shared_ptr<SM::ServiceManager>& sm);
 
 /// Shutdown ServiceManager
 void Shutdown();
