@@ -86,6 +86,7 @@ void ConfigureGeneral::applyConfiguration() {
         ui->combobox_swkbd_implementation->currentIndex());
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
+    sd_card_root_changed = Settings::values.sd_card_root != ui->sd_card_root->text().toStdString();
     Settings::values.sd_card_root = ui->sd_card_root->text().toStdString();
 
     UISettings::values.check_for_update_on_start = ui->toggle_update_check->isChecked();

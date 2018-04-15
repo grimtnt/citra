@@ -27,6 +27,7 @@ void ConfigureDialog::applyConfiguration() {
     ui->cameraTab->applyConfiguration();
     ui->webTab->applyConfiguration();
     ui->hacksTab->applyConfiguration();
+    sd_card_root_changed = ui->generalTab->sd_card_root_changed;
     Settings::Apply();
 }
 

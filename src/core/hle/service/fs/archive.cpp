@@ -577,7 +577,9 @@ ResultCode DeleteExtSaveData(MediaType media_type, u32 high, u32 low) {
     if (media_type == MediaType::NAND) {
         media_type_directory = FileUtil::GetUserPath(D_NAND_IDX);
     } else if (media_type == MediaType::SDMC) {
-        media_type_directory = FileUtil::GetUserPath(D_SDMC_IDX);
+        media_type_directory = Settings::values.sd_card_root.empty()
+                                   ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                   : Settings::values.sd_card_root + "/";
     } else {
         LOG_ERROR(Service_FS, "Unsupported media type %u", static_cast<u32>(media_type));
         return ResultCode(-1); // TODO(Subv): Find the right error code

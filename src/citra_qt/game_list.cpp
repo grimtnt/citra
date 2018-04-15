@@ -26,6 +26,7 @@
 #include "common/string_util.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
+#include "core/settings.h"
 
 GameList::SearchField::KeyReleaseEater::KeyReleaseEater(GameList* gamelist) {
     this->gamelist = gamelist;
@@ -461,19 +462,24 @@ void GameListWorker::run() {
     stop_processing = false;
     watch_list.append(dir_path);
     watch_list.append(QString::fromStdString(
-        std::string(FileUtil::GetUserPath(D_SDMC_IDX).c_str()) +
+        (Settings::values.sd_card_root.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                               : std::string(Settings::values.sd_card_root + "/")) +
         "Nintendo "
         "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000"));
     watch_list.append(QString::fromStdString(
-        std::string(FileUtil::GetUserPath(D_SDMC_IDX).c_str()) +
+        (Settings::values.sd_card_root.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                               : std::string(Settings::values.sd_card_root + "/")) +
         "Nintendo "
         "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004000e"));
-    watch_list.append(
-        QString::fromStdString(std::string(FileUtil::GetUserPath(D_NAND_IDX).c_str()) +
-                               "00000000000000000000000000000000/title/00040010"));
+    watch_list.append(QString::fromStdString(
+        (Settings::values.sd_card_root.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                               : std::string(Settings::values.sd_card_root + "/")) +
+        "00000000000000000000000000000000/title/00040010"));
     AddFstEntriesToGameList(dir_path.toStdString(), deep_scan ? 256 : 0);
     AddFstEntriesToGameList(
-        std::string(FileUtil::GetUserPath(D_SDMC_IDX).c_str()) +
+        (Settings::values.sd_card_root.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                               : std::string(Settings::values.sd_card_root + "/")) +
+            "/" +
             "Nintendo "
             "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000",
         2);

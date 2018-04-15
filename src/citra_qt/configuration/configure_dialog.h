@@ -20,6 +20,8 @@ public:
 
     void applyConfiguration();
 
+    bool sd_card_root_changed;
+
 private slots:
     void onLanguageChanged(const QString& locale);
 

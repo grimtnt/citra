@@ -857,7 +857,9 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
     switch (target) {
     case GameListOpenTarget::SAVE_DATA: {
         open_target = "Save Data";
-        std::string sdmc_dir = FileUtil::GetUserPath(D_SDMC_IDX);
+        std::string sdmc_dir = Settings::values.sd_card_root.empty()
+                                   ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                   : Settings::values.sd_card_root + "/";
         path = FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(sdmc_dir, program_id);
         break;
     }
@@ -1155,6 +1157,10 @@ void GMainWindow::OnConfigure() {
     auto result = configureDialog.exec();
     if (result == QDialog::Accepted) {
         configureDialog.applyConfiguration();
+        if (configureDialog.sd_card_root_changed) {
+            game_list->PopulateAsync(UISettings::values.gamedir,
+                                     UISettings::values.gamedir_deepscan);
+        }
         UpdateUITheme();
         SyncMenuUISettings();
         config->Save();
