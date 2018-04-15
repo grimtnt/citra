@@ -51,8 +51,8 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());
-    ui->sd_card_root->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->button_sd_card_root->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->button_sd_card_root_empty->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
