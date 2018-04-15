@@ -165,14 +165,14 @@ bool QtMultimediaCameraHandler::CameraAvailable() const {
 }
 
 void QtMultimediaCameraHandler::onEmulationPause() {
-    for(auto& handler : handlers){
+    for (auto& handler : handlers) {
         handler->StopCamera();
     }
 }
 
 void QtMultimediaCameraHandler::onEmulationResume() {
-    for(auto& handler : handlers){
-        if(handler->CameraAvailable()) {
+    for (auto& handler : handlers) {
+        if (handler->CameraAvailable()) {
             handler->StartCamera();
         }
     }
