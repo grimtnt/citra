@@ -21,6 +21,12 @@ namespace AudioCore {
 class DspInterface;
 }
 
+namespace Service {
+namespace SM {
+class ServiceManager;
+} // namespace SM
+} // namespace Service
+
 namespace Core {
 
 struct AppletFactories {
@@ -121,6 +127,18 @@ public:
         return *dsp_core;
     }
 
+    /**
+     * Gets a reference to the service manager.
+     * @returns A reference to the service manager.
+     */
+    Service::SM::ServiceManager& ServiceManager();
+
+    /**
+     * Gets a const reference to the service manager.
+     * @returns A const reference to the service manager.
+     */
+    const Service::SM::ServiceManager& ServiceManager() const;
+
     PerfStats perf_stats;
     FrameLimiter frame_limiter;
 
@@ -161,10 +179,10 @@ private:
     /// Applet factories
     std::unique_ptr<AppletFactories> applet_factories;
 
-    ///< ARM11 CPU core
+    /// ARM11 CPU core
     std::unique_ptr<ARM_Interface> cpu_core;
 
-    ///< DSP core
+    /// DSP core
     std::unique_ptr<AudioCore::DspInterface> dsp_core;
 
     /// When true, signals that a reschedule should happen
@@ -172,6 +190,9 @@ private:
 
     /// Telemetry session for this emulation session
     std::unique_ptr<Core::TelemetrySession> telemetry_session;
+
+    /// Service manager
+    std::shared_ptr<Service::SM::ServiceManager> service_manager;
 
     static System s_instance;
 
