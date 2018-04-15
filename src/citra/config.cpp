@@ -164,6 +164,7 @@ void Config::ReadValues() {
     // Data Storage
     Settings::values.use_virtual_sd =
         sdl2_config->GetBoolean("Data Storage", "use_virtual_sd", true);
+    Settings::values.sd_card_root = sdl2_config->Get("Data Storage", "sd_card_root", "");
 
     // System
     Settings::values.region_value =

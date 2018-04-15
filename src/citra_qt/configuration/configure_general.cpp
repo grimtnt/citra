@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <QDirIterator>
+#include <QFileDialog>
 #include "citra_qt/configuration/configure_general.h"
 #include "citra_qt/ui_settings.h"
 #include "core/core.h"
@@ -31,6 +32,17 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ConfigureGeneral::onLanguageChanged);
 
+    connect(ui->button_sd_card_root_empty, &QPushButton::clicked, this, [&](bool checked) {
+        Q_UNUSED(checked);
+        ui->sd_card_root->setText(QString());
+    });
+
+    connect(ui->button_sd_card_root, &QToolButton::clicked, this, [&](bool checked) {
+        Q_UNUSED(checked);
+        ui->sd_card_root->setText(
+            QFileDialog::getExistingDirectory(this, tr("Select SD card root")));
+    });
+
     for (auto theme : UISettings::themes) {
         ui->theme_combobox->addItem(theme.first, theme.second);
     }
@@ -39,6 +51,8 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->sd_card_root->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->button_sd_card_root->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
@@ -49,6 +63,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->toggle_check_exit->setChecked(UISettings::values.confirm_before_closing);
     ui->toggle_new_mode->setChecked(Settings::values.enable_new_mode);
     ui->toggle_cpu_jit->setChecked(Settings::values.use_cpu_jit);
+    ui->sd_card_root->setText(QString::fromStdString(Settings::values.sd_card_root));
 
     ui->toggle_update_check->setChecked(UISettings::values.check_for_update_on_start);
     ui->toggle_auto_update->setChecked(UISettings::values.update_on_close);
@@ -59,7 +74,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->language_combobox->setCurrentIndex(
         ui->language_combobox->findData(UISettings::values.language));
-    ui->swkbd_implementation_combobox->setCurrentIndex(
+    ui->combobox_swkbd_implementation->setCurrentIndex(
         static_cast<int>(Settings::values.swkbd_implementation));
 }
 
@@ -68,9 +83,10 @@ void ConfigureGeneral::applyConfiguration() {
     UISettings::values.confirm_before_closing = ui->toggle_check_exit->isChecked();
     Settings::values.enable_new_mode = ui->toggle_new_mode->isChecked();
     Settings::values.swkbd_implementation = static_cast<Settings::SwkbdImplementation>(
-        ui->swkbd_implementation_combobox->currentIndex());
+        ui->combobox_swkbd_implementation->currentIndex());
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
+    Settings::values.sd_card_root = ui->sd_card_root->text().toStdString();
 
     UISettings::values.check_for_update_on_start = ui->toggle_update_check->isChecked();
     UISettings::values.update_on_close = ui->toggle_auto_update->isChecked();

@@ -39,6 +39,7 @@
 #include "core/hle/service/fs/fs_user.h"
 #include "core/hle/service/service.h"
 #include "core/memory.h"
+#include "core/settings.h"
 
 namespace Service {
 namespace FS {
@@ -619,7 +620,9 @@ void RegisterArchiveTypes() {
     // TODO(Subv): Add the other archive types (see here for the known types:
     // http://3dbrew.org/wiki/FS:OpenArchive#Archive_idcodes).
 
-    std::string sdmc_directory = FileUtil::GetUserPath(D_SDMC_IDX);
+    std::string sdmc_directory = Settings::values.sd_card_root.empty()
+                                     ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                     : Settings::values.sd_card_root + "/";
     std::string nand_directory = FileUtil::GetUserPath(D_NAND_IDX);
     auto sdmc_factory = std::make_unique<FileSys::ArchiveFactory_SDMC>(sdmc_directory);
     if (sdmc_factory->Initialize())
