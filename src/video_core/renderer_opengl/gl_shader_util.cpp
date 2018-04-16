@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <glad/glad.h>
+#include "common/assert.h"
+#include "common/logging/log.h"
 #include "video_core/renderer_opengl/gl_shader_util.h"
 
 namespace GLShader {
@@ -23,6 +25,7 @@ GLuint LoadShader(const char* source, GLenum type) {
     default:
         UNREACHABLE();
     }
+
     GLuint shader_id = glCreateShader(type);
     glShaderSource(shader_id, 1, &source, nullptr);
     NGLOG_DEBUG(Render_OpenGL, "Compiling {} shader...", debug_type);
@@ -34,12 +37,13 @@ GLuint LoadShader(const char* source, GLenum type) {
     glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &info_log_length);
 
     if (info_log_length > 1) {
-        std::string shader_error(info_log_length, ' ');
+        std::vector<char> shader_error(info_log_length);
         glGetShaderInfoLog(shader_id, info_log_length, nullptr, &shader_error[0]);
         if (result == GL_TRUE) {
-            NGLOG_DEBUG(Render_OpenGL, "{}", shader_error);
+            NGLOG_DEBUG(Render_OpenGL, "{}", &shader_error[0]);
         } else {
-            NGLOG_ERROR(Render_OpenGL, "Error compiling {} shader:\n{}", debug_type, shader_error);
+            NGLOG_ERROR(Render_OpenGL, "Error compiling {} shader:\n{}", debug_type,
+                        &shader_error[0]);
             NGLOG_ERROR(Render_OpenGL, "Shader source code:\n{}", source);
         }
     }
@@ -71,12 +75,12 @@ GLuint LoadProgram(bool separable_program, const std::vector<GLuint>& shaders) {
     glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &info_log_length);
 
     if (info_log_length > 1) {
-        std::string program_error(info_log_length, ' ');
+        std::vector<char> program_error(info_log_length);
         glGetProgramInfoLog(program_id, info_log_length, nullptr, &program_error[0]);
         if (result == GL_TRUE) {
-            NGLOG_DEBUG(Render_OpenGL, "{}", program_error);
+            NGLOG_DEBUG(Render_OpenGL, "{}", &program_error[0]);
         } else {
-            NGLOG_ERROR(Render_OpenGL, "Error linking shader:\n{}", program_error);
+            NGLOG_ERROR(Render_OpenGL, "Error linking shader:\n{}", &program_error[0]);
         }
     }
 
