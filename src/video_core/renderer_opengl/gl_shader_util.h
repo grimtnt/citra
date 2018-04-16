@@ -6,8 +6,6 @@
 
 #include <vector>
 #include <glad/glad.h>
-#include "common/assert.h"
-#include "common/logging/log.h"
 
 namespace GLShader {
 
