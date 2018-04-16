@@ -84,7 +84,7 @@ static_assert(sizeof(GSUniformData) < 16384,
 /// A class that manage different shader stages and configures them with given config data.
 class ShaderProgramManager {
 public:
-    ShaderProgramManager(bool separable);
+    explicit ShaderProgramManager(bool separable);
     ~ShaderProgramManager();
 
     void UseProgrammableVertexShader(const GLShader::PicaVSConfig& config,
