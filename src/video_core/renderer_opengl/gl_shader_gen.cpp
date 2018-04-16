@@ -67,10 +67,12 @@ static std::string GetVertexInterfaceDeclaration(bool is_output, bool separable_
     std::string out;
 
     auto append_variable = [&](const char* var, int location) {
-        out += (separable_shader ? "layout (location=" + std::to_string(location) + ") "
-                                 : std::string{}) +
-               (is_output ? "out " : "in ") + var + ";\n";
+        if (separable_shader) {
+            out += "layout (location=" + std::to_string(location) + ") ";
+        }
+        out += std::string(is_output ? "out " : "in ") + var + ";\n";
     };
+
     append_variable("vec4 primary_color", ATTRIBUTE_COLOR);
     append_variable("vec2 texcoord0", ATTRIBUTE_TEXCOORD0);
     append_variable("vec2 texcoord1", ATTRIBUTE_TEXCOORD1);
@@ -80,6 +82,7 @@ static std::string GetVertexInterfaceDeclaration(bool is_output, bool separable_
     append_variable("vec3 view", ATTRIBUTE_VIEW);
 
     if (is_output && separable_shader) {
+        // gl_PerVertex redeclaration is required for separate shader object
         out += R"(
 out gl_PerVertex {
     vec4 gl_Position;
@@ -1113,7 +1116,7 @@ float ProcTexNoiseCoef(vec2 x) {
     if (config.state.proctex.coord < 3) {
         out += "vec2 uv = abs(texcoord" + std::to_string(config.state.proctex.coord) + ");\n";
     } else {
-        LOG_CRITICAL(Render_OpenGL, "proctex.coord == 3");
+        NGLOG_CRITICAL(Render_OpenGL, "Unexpected proctex.coord >= 3");
         out += "vec2 uv = abs(texcoord0);\n";
     }
 
@@ -1185,7 +1188,7 @@ std::string GenerateFragmentShader(const PicaShaderConfig& config, bool separabl
 
     std::string out = "#version 330 core\n";
     if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
+        out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
 
     out += GetVertexInterfaceDeclaration(false, separable_shader);
@@ -1345,7 +1348,7 @@ vec4 secondary_fragment_color = vec4(0.0);
 std::string GenerateTrivialVertexShader(bool separable_shader) {
     std::string out = "#version 330 core\n";
     if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
+        out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
 
     out += GetVertexInterfaceDeclaration(true, separable_shader);
