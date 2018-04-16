@@ -10,14 +10,14 @@
 static void SetShaderUniformBlockBinding(GLuint shader, const char* name, UniformBindings binding,
                                          size_t expected_size) {
     GLuint ub_index = glGetUniformBlockIndex(shader, name);
-    if (ub_index != GL_INVALID_INDEX) {
-        GLint ub_size = 0;
-        glGetActiveUniformBlockiv(shader, ub_index, GL_UNIFORM_BLOCK_DATA_SIZE, &ub_size);
-        ASSERT_MSG(ub_size == expected_size,
-                   "Uniform block size did not match! Got %d, expected %zu",
-                   static_cast<int>(ub_size), expected_size);
-        glUniformBlockBinding(shader, ub_index, static_cast<GLuint>(binding));
+    if (ub_index == GL_INVALID_INDEX) {
+        return;
     }
+    GLint ub_size = 0;
+    glGetActiveUniformBlockiv(shader, ub_index, GL_UNIFORM_BLOCK_DATA_SIZE, &ub_size);
+    ASSERT_MSG(ub_size == expected_size, "Uniform block size did not match! Got {}, expected {}",
+               static_cast<int>(ub_size), expected_size);
+    glUniformBlockBinding(shader, ub_index, static_cast<GLuint>(binding));
 }
 
 static void SetShaderUniformBlockBindings(GLuint shader) {
@@ -79,7 +79,7 @@ void PicaUniformsData::SetFromRegs(const Pica::ShaderRegs& regs,
  */
 class OGLShaderStage {
 public:
-    OGLShaderStage(bool separable) {
+    explicit OGLShaderStage(bool separable) {
         if (separable) {
             shader_or_program = OGLProgram();
         } else {
@@ -114,10 +114,10 @@ private:
 
 class TrivialVertexShader {
 public:
-    TrivialVertexShader(bool separable) : program(separable) {
+    explicit TrivialVertexShader(bool separable) : program(separable) {
         program.Create(GLShader::GenerateTrivialVertexShader(separable).c_str(), GL_VERTEX_SHADER);
     }
-    GLuint Get() {
+    GLuint Get() const {
         return program.GetHandle();
     }
 
@@ -129,7 +129,7 @@ template <typename KeyConfigType, std::string (*CodeGenerator)(const KeyConfigTy
           GLenum ShaderType>
 class ShaderCache {
 public:
-    ShaderCache(bool separable) : separable(separable) {}
+    explicit ShaderCache(bool separable) : separable(separable) {}
     GLuint Get(const KeyConfigType& config) {
         auto [iter, new_shader] = shaders.emplace(config, OGLShaderStage{separable});
         OGLShaderStage& cached_shader = iter->second;
@@ -194,7 +194,7 @@ using FragmentShaders =
 
 class ShaderProgramManager::Impl {
 public:
-    Impl(bool separable)
+    explicit Impl(bool separable)
         : separable(separable), programmable_vertex_shaders(separable),
           trivial_vertex_shader(separable), programmable_geometry_shaders(separable),
           fixed_geometry_shaders(separable), fragment_shaders(separable) {
@@ -203,10 +203,18 @@ public:
     }
 
     struct ShaderTuple {
-        GLuint vs = 0, gs = 0, fs = 0;
+        GLuint vs = 0;
+        GLuint gs = 0;
+        GLuint fs = 0;
+
         bool operator==(const ShaderTuple& rhs) const {
             return std::tie(vs, gs, fs) == std::tie(rhs.vs, rhs.gs, rhs.fs);
         }
+
+        bool operator!=(const ShaderTuple& rhs) const {
+            return std::tie(vs, gs, fs) != std::tie(rhs.vs, rhs.gs, rhs.fs);
+        }
+
         struct Hash {
             std::size_t operator()(const ShaderTuple& tuple) const {
                 std::size_t hash = 0;
@@ -266,7 +274,8 @@ void ShaderProgramManager::UseFragmentShader(const GLShader::PicaShaderConfig& c
 
 void ShaderProgramManager::ApplyTo(OpenGLState& state) {
     if (impl->separable) {
-        // Workaround for AMD bug
+        // Without this reseting, AMD sometimes freezes when one stage is changed but not for the
+        // others
         glUseProgramStages(impl->pipeline.handle,
                            GL_VERTEX_SHADER_BIT | GL_GEOMETRY_SHADER_BIT | GL_FRAGMENT_SHADER_BIT,
                            0);
