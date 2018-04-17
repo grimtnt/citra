@@ -112,10 +112,10 @@
     </property>
     <addaction name="action_View_Lobby"/>
     <addaction name="action_Start_Room"/>
-    <addaction name="action_Stop_Room"/>
     <addaction name="action_Connect_To_Room"/>
     <addaction name="separator"/>
-    <addaction name="action_Chat"/>
+    <addaction name="action_Show_Room"/>
+    <addaction name="action_Leave_Room"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -247,11 +247,6 @@
     <string>Selects a folder to display in the game list</string>
    </property>
   </action>
-  <action name="action_Create_Pica_Surface_Viewer">
-   <property name="text">
-    <string>Create Pica Surface Viewer</string>
-   </property>
-  </action>
   <action name="action_View_Lobby">
    <property name="enabled">
     <bool>true</bool>
@@ -268,12 +263,12 @@
     <string>Create Room</string>
    </property>
   </action>
-  <action name="action_Stop_Room">
+  <action name="action_Leave_Room">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Close Room</string>
+    <string>Leave Room</string>
    </property>
   </action>
   <action name="action_Connect_To_Room">
@@ -281,12 +276,12 @@
     <string>Direct Connect to Room</string>
    </property>
   </action>
-  <action name="action_Chat">
+  <action name="action_Show_Room">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Current Room</string>
+    <string>Show Current Room</string>
    </property>
   </action>
   <action name="action_Fullscreen">
