@@ -15,7 +15,6 @@
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/service/am/am.h"
-#include "network/network.h"
 #include "ui_main.h"
 
 class AboutDialog;
@@ -54,7 +53,6 @@ class GMainWindow : public QMainWindow {
 public:
     void filterBarSetChecked(bool state);
     void UpdateUITheme();
-    void ChangeRoomState();
 
     GameList* game_list;
     GMainWindow();
