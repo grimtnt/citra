@@ -1,3 +1,4 @@
+<!---
 When submitting an issue, please check the following:
 
 - You have read the above.
@@ -8,3 +9,4 @@ When submitting an issue, please check the following:
   - For crashes, a backtrace.
   - For graphical issues, comparison screenshots with real hardware.
   - For emulation inaccuracies, a test-case (if able).
+--->
