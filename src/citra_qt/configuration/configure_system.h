@@ -31,7 +31,6 @@ public:
 
 public slots:
     void updateBirthdayComboBox(int birthmonth_index);
-    void updateInitTime(int init_clock);
     void refreshConsoleID();
 
 private:
