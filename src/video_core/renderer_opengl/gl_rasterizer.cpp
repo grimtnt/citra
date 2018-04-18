@@ -29,7 +29,6 @@ using SurfaceType = SurfaceParams::SurfaceType;
 
 RasterizerOpenGL::RasterizerOpenGL()
     : shader_dirty(true), vertex_buffer(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE) {
-
     // Clipping plane 0 is always enabled for PICA fixed clip plane z <= 0
     state.clip_distance[0] = true;
 
