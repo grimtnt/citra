@@ -17,12 +17,11 @@
 #include "common/logging/log.h"
 #include "core/settings.h"
 #include "network/network.h"
-#include "ui_lobby.h"
 
 Lobby::Lobby(QWidget* parent, QStandardItemModel* list,
              std::shared_ptr<Core::AnnounceMultiplayerSession> session)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(new Ui::Lobby), announce_multiplayer_session(session), game_list(list) {
+      ui(std::make_unique<Ui::Lobby>()), announce_multiplayer_session(session), game_list(list) {
     ui->setupUi(this);
 
     // setup the watcher for background connections
@@ -48,7 +47,7 @@ Lobby::Lobby(QWidget* parent, QStandardItemModel* list,
     ui->room_list->setExpandsOnDoubleClick(false);
     ui->room_list->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    ui->nickname->setValidator(Validation::nickname);
+    ui->nickname->setValidator(Validation::get().nickname);
     ui->nickname->setText(UISettings::values.nickname);
 
     // UI Buttons
@@ -74,7 +73,7 @@ Lobby::Lobby(QWidget* parent, QStandardItemModel* list,
     RefreshLobby();
 }
 
-const QString Lobby::PasswordPrompt() {
+QString Lobby::PasswordPrompt() {
     bool ok;
     const QString text =
         QInputDialog::getText(this, tr("Password Required to Join"), tr("Password:"),

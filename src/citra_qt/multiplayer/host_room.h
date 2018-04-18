@@ -11,10 +11,7 @@
 #include <QVariant>
 #include "citra_qt/multiplayer/chat_room.h"
 #include "network/network.h"
-
-namespace Ui {
-class HostRoom;
-} // namespace Ui
+#include "ui_host_room.h"
 
 namespace Core {
 class AnnounceMultiplayerSession;
@@ -52,7 +49,7 @@ private:
     std::weak_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
     QStandardItemModel* game_list;
     ComboBoxProxyModel* proxy;
-    Ui::HostRoom* ui;
+    std::unique_ptr<Ui::HostRoom> ui;
 };
 
 /**

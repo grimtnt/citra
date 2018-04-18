@@ -10,10 +10,7 @@
 #include <QStandardItemModel>
 #include <QVariant>
 #include "network/network.h"
-
-namespace Ui {
-class ChatRoom;
-} // namespace Ui
+#include "ui_chat_room.h"
 
 namespace Core {
 class AnnounceMultiplayerSession;
@@ -49,7 +46,7 @@ private:
     void AppendChatMessage(const QString&);
     bool ValidateMessage(const std::string&);
     QStandardItemModel* player_list;
-    Ui::ChatRoom* ui;
+    std::unique_ptr<Ui::ChatRoom> ui;
 };
 
 Q_DECLARE_METATYPE(Network::ChatEntry);
