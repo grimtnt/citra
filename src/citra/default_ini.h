@@ -203,15 +203,6 @@ region_value =
 # 0 (default): disable, 1: enable
 enable_new_mode =
 
-# The clock to use when citra starts
-# 0: System clock (default), 1: fixed time
-init_clock =
-
-# Time used when init_clock is set to fixed_time in the format %Y-%m-%d %H:%M:%S
-# set to fixed time. Default 2000-01-01 00:00:01
-# Note: 3DS can only handle times later then Jan 1 2000
-init_time =
-
 [Camera]
 # Which camera engine to use for the right outer camera
 # blank (default): a dummy camera that always returns black image
