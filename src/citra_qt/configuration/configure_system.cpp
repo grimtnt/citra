@@ -8,7 +8,6 @@
 #include "core/core.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
-#include "core/settings.h"
 #include "ui_configure_system.h"
 
 static const std::array<int, 12> days_in_month = {{
@@ -31,31 +30,16 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
     connect(ui->combo_birthmonth,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ConfigureSystem::updateBirthdayComboBox);
-    connect(ui->combo_init_clock,
-            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            &ConfigureSystem::updateInitTime);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
 
-    ui->edit_init_time->setCalendarPopup(true);
-    QDateTime dt;
-    dt.fromString("2000-01-01 00:00:01", "yyyy-MM-dd hh:mm:ss");
-    ui->edit_init_time->setMinimumDateTime(dt);
-
     this->setConfiguration();
-
-    updateInitTime(ui->combo_init_clock->currentIndex());
 }
 
 ConfigureSystem::~ConfigureSystem() {}
 
 void ConfigureSystem::setConfiguration() {
     enabled = !Core::System::GetInstance().IsPoweredOn();
-
-    ui->combo_init_clock->setCurrentIndex(static_cast<u8>(Settings::values.init_clock));
-    QDateTime date_time;
-    date_time.setTime_t(Settings::values.init_time);
-    ui->edit_init_time->setDateTime(date_time);
 
     if (!enabled) {
         cfg = Service::CFG::GetCurrentModule();
@@ -177,10 +161,6 @@ void ConfigureSystem::applyConfiguration() {
     // update the config savegame if any item is modified.
     if (modified)
         cfg->UpdateConfigNANDSavegame();
-
-    Settings::values.init_clock =
-        static_cast<Settings::InitClock>(ui->combo_init_clock->currentIndex());
-    Settings::values.init_time = ui->edit_init_time->dateTime().toTime_t();
 }
 
 void ConfigureSystem::updateBirthdayComboBox(int birthmonth_index) {
@@ -206,16 +186,6 @@ void ConfigureSystem::updateBirthdayComboBox(int birthmonth_index) {
 
     // restore the day selection
     ui->combo_birthday->setCurrentIndex(birthday_index);
-}
-
-void ConfigureSystem::updateInitTime(int init_clock) {
-    if (init_clock == 1) {
-        ui->label_init_time->setVisible(true);
-        ui->edit_init_time->setVisible(true);
-    } else {
-        ui->label_init_time->setVisible(false);
-        ui->edit_init_time->setVisible(false);
-    }
 }
 
 void ConfigureSystem::refreshConsoleID() {
