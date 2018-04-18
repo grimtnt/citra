@@ -1,16 +1,3 @@
-<!---
-
-Please read the FAQ:
-https://citra-emu.org/wiki/faq/
-
-THIS IS NOT A SUPPORT FORUM, FOR SUPPORT GO TO:
-https://community.citra-emu.org/
-
-If the FAQ does not answer your question, please go to:
-https://community.citra-emu.org/
-
-====================================================
-
 When submitting an issue, please check the following:
 
 - You have read the above.
@@ -21,5 +8,3 @@ When submitting an issue, please check the following:
   - For crashes, a backtrace.
   - For graphical issues, comparison screenshots with real hardware.
   - For emulation inaccuracies, a test-case (if able).
-
---->
