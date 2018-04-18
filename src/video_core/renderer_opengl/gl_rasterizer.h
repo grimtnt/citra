@@ -281,9 +281,6 @@ private:
     OGLTexture proctex_diff_lut;
     std::array<GLvec4, 256> proctex_diff_lut_data{};
 
-    static constexpr size_t STREAM_BUFFER_SIZE = 4 * 1024 * 1024;
-    std::unique_ptr<OGLStreamBuffer> stream_buffer;
-
     GLint vs_input_index_min = 0;
     GLint vs_input_index_max = 0;
     GLsizeiptr vs_input_size = 0;
