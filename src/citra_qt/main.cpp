@@ -376,7 +376,7 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(&movie_play_timer, &QTimer::timeout, this, [&] {
         bool playing = Core::Movie::GetInstance().IsPlayingInput();
 
-        ui.action_Play->setText(playing ? tr("Stop") : tr("Play"));
+        ui.action_Play->setText(playing ? tr("Stop Playing") : tr("Play"));
         ui.action_Record->setEnabled(!playing);
 
         if (!playing)
