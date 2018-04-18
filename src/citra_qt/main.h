@@ -54,9 +54,10 @@ public:
     void filterBarSetChecked(bool state);
     void UpdateUITheme();
 
-    GameList* game_list;
     GMainWindow();
     ~GMainWindow();
+
+    GameList* game_list;
 
 signals:
 
