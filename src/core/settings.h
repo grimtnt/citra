@@ -17,11 +17,6 @@ enum class RenderBackend { Software, OpenGL };
 
 enum class SwkbdImplementation { StdIn, Qt };
 
-enum class InitClock : u8 {
-    SystemTime = 0,
-    FixedTime = 1,
-};
-
 enum class LayoutOption {
     Default,
     SingleScreen,
@@ -124,8 +119,6 @@ struct Values {
     // System
     int region_value;
     bool enable_new_mode;
-    InitClock init_clock;
-    time_t init_time;
 
     // Renderer
     RenderBackend renderer;
