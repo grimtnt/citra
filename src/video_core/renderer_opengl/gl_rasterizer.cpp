@@ -27,8 +27,8 @@
 using PixelFormat = SurfaceParams::PixelFormat;
 using SurfaceType = SurfaceParams::SurfaceType;
 
-RasterizerOpenGL::RasterizerOpenGL() {
-    shader_dirty = true;
+RasterizerOpenGL::RasterizerOpenGL()
+    : shader_dirty(true), vertex_buffer(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE) {
 
     // Clipping plane 0 is always enabled for PICA fixed clip plane z <= 0
     state.clip_distance[0] = true;
@@ -45,9 +45,6 @@ RasterizerOpenGL::RasterizerOpenGL() {
     texture_cube.Create();
 
     // Generate VBO, VAO and UBO
-    vertex_buffer = OGLStreamBuffer::MakeBuffer(GLAD_GL_ARB_buffer_storage, GL_ARRAY_BUFFER);
-    vertex_buffer->Create(VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE / 2);
-
     sw_vao.Create();
     hw_vao.Create();
     hw_vao_enabled_attributes.fill(false);
@@ -81,7 +78,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
 
     // Set vertex attributes
     state.draw.vertex_array = sw_vao.handle;
-    state.draw.vertex_buffer = vertex_buffer->GetHandle();
+    state.draw.vertex_buffer = vertex_buffer.GetHandle();
     state.Apply();
 
     glVertexAttribPointer(GLShader::ATTRIBUTE_POSITION, 4, GL_FLOAT, GL_FALSE,
@@ -191,7 +188,7 @@ RasterizerOpenGL::RasterizerOpenGL() {
 
     state.draw.vertex_array = hw_vao.handle;
     state.Apply();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer->GetHandle());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer.GetHandle());
 
     shader_program_manager =
         std::make_unique<ShaderProgramManager>(GLAD_GL_ARB_separate_shader_objects);
@@ -330,7 +327,7 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset) {
     const u32 base_address = vertex_attributes.GetPhysicalBaseAddress();
 
     state.draw.vertex_array = hw_vao.handle;
-    state.draw.vertex_buffer = vertex_buffer->GetHandle();
+    state.draw.vertex_buffer = vertex_buffer.GetHandle();
     state.Apply();
 
     std::array<bool, 16> enable_attributes{};
@@ -743,7 +740,7 @@ void RasterizerOpenGL::DrawTriangles() {
         const size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
 
         AnalyzeVertexArray(is_indexed);
-        state.draw.vertex_buffer = vertex_buffer->GetHandle();
+        state.draw.vertex_buffer = vertex_buffer.GetHandle();
         state.Apply();
 
         size_t buffer_size = static_cast<size_t>(vs_input_size);
@@ -758,8 +755,8 @@ void RasterizerOpenGL::DrawTriangles() {
         size_t ptr_pos = 0;
         u8* buffer_ptr;
         GLintptr buffer_offset;
-        std::tie(buffer_ptr, buffer_offset) =
-            vertex_buffer->Map(static_cast<GLsizeiptr>(buffer_size), 4);
+        std::tie(buffer_ptr, buffer_offset, std::ignore) =
+            vertex_buffer.Map(static_cast<GLsizeiptr>(buffer_size), 4);
 
         SetupVertexArray(buffer_ptr, buffer_offset);
         ptr_pos += vs_input_size;
@@ -786,11 +783,11 @@ void RasterizerOpenGL::DrawTriangles() {
                                    : nullptr);
         const GLintptr gs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
 
-        vertex_buffer->Unmap();
+        vertex_buffer.Unmap(buffer_size);
 
         const auto copy_buffer = [&](GLuint handle, GLintptr offset, GLsizeiptr size) {
             if (GLAD_GL_ARB_direct_state_access) {
-                glCopyNamedBufferSubData(vertex_buffer->GetHandle(), handle, offset, 0, size);
+                glCopyNamedBufferSubData(vertex_buffer.GetHandle(), handle, offset, 0, size);
             } else {
                 glBindBuffer(GL_COPY_WRITE_BUFFER, handle);
                 glCopyBufferSubData(GL_ARRAY_BUFFER, GL_COPY_WRITE_BUFFER, offset, 0, size);
@@ -814,7 +811,7 @@ void RasterizerOpenGL::DrawTriangles() {
         }
     } else {
         state.draw.vertex_array = sw_vao.handle;
-        state.draw.vertex_buffer = vertex_buffer->GetHandle();
+        state.draw.vertex_buffer = vertex_buffer.GetHandle();
         shader_program_manager->UseTrivialVertexShader();
         shader_program_manager->UseTrivialGeometryShader();
         shader_program_manager->ApplyTo(state);
@@ -825,10 +822,12 @@ void RasterizerOpenGL::DrawTriangles() {
              base_vertex += max_vertices) {
             size_t vertices = std::min(max_vertices, vertex_batch.size() - base_vertex);
             size_t vertex_size = vertices * sizeof(HardwareVertex);
-            auto map = vertex_buffer->Map(vertex_size, sizeof(HardwareVertex));
-            memcpy(map.first, vertex_batch.data() + base_vertex, vertex_size);
-            vertex_buffer->Unmap();
-            glDrawArrays(GL_TRIANGLES, map.second / sizeof(HardwareVertex), (GLsizei)vertices);
+            u8* vbo;
+            GLintptr offset;
+            std::tie(vbo, offset, std::ignore) = vertex_buffer.Map(vertex_size);
+            std::memcpy(vbo, vertex_batch.data() + base_vertex, vertex_size);
+            vertex_buffer.Unmap(vertex_size);
+            glDrawArrays(GL_TRIANGLES, offset / sizeof(HardwareVertex), (GLsizei)vertices);
         }
     }
 
