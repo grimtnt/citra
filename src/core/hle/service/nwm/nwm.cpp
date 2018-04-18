@@ -34,7 +34,7 @@ void Init() {
             mac = room_member->GetMacAddress();
         }
     }
-    SharedPage::shared_page_handler->SetMacAddress(mac);
+    SharedPage::SetMacAddress(mac);
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
