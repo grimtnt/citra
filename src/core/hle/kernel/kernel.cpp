@@ -20,7 +20,7 @@ unsigned int Object::next_object_id;
 /// Initialize the kernel
 void Init(u32 system_mode) {
     ConfigMem::Init();
-    SharedPage::shared_page_handler = std::make_unique<SharedPage::Module>();
+    SharedPage::Init();
 
     Kernel::MemoryInit(system_mode);
 
@@ -43,7 +43,6 @@ void Shutdown() {
     Kernel::TimersShutdown();
     Kernel::ResourceLimitsShutdown();
     Kernel::MemoryShutdown();
-    SharedPage::shared_page_handler.reset();
 }
 
 } // namespace Kernel
