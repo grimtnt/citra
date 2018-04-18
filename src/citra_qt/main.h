@@ -197,6 +197,8 @@ private:
     QLabel* emu_frametime_label = nullptr;
     QTimer status_bar_update_timer;
 
+    QTimer movie_play_timer;
+
     MultiplayerState* multiplayer_state = nullptr;
     std::unique_ptr<Config> config;
 

@@ -129,7 +129,6 @@ void Movie::CheckInputEnd() {
     if (current_byte + sizeof(ControllerState) > recorded_input.size()) {
         NGLOG_INFO(Movie, "Playback finished");
         play_mode = PlayMode::None;
-        Settings::values.movie_play.clear();
     }
 }
 
@@ -367,7 +366,7 @@ bool Movie::ValidateHeader(const CTMHeader& header) {
 
 void Movie::SaveMovie() {
     NGLOG_INFO(Movie, "Saving movie");
-    FileUtil::IOFile save_record(Settings::values.movie_record, "wb");
+    FileUtil::IOFile save_record(record_file, "wb");
 
     if (!save_record.IsGood()) {
         NGLOG_ERROR(Movie, "Unable to open file to save movie");
@@ -392,13 +391,14 @@ void Movie::SaveMovie() {
         return;
     }
 
-    Settings::values.movie_record.clear();
+    record_file.clear();
+    play_mode = PlayMode::None;
 }
 
 void Movie::Init() {
-    if (!Settings::values.movie_play.empty()) {
+    if (!play_file.empty()) {
         NGLOG_INFO(Movie, "Loading Movie for playback");
-        FileUtil::IOFile save_record(Settings::values.movie_play, "rb");
+        FileUtil::IOFile save_record(play_file, "rb");
         u64 size = save_record.GetSize();
 
         if (save_record.IsGood() && size > sizeof(CTMHeader)) {
@@ -411,15 +411,16 @@ void Movie::Init() {
                 current_byte = 0;
             }
         } else {
-            NGLOG_ERROR(Movie, "Failed to playback movie: Unable to open '{}'",
-                        Settings::values.movie_play);
+            NGLOG_ERROR(Movie, "Failed to playback movie: Unable to open '{}'", play_file);
         }
     }
 
-    if (!Settings::values.movie_record.empty()) {
+    if (!record_file.empty()) {
         NGLOG_INFO(Movie, "Enabling Movie recording");
         play_mode = PlayMode::Recording;
     }
+
+    initialized = true;
 }
 
 void Movie::Shutdown() {
@@ -430,6 +431,7 @@ void Movie::Shutdown() {
     play_mode = PlayMode::None;
     recorded_input.resize(0);
     current_byte = 0;
+    initialized = false;
 }
 
 template <typename... Targs>

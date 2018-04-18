@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <string>
+#include <tuple>
 #include "common/common_types.h"
 
 namespace Service {
@@ -34,9 +36,47 @@ public:
         return s_instance;
     }
 
+    /**
+     * Sets the file to play and restarts the movie system if initialized
+     * @param path the path of the file
+     */
+    void SetPlayFile(const std::string& path) {
+        play_file = path;
+
+        if (IsInitialized()) {
+            Shutdown();
+            Init();
+        }
+    }
+
+    /**
+     * Sets the file to record and restarts the movie system if initialized
+     * @param path the path of the file
+     */
+    void SetRecordFile(const std::string& path) {
+        record_file = path;
+
+        if (IsInitialized()) {
+            Shutdown();
+            Init();
+        }
+    }
+
+    /**
+     * Gets a tuple of play and record file
+     * @returns Tuple of play file and record file
+     */
+    std::tuple<std::string, std::string> GetFiles() {
+        return std::make_tuple(play_file, record_file);
+    }
+
     void Init();
 
     void Shutdown();
+
+    bool IsInitialized() {
+        return initialized;
+    }
 
     /**
      * When recording: Takes a copy of the given input states so they can be used for playback
@@ -75,12 +115,12 @@ public:
      */
     void HandleExtraHidResponse(Service::IR::ExtraHIDResponse& extra_hid_response);
 
-private:
-    static Movie s_instance;
-
     bool IsPlayingInput();
 
     bool IsRecordingInput();
+
+private:
+    static Movie s_instance;
 
     void CheckInputEnd();
 
@@ -107,8 +147,12 @@ private:
 
     void SaveMovie();
 
+    bool initialized = false;
+
     PlayMode play_mode;
     std::vector<u8> recorded_input;
     size_t current_byte = 0;
+    std::string play_file;
+    std::string record_file;
 };
 } // namespace Core

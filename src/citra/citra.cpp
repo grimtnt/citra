@@ -33,6 +33,7 @@
 #include "core/file_sys/cia_container.h"
 #include "core/hle/service/am/am.h"
 #include "core/loader/loader.h"
+#include "core/movie.h"
 #include "core/settings.h"
 #include "network/network.h"
 
@@ -230,8 +231,8 @@ int main(int argc, char** argv) {
     Log::SetFilter(&log_filter);
 
     // Apply the command line arguments
-    Settings::values.movie_play = std::move(movie_play);
-    Settings::values.movie_record = std::move(movie_record);
+    Core::Movie::GetInstance().SetPlayFile(std::move(movie_play));
+    Core::Movie::GetInstance().SetRecordFile(std::move(movie_record));
     Settings::Apply();
 
     std::unique_ptr<EmuWindow_SDL2> emu_window{std::make_unique<EmuWindow_SDL2>()};

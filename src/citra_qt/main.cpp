@@ -47,6 +47,7 @@
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/loader/loader.h"
+#include "core/movie.h"
 #include "core/settings.h"
 #include "video_core/video_core.h"
 
@@ -335,6 +336,9 @@ void GMainWindow::RestoreUIState() {
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
+    ui.action_Play->setEnabled(false);
+    ui.action_Record->setEnabled(false);
+
     game_list->LoadInterfaceLayout();
 
     ui.action_Single_Window_Mode->setChecked(UISettings::values.single_window_mode);
@@ -369,6 +373,14 @@ void GMainWindow::ConnectWidgetEvents() {
             &GRenderWindow::OnEmulationStopping);
 
     connect(&status_bar_update_timer, &QTimer::timeout, this, &GMainWindow::UpdateStatusBar);
+    connect(&movie_play_timer, &QTimer::timeout, this, [&] {
+        bool playing = Core::Movie::GetInstance().IsPlayingInput();
+        ui.action_Play->setText(playing ? tr("Stop") : tr("Play"));
+        ui.action_Record->setEnabled(!playing);
+
+        if (!playing)
+            movie_play_timer.stop();
+    });
 
     connect(this, &GMainWindow::UpdateProgress, this, &GMainWindow::OnUpdateProgress);
     connect(this, &GMainWindow::CIAInstallReport, this, &GMainWindow::OnCIAInstallReport);
@@ -681,8 +693,8 @@ void GMainWindow::ShutdownGame() {
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
-    ui.action_Record->setEnabled(true);
-    ui.action_Play->setEnabled(true);
+    ui.action_Play->setEnabled(false);
+    ui.action_Record->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(false);
     render_window->hide();
     game_list->show();
@@ -1014,8 +1026,8 @@ void GMainWindow::OnStartGame() {
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
-    ui.action_Record->setEnabled(false);
-    ui.action_Play->setEnabled(false);
+    ui.action_Play->setEnabled(true);
+    ui.action_Record->setEnabled(true);
     ui.action_Report_Compatibility->setEnabled(true);
 }
 
@@ -1030,6 +1042,9 @@ void GMainWindow::OnPauseGame() {
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
+
+    Core::Movie::GetInstance().SetRecordFile("");
+    ui.action_Record->setText(tr("Record"));
 }
 
 void GMainWindow::OnMenuReportCompatibility() {
@@ -1204,19 +1219,43 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnRecordMovie() {
-    QString path = QFileDialog::getSaveFileName(this, tr("Save Movie"));
-    if (path.isEmpty())
-        return;
-    if (!Settings::values.movie_play.empty())
-        Settings::values.movie_play.clear();
-    Settings::values.movie_record = path.toStdString();
+    auto& movie = Core::Movie::GetInstance();
+
+    if (movie.IsRecordingInput()) {
+        movie.SetPlayFile("");
+        ui.action_Play->setEnabled(true);
+        ui.action_Record->setText(tr("Record"));
+    } else {
+        QString path = QFileDialog::getSaveFileName(this, tr("Save Movie"));
+        if (path.isEmpty())
+            return;
+        if (!std::get<0>(movie.GetFiles()).empty())
+            movie.SetPlayFile("");
+        movie.SetRecordFile(path.toStdString());
+        ui.action_Play->setEnabled(false);
+        ui.action_Record->setText(tr("Stop Recording"));
+    }
 }
 
 void GMainWindow::OnPlayMovie() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Play Movie"));
-    if (!Settings::values.movie_record.empty())
-        Settings::values.movie_record.clear();
-    Settings::values.movie_play = path.toStdString();
+    auto& movie = Core::Movie::GetInstance();
+
+    if (movie.IsPlayingInput()) {
+        movie.SetPlayFile("");
+        ui.action_Play->setText(tr("Play"));
+        ui.action_Record->setEnabled(true);
+        movie_play_timer.stop();
+    } else {
+        QString path = QFileDialog::getOpenFileName(this, tr("Play Movie"));
+        if (path.isEmpty())
+            return;
+        if (!std::get<1>(movie.GetFiles()).empty())
+            movie.SetRecordFile("");
+        movie.SetPlayFile(path.toStdString());
+        ui.action_Play->setText(tr("Stop Playing"));
+        ui.action_Record->setEnabled(false);
+        movie_play_timer.start(500);
+    }
 }
 
 void GMainWindow::UpdateStatusBar() {

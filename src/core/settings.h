@@ -159,10 +159,6 @@ struct Values {
     std::array<std::string, Service::CAM::NumCameras> camera_name;
     std::array<std::string, Service::CAM::NumCameras> camera_config;
 
-    // Movie
-    std::string movie_play;
-    std::string movie_record;
-
     // WebService
     bool enable_telemetry;
     std::string telemetry_endpoint_url;
