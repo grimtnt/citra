@@ -32,6 +32,8 @@ void JitX64Engine::SetupBatch(ShaderSetup& setup, unsigned int entry_point) {
 }
 
 void JitX64Engine::Run(const ShaderSetup& setup, UnitState& state) const {
+    ASSERT(setup.engine_data.cached_shader != nullptr);
+
     const JitShader* shader = static_cast<const JitShader*>(setup.engine_data.cached_shader);
     shader->Run(setup, state, setup.engine_data.entry_point);
 }
