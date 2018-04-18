@@ -823,7 +823,8 @@ void RasterizerOpenGL::DrawTriangles() {
             size_t vertex_size = vertices * sizeof(HardwareVertex);
             u8* vbo;
             GLintptr offset;
-            std::tie(vbo, offset, std::ignore) = vertex_buffer.Map(vertex_size);
+            std::tie(vbo, offset, std::ignore) =
+                vertex_buffer.Map(vertex_size, sizeof(HardwareVertex));
             std::memcpy(vbo, vertex_batch.data() + base_vertex, vertex_size);
             vertex_buffer.Unmap(vertex_size);
             glDrawArrays(GL_TRIANGLES, offset / sizeof(HardwareVertex), (GLsizei)vertices);
