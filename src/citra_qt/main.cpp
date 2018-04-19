@@ -1046,6 +1046,9 @@ void GMainWindow::OnStopGame() {
 
     Core::Movie::GetInstance().SetPlayFile("");
     Core::Movie::GetInstance().SetRecordFile("");
+
+    ui.action_Play->setEnabled(false);
+    ui.action_Record->setText(tr("Record"));
 }
 
 void GMainWindow::OnMenuReportCompatibility() {
