@@ -125,11 +125,6 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     const PAddr src_addr = config.GetPhysicalInputAddress();
     const PAddr dst_addr = config.GetPhysicalOutputAddress();
 
-    if (dst_addr == 0) {
-        NGLOG_CRITICAL(HW_GPU, "Invalid address 0x00000000");
-        return;
-    }
-
     // TODO: do hwtest with these cases
     if (!Memory::IsValidPhysicalAddress(src_addr)) {
         NGLOG_CRITICAL(HW_GPU, "invalid input address {:#010X}", src_addr);
