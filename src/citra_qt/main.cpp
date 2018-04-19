@@ -1044,6 +1044,7 @@ void GMainWindow::OnPauseGame() {
 void GMainWindow::OnStopGame() {
     ShutdownGame();
 
+    Core::Movie::GetInstance().SetPlayFile("");
     Core::Movie::GetInstance().SetRecordFile("");
 }
 
