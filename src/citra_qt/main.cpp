@@ -1219,25 +1219,6 @@ void GMainWindow::OnToggleFilterBar() {
     }
 }
 
-void GMainWindow::OnRecordMovie() {
-    auto& movie = Core::Movie::GetInstance();
-
-    if (movie.IsRecordingInput()) {
-        movie.SetPlayFile("");
-        ui.action_Play->setEnabled(true);
-        ui.action_Record->setText(tr("Record"));
-    } else {
-        QString path = QFileDialog::getSaveFileName(this, tr("Save Movie"));
-        if (path.isEmpty())
-            return;
-        if (!std::get<0>(movie.GetFiles()).empty())
-            movie.SetPlayFile("");
-        movie.SetRecordFile(path.toStdString());
-        ui.action_Play->setEnabled(false);
-        ui.action_Record->setText(tr("Stop Recording"));
-    }
-}
-
 void GMainWindow::OnPlayMovie() {
     auto& movie = Core::Movie::GetInstance();
 
@@ -1256,6 +1237,25 @@ void GMainWindow::OnPlayMovie() {
         ui.action_Play->setText(tr("Stop Playing"));
         ui.action_Record->setEnabled(false);
         movie_play_timer.start(500);
+    }
+}
+
+void GMainWindow::OnRecordMovie() {
+    auto& movie = Core::Movie::GetInstance();
+
+    if (movie.IsRecordingInput()) {
+        movie.SetPlayFile("");
+        ui.action_Play->setEnabled(true);
+        ui.action_Record->setText(tr("Record"));
+    } else {
+        QString path = QFileDialog::getSaveFileName(this, tr("Save Movie"));
+        if (path.isEmpty())
+            return;
+        if (!std::get<0>(movie.GetFiles()).empty())
+            movie.SetPlayFile("");
+        movie.SetRecordFile(path.toStdString());
+        ui.action_Play->setEnabled(false);
+        ui.action_Record->setText(tr("Stop Recording"));
     }
 }
 

@@ -133,8 +133,8 @@
     <property name="title">
      <string>Movie</string>
     </property>
-    <addaction name="action_Record"/>
     <addaction name="action_Play"/>
+    <addaction name="action_Record"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Emulation"/>

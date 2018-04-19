@@ -168,8 +168,8 @@ private slots:
     void ShowFullscreen();
     void HideFullscreen();
     void ToggleWindowMode();
-    void OnRecordMovie();
     void OnPlayMovie();
+    void OnRecordMovie();
     void OnCoreError(Core::System::ResultStatus, std::string);
     /// Called whenever a user selects Help->About Citra
     void OnMenuAboutCitra();
