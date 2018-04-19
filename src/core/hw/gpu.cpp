@@ -318,6 +318,11 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
     u8* src_pointer = Memory::GetPhysicalPointer(src_addr);
     u8* dst_pointer = Memory::GetPhysicalPointer(dst_addr);
 
+    if (!dst_pointer) {
+        NGLOG_CRITICAL(HW_GPU, "Invalid address {:#010X}", dst_pointer);
+        break;
+    }
+
     u32 remaining_size = Common::AlignDown(config.texture_copy.size, 16);
 
     if (remaining_size == 0) {
