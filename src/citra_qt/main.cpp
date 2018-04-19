@@ -673,6 +673,9 @@ void GMainWindow::BootGame(const QString& filename) {
 }
 
 void GMainWindow::ShutdownGame() {
+    Core::Movie::GetInstance().SetPlayFile("");
+    Core::Movie::GetInstance().SetRecordFile("");
+
     emu_thread->RequestStop();
 
     emit EmulationStopping();
@@ -694,7 +697,9 @@ void GMainWindow::ShutdownGame() {
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
+    ui.action_Play->setText(tr("Play"));
     ui.action_Play->setEnabled(false);
+    ui.action_Record->setText(tr("Record"));
     ui.action_Record->setEnabled(false);
     ui.action_Report_Compatibility->setEnabled(false);
     render_window->hide();
@@ -1043,12 +1048,6 @@ void GMainWindow::OnPauseGame() {
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
-
-    Core::Movie::GetInstance().SetPlayFile("");
-    Core::Movie::GetInstance().SetRecordFile("");
-
-    ui.action_Play->setEnabled(false);
-    ui.action_Record->setText(tr("Record"));
 }
 
 void GMainWindow::OnMenuReportCompatibility() {
