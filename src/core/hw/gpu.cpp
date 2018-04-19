@@ -125,6 +125,11 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     const PAddr src_addr = config.GetPhysicalInputAddress();
     const PAddr dst_addr = config.GetPhysicalOutputAddress();
 
+    if (dst_addr == 0) {
+        NGLOG_CRITICAL(HW_GPU, "Invalid address 0x00000000");
+        return;
+    }
+
     // TODO: do hwtest with these cases
     if (!Memory::IsValidPhysicalAddress(src_addr)) {
         NGLOG_CRITICAL(HW_GPU, "invalid input address {:#010X}", src_addr);
@@ -317,11 +322,6 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
 
     u8* src_pointer = Memory::GetPhysicalPointer(src_addr);
     u8* dst_pointer = Memory::GetPhysicalPointer(dst_addr);
-
-    if (!dst_pointer) {
-        NGLOG_CRITICAL(HW_GPU, "Invalid address {:#010X}", dst_pointer);
-        break;
-    }
 
     u32 remaining_size = Common::AlignDown(config.texture_copy.size, 16);
 
