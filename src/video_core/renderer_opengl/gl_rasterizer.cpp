@@ -414,7 +414,7 @@ bool RasterizerOpenGL::SetupGeometryShader() {
     GLuint shader;
 
     if (regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::No) {
-        const GLShader::PicaGSConfigCommon gs_config(regs);
+        const GLShader::PicaFixedGSConfig gs_config(regs);
         shader_program_manager->UseFixedGeometryShader(gs_config);
         return true;
     } else {
@@ -1569,7 +1569,7 @@ void RasterizerOpenGL::SamplerInfo::SyncWithConfig(
 }
 
 void RasterizerOpenGL::SetShader() {
-    auto config = GLShader::PicaShaderConfig::BuildFromRegs(Pica::g_state.regs);
+    auto config = GLShader::PicaFSConfig::BuildFromRegs(Pica::g_state.regs);
     shader_program_manager->UseFragmentShader(config);
 }
 
