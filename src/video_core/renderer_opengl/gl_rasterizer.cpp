@@ -761,6 +761,8 @@ void RasterizerOpenGL::DrawTriangles() {
             ptr_pos += index_buffer_size;
         }
 
+        reinterpret_cast<VSUniformData*>(&buffer_ptr[ptr_pos])
+            ->uniforms.SetFromRegs(Pica::g_state.regs.vs, Pica::g_state.vs);
         const GLintptr vs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
         ptr_pos += sizeof(VSUniformData);
 
