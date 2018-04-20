@@ -434,14 +434,13 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
         }
     }
 
-    accelerate_draw = is_indexed ? AccelDraw::Indexed : AccelDraw::Arrays;
-
     if (!SetupVertexShader())
         return false;
 
     if (!SetupGeometryShader())
         return false;
 
+    accelerate_draw = is_indexed ? AccelDraw::Indexed : AccelDraw::Arrays;
     DrawTriangles();
 
     return true;
