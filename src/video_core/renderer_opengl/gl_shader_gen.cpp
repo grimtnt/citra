@@ -1388,8 +1388,9 @@ void main() {
     return out;
 }
 
-std::string GenerateVertexShader(const Pica::Shader::ShaderSetup& setup, const PicaVSConfig& config,
-                                 bool separable_shader) {
+boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetup& setup,
+                                                  const PicaVSConfig& config,
+                                                  bool separable_shader) {
     std::string out = "#version 330 core\n";
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
@@ -1412,12 +1413,14 @@ std::string GenerateVertexShader(const Pica::Shader::ShaderSetup& setup, const P
         return "";
     };
 
-    // TODO: fallback to CPU on failure
-    std::string program_source =
-        Pica::Shader::Decompiler::DecompileProgram(setup.program_code, setup.swizzle_data,
-                                                   config.state.main_offset, get_input_reg,
-                                                   get_output_reg, config.state.sanitize_mul, false)
-            .get_value_or("");
+    auto program_source_opt = Pica::Shader::Decompiler::DecompileProgram(
+        setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
+        get_output_reg, config.state.sanitize_mul, false);
+
+    if (!program_source_opt)
+        return boost::none;
+
+    std::string& program_source = program_source_opt.get();
 
     out += R"(
 #define uniforms vs_uniforms
@@ -1581,8 +1584,9 @@ void main() {
     return out;
 }
 
-std::string GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
-                                   const PicaGSConfig& config, bool separable_shader) {
+boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
+                                                    const PicaGSConfig& config,
+                                                    bool separable_shader) {
     std::string out = "#version 330 core\n";
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
@@ -1629,12 +1633,14 @@ std::string GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
         return "";
     };
 
-    // TODO: fallback to CPU on failure
-    std::string program_source =
-        Pica::Shader::Decompiler::DecompileProgram(setup.program_code, setup.swizzle_data,
-                                                   config.state.main_offset, get_input_reg,
-                                                   get_output_reg, config.state.sanitize_mul, true)
-            .get_value_or("");
+    auto program_source_opt = Pica::Shader::Decompiler::DecompileProgram(
+        setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
+        get_output_reg, config.state.sanitize_mul, true);
+
+    if (!program_source_opt)
+        return boost::none;
+
+    std::string& program_source = program_source_opt.get();
 
     out += R"(
 Vertex output_buffer;
