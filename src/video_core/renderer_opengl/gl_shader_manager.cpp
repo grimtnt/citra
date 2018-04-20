@@ -194,11 +194,11 @@ using ProgrammableGeometryShaders =
                       GL_GEOMETRY_SHADER>;
 
 using FixedGeometryShaders =
-    ShaderCache<GLShader::PicaGSConfigCommon, &GLShader::GenerateDefaultGeometryShader,
+    ShaderCache<GLShader::PicaFixedGSConfig, &GLShader::GenerateFixedGeometryShader,
                 GL_GEOMETRY_SHADER>;
 
 using FragmentShaders =
-    ShaderCache<GLShader::PicaShaderConfig, &GLShader::GenerateFragmentShader, GL_FRAGMENT_SHADER>;
+    ShaderCache<GLShader::PicaFSConfig, &GLShader::GenerateFragmentShader, GL_FRAGMENT_SHADER>;
 
 class ShaderProgramManager::Impl {
 public:
@@ -276,7 +276,7 @@ bool ShaderProgramManager::UseProgrammableGeometryShader(const GLShader::PicaGSC
     return true;
 }
 
-void ShaderProgramManager::UseFixedGeometryShader(const GLShader::PicaGSConfigCommon& config) {
+void ShaderProgramManager::UseFixedGeometryShader(const GLShader::PicaFixedGSConfig& config) {
     impl->current.gs = impl->fixed_geometry_shaders.Get(config);
 }
 
@@ -284,7 +284,7 @@ void ShaderProgramManager::UseTrivialGeometryShader() {
     impl->current.gs = 0;
 }
 
-void ShaderProgramManager::UseFragmentShader(const GLShader::PicaShaderConfig& config) {
+void ShaderProgramManager::UseFragmentShader(const GLShader::PicaFSConfig& config) {
     impl->current.fs = impl->fragment_shaders.Get(config);
 }
 
