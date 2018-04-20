@@ -95,11 +95,11 @@ public:
     bool UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
                                        const Pica::Shader::ShaderSetup setup);
 
-    void UseFixedGeometryShader(const GLShader::PicaGSConfigCommon& config);
+    void UseFixedGeometryShader(const GLShader::PicaFixedGSConfig& config);
 
     void UseTrivialGeometryShader();
 
-    void UseFragmentShader(const GLShader::PicaShaderConfig& config);
+    void UseFragmentShader(const GLShader::PicaFSConfig& config);
 
     void ApplyTo(OpenGLState& state);
 
