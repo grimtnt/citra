@@ -1488,17 +1488,15 @@ struct Vertex {
     };
 
     out += "vec4 GetVertexQuaternion(Vertex vtx) {\n";
-    out += "    return vec4(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_X) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Y) + ", " +
+    out += "    return vec4(" + get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_X) +
+           ", " + get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Y) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Z) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_W) + ");\n";
     out += "}\n\n";
 
     out += "void EmitVtx(Vertex vtx, bool quats_opposite) {\n";
-    out += "    vec4 vtx_pos = vec4(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_X) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Y) + ", " +
+    out += "    vec4 vtx_pos = vec4(" + get_vertex_semantic("vtx", VSOutputAttributes::POSITION_X) +
+           ", " + get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Y) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Z) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::POSITION_W) + ");\n";
     out += "    gl_Position = vtx_pos;\n";
@@ -1508,30 +1506,25 @@ struct Vertex {
     out += "    vec4 vtx_quat = GetVertexQuaternion(vtx);\n";
     out += "    normquat = mix(vtx_quat, -vtx_quat, bvec4(quats_opposite));\n\n";
 
-    out += "    vec4 vtx_color = vec4(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_R) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_G) + ", " +
+    out += "    vec4 vtx_color = vec4(" + get_vertex_semantic("vtx", VSOutputAttributes::COLOR_R) +
+           ", " + get_vertex_semantic("vtx", VSOutputAttributes::COLOR_G) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::COLOR_B) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::COLOR_A) + ");\n";
     out += "    primary_color = min(abs(vtx_color), vec4(1.0));\n\n";
 
-    out += "    texcoord0 = vec2(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_U) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_V) + ");\n";
-    out += "    texcoord1 = vec2(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_U) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
+    out += "    texcoord0 = vec2(" + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_U) +
+           ", " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_V) + ");\n";
+    out += "    texcoord1 = vec2(" + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_U) +
+           ", " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
 
-    out += "    texcoord0_w = " +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_W) + ";\n";
-    out += "    view = vec3(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::VIEW_X) + ", " +
+    out +=
+        "    texcoord0_w = " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_W) + ";\n";
+    out += "    view = vec3(" + get_vertex_semantic("vtx", VSOutputAttributes::VIEW_X) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::VIEW_Y) + ", " +
            get_vertex_semantic("vtx", VSOutputAttributes::VIEW_Z) + ");\n\n";
 
-    out += "    texcoord2 = vec2(" +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_U) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
+    out += "    texcoord2 = vec2(" + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_U) +
+           ", " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
 
     out += "    EmitVertex();\n";
     out += "}\n";
