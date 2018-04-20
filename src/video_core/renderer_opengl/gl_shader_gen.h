@@ -173,14 +173,11 @@ struct PicaGSConfigCommon : Common::HashableStruct<PicaGSConfigCommonRaw> {
     }
 };
 
-static_assert(std::is_trivial<PicaShaderConfigCommon>(), "!");
-static_assert(std::is_trivial<PicaGSConfigCommonRaw>(), "!");
-
 struct PicaGSConfigRaw : PicaShaderConfigCommon, PicaGSConfigCommonRaw {
     void Init(const Pica::Regs& regs, Pica::Shader::ShaderSetup& setup);
 
     u32 num_inputs;
-    // reg to attribute
+    // attribute to reg
     std::array<u32, 16> input_map;
 
     u32 attributes_per_vertex;
