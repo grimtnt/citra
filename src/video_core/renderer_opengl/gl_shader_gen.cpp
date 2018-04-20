@@ -24,6 +24,7 @@ using Pica::LightingRegs;
 using Pica::RasterizerRegs;
 using Pica::TexturingRegs;
 using TevStageConfig = TexturingRegs::TevStageConfig;
+using VSOutputAttributes = RasterizerRegs::VSOutputAttributes;
 
 namespace GLShader {
 
@@ -94,8 +95,8 @@ out gl_PerVertex {
     return out;
 }
 
-PicaShaderConfig PicaShaderConfig::BuildFromRegs(const Pica::Regs& regs) {
-    PicaShaderConfig res;
+PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
+    PicaFSConfig res;
 
     auto& state = res.state;
 
@@ -248,7 +249,7 @@ void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
 
     semantic_maps.fill({16, 0});
     for (u32 attrib = 0; attrib < regs.rasterizer.vs_output_total; ++attrib) {
-        std::array<Pica::RasterizerRegs::VSOutputAttributes::Semantic, 4> semantics = {
+        std::array<VSOutputAttributes::Semantic, 4> semantics = {
             regs.rasterizer.vs_output_attributes[attrib].map_x,
             regs.rasterizer.vs_output_attributes[attrib].map_y,
             regs.rasterizer.vs_output_attributes[attrib].map_z,
@@ -257,7 +258,7 @@ void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
             const auto semantic = semantics[comp];
             if (semantic < 24) {
                 semantic_maps[static_cast<size_t>(semantic)] = {attrib, comp};
-            } else if (semantic != Pica::RasterizerRegs::VSOutputAttributes::INVALID) {
+            } else if (semantic != VSOutputAttributes::INVALID) {
                 LOG_ERROR(Render_OpenGL, "Invalid/unknown semantic id: %u",
                           static_cast<u32>(semantic));
             }
@@ -292,7 +293,7 @@ static bool IsPassThroughTevStage(const TevStageConfig& stage) {
             stage.GetColorMultiplier() == 1 && stage.GetAlphaMultiplier() == 1);
 }
 
-static std::string SampleTexture(const PicaShaderConfig& config, unsigned texture_unit) {
+static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_unit) {
     const auto& state = config.state;
     switch (texture_unit) {
     case 0:
@@ -336,7 +337,7 @@ static std::string SampleTexture(const PicaShaderConfig& config, unsigned textur
 }
 
 /// Writes the specified TEV stage source component(s)
-static void AppendSource(std::string& out, const PicaShaderConfig& config,
+static void AppendSource(std::string& out, const PicaFSConfig& config,
                          TevStageConfig::Source source, const std::string& index_name) {
     const auto& state = config.state;
     using Source = TevStageConfig::Source;
@@ -379,7 +380,7 @@ static void AppendSource(std::string& out, const PicaShaderConfig& config,
 }
 
 /// Writes the color components to use for the specified TEV stage color modifier
-static void AppendColorModifier(std::string& out, const PicaShaderConfig& config,
+static void AppendColorModifier(std::string& out, const PicaFSConfig& config,
                                 TevStageConfig::ColorModifier modifier,
                                 TevStageConfig::Source source, const std::string& index_name) {
     using ColorModifier = TevStageConfig::ColorModifier;
@@ -437,7 +438,7 @@ static void AppendColorModifier(std::string& out, const PicaShaderConfig& config
 }
 
 /// Writes the alpha component to use for the specified TEV stage alpha modifier
-static void AppendAlphaModifier(std::string& out, const PicaShaderConfig& config,
+static void AppendAlphaModifier(std::string& out, const PicaFSConfig& config,
                                 TevStageConfig::AlphaModifier modifier,
                                 TevStageConfig::Source source, const std::string& index_name) {
     using AlphaModifier = TevStageConfig::AlphaModifier;
@@ -602,7 +603,7 @@ static void AppendAlphaTestCondition(std::string& out, FramebufferRegs::CompareF
 }
 
 /// Writes the code to emulate the specified TEV stage
-static void WriteTevStage(std::string& out, const PicaShaderConfig& config, unsigned index) {
+static void WriteTevStage(std::string& out, const PicaFSConfig& config, unsigned index) {
     const auto stage =
         static_cast<const TexturingRegs::TevStageConfig>(config.state.tev_stages[index]);
     if (!IsPassThroughTevStage(stage)) {
@@ -660,7 +661,7 @@ static void WriteTevStage(std::string& out, const PicaShaderConfig& config, unsi
 }
 
 /// Writes the code to emulate fragment lighting
-static void WriteLighting(std::string& out, const PicaShaderConfig& config) {
+static void WriteLighting(std::string& out, const PicaFSConfig& config) {
     const auto& lighting = config.state.lighting;
 
     // Define lighting globals
@@ -1056,7 +1057,7 @@ void AppendProcTexCombineAndMap(std::string& out, ProcTexCombiner combiner,
     out += "ProcTexLookupLUT(" + map_lut + ", " + combined + ")";
 }
 
-void AppendProcTexSampler(std::string& out, const PicaShaderConfig& config) {
+void AppendProcTexSampler(std::string& out, const PicaFSConfig& config) {
     // LUT sampling uitlity
     // For NoiseLUT/ColorMap/AlphaMap, coord=0.0 is lut[0], coord=127.0/128.0 is lut[127] and
     // coord=1.0 is lut[127]+lut_diff[127]. For other indices, the result is interpolated using
@@ -1183,7 +1184,7 @@ float ProcTexNoiseCoef(vec2 x) {
     }
 }
 
-std::string GenerateFragmentShader(const PicaShaderConfig& config, bool separable_shader) {
+std::string GenerateFragmentShader(const PicaFSConfig& config, bool separable_shader) {
     const auto& state = config.state;
 
     std::string out = "#version 330 core\n";
@@ -1393,7 +1394,7 @@ boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetu
                                                   bool separable_shader) {
     std::string out = "#version 330 core\n";
     if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
+        out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
 
     out += Pica::Shader::Decompiler::GetCommonDeclarations();
@@ -1488,18 +1489,18 @@ struct Vertex {
 
     out += "vec4 GetVertexQuaternion(Vertex vtx) {\n";
     out += "    return vec4(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::QUATERNION_X) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::QUATERNION_Y) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::QUATERNION_Z) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::QUATERNION_W) + ");\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_X) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Y) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Z) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_W) + ");\n";
     out += "}\n\n";
 
     out += "void EmitVtx(Vertex vtx, bool quats_opposite) {\n";
     out += "    vec4 vtx_pos = vec4(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::POSITION_X) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::POSITION_Y) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::POSITION_Z) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::POSITION_W) + ");\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_X) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Y) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Z) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_W) + ");\n";
     out += "    gl_Position = vtx_pos;\n";
     out += "    gl_ClipDistance[0] = -vtx_pos.z;\n"; // fixed PICA clipping plane z <= 0
     out += "    gl_ClipDistance[1] = dot(clip_coef, vtx_pos);\n\n";
@@ -1508,29 +1509,29 @@ struct Vertex {
     out += "    normquat = mix(vtx_quat, -vtx_quat, bvec4(quats_opposite));\n\n";
 
     out += "    vec4 vtx_color = vec4(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::COLOR_R) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::COLOR_G) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::COLOR_B) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::COLOR_A) + ");\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_R) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_G) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_B) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_A) + ");\n";
     out += "    primary_color = min(abs(vtx_color), vec4(1.0));\n\n";
 
     out += "    texcoord0 = vec2(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD0_U) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD0_V) + ");\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_U) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_V) + ");\n";
     out += "    texcoord1 = vec2(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD1_U) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_U) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
 
     out += "    texcoord0_w = " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD0_W) + ";\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_W) + ";\n";
     out += "    view = vec3(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::VIEW_X) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::VIEW_Y) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::VIEW_Z) + ");\n\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::VIEW_X) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::VIEW_Y) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::VIEW_Z) + ");\n\n";
 
     out += "    texcoord2 = vec2(" +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD2_U) + ", " +
-           get_vertex_semantic("vtx", RasterizerRegs::VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_U) + ", " +
+           get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
 
     out += "    EmitVertex();\n";
     out += "}\n";
@@ -1551,7 +1552,7 @@ void EmitPrim(Vertex vtx0, Vertex vtx1, Vertex vtx2) {
     return out;
 };
 
-std::string GenerateDefaultGeometryShader(const PicaGSConfigCommon& config, bool separable_shader) {
+std::string GenerateFixedGeometryShader(const PicaFixedGSConfig& config, bool separable_shader) {
     std::string out = "#version 330 core\n";
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
@@ -1589,7 +1590,7 @@ boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSe
                                                     bool separable_shader) {
     std::string out = "#version 330 core\n";
     if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
+        out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
 
     if (config.state.num_inputs % config.state.attributes_per_vertex != 0)
