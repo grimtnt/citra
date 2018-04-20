@@ -290,11 +290,11 @@ private:
 
     OGLBuffer vs_uniform_buffer;
 
-    void SetupVertexShader(VSUniformData* ub_ptr);
+    void SetupVertexShader();
 
     OGLBuffer gs_uniform_buffer;
 
-    void SetupGeometryShader(GSUniformData* ub_ptr);
+    void SetupGeometryShader();
 
     enum class AccelDraw { Disabled, Arrays, Indexed };
     AccelDraw accelerate_draw;
