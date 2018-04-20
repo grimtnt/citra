@@ -149,8 +149,8 @@ private:
 // The double cache is needed because diffent KeyConfigType, which includes a hash of the code
 // region (including its leftover unused code) can generate the same GLSL code.
 template <typename KeyConfigType,
-          std::string (*CodeGenerator)(const Pica::Shader::ShaderSetup&, const KeyConfigType&,
-                                       bool),
+          boost::optional<std::string> (*CodeGenerator)(const Pica::Shader::ShaderSetup&,
+                                                        const KeyConfigType&, bool),
           GLenum ShaderType>
 class ShaderDoubleCache {
 public:
@@ -158,7 +158,7 @@ public:
     GLuint Get(const KeyConfigType& key, const Pica::Shader::ShaderSetup& setup) {
         auto map_it = shader_map.find(key);
         if (map_it == shader_map.end()) {
-            std::string program = CodeGenerator(setup, key, separable);
+            std::string program = CodeGenerator(setup, key, separable).get_value_or("");
 
             auto [iter, new_shader] = shader_cache.emplace(program, OGLShaderStage{separable});
             OGLShaderStage& cached_shader = iter->second;
