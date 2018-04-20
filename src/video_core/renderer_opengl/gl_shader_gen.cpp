@@ -1592,6 +1592,9 @@ boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSe
         out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
     }
 
+    if (config.state.num_inputs % config.state.attributes_per_vertex != 0)
+        return boost::none;
+
     switch (config.state.num_inputs / config.state.attributes_per_vertex) {
     case 1:
         out += "layout(points) in;\n";
@@ -1609,7 +1612,7 @@ boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSe
         out += "layout(triangles_adjacency) in;\n";
         break;
     default:
-        UNREACHABLE();
+        return boost::none;
     }
     out += "layout(triangle_strip, max_vertices = 30) out;\n\n";
 
