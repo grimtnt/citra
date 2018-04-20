@@ -432,22 +432,6 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
         if (regs.pipeline.gs_config.mode != Pica::PipelineRegs::GSMode::Point) {
             return false;
         }
-        if ((regs.gs.max_input_attribute_index + 1) %
-                (regs.pipeline.vs_outmap_total_minus_1_a + 1) !=
-            0) {
-            return false;
-        }
-        switch ((regs.gs.max_input_attribute_index + 1) /
-                (regs.pipeline.vs_outmap_total_minus_1_a + 1)) {
-        case 1: // GL_POINTS
-        case 2: // GL_LINES
-        case 4: // GL_LINES_ADJACENCY
-        case 3: // GL_TRIANGLES
-        case 6: // GL_TRIANGLES_ADJACENCY
-            break;
-        default:
-            return false;
-        }
     }
 
     accelerate_draw = is_indexed ? AccelDraw::Indexed : AccelDraw::Arrays;
