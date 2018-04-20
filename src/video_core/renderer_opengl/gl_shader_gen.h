@@ -9,6 +9,7 @@
 #include <functional>
 #include <string>
 #include <type_traits>
+#include <boost/optional.hpp>
 #include "common/hash.h"
 #include "video_core/regs.h"
 #include "video_core/shader/shader.h"
@@ -195,8 +196,9 @@ struct PicaGSConfig : Common::HashableStruct<PicaGSConfigRaw> {
  * Generates the GLSL vertex shader program source code for the given VS program and its main offset
  * @returns String of the shader source code
  */
-std::string GenerateVertexShader(const Pica::Shader::ShaderSetup& setup, const PicaVSConfig& config,
-                                 bool separable_shader);
+boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetup& setup,
+                                                  const PicaVSConfig& config,
+                                                  bool separable_shader);
 
 /**
  * Generates the GLSL vertex shader program source code that accepts vertices from software shader
@@ -217,8 +219,9 @@ std::string GenerateDefaultGeometryShader(const PicaGSConfigCommon& config, bool
  * configuration
  * @returns String of the shader source code
  */
-std::string GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
-                                   const PicaGSConfig& config, bool separable_shader);
+boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
+                                                    const PicaGSConfig& config,
+                                                    bool separable_shader);
 
 /**
  * Generates the GLSL fragment shader program source code for the current Pica state
