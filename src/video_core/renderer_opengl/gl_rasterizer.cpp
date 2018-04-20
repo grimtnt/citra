@@ -403,14 +403,12 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset) {
     }
 }
 
-void RasterizerOpenGL::SetupVertexShader(VSUniformData* ub_ptr) {
-    ub_ptr->uniforms.SetFromRegs(Pica::g_state.regs.vs, Pica::g_state.vs);
-
+void RasterizerOpenGL::SetupVertexShader() {
     const GLShader::PicaVSConfig vs_config(Pica::g_state.regs, Pica::g_state.vs);
     shader_program_manager->UseProgrammableVertexShader(vs_config, Pica::g_state.vs);
 }
 
-void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr) {
+void RasterizerOpenGL::SetupGeometryShader() {
     const auto& regs = Pica::g_state.regs;
 
     GLuint shader;
@@ -419,8 +417,6 @@ void RasterizerOpenGL::SetupGeometryShader(GSUniformData* ub_ptr) {
         const GLShader::PicaGSConfigCommon gs_config(regs);
         shader_program_manager->UseFixedGeometryShader(gs_config);
     } else {
-        ub_ptr->uniforms.SetFromRegs(Pica::g_state.regs.gs, Pica::g_state.gs);
-
         // The uniform b15 is set to true after every geometry shader invocation.
         Pica::g_state.gs.uniforms.b[15] = true;
 
@@ -454,6 +450,10 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
     }
 
     accelerate_draw = is_indexed ? AccelDraw::Indexed : AccelDraw::Arrays;
+
+    SetupVertexShader();
+    SetupGeometryShader();
+
     DrawTriangles();
 
     return true;
@@ -774,12 +774,11 @@ void RasterizerOpenGL::DrawTriangles() {
             ptr_pos += index_buffer_size;
         }
 
-        SetupVertexShader(reinterpret_cast<VSUniformData*>(&buffer_ptr[ptr_pos]));
         const GLintptr vs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
         ptr_pos += sizeof(VSUniformData);
 
-        SetupGeometryShader(use_gs ? reinterpret_cast<GSUniformData*>(&buffer_ptr[ptr_pos])
-                                   : nullptr);
+        if (use_gs)
+            reinterpret_cast<GSUniformData*>(&buffer_ptr[ptr_pos])->uniforms.SetFromRegs(Pica::g_state.regs.gs, Pica::g_state.gs);
         const GLintptr gs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
 
         vertex_buffer.Unmap(buffer_size);
