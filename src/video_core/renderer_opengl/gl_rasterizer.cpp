@@ -403,12 +403,12 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset) {
     }
 }
 
-void RasterizerOpenGL::SetupVertexShader() {
+bool RasterizerOpenGL::SetupVertexShader() {
     const GLShader::PicaVSConfig vs_config(Pica::g_state.regs, Pica::g_state.vs);
-    shader_program_manager->UseProgrammableVertexShader(vs_config, Pica::g_state.vs);
+    return shader_program_manager->UseProgrammableVertexShader(vs_config, Pica::g_state.vs);
 }
 
-void RasterizerOpenGL::SetupGeometryShader() {
+bool RasterizerOpenGL::SetupGeometryShader() {
     const auto& regs = Pica::g_state.regs;
 
     GLuint shader;
@@ -416,12 +416,13 @@ void RasterizerOpenGL::SetupGeometryShader() {
     if (regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::No) {
         const GLShader::PicaGSConfigCommon gs_config(regs);
         shader_program_manager->UseFixedGeometryShader(gs_config);
+        return true;
     } else {
         // The uniform b15 is set to true after every geometry shader invocation.
         Pica::g_state.gs.uniforms.b[15] = true;
 
         const GLShader::PicaGSConfig gs_config(regs, Pica::g_state.gs);
-        shader_program_manager->UseProgrammableGeometryShader(gs_config, Pica::g_state.gs);
+        return shader_program_manager->UseProgrammableGeometryShader(gs_config, Pica::g_state.gs);
     }
 }
 
@@ -451,8 +452,11 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
 
     accelerate_draw = is_indexed ? AccelDraw::Indexed : AccelDraw::Arrays;
 
-    SetupVertexShader();
-    SetupGeometryShader();
+    if (!SetupVertexShader())
+        return false;
+
+    if (!SetupGeometryShader())
+        return false;
 
     DrawTriangles();
 
@@ -778,7 +782,8 @@ void RasterizerOpenGL::DrawTriangles() {
         ptr_pos += sizeof(VSUniformData);
 
         if (use_gs)
-            reinterpret_cast<GSUniformData*>(&buffer_ptr[ptr_pos])->uniforms.SetFromRegs(Pica::g_state.regs.gs, Pica::g_state.gs);
+            reinterpret_cast<GSUniformData*>(&buffer_ptr[ptr_pos])
+                ->uniforms.SetFromRegs(Pica::g_state.regs.gs, Pica::g_state.gs);
         const GLintptr gs_ubo_offset = buffer_offset + static_cast<GLintptr>(ptr_pos);
 
         vertex_buffer.Unmap(buffer_size);
