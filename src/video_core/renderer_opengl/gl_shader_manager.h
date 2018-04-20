@@ -87,12 +87,12 @@ public:
     explicit ShaderProgramManager(bool separable);
     ~ShaderProgramManager();
 
-    void UseProgrammableVertexShader(const GLShader::PicaVSConfig& config,
+    bool UseProgrammableVertexShader(const GLShader::PicaVSConfig& config,
                                      const Pica::Shader::ShaderSetup setup);
 
     void UseTrivialVertexShader();
 
-    void UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
+    bool UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
                                        const Pica::Shader::ShaderSetup setup);
 
     void UseFixedGeometryShader(const GLShader::PicaGSConfigCommon& config);
