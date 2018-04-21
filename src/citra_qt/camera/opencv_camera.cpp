@@ -94,16 +94,6 @@ std::vector<u16> OpenCVCamera::ReceiveFrame() {
                                     output_rgb, flip_horizontal, flip_vertical);
 }
 
-void OpenCVCamera::OnServicePaused() {
-    if (capture.isOpened()) {
-        StopCapture();
-    }
-}
-
-void OpenCVCamera::OnServiceResumed() {
-    StartCapture();
-}
-
 bool OpenCVCamera::IsPreviewAvailable() {
     StartCapture();
     bool ret = capture.isOpened();
