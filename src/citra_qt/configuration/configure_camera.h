@@ -50,7 +50,7 @@ private:
     void loadImplementation();
     /// Update the UI according to the recorded config
     /// In most cases, recordConfig() should be called before this call, or the current config will
-    /// be lost. This is made a slot as many signals will be connected to it.
+    /// be lost.
     void updateUiDisplay();
     void startPreviewing();
     void stopPreviewing();
