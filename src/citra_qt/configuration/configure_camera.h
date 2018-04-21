@@ -37,9 +37,11 @@ private:
         Video, // Video & Image Sequence
 #endif
         SystemCamera,
-    };;
+    };
+    ;
     static const std::map<ConfigureCamera::ImageSource, QString> ImageSourceNames;
-    static const std::map<ConfigureCamera::ImageSource, std::vector<QString>> ImageSourceImplementations;
+    static const std::map<ConfigureCamera::ImageSource, std::vector<QString>>
+        ImageSourceImplementations;
     /// Record the current configuration (on a certain camera)
     void recordConfig();
     /// Updates camera mode
