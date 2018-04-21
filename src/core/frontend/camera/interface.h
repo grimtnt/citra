@@ -21,12 +21,6 @@ public:
     /// Stops the camera for video capturing.
     virtual void StopCapture() = 0;
 
-    /// Called when Service::CAM is paused. Usually does nothing.
-    virtual void OnServicePaused() {}
-
-    /// Called when Service::CAM resumes. Usually does nothing.
-    virtual void OnServiceResumed() {}
-
     /**
      * Sets the video resolution from raw CAM service parameters.
      * For the meaning of the parameters, please refer to Service::CAM::Resolution. Note that the
