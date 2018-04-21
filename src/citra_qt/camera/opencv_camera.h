@@ -24,8 +24,6 @@ public:
     void SetFormat(Service::CAM::OutputFormat) override;
     void SetFrameRate(Service::CAM::FrameRate frame_rate) override;
     std::vector<u16> ReceiveFrame() override;
-    void OnServicePaused() override;
-    void OnServiceResumed() override;
     bool IsPreviewAvailable() override;
 
 private:
