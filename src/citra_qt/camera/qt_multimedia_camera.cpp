@@ -98,14 +98,6 @@ std::vector<u16> QtMultimediaCamera::ReceiveFrame() {
                                     output_rgb, flip_horizontal, flip_vertical);
 }
 
-void QtMultimediaCamera::OnServicePaused() {
-    handler->StopCamera();
-}
-
-void QtMultimediaCamera::OnServiceResumed() {
-    handler->StartCamera();
-}
-
 bool QtMultimediaCamera::IsPreviewAvailable() {
     return handler->CameraAvailable();
 }
