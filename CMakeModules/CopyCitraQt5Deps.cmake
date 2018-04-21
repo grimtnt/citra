@@ -3,7 +3,9 @@ function(copy_citra_Qt5_deps target_dir)
     set(DLL_DEST "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/")
     set(Qt5_DLL_DIR "${Qt5_DIR}/../../../bin")
     set(Qt5_PLATFORMS_DIR "${Qt5_DIR}/../../../plugins/platforms/")
+    set(Qt5_MEDIASERVICE_DIR "${Qt5_DIR}/../../../plugins/mediaservice/")
     set(PLATFORMS ${DLL_DEST}platforms/)
+    set(MEDIASERVICE ${DLL_DEST}mediaservice/)
     windows_copy_files(${target_dir} ${Qt5_DLL_DIR} ${DLL_DEST}
         icudt*.dll
         icuin*.dll
@@ -16,4 +18,8 @@ function(copy_citra_Qt5_deps target_dir)
         Qt5Network$<$<CONFIG:Debug>:d>.*
     )
     windows_copy_files(citra-qt ${Qt5_PLATFORMS_DIR} ${PLATFORMS} qwindows$<$<CONFIG:Debug>:d>.*)
+    windows_copy_files(citra-qt ${Qt5_MEDIASERVICE_DIR} ${MEDIASERVICE}
+        dsengine$<$<CONFIG:Debug>:d>.*
+        wmfengine$<$<CONFIG:Debug>:d>.*
+    )
 endfunction(copy_citra_Qt5_deps)
