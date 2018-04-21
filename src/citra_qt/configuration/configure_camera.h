@@ -24,20 +24,38 @@ public:
     void timerEvent(QTimerEvent*) override;
 
 public slots:
-    void onCameraChanged();
-    void onImageSourceChanged(int index);
+    /// recordConfig() and updateUiDisplay()
+    void onUpdateUI();
     void onToolButtonClicked();
-    void onPromptBeforeLoadChanged(int state);
 
 private:
-    enum class CameraPosition;
-    void setConfiguration();
-    void setUiDisplay();
+    enum class CameraPosition { RearRight, Front, RearLeft, RearBoth, Null };
+    enum class ImageSource {
+        Blank,
+        StillImage,
+#ifdef ENABLE_OPENCV_CAMERA
+        Video, // Video & Image Sequence
+#endif
+        SystemCamera,
+    };;
+    static const std::map<ConfigureCamera::ImageSource, QString> ImageSourceNames;
+    static const std::map<ConfigureCamera::ImageSource, std::vector<QString>> ImageSourceImplementations;
+    /// Record the current configuration (on a certain camera)
+    void recordConfig();
+    /// Updates camera mode
+    void updateCameraMode();
+    /// Load and display implementation stuff
+    void loadImplementation();
+    /// Update the UI according to the recorded config
+    /// In most cases, recordConfig() should be called before this call, or the current config will
+    /// be lost. This is made a slot as many signals will be connected to it.
+    void updateUiDisplay();
     void startPreviewing();
     void stopPreviewing();
     void connectEvents();
     CameraPosition getCameraSelection();
     int getSelectedCameraIndex();
+    ImageSource implementationToImageSource(std::string implementation);
 
 private:
     std::unique_ptr<Ui::ConfigureCamera> ui;
@@ -46,7 +64,7 @@ private:
     int timer_id = 0;
     int preview_width = 0;
     int preview_height = 0;
-    CameraPosition current_selected;
+    CameraPosition current_selected = CameraPosition::Null;
     bool is_previewing = false;
     std::unique_ptr<Camera::CameraInterface> previewing_camera;
 };
