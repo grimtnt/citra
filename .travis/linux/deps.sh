@@ -1,3 +1,4 @@
 #!/bin/sh -ex
 
-docker pull ubuntu:18.04
+brew update
+brew install qt5 sdl2 dylibbundler p7zip ccache
