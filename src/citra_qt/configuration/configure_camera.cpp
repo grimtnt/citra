@@ -318,6 +318,7 @@ void ConfigureCamera::retranslateUi() {
 
 ConfigureCamera::ImageSource ConfigureCamera::implementationToImageSource(
     std::string implementation) {
+    int index = getSelectedCameraIndex();
     // Convert camera name to image sources
     if (implementation == "blank") {
         return ImageSource::Blank;
@@ -326,7 +327,7 @@ ConfigureCamera::ImageSource ConfigureCamera::implementationToImageSource(
     }
 #ifdef ENABLE_OPENCV_CAMERA
     else if (implementation == "opencv") {
-        if (implementation.empty()) {
+        if (camera_config[index].empty()) {
             return ImageSource::SystemCamera;
         } else {
             return ImageSource::Video;
