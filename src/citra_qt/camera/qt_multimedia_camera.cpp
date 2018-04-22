@@ -112,7 +112,7 @@ std::array<std::shared_ptr<QtMultimediaCameraHandler>, 3> QtMultimediaCameraHand
 std::array<bool, 3> QtMultimediaCameraHandler::status;
 
 void QtMultimediaCameraHandler::Init() {
-    for (auto &handler : handlers) {
+    for (auto& handler : handlers) {
         handler = std::make_shared<QtMultimediaCameraHandler>();
     }
 }
@@ -125,7 +125,7 @@ std::shared_ptr<QtMultimediaCameraHandler> QtMultimediaCameraHandler::GetHandler
             return handlers[i];
         }
     }
-    NGLOG_ERROR(Service_CAM, "All handlers taken up");
+    NGLOG_CRITICAL(Service_CAM, "All handlers taken up");
     return nullptr;
 }
 
@@ -135,6 +135,7 @@ void QtMultimediaCameraHandler::ReleaseHandler(
         if (handlers[i] == handler) {
             NGLOG_INFO(Service_CAM, "Successfully released handler {}", i);
             status[i] = false;
+            handlers[i]->started = false;
             break;
         }
     }
@@ -147,10 +148,12 @@ void QtMultimediaCameraHandler::CreateCamera() {
 
 void QtMultimediaCameraHandler::StopCamera() {
     camera->stop();
+    started = false;
 }
 
 void QtMultimediaCameraHandler::StartCamera() {
     camera->start();
+    started = true;
 }
 
 bool QtMultimediaCameraHandler::CameraAvailable() const {
@@ -160,7 +163,7 @@ bool QtMultimediaCameraHandler::CameraAvailable() const {
 void QtMultimediaCameraHandler::StopCameras() {
     NGLOG_INFO(Service_CAM, "Stopping all cameras");
     for (auto& handler : handlers) {
-        if (handler->CameraAvailable()) {
+        if (handler->started) {
             handler->StopCamera();
         }
     }
@@ -168,9 +171,18 @@ void QtMultimediaCameraHandler::StopCameras() {
 
 void QtMultimediaCameraHandler::ResumeCameras() {
     for (auto& handler : handlers) {
-        if (handler->CameraAvailable()) {
+        if (handler->started) {
             handler->StartCamera();
         }
+    }
+}
+
+void QtMultimediaCameraHandler::ReleaseHandlers() {
+    StopCameras();
+    NGLOG_INFO(Service_CAM, "Releasing all handlers");
+    for (int i = 0; i < handlers.size(); i++){
+        status[i] = false;
+        handlers[i]->started = false;
     }
 }
 
