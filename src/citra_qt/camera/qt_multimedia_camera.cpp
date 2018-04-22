@@ -107,13 +107,14 @@ std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(
     return std::make_unique<QtMultimediaCamera>(config);
 }
 
-std::array<std::shared_ptr<QtMultimediaCameraHandler>, 2> QtMultimediaCameraHandler::handlers;
+std::array<std::shared_ptr<QtMultimediaCameraHandler>, 3> QtMultimediaCameraHandler::handlers;
 
-std::array<bool, 2> QtMultimediaCameraHandler::status;
+std::array<bool, 3> QtMultimediaCameraHandler::status;
 
 void QtMultimediaCameraHandler::Init() {
-    QtMultimediaCameraHandler::handlers[0] = std::make_shared<QtMultimediaCameraHandler>();
-    QtMultimediaCameraHandler::handlers[1] = std::make_shared<QtMultimediaCameraHandler>();
+    for (auto &handler : handlers) {
+        handler = std::make_shared<QtMultimediaCameraHandler>();
+    }
 }
 
 std::shared_ptr<QtMultimediaCameraHandler> QtMultimediaCameraHandler::GetHandler() {
@@ -157,6 +158,7 @@ bool QtMultimediaCameraHandler::CameraAvailable() const {
 }
 
 void QtMultimediaCameraHandler::StopCameras() {
+    NGLOG_INFO(Service_CAM, "Stopping all cameras");
     for (auto& handler : handlers) {
         if (handler->CameraAvailable()) {
             handler->StopCamera();
