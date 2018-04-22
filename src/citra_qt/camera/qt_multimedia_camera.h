@@ -86,10 +86,12 @@ public:
     bool CameraAvailable() const;
     static void StopCameras();
     static void ResumeCameras();
+    static void ReleaseHandlers();
 
 private:
     std::unique_ptr<QCamera> camera;
     QtCameraSurface camera_surface{};
+    bool started = false;
 
     static std::array<std::shared_ptr<QtMultimediaCameraHandler>, 3> handlers;
     static std::array<bool, 3> status;
