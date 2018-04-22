@@ -91,8 +91,8 @@ private:
     std::unique_ptr<QCamera> camera;
     QtCameraSurface camera_surface{};
 
-    static std::array<std::shared_ptr<QtMultimediaCameraHandler>, 2> handlers;
-    static std::array<bool, 2> status;
+    static std::array<std::shared_ptr<QtMultimediaCameraHandler>, 3> handlers;
+    static std::array<bool, 3> status;
 
     friend class QtMultimediaCamera; // For access to camera_surface (and camera)
 };
