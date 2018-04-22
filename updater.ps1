@@ -41,8 +41,11 @@ cls
 Write-Host "Extracting Citra..."
 Expand-Archive "citra.zip" -Force
 cls
-if (Test-Path platforms) {
+if (Test-Path "platforms") {
     Remove-Item "platforms" -Force -Recurse
+}
+if (Test-Path "mediaservice") {
+    Remove-Item "mediaservice" -Force -Recurse
 }
 if ($type -eq 0) {
     Move-Item "citra/head-mingw/*" "./" -Force
