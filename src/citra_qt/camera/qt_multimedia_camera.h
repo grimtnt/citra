@@ -84,8 +84,8 @@ public:
 
     void StopCamera();
     bool CameraAvailable() const;
-    static void onEmulationPauseOrStop();
-    static void onEmulationResume();
+    static void StopCameras();
+    static void ResumeCameras();
 
 private:
     std::unique_ptr<QCamera> camera;
