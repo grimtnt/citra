@@ -25,7 +25,7 @@ public:
 
 public slots:
     /// recordConfig() and updateUiDisplay()
-    void onUpdateUI();
+    void updateUI();
     void onToolButtonClicked();
 
 private:
@@ -46,6 +46,8 @@ private:
     void recordConfig();
     /// Updates camera mode
     void updateCameraMode();
+    /// Updates image source
+    void updateImageSourceUI();
     /// Load and display implementation stuff
     void loadImplementation();
     /// Update the UI according to the recorded config
