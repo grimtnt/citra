@@ -180,7 +180,7 @@ void QtMultimediaCameraHandler::ResumeCameras() {
 void QtMultimediaCameraHandler::ReleaseHandlers() {
     StopCameras();
     NGLOG_INFO(Service_CAM, "Releasing all handlers");
-    for (int i = 0; i < handlers.size(); i++){
+    for (int i = 0; i < handlers.size(); i++) {
         status[i] = false;
         handlers[i]->started = false;
     }
