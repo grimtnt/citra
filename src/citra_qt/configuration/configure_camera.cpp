@@ -66,6 +66,7 @@ ConfigureCamera::~ConfigureCamera() {
 void ConfigureCamera::connectEvents() {
     connect(ui->image_source,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this] {
+                stopPreviewing();
                 updateImageSourceUI();
                 loadImplementation();
             });
@@ -94,8 +95,10 @@ void ConfigureCamera::connectEvents() {
             ui->camera_file->setText("");
         }
     });
+    connect(ui->implementation,
+            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            [this] { stopPreviewing(); });
 }
-#pragma clang diagnostic pop
 
 void ConfigureCamera::updateCameraMode() {
     if (getCameraSelection() != CameraPosition::Front) {
