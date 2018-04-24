@@ -7,6 +7,7 @@
 #include <cstring>
 #include "common/assert.h"
 #include "common/bit_field.h"
+#include "common/bit_set.h"
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/settings.h"
@@ -231,20 +232,13 @@ void PicaShaderConfigCommon::Init(const Pica::ShaderRegs& regs, Pica::Shader::Sh
     num_outputs = 0;
     output_map.fill(16);
 
-    for (u32 i = 0; i < 16; ++i) {
-        if ((regs.output_mask.Value() >> i) & 1) {
-            output_map[i] = num_outputs++;
-        }
+    for (int reg : Common::BitSet<u32>(regs.output_mask)) {
+        output_map[reg] = num_outputs++;
     }
 }
 
 void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
-    vs_output_attributes = 0;
-    for (u32 i = 0; i < 16; ++i) {
-        if ((regs.vs.output_mask.Value() >> i) & 1) {
-            ++vs_output_attributes;
-        }
-    }
+    vs_output_attributes = Common::BitSet<u32>(regs.vs.output_mask).Count();
     gs_output_attributes = vs_output_attributes;
 
     semantic_maps.fill({16, 0});
@@ -256,11 +250,11 @@ void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
             regs.rasterizer.vs_output_attributes[attrib].map_w};
         for (u32 comp = 0; comp < 4; ++comp) {
             const auto semantic = semantics[comp];
-            if (semantic < 24) {
+            if (static_cast<size_t>(semantic) < 24) {
                 semantic_maps[static_cast<size_t>(semantic)] = {attrib, comp};
             } else if (semantic != VSOutputAttributes::INVALID) {
-                LOG_ERROR(Render_OpenGL, "Invalid/unknown semantic id: %u",
-                          static_cast<u32>(semantic));
+                NGLOG_ERROR(Render_OpenGL, "Invalid/unknown semantic id: {}",
+                            static_cast<u32>(semantic));
             }
         }
     }
@@ -1352,8 +1346,6 @@ std::string GenerateTrivialVertexShader(bool separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
 
-    out += GetVertexInterfaceDeclaration(true, separable_shader);
-
     out += "layout(location = " + std::to_string((int)ATTRIBUTE_POSITION) +
            ") in vec4 vert_position;\n";
     out += "layout(location = " + std::to_string((int)ATTRIBUTE_COLOR) + ") in vec4 vert_color;\n";
@@ -1369,9 +1361,12 @@ std::string GenerateTrivialVertexShader(bool separable_shader) {
            ") in vec4 vert_normquat;\n";
     out += "layout(location = " + std::to_string((int)ATTRIBUTE_VIEW) + ") in vec3 vert_view;\n";
 
+    out += GetVertexInterfaceDeclaration(true, separable_shader);
+
     out += UniformBlockDef;
 
     out += R"(
+
 void main() {
     primary_color = vert_color;
     texcoord0 = vert_texcoord0;
@@ -1431,7 +1426,7 @@ layout (std140) uniform vs_config {
 
 )";
     // input attributes declaration
-    for (u32 i = 0; i < 16; ++i) {
+    for (std::size_t i = 0; i < used_regs.size(); ++i) {
         if (used_regs[i]) {
             out += "layout(location = " + std::to_string(i) + ") in vec4 vs_in_reg" +
                    std::to_string(i) + ";\n";
@@ -1478,27 +1473,28 @@ struct Vertex {
     out += "    vec4 attributes[" + std::to_string(config.gs_output_attributes) + "];\n";
     out += "};\n\n";
 
-    auto get_vertex_semantic = [&](const std::string& vertex_name, u32 slot) -> std::string {
+    auto semantic = [&config](VSOutputAttributes::Semantic slot_semantic) -> std::string {
+        u32 slot = static_cast<u32>(slot_semantic);
         u32 attrib = config.semantic_maps[slot].attribute_index;
         u32 comp = config.semantic_maps[slot].component_index;
         if (attrib < config.gs_output_attributes) {
-            return vertex_name + ".attributes[" + std::to_string(attrib) + "]." + "xyzw"[comp % 4];
+            return "vtx.attributes[" + std::to_string(attrib) + "]." + "xyzw"[comp];
         }
         return "0.0";
     };
 
     out += "vec4 GetVertexQuaternion(Vertex vtx) {\n";
-    out += "    return vec4(" + get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_X) +
-           ", " + get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Y) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_Z) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::QUATERNION_W) + ");\n";
+    out += "    return vec4(" + semantic(VSOutputAttributes::QUATERNION_X) + ", " +
+           semantic(VSOutputAttributes::QUATERNION_Y) + ", " +
+           semantic(VSOutputAttributes::QUATERNION_Z) + ", " +
+           semantic(VSOutputAttributes::QUATERNION_W) + ");\n";
     out += "}\n\n";
 
     out += "void EmitVtx(Vertex vtx, bool quats_opposite) {\n";
-    out += "    vec4 vtx_pos = vec4(" + get_vertex_semantic("vtx", VSOutputAttributes::POSITION_X) +
-           ", " + get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Y) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_Z) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::POSITION_W) + ");\n";
+    out += "    vec4 vtx_pos = vec4(" + semantic(VSOutputAttributes::POSITION_X) + ", " +
+           semantic(VSOutputAttributes::POSITION_Y) + ", " +
+           semantic(VSOutputAttributes::POSITION_Z) + ", " +
+           semantic(VSOutputAttributes::POSITION_W) + ");\n";
     out += "    gl_Position = vtx_pos;\n";
     out += "    gl_ClipDistance[0] = -vtx_pos.z;\n"; // fixed PICA clipping plane z <= 0
     out += "    gl_ClipDistance[1] = dot(clip_coef, vtx_pos);\n\n";
@@ -1506,25 +1502,23 @@ struct Vertex {
     out += "    vec4 vtx_quat = GetVertexQuaternion(vtx);\n";
     out += "    normquat = mix(vtx_quat, -vtx_quat, bvec4(quats_opposite));\n\n";
 
-    out += "    vec4 vtx_color = vec4(" + get_vertex_semantic("vtx", VSOutputAttributes::COLOR_R) +
-           ", " + get_vertex_semantic("vtx", VSOutputAttributes::COLOR_G) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_B) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::COLOR_A) + ");\n";
+    out += "    vec4 vtx_color = vec4(" + semantic(VSOutputAttributes::COLOR_R) + ", " +
+           semantic(VSOutputAttributes::COLOR_G) + ", " + semantic(VSOutputAttributes::COLOR_B) +
+           ", " + semantic(VSOutputAttributes::COLOR_A) + ");\n";
     out += "    primary_color = min(abs(vtx_color), vec4(1.0));\n\n";
 
-    out += "    texcoord0 = vec2(" + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_U) +
-           ", " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_V) + ");\n";
-    out += "    texcoord1 = vec2(" + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_U) +
-           ", " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
+    out += "    texcoord0 = vec2(" + semantic(VSOutputAttributes::TEXCOORD0_U) + ", " +
+           semantic(VSOutputAttributes::TEXCOORD0_V) + ");\n";
+    out += "    texcoord1 = vec2(" + semantic(VSOutputAttributes::TEXCOORD1_U) + ", " +
+           semantic(VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
 
-    out +=
-        "    texcoord0_w = " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD0_W) + ";\n";
-    out += "    view = vec3(" + get_vertex_semantic("vtx", VSOutputAttributes::VIEW_X) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::VIEW_Y) + ", " +
-           get_vertex_semantic("vtx", VSOutputAttributes::VIEW_Z) + ");\n\n";
+    out += "    texcoord0_w = " + semantic(VSOutputAttributes::TEXCOORD0_W) + ";\n";
+    out += "    view = vec3(" + semantic(VSOutputAttributes::VIEW_X) + ", " +
+           semantic(VSOutputAttributes::VIEW_Y) + ", " + semantic(VSOutputAttributes::VIEW_Z) +
+           ");\n\n";
 
-    out += "    texcoord2 = vec2(" + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_U) +
-           ", " + get_vertex_semantic("vtx", VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
+    out += "    texcoord2 = vec2(" + semantic(VSOutputAttributes::TEXCOORD2_U) + ", " +
+           semantic(VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
 
     out += "    EmitVertex();\n";
     out += "}\n";
