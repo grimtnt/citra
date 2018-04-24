@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <algorithm>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <boost/variant.hpp>
@@ -61,16 +62,17 @@ static void SetShaderSamplerBindings(GLuint shader) {
 
 void PicaUniformsData::SetFromRegs(const Pica::ShaderRegs& regs,
                                    const Pica::Shader::ShaderSetup& setup) {
-    for (size_t it = 0; it < 16; ++it) {
-        bools[it].b = setup.uniforms.b[it] ? GL_TRUE : GL_FALSE;
-    }
-    for (size_t it = 0; it < 4; ++it) {
-        i[it][0] = regs.int_uniforms[it].x;
-        i[it][1] = regs.int_uniforms[it].y;
-        i[it][2] = regs.int_uniforms[it].z;
-        i[it][3] = regs.int_uniforms[it].w;
-    }
-    std::memcpy(&f[0], &setup.uniforms.f[0], sizeof(f));
+    std::transform(std::begin(setup.uniforms.b), std::end(setup.uniforms.b), std::begin(bools),
+                   [](bool value) -> BoolAligned { return {value ? GL_TRUE : GL_FALSE}; });
+    std::transform(std::begin(regs.int_uniforms), std::end(regs.int_uniforms), std::begin(i),
+                   [](const auto& value) -> GLuvec4 {
+                       return {value.x.Value(), value.y.Value(), value.z.Value(), value.w.Value()};
+                   });
+    std::transform(std::begin(setup.uniforms.f), std::end(setup.uniforms.f), std::begin(f),
+                   [](const auto& value) -> GLvec4 {
+                       return {value.x.ToFloat32(), value.y.ToFloat32(), value.z.ToFloat32(),
+                               value.w.ToFloat32()};
+                   });
 }
 
 /**
@@ -144,17 +146,18 @@ private:
     std::unordered_map<KeyConfigType, OGLShaderStage> shaders;
 };
 
-// TODO(wwylele): beautify this doc
-// This is a shader cache designed for translating PICA shader to GLSL shader.
-// The double cache is needed because diffent KeyConfigType, which includes a hash of the code
-// region (including its leftover unused code) can generate the same GLSL code.
+// This is a cache designed for shaders translated from PICA shaders. The first cache matches the
+// config structure like a normal cache does. On cache miss, the second cache matches the generated
+// GLSL code. The configuration is like this because there might be leftover code in the PICA shader
+// program buffer from the previous shader, which is hashed into the config, resulting several
+// different config values from the same shader program.
 template <typename KeyConfigType,
           boost::optional<std::string> (*CodeGenerator)(const Pica::Shader::ShaderSetup&,
                                                         const KeyConfigType&, bool),
           GLenum ShaderType>
 class ShaderDoubleCache {
 public:
-    ShaderDoubleCache(bool separable) : separable(separable) {}
+    explicit ShaderDoubleCache(bool separable) : separable(separable) {}
     GLuint Get(const KeyConfigType& key, const Pica::Shader::ShaderSetup& setup) {
         auto map_it = shader_map.find(key);
         if (map_it == shader_map.end()) {
@@ -172,12 +175,13 @@ public:
             }
             shader_map[key] = &cached_shader;
             return cached_shader.GetHandle();
-        } else {
-            if (map_it->second == nullptr) {
-                return 0;
-            }
-            return map_it->second->GetHandle();
         }
+
+        if (map_it->second == nullptr) {
+            return 0;
+        }
+
+        return map_it->second->GetHandle();
     }
 
 private:
