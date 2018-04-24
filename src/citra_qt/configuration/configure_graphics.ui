@@ -165,11 +165,6 @@
                  <string>GPU</string>
                 </property>
                </item>
-               <item>
-                <property name="text">
-                 <string>GPU (Partial)</string>
-                </property>
-               </item>
               </widget>
              </item>
             </layout>
