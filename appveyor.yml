@@ -94,8 +94,8 @@ after_build:
 
           mkdir $RELEASE_DIST
           Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse
-          Copy-Item .\license.txt -Destination $RELEASE_DIST\2.license.txt
-          Copy-Item .\updater.ps1 -Destination $RELEASE_DIST\updater.ps1
+          Copy-Item .\license.txt -Destination $RELEASE_DIST
+          Copy-Item .\README.md -Destination $RELEASE_DIST
 
           # process PDBs
           . "./.appveyor/ProcessPdb.ps1"
@@ -127,11 +127,11 @@ after_build:
 
           # copy the compiled binaries and other release files to the release folder
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR\1.ReadMe First.txt" -destination "$RELEASE_DIST\1.ReadMe First.txt"
-          Copy-Item -path "$CMAKE_SOURCE_DIR\license.txt" -destination "$RELEASE_DIST\2.license.txt"
-          Copy-Item -path "$CMAKE_SOURCE_DIR\updater.ps1" -destination "$RELEASE_DIST\updater.ps1"
-          Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
-          Add-Content -Path $RELEASE_DIST\updater.cfg -Value 0
+          Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination $RELEASE_DIST
+          Copy-Item -path "$CMAKE_SOURCE_DIR/README.md" -destination $RELEASE_DIST
+          Copy-Item -path "$CMAKE_SOURCE_DIR/updater.ps1" -destination $RELEASE_DIST
+          Add-Content -Path $RELEASE_DIST/updater.cfg -Value $GITREV
+          Add-Content -Path $RELEASE_DIST/updater.cfg -Value 0
 
           # copy all the dll dependencies to the release folder
           . "./.appveyor/FindDependencies.ps1"
