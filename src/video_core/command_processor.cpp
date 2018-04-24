@@ -265,9 +265,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         PrimitiveAssembler<Shader::OutputVertex>& primitive_assembler = g_state.primitive_assembler;
 
         auto hw_shaders_setting = Settings::values.hw_shaders;
-        bool accelerate_draw = hw_shaders_setting != Settings::HwShaders::Off &&
-                               (regs.pipeline.use_gs == PipelineRegs::UseGS::No ||
-                                hw_shaders_setting == Settings::HwShaders::All);
+        bool accelerate_draw = hw_shaders_setting != Settings::HwShaders::Off;
 
         accelerate_draw &= primitive_assembler.IsEmpty();
 
