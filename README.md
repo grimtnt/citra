@@ -2,8 +2,6 @@
 
 Citra Emulator
 ==============
-[Build with Dynarmic AddTicks ticks logging (SLOW!)](https://ci.appveyor.com/api/buildjobs/81lo0wc7ma3uydnd/artifacts/citra-windows-mingw-20180123-9088915.7z)
-
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/k213m9mio0bhwo6a?svg=true)](https://ci.appveyor.com/project/valentinvanelslande/citra)
 
 [![Downloads](https://img.shields.io/github/downloads/valentinvanelslande/citra/total.svg)](https://github.com/valentinvanelslande/citra/releases)
@@ -33,3 +31,7 @@ If you want to contribute please take a look at the [Contributor's Guide](CONTRI
 * __Windows__: [Windows Build](https://github.com/valentinvanelslande/citra/wiki/Building-For-Windows)
 * __Linux__: [Linux Build](https://github.com/valentinvanelslande/citra/wiki/Building-For-Linux)
 * __macOS__: [macOS Build](https://github.com/valentinvanelslande/citra/wiki/Building-for-macOS)
+
+### Builds
+[Build with Dynarmic AddTicks ticks logging (SLOW!)](https://ci.appveyor.com/api/buildjobs/81lo0wc7ma3uydnd/artifacts/citra-windows-mingw-20180123-9088915.7z)
+
