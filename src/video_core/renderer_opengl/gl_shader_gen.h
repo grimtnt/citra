@@ -113,8 +113,8 @@ struct PicaFSConfigState {
 };
 
 /**
- * This struct contains all state used to generate the GLSL fragment that emulates the current
- * Pica register configuration. This struct is used as a cache key for generated GLSL shader
+ * This struct contains all state used to generate the GLSL fragment shader that emulates the
+ * current Pica register configuration. This struct is used as a cache key for generated GLSL shader
  * programs. The functions in gl_shader_gen.cpp should retrieve state from this struct only, not by
  * directly accessing Pica registers. This should reduce the risk of bugs in shader generation where
  * Pica state is not being captured in the shader cache key, thereby resulting in (what should be)
@@ -147,7 +147,8 @@ struct PicaShaderConfigCommon {
     bool sanitize_mul;
 
     u32 num_outputs;
-    // reg to attribute
+
+    // output_map[output register index] -> output attribute index
     std::array<u32, 16> output_map;
 };
 
@@ -172,6 +173,7 @@ struct PicaGSConfigCommonRaw {
         u32 component_index;
     };
 
+    // semantic_maps[semantic name] -> GS output attribute index + component index
     std::array<SemanticMap, 24> semantic_maps;
 };
 
@@ -189,10 +191,10 @@ struct PicaGSConfigRaw : PicaShaderConfigCommon, PicaGSConfigCommonRaw {
     void Init(const Pica::Regs& regs, Pica::Shader::ShaderSetup& setup);
 
     u32 num_inputs;
-    // attribute to reg
-    std::array<u32, 16> input_map;
-
     u32 attributes_per_vertex;
+
+    // input_map[input register index] -> input attribute index
+    std::array<u32, 16> input_map;
 };
 
 /**
@@ -206,20 +208,20 @@ struct PicaGSConfig : Common::HashableStruct<PicaGSConfigRaw> {
 };
 
 /**
- * Generates the GLSL vertex shader program source code for the given VS program
+ * Generates the GLSL vertex shader program source code that accepts vertices from software shader
+ * and directly passes them to the fragment shader.
+ * @param separable_shader generates shader that can be used for separate shader object
  * @returns String of the shader source code
+ */
+std::string GenerateTrivialVertexShader(bool separable_shader);
+
+/**
+ * Generates the GLSL vertex shader program source code for the given VS program
+ * @returns String of the shader source code; boost::none on failure
  */
 boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetup& setup,
                                                   const PicaVSConfig& config,
                                                   bool separable_shader);
-
-/**
- * Generates the GLSL vertex shader program source code that accepts vertices from software shader
- * and directly passes them to the fragment shader.
- * @param separable_shader generates shader that can be used for separate shader object
- * @returns String of the shader source code; boost::none on failure
- */
-std::string GenerateTrivialVertexShader(bool separable_shader);
 
 /*
  * Generates the GLSL fixed geometry shader program source code for non-GS PICA pipeline
@@ -261,6 +263,7 @@ struct hash<GLShader::PicaVSConfig> {
         return k.Hash();
     }
 };
+
 template <>
 struct hash<GLShader::PicaFixedGSConfig> {
     size_t operator()(const GLShader::PicaFixedGSConfig& k) const {
