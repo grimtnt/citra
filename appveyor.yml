@@ -104,7 +104,6 @@ after_build:
 
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
           Add-Content -Path $RELEASE_DIST\updater.cfg -Value 1
-          Copy-Item ".\1.ReadMe First.txt" -Destination "$RELEASE_DIST\1.ReadMe First.txt"
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
           7z a $MSVC_SEVENZIP $RELEASE_DIST
         } else {
