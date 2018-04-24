@@ -53,12 +53,16 @@ static_assert(
 static_assert(sizeof(UniformData) < 16384,
               "UniformData structure must be less than 16kb as per the OpenGL spec");
 
+/// Uniform struct for the Uniform Buffer Object that contains PICA vertex/geometry shader uniforms.
+// NOTE: the same rule from UniformData also applies here.
 struct PicaUniformsData {
     void SetFromRegs(const Pica::ShaderRegs& regs, const Pica::Shader::ShaderSetup& setup);
 
-    struct {
-        alignas(16) GLuint b;
-    } bools[16];
+    struct BoolAligned {
+        alignas(16) GLint b;
+    };
+
+    std::array<BoolAligned, 16> bools;
     alignas(16) std::array<GLuvec4, 4> i;
     alignas(16) std::array<GLvec4, 96> f;
 };
