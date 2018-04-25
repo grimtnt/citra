@@ -418,9 +418,6 @@ bool RasterizerOpenGL::SetupGeometryShader() {
         shader_program_manager->UseFixedGeometryShader(gs_config);
         return true;
     } else {
-        // The uniform b15 is set to true after every geometry shader invocation.
-        Pica::g_state.gs.uniforms.b[15] = true;
-
         const GLShader::PicaGSConfig gs_config(regs, Pica::g_state.gs);
         return shader_program_manager->UseProgrammableGeometryShader(gs_config, Pica::g_state.gs);
     }
