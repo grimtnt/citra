@@ -273,16 +273,17 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             switch (primitive_assembler.GetTopology()) {
             case PipelineRegs::TriangleTopology::Shader:
             case PipelineRegs::TriangleTopology::List:
-                accelerate_draw &= (regs.pipeline.num_vertices % 3) ==
-                                   0; // || peek_into_cmdlist_for_reset_primitive();
+                accelerate_draw &= (regs.pipeline.num_vertices % 3) == 0;
                 break;
             case PipelineRegs::TriangleTopology::Strip:
             case PipelineRegs::TriangleTopology::Fan:
-                // accelerate_draw &= peek_into_cmdlist_for_reset_primitive();
-                // accelerate_draw = false;
                 break;
             default:
                 UNREACHABLE();
+            }
+        } else {
+            if (hw_shaders_setting == Settings::HwShaders::VSOnly) {
+                accelerate_draw = false;
             }
         }
 
