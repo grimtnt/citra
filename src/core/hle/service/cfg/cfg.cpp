@@ -228,7 +228,7 @@ void Module::Interface::GetRegionCanadaUSA(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::SetSystemModel(SystemModel model) {
-    ConsoleModelInfo info = {model, {0, 0, 0}};
+    ConsoleModelInfo info = {static_cast<u8>(model), {0, 0, 0}};
     SetConfigInfoBlock(ConsoleModelBlockID, 4, 0x8, &info);
 }
 
