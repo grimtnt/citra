@@ -703,7 +703,13 @@ void GameListWorker::run() {
     stop_processing = false;
     for (UISettings::GameDir& gamedir : gamedirs) {
         if (gamedir.path == "INSTALLED") {
-            QString path = QString::fromStdString((Settings::values.sd_card_root.empty() ? FileUtil::GetUserPath(D_SDMC_IDX) : std::string(Settings::values.sd_card_root + "/")) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000");
+            QString path =
+                QString::fromStdString((Settings::values.sd_card_root.empty()
+                                            ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                            : std::string(Settings::values.sd_card_root + "/")) +
+                                       "Nintendo "
+                                       "3DS/00000000000000000000000000000000/"
+                                       "00000000000000000000000000000000/title/00040000");
             watch_list.append(path);
             GameListDir* game_list_dir = new GameListDir(gamedir, GameListItemType::InstalledDir);
             emit DirEntryReady({game_list_dir});

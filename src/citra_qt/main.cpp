@@ -929,7 +929,12 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
 void GMainWindow::OnGameListOpenDirectory(QString directory) {
     QString path;
     if (directory == "INSTALLED") {
-        path = QString::fromStdString((Settings::values.sd_card_root.empty() ? FileUtil::GetUserPath(D_SDMC_IDX) : std::string(Settings::values.sd_card_root + "/")) + "Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000");
+        path = QString::fromStdString(
+            (Settings::values.sd_card_root.empty()
+                 ? FileUtil::GetUserPath(D_SDMC_IDX)
+                 : std::string(Settings::values.sd_card_root + "/")) +
+            "Nintendo "
+            "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000");
     } else if (directory == "SYSTEM") {
         path =
             QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX).c_str() +
