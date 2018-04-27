@@ -57,3 +57,5 @@ deploy:
   file_glob: true
   file: "artifacts/*"
   skip_cleanup: true
+  on:
+    $NAME =~ ^"linux build"|"macos build"$
