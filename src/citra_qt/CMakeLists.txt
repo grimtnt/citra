@@ -77,6 +77,8 @@ add_executable(citra-qt
     util/spinbox.cpp
     util/clickable_label.cpp
     util/clickable_label.h
+    util/console.cpp
+    util/console.h
     util/spinbox.h
     util/util.cpp
     util/util.h
@@ -163,6 +165,14 @@ if (APPLE)
     target_sources(citra-qt PRIVATE ${MACOSX_ICON})
     set_target_properties(citra-qt PROPERTIES MACOSX_BUNDLE TRUE)
     set_target_properties(citra-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
+elseif(WIN32)
+    # compile as a win32 gui application instead of a console application
+    target_link_libraries(citra-qt PRIVATE Qt5::WinMain)
+    if(MSVC)
+        set_target_properties(citra-qt PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+    elseif(MINGW)
+        set_target_properties(citra-qt PROPERTIES LINK_FLAGS_RELEASE "-mwindows")
+    endif()
 endif()
 
 if (ENABLE_OPENCV)

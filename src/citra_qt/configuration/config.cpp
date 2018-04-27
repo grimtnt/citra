@@ -248,6 +248,7 @@ void Config::ReadValues() {
     UISettings::values.confirm_before_closing = qt_config->value("confirmClose", true).toBool();
     UISettings::values.first_start = qt_config->value("firstStart", true).toBool();
     UISettings::values.callout_flags = qt_config->value("calloutFlags", 0).toUInt();
+    UISettings::values.show_console = qt_config->value("showConsole", false).toBool();
 
     qt_config->beginGroup("Multiplayer");
     UISettings::values.nickname = qt_config->value("nickname", "").toString();
@@ -367,16 +368,17 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("WebService");
-    qt_config->setValue("enable_telemetry", Settings::values.enable_telemetry);
-    qt_config->setValue("telemetry_endpoint_url",
-                        QString::fromStdString(Settings::values.telemetry_endpoint_url));
-    qt_config->setValue("verify_endpoint_url",
-                        QString::fromStdString(Settings::values.verify_endpoint_url));
-    qt_config->setValue(
-        "announce_multiplayer_room_endpoint_url",
-        QString::fromStdString(Settings::values.announce_multiplayer_room_endpoint_url));
-    qt_config->setValue("citra_username", QString::fromStdString(Settings::values.citra_username));
-    qt_config->setValue("citra_token", QString::fromStdString(Settings::values.citra_token));
+    Settings::values.enable_telemetry = qt_config->value("enable_telemetry", true).toBool();
+    Settings::values.telemetry_endpoint_url =
+        qt_config->value("telemetry_endpoint_url", "https://api.citra-emu.org/telemetry")
+            .toString()
+            .toStdString();
+    Settings::values.verify_endpoint_url =
+        qt_config->value("verify_endpoint_url", "https://api.citra-emu.org/profile")
+            .toString()
+            .toStdString();
+    Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
+    Settings::values.citra_token = qt_config->value("citra_token").toString().toStdString();
     qt_config->endGroup();
 
     qt_config->beginGroup("Hacks");
@@ -423,6 +425,7 @@ void Config::SaveValues() {
     qt_config->setValue("confirmClose", UISettings::values.confirm_before_closing);
     qt_config->setValue("firstStart", UISettings::values.first_start);
     qt_config->setValue("calloutFlags", UISettings::values.callout_flags);
+    qt_config->setValue("showConsole", UISettings::values.show_console);
 
     qt_config->beginGroup("Multiplayer");
     qt_config->setValue("nickname", UISettings::values.nickname);

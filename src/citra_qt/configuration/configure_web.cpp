@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <QIcon>
 #include <QMessageBox>
 #include "citra_qt/configuration/configure_web.h"
 #include "core/settings.h"
@@ -30,7 +29,7 @@ void ConfigureWeb::setConfiguration() {
                                          "telemetry-and-why-thats-a-good-thing/'>Learn more</a>"));
 
     ui->web_signup_link->setOpenExternalLinks(true);
-    ui->web_signup_link->setText(tr("<a href='https://services.citra-emu.org/'>Sign up</a>"));
+    ui->web_signup_link->setText(tr("<a href='https://profile.citra-emu.org/'>Sign up</a>"));
     ui->web_token_info_link->setOpenExternalLinks(true);
     ui->web_token_info_link->setText(
         tr("<a href='https://citra-emu.org/wiki/citra-web-service/'>What is my token?</a>"));
@@ -68,12 +67,12 @@ void ConfigureWeb::RefreshTelemetryID() {
 void ConfigureWeb::OnLoginChanged() {
     if (ui->edit_username->text().isEmpty() && ui->edit_token->text().isEmpty()) {
         user_verified = true;
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
+        ui->label_username_verified->setPixmap(QPixmap(":/icons/checked.png"));
+        ui->label_token_verified->setPixmap(QPixmap(":/icons/checked.png"));
     } else {
         user_verified = false;
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
+        ui->label_username_verified->setPixmap(QPixmap(":/icons/failed.png"));
+        ui->label_token_verified->setPixmap(QPixmap(":/icons/failed.png"));
     }
 }
 
@@ -90,11 +89,11 @@ void ConfigureWeb::OnLoginVerified() {
     ui->button_verify_login->setText(tr("Verify"));
     if (verified.get()) {
         user_verified = true;
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
+        ui->label_username_verified->setPixmap(QPixmap(":/icons/checked.png"));
+        ui->label_token_verified->setPixmap(QPixmap(":/icons/checked.png"));
     } else {
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
+        ui->label_username_verified->setPixmap(QPixmap(":/icons/failed.png"));
+        ui->label_token_verified->setPixmap(QPixmap(":/icons/failed.png"));
         QMessageBox::critical(
             this, tr("Verification failed"),
             tr("Verification failed. Check that you have entered your username and token "

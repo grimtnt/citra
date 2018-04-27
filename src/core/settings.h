@@ -147,6 +147,7 @@ struct Values {
     float bg_green;
     float bg_blue;
 
+    // Logging
     std::string log_filter;
 
     // Audio
