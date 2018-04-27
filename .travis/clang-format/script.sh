@@ -1,11 +1,5 @@
 #!/bin/bash -ex
 
-if grep -nr '\s$' src *.yml *.txt *.md Doxyfile .gitignore .gitmodules .travis* dist/*.desktop \
-                 dist/*.svg dist/*.xml; then
-    echo Trailing whitespace found, aborting
-    exit 1
-fi
-
 # Default clang-format points to default 3.5 version one
 CLANG_FORMAT=clang-format-6.0
 $CLANG_FORMAT --version
