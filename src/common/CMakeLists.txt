@@ -1,12 +1,8 @@
 # Generate cpp with Git revision from template
-# Also if this is a CI build, add the build name (ie: Nightly, Bleeding Edge) to the scm_rev file as well
+# Also if this is a AppVeyor build, add the build name (ie: Nightly, Bleeding Edge) to the scm_rev file as well
 set(REPO_NAME "")
-if ($ENV{CI})
-  if ($ENV{TRAVIS})
-    set(BUILD_REPOSITORY $ENV{TRAVIS_REPO_SLUG})
-  elseif($ENV{APPVEYOR})
-    set(BUILD_REPOSITORY $ENV{APPVEYOR_REPO_NAME})
-  endif()
+if ($ENV{APPVEYOR})
+  set(BUILD_REPOSITORY $ENV{APPVEYOR_REPO_NAME})
   # regex capture the string nightly or bleeding-edge into CMAKE_MATCH_1
   string(REGEX MATCH "citra-emu/citra-?(.*)" OUTVAR ${BUILD_REPOSITORY})
   if (${CMAKE_MATCH_COUNT} GREATER 0)
