@@ -1226,8 +1226,7 @@ void GMainWindow::OnConfigure() {
     if (result == QDialog::Accepted) {
         configureDialog.applyConfiguration();
         if (configureDialog.sd_card_root_changed) {
-            game_list->PopulateAsync(UISettings::values.gamedir,
-                                     UISettings::values.gamedir_deepscan);
+            game_list->PopulateAsync(UISettings::values.gamedirs);
         }
         UpdateUITheme();
         emit UpdateThemedIcons();
