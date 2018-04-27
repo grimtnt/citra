@@ -24,12 +24,6 @@ if (NOT ENABLE_QT)
 endif()
 option(CITRA_ENABLE_COMPATIBILITY_REPORTING "Enable compatibility reporting" OFF)
 
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
-    message(STATUS "Copying pre-commit hook")
-    file(COPY hooks/pre-commit
-        DESTINATION ${CMAKE_SOURCE_DIR}/.git/hooks)
-endif()
-
 # Sanity check : Check that all submodules are present
 # =======================================================================
 
