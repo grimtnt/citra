@@ -60,7 +60,6 @@
     <addaction name="action_Load_File"/>
     <addaction name="action_Install_CIA"/>
     <addaction name="separator"/>
-    <addaction name="action_Select_Game_List_Root"/>
     <addaction name="menu_recent_files"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
@@ -237,14 +236,6 @@
    </property>
    <property name="text">
     <string>Show Status Bar</string>
-   </property>
-  </action>
-  <action name="action_Select_Game_List_Root">
-   <property name="text">
-    <string>Select Game Directory...</string>
-   </property>
-   <property name="toolTip">
-    <string>Selects a folder to display in the game list</string>
    </property>
   </action>
   <action name="action_View_Lobby">
