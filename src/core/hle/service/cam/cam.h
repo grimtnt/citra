@@ -739,6 +739,7 @@ private:
         std::array<ContextConfig, 2> contexts;
         int current_context;
         FrameRate frame_rate;
+        std::string name, config;
     };
 
     struct PortConfig {
