@@ -179,21 +179,10 @@ elseif(WIN32)
     endif()
 endif()
 
-if (ENABLE_OPENCV)
-    target_sources(citra-qt PRIVATE
-        camera/opencv_camera.cpp
-        camera/opencv_camera.h
-    )
-    target_compile_definitions(citra-qt PRIVATE -DENABLE_OPENCV_CAMERA)
-endif()
-
 create_target_directory_groups(citra-qt)
 
 target_link_libraries(citra-qt PRIVATE audio_core common core input_common network video_core)
 target_link_libraries(citra-qt PRIVATE Boost::boost glad nihstro-headers Qt5::OpenGL Qt5::Widgets Qt5::Multimedia)
-if (ENABLE_OPENCV)
-    target_link_libraries(citra-qt PRIVATE opencv_core opencv_videoio opencv_imgproc)
-endif()
 target_link_libraries(citra-qt PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 
 if(UNIX AND NOT APPLE)
