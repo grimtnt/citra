@@ -14,33 +14,11 @@
 #include "core/settings.h"
 #include "ui_configure_camera.h"
 
-#ifdef ENABLE_OPENCV_CAMERA
-const std::map<ConfigureCamera::ImageSource, QString> ConfigureCamera::ImageSourceNames = {
-    {ImageSource::Blank, QObject::tr("Blank")},
-    {ImageSource::StillImage, QObject::tr("Still Image")},
-    {ImageSource::Video, QObject::tr("Video & Image Sequence")},
-    {ImageSource::SystemCamera, QObject::tr("System Camera")},
+const std::array<std::string, 3> ConfigureCamera::Implementations = {
+    "blank", /* Blank */
+    "image", /* Image */
+    "qt"     /* System Camera */
 };
-const std::map<ConfigureCamera::ImageSource, std::vector<QString>>
-    ConfigureCamera::ImageSourceImplementations = {
-        {ImageSource::Blank, {"blank"}},
-        {ImageSource::StillImage, {"image"}},
-        {ImageSource::Video, {"opencv"}},
-        {ImageSource::SystemCamera, {"opencv", "qt"}},
-};
-#else
-const std::map<ConfigureCamera::ImageSource, QString> ConfigureCamera::ImageSourceNames = {
-    {ImageSource::Blank, QObject::tr("Blank")},
-    {ImageSource::StillImage, QObject::tr("Still Image")},
-    {ImageSource::SystemCamera, QObject::tr("System Camera")},
-};
-const std::map<ConfigureCamera::ImageSource, std::vector<QString>>
-    ConfigureCamera::ImageSourceImplementations = {
-        {ImageSource::Blank, {"blank"}},
-        {ImageSource::StillImage, {"image"}},
-        {ImageSource::SystemCamera, {"qt"}},
-};
-#endif
 
 ConfigureCamera::ConfigureCamera(QWidget* parent)
     : QWidget(parent), ui(std::make_unique<Ui::ConfigureCamera>()) {
@@ -48,15 +26,18 @@ ConfigureCamera::ConfigureCamera(QWidget* parent)
     // Load settings
     camera_name = Settings::values.camera_name;
     camera_config = Settings::values.camera_config;
-    for (auto pair : ImageSourceImplementations) {
-        if (!pair.second.empty()) {
-            ui->image_source->addItem(ImageSourceNames.at(pair.first));
+    for (auto&& item : camera_name) {
+        if (item == "opencv") {
+            QMessageBox::critical(this, tr("Error"),
+                                  tr("Sorry, Citra has removed support for OpenCV cameras.\n\nYour "
+                                     "existing OpenCV cameras have been replaced with Blank."));
+            item = "blank";
         }
     }
     updateCameraMode();
-    updateUiDisplay();
-    loadImplementation();
+    setConfiguration();
     connectEvents();
+    ui->preview_box->setHidden(true);
 }
 
 ConfigureCamera::~ConfigureCamera() {
@@ -68,23 +49,36 @@ void ConfigureCamera::connectEvents() {
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this] {
                 stopPreviewing();
                 updateImageSourceUI();
-                loadImplementation();
             });
     connect(ui->camera_selection,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this] {
+                stopPreviewing();
+                if (getCameraSelection() != current_selected) {
+                    recordConfig();
+                }
+                if (ui->camera_selection->currentIndex() == 1) {
+                    ui->camera_mode->setCurrentIndex(1); // Double
+                    if (camera_name[0] == camera_name[2] && camera_config[0] == camera_config[2]) {
+                        ui->camera_mode->setCurrentIndex(0); // Single
+                    }
+                }
                 updateCameraMode();
-                updateUI();
-                loadImplementation();
+                setConfiguration();
             });
     connect(ui->camera_mode, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this] {
-                updateUI();
-                loadImplementation();
+                stopPreviewing();
+                ui->camera_position_label->setVisible(ui->camera_mode->currentIndex() == 1);
+                ui->camera_position->setVisible(ui->camera_mode->currentIndex() == 1);
+                current_selected = getCameraSelection();
             });
     connect(ui->camera_position,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this] {
-                updateUI();
-                loadImplementation();
+                stopPreviewing();
+                if (getCameraSelection() != current_selected) {
+                    recordConfig();
+                }
+                setConfiguration();
             });
     connect(ui->toolButton, &QToolButton::clicked, this, &ConfigureCamera::onToolButtonClicked);
     connect(ui->preview_button, &QPushButton::clicked, this, [=] { startPreviewing(); });
@@ -95,25 +89,11 @@ void ConfigureCamera::connectEvents() {
             ui->camera_file->setText("");
         }
     });
-    connect(ui->implementation,
-            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            [this] { stopPreviewing(); });
+    connect(ui->camera_file, &QLineEdit::textChanged, this, [=] { stopPreviewing(); });
 }
 
 void ConfigureCamera::updateCameraMode() {
-    if (getCameraSelection() != CameraPosition::Front) {
-        ui->camera_mode->setCurrentIndex(1); // Double
-        if (camera_name[0] == camera_name[2] && camera_config[0] == camera_config[2]) {
-            ui->camera_mode->setCurrentIndex(0); // Single
-        }
-    }
-}
-
-void ConfigureCamera::updateUiDisplay() {
-    stopPreviewing();
     CameraPosition pos = getCameraSelection();
-    current_selected = pos;
-    int camera_selection = getSelectedCameraIndex();
     // Set the visibility of the camera mode selection widgets
     if (pos == CameraPosition::RearBoth) {
         ui->camera_position->setHidden(true);
@@ -126,18 +106,13 @@ void ConfigureCamera::updateUiDisplay() {
         ui->camera_mode->setHidden(pos == CameraPosition::Front);
         ui->camera_mode_label->setHidden(pos == CameraPosition::Front);
     }
-    ImageSource image_source = implementationToImageSource(camera_name[camera_selection]);
-    // Set camera config text
-    ui->camera_file->setText(QString::fromStdString(camera_config[camera_selection]));
-    ui->image_source->setCurrentText(ImageSourceNames.at(image_source));
-    updateImageSourceUI();
 }
 
 void ConfigureCamera::updateImageSourceUI() {
-    auto image_source = static_cast<ImageSource>(ui->image_source->currentIndex());
+    int image_source = ui->image_source->currentIndex();
     switch (image_source) {
-    case ImageSource::Blank:
-    case ImageSource::SystemCamera:
+    case 0: /* blank */
+    case 2: /* system camera */
         ui->prompt_before_load->setHidden(true);
         ui->prompt_before_load->setChecked(false);
         ui->camera_file_label->setHidden(true);
@@ -145,7 +120,7 @@ void ConfigureCamera::updateImageSourceUI() {
         ui->camera_file->setText("");
         ui->toolButton->setHidden(true);
         break;
-    case ImageSource::StillImage:
+    case 1: /* still image */
         ui->prompt_before_load->setHidden(false);
         ui->camera_file_label->setHidden(false);
         ui->camera_file->setHidden(false);
@@ -160,46 +135,26 @@ void ConfigureCamera::updateImageSourceUI() {
             ui->toolButton->setDisabled(false);
         }
         break;
-#ifdef ENABLE_OPENCV_CAMERA
-    case ImageSource::Video:
-        ui->prompt_before_load->setHidden(true);
-        ui->prompt_before_load->setChecked(false);
-        ui->camera_file_label->setHidden(false);
-        ui->camera_file->setHidden(false);
-        ui->toolButton->setHidden(false);
-        break;
-#endif
-    }
-}
-
-void ConfigureCamera::loadImplementation() {
-    int camera_selection = getSelectedCameraIndex();
-    ui->implementation->clear();
-    for (const auto& implementation : ImageSourceImplementations.at(
-             static_cast<ImageSource>(ui->image_source->currentIndex()))) {
-        ui->implementation->addItem(implementation);
-        if (camera_name[camera_selection] == implementation.toStdString()) {
-            ui->implementation->setCurrentText(
-                QString::fromStdString(camera_name[camera_selection]));
-        }
-    }
-    if (ui->implementation->currentIndex() == -1) {
-        ui->implementation->setCurrentIndex(0);
+    default:
+        NGLOG_ERROR(Service_CAM, "Unknown image source {}", image_source);
     }
 }
 
 void ConfigureCamera::recordConfig() {
+    std::string implementation = Implementations[ui->image_source->currentIndex()];
     if (current_selected == CameraPosition::RearBoth) {
-        camera_name[0] = camera_name[2] = ui->implementation->currentText().toStdString();
+        camera_name[0] = camera_name[2] = implementation;
         camera_config[0] = camera_config[2] = ui->camera_file->text().toStdString();
     } else if (current_selected != CameraPosition::Null) {
         int index = static_cast<int>(current_selected);
-        camera_name[index] = ui->implementation->currentText().toStdString();
+        camera_name[index] = implementation;
         camera_config[index] = ui->camera_file->text().toStdString();
     }
+    current_selected = getCameraSelection();
 }
 
 void ConfigureCamera::startPreviewing() {
+    current_selected = getCameraSelection();
     recordConfig();
     int camera_selection = getSelectedCameraIndex();
     stopPreviewing();
@@ -215,6 +170,7 @@ void ConfigureCamera::startPreviewing() {
         Camera::CreateCameraPreview(camera_name[camera_selection], camera_config[camera_selection],
                                     preview_width, preview_height);
     if (!previewing_camera) {
+        stopPreviewing();
         return;
     }
     previewing_camera->SetResolution(
@@ -263,12 +219,26 @@ void ConfigureCamera::timerEvent(QTimerEvent* event) {
     ui->preview_box->setPixmap(QPixmap::fromImage(image));
 }
 
-void ConfigureCamera::updateUI() {
-    recordConfig();
-    updateUiDisplay();
+void ConfigureCamera::setConfiguration() {
+    int index = getSelectedCameraIndex();
+    for (int i = 0; i < Implementations.size(); i++) {
+        if (Implementations[i] == camera_name[index]) {
+            ui->image_source->setCurrentIndex(i);
+        }
+    }
+    if (camera_name[index] == "image") {
+        ui->camera_file->setDisabled(camera_config[index].empty());
+        ui->toolButton->setDisabled(camera_config[index].empty());
+        if (camera_config[index].empty()) {
+            ui->camera_file->setText("");
+        }
+    }
+    ui->camera_file->setText(QString::fromStdString(camera_config[index]));
+    updateImageSourceUI();
 }
 
 void ConfigureCamera::onToolButtonClicked() {
+    stopPreviewing();
     int camera_selection = getSelectedCameraIndex();
     QString filter;
     if (camera_name[camera_selection] == "image") {
@@ -279,11 +249,6 @@ void ConfigureCamera::onToolButtonClicked() {
         }
         filter = tr("Supported image files (%1)").arg(temp_filters.join(" "));
     }
-#ifdef ENABLE_OPENCV_CAMERA
-    else if (camera_name[camera_selection] == "opencv") {
-        filter = tr("Supported video files (*.mpg *.avi)");
-    }
-#endif
     QString path = QFileDialog::getOpenFileName(this, tr("Open File"), ".", filter);
     if (!path.isEmpty()) {
         ui->camera_file->setText(path);
@@ -328,50 +293,4 @@ int ConfigureCamera::getSelectedCameraIndex() {
 
 void ConfigureCamera::retranslateUi() {
     ui->retranslateUi(this);
-}
-
-ConfigureCamera::ImageSource ConfigureCamera::implementationToImageSource(
-    std::string implementation) {
-    int index = getSelectedCameraIndex();
-    // Convert camera name to image sources
-    if (implementation == "blank") {
-        return ImageSource::Blank;
-    } else if (implementation == "image") {
-        return ImageSource::StillImage;
-    }
-#ifdef ENABLE_OPENCV_CAMERA
-    else if (implementation == "opencv") {
-        if (camera_config[index].empty()) {
-            return ImageSource::SystemCamera;
-        } else {
-            return ImageSource::Video;
-        }
-    }
-#endif
-    else if (implementation == "qt") {
-        return ImageSource::SystemCamera;
-    } else {
-        NGLOG_ERROR(Frontend, "Unknown camera type {}", implementation.c_str());
-        QString message = tr(("Sorry, but your configuration file seems to be invalid:\n\nUnknown "
-                              "camera implementation " +
-                              implementation)
-                                 .c_str());
-#ifndef ENABLE_OPENCV_CAMERA
-        if (implementation == "opencv") {
-            message.append(tr("\n\nThis build does not have the OpenCV camera included."));
-#if defined(Q_OS_WIN64) && defined(Q_CC_MSVC)
-            message.append(tr("\nPlease look for a mingw build instead if you really want to use "
-                              "it, but it is more recommended that you use the new QtMultimedia "
-                              "based camera implementations."));
-#elif !defined(Q_OS_UNIX) && !defined(Q_OS_WIN64)
-            message.append(tr("\nSorry, but currently Citra does not have an OpenCV-integrated "
-                              "build for your platform."));
-            message.append(
-                tr("\nYou may switch to our new QtMultimedia based camera implementations."));
-#endif
-        }
-#endif
-        QMessageBox::critical(this, tr("Error"), message);
-        return ImageSource::Blank;
-    }
 }
