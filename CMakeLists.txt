@@ -17,11 +17,6 @@ option(ENABLE_QT_TRANSLATION "Enable translations for the Qt frontend" OFF)
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "ENABLE_QT;MSVC" OFF)
 
 option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
-option(ENABLE_OPENCV "Enable the OpenCV camera implementation" OFF)
-
-if (NOT ENABLE_QT)
-    set(ENABLE_OPENCV OFF)
-endif()
 option(CITRA_ENABLE_COMPATIBILITY_REPORTING "Enable compatibility reporting" OFF)
 
 # Sanity check : Check that all submodules are present
@@ -184,15 +179,6 @@ if (NOT Boost_FOUND)
     set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/externals/boost")
     set(Boost_NO_SYSTEM_PATHS OFF)
     find_package(Boost QUIET REQUIRED)
-endif()
-
-if (ENABLE_OPENCV)
-    find_package(OpenCV COMPONENTS core videoio imgproc)
-    if (NOT OpenCV_FOUND)
-        message(WARNING "OpenCV not found, disabling OpenCVCamera")
-
-        set(ENABLE_OPENCV OFF)
-    endif()
 endif()
 
 # Prefer the -pthread flag on Linux.
