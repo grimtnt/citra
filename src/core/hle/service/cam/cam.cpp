@@ -138,9 +138,24 @@ void Module::StartReceiving(int port_id) {
     port.is_receiving = true;
 
     // launches a capture task asynchronously
-    const CameraConfig& camera = cameras[port.camera_id];
-    port.capture_result =
-        std::async(std::launch::async, &Camera::CameraInterface::ReceiveFrame, camera.impl.get());
+    CameraConfig& camera = cameras[port.camera_id];
+    port.capture_result = std::async(std::launch::async, [&camera, &port] {
+        if (Settings::values.camera_name[port.camera_id] != camera.name ||
+            Settings::values.camera_config[port.camera_id] != camera.config) {
+            // reinitialize the camera according to new settings
+            camera.impl->StopCapture();
+            camera.impl = Camera::CreateCamera(Settings::values.camera_name[port.camera_id],
+                                               Settings::values.camera_config[port.camera_id]);
+            camera.impl->SetFlip(camera.contexts[0].flip);
+            camera.impl->SetEffect(camera.contexts[0].effect);
+            camera.impl->SetFormat(camera.contexts[0].format);
+            camera.impl->SetResolution(camera.contexts[0].resolution);
+            camera.impl->StartCapture();
+            camera.name = Settings::values.camera_name[port.camera_id];
+            camera.config = Settings::values.camera_config[port.camera_id];
+        }
+        return camera.impl->ReceiveFrame();
+    });
 
     // schedules a completion event according to the frame rate. The event will block on the
     // capture task if it is not finished within the expected time
@@ -986,6 +1001,8 @@ void Module::Interface::DriverInitialize(Kernel::HLERequestContext& ctx) {
         camera.impl->SetEffect(camera.contexts[0].effect);
         camera.impl->SetFormat(camera.contexts[0].format);
         camera.impl->SetResolution(camera.contexts[0].resolution);
+        camera.name = Settings::values.camera_name[camera_id];
+        camera.config = Settings::values.camera_config[camera_id];
     }
 
     for (PortConfig& port : cam->ports) {
