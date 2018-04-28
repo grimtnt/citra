@@ -50,7 +50,7 @@ private:
     int timer_id = 0;
     int preview_width = 0;
     int preview_height = 0;
-    CameraPosition current_selected = CameraPosition::Null;
+    CameraPosition current_selected = CameraPosition::Front;
     bool is_previewing = false;
     std::unique_ptr<Camera::CameraInterface> previewing_camera;
 };
