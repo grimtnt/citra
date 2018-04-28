@@ -25,41 +25,23 @@ public:
 
 public slots:
     /// recordConfig() and updateUiDisplay()
-    void updateUI();
+    void setConfiguration();
     void onToolButtonClicked();
 
 private:
     enum class CameraPosition { RearRight, Front, RearLeft, RearBoth, Null };
-    enum class ImageSource {
-        Blank,
-        StillImage,
-#ifdef ENABLE_OPENCV_CAMERA
-        Video, // Video & Image Sequence
-#endif
-        SystemCamera,
-    };
-    ;
-    static const std::map<ConfigureCamera::ImageSource, QString> ImageSourceNames;
-    static const std::map<ConfigureCamera::ImageSource, std::vector<QString>>
-        ImageSourceImplementations;
-    /// Record the current configuration (on a certain camera)
+    static const std::array<std::string, 3> Implementations;
+    /// Record the current configuration
     void recordConfig();
     /// Updates camera mode
     void updateCameraMode();
     /// Updates image source
     void updateImageSourceUI();
-    /// Load and display implementation stuff
-    void loadImplementation();
-    /// Update the UI according to the recorded config
-    /// In most cases, recordConfig() should be called before this call, or the current config will
-    /// be lost.
-    void updateUiDisplay();
     void startPreviewing();
     void stopPreviewing();
     void connectEvents();
     CameraPosition getCameraSelection();
     int getSelectedCameraIndex();
-    ImageSource implementationToImageSource(std::string implementation);
 
 private:
     std::unique_ptr<Ui::ConfigureCamera> ui;
