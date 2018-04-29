@@ -182,7 +182,7 @@ void Config::ReadValues() {
     Settings::values.announce_multiplayer_room_endpoint_url =
         qt_config
             ->value("announce_multiplayer_room_endpoint_url",
-                    "https://services.citra-emu.org/api/multiplayer/rooms")
+                    "https://api.citra-emu.org/lobby")
             .toString()
             .toStdString();
     Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
