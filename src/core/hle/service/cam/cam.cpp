@@ -1040,7 +1040,7 @@ void Module::ReloadCameraDevices() {
     is_camera_reload_pending.store(true);
 }
 
-void Module::LoadCameraImplementation(CameraConfig &camera, int camera_id) {
+void Module::LoadCameraImplementation(CameraConfig& camera, int camera_id) {
     camera.impl = Camera::CreateCamera(Settings::values.camera_name[camera_id],
                                        Settings::values.camera_config[camera_id]);
     camera.impl->SetFlip(camera.contexts[0].flip);
