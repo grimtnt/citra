@@ -22,9 +22,7 @@
 namespace Service {
 namespace CAM {
 
-static std::weak_ptr<CAM_C> current_cam_c;
-static std::weak_ptr<CAM_S> current_cam_s;
-static std::weak_ptr<CAM_U> current_cam_u;
+static std::weak_ptr<Module> current_cam;
 
 // built-in resolution parameters
 constexpr std::array<Resolution, 8> PRESET_RESOLUTION{{
@@ -147,15 +145,8 @@ void Module::StartReceiving(int port_id) {
         if (is_camera_reload_pending.exchange(false)) {
             // reinitialize the camera according to new settings
             camera.impl->StopCapture();
-            camera.impl = Camera::CreateCamera(Settings::values.camera_name[port.camera_id],
-                                               Settings::values.camera_config[port.camera_id]);
-            camera.impl->SetFlip(camera.contexts[0].flip);
-            camera.impl->SetEffect(camera.contexts[0].effect);
-            camera.impl->SetFormat(camera.contexts[0].format);
-            camera.impl->SetResolution(camera.contexts[0].resolution);
+            LoadCameraImplementation(camera, port.camera_id);
             camera.impl->StartCapture();
-            camera.name = Settings::values.camera_name[port.camera_id];
-            camera.config = Settings::values.camera_config[port.camera_id];
         }
         return camera.impl->ReceiveFrame();
     });
@@ -208,10 +199,6 @@ Module::Interface::Interface(std::shared_ptr<Module> cam, const char* name, u32 
     : ServiceFramework(name, max_session), cam(std::move(cam)) {}
 
 Module::Interface::~Interface() = default;
-
-void Module::Interface::ReloadCameraDevices() {
-    cam->is_camera_reload_pending.store(true);
-}
 
 void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x01, 1, 0);
@@ -1002,14 +989,7 @@ void Module::Interface::DriverInitialize(Kernel::HLERequestContext& ctx) {
             context.resolution =
                 context_id == 0 ? PRESET_RESOLUTION[5 /*DS_LCD*/] : PRESET_RESOLUTION[0 /*VGA*/];
         }
-        camera.impl = Camera::CreateCamera(Settings::values.camera_name[camera_id],
-                                           Settings::values.camera_config[camera_id]);
-        camera.impl->SetFlip(camera.contexts[0].flip);
-        camera.impl->SetEffect(camera.contexts[0].effect);
-        camera.impl->SetFormat(camera.contexts[0].format);
-        camera.impl->SetResolution(camera.contexts[0].resolution);
-        camera.name = Settings::values.camera_name[camera_id];
-        camera.config = Settings::values.camera_config[camera_id];
+        cam->LoadCameraImplementation(camera, camera_id);
     }
 
     for (PortConfig& port : cam->ports) {
@@ -1056,32 +1036,31 @@ Module::~Module() {
     CancelReceiving(1);
 }
 
+void Module::ReloadCameraDevices() {
+    is_camera_reload_pending.store(true);
+}
+
+void Module::LoadCameraImplementation(CameraConfig &camera, int camera_id) {
+    camera.impl = Camera::CreateCamera(Settings::values.camera_name[camera_id],
+                                       Settings::values.camera_config[camera_id]);
+    camera.impl->SetFlip(camera.contexts[0].flip);
+    camera.impl->SetEffect(camera.contexts[0].effect);
+    camera.impl->SetFormat(camera.contexts[0].format);
+    camera.impl->SetResolution(camera.contexts[0].resolution);
+}
+
 void ReloadCameraDevices() {
-    if (auto cam_u = current_cam_u.lock())
-        cam_u->ReloadCameraDevices();
-
-    if (auto cam_s = current_cam_s.lock())
-        cam_s->ReloadCameraDevices();
-
-    if (auto cam_c = current_cam_c.lock())
-        cam_c->ReloadCameraDevices();
+    if (auto cam = current_cam.lock())
+        cam->ReloadCameraDevices();
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     auto cam = std::make_shared<Module>();
+    current_cam = cam;
 
-    auto cam_u = std::make_shared<CAM_U>(cam);
-    cam_u->InstallAsService(service_manager);
-    current_cam_u = cam_u;
-
-    auto cam_s = std::make_shared<CAM_S>(cam);
-    cam_s->InstallAsService(service_manager);
-    current_cam_s = cam_s;
-
-    auto cam_c = std::make_shared<CAM_C>(cam);
-    cam_c->InstallAsService(service_manager);
-    current_cam_c = cam_c;
-
+    std::make_shared<CAM_U>(cam)->InstallAsService(service_manager);
+    std::make_shared<CAM_S>(cam)->InstallAsService(service_manager);
+    std::make_shared<CAM_C>(cam)->InstallAsService(service_manager);
     std::make_shared<CAM_Q>()->InstallAsService(service_manager);
 }
 
