@@ -4,10 +4,6 @@
 
 #include <cstring>
 #include <QImage>
-#ifdef ENABLE_OPENCV_CAMERA
-#include <opencv2/core.hpp>
-#endif
-
 #include "citra_qt/camera/camera_util.h"
 #include "common/math_util.h"
 #include "core/frontend/camera/factory.h"
@@ -228,47 +224,5 @@ std::vector<u16> ProcessImage(const QImage& image, int width, int height, bool o
     }
     return buffer;
 }
-
-#ifdef ENABLE_OPENCV_CAMERA
-QImage cvMat2QImage(const cv::Mat& mat) {
-    switch (mat.type()) {
-    case CV_8UC1: // 8-bits unsigned, NO. OF CHANNELS = 1
-    {
-        QImage image(mat.cols, mat.rows, QImage::Format_Indexed8);
-        // Set the color table (used to translate colour indexes to qRgb values)
-        image.setColorCount(256);
-        for (int i = 0; i < 256; i++) {
-            image.setColor(i, qRgb(i, i, i));
-        }
-        // Copy input Mat
-        uchar* pSrc = mat.data;
-        for (int row = 0; row < mat.rows; row++) {
-            uchar* pDest = image.scanLine(row);
-            std::memcpy(pDest, pSrc, mat.cols);
-            pSrc += mat.step;
-        }
-        return image;
-    }
-    case CV_8UC3: // 8-bits unsigned, NO. OF CHANNELS = 3
-    {
-        // Copy input Mat
-        const uchar* pSrc = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
-        return image.rgbSwapped();
-    }
-    case CV_8UC4: {
-        // Copy input Mat
-        const uchar* pSrc = (const uchar*)mat.data;
-        // Create QImage with same dimensions as input Mat
-        QImage image(pSrc, mat.cols, mat.rows, mat.step, QImage::Format_ARGB32);
-        return image.copy();
-    }
-    default:
-        NGLOG_ERROR(Service_CAM, "ERROR: Mat could not be converted to QImage.");
-        return QImage();
-    }
-}
-#endif
 
 } // namespace CameraUtil
