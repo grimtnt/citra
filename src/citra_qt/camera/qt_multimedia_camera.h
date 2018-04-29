@@ -73,7 +73,7 @@ public:
      * Creates the camera.
      * Note: This function must be called via QMetaObject::invokeMethod in UI thread.
      */
-    Q_INVOKABLE void CreateCamera();
+    Q_INVOKABLE void CreateCamera(const std::string& camera_name);
 
     /**
      * Starts the camera.
