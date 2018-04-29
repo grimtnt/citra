@@ -245,6 +245,7 @@ public:
     public:
         Interface(std::shared_ptr<Module> cam, const char* name, u32 max_session);
         ~Interface();
+        void ReloadCameraDevices();
 
     protected:
         /**
@@ -775,7 +776,11 @@ private:
     std::array<CameraConfig, NumCameras> cameras;
     std::array<PortConfig, 2> ports;
     CoreTiming::EventType* completion_event_callback;
+    std::atomic<bool> is_camera_reload_pending{false};
 };
+
+/// Reload camera devices. Used when input configuration changed
+void ReloadCameraDevices();
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
