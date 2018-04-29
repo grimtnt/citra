@@ -40,7 +40,7 @@ bool QtCameraSurface::present(const QVideoFrame& frame) {
     const QImage image(cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
                        QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
     QMutexLocker locker(&mutex);
-    current_frame = image.copy();
+    current_frame = image.mirrored(true, true);
     locker.unlock();
     cloneFrame.unmap();
     return true;
@@ -75,6 +75,29 @@ void QtMultimediaCamera::StopCapture() {
 
 void QtMultimediaCamera::SetFormat(Service::CAM::OutputFormat output_format) {
     output_rgb = output_format == Service::CAM::OutputFormat::RGB565;
+}
+
+constexpr std::array<double, 13> FrameRateList = {
+    /* Rate_15 */ 15,
+    /* Rate_15_To_5 */ 15,
+    /* Rate_15_To_2 */ 15,
+    /* Rate_10 */ 10,
+    /* Rate_8_5 */ 8.5,
+    /* Rate_5 */ 5,
+    /* Rate_20 */ 20,
+    /* Rate_20_To_5 */ 20,
+    /* Rate_30 */ 30,
+    /* Rate_30_To_5 */ 30,
+    /* Rate_15_To_10 */ 15,
+    /* Rate_20_To_10 */ 20,
+    /* Rate_30_To_10 */ 30,
+};
+
+void QtMultimediaCamera::SetFrameRate(Service::CAM::FrameRate frame_rate) {
+    auto framerate = FrameRateList[static_cast<int>(frame_rate)];
+
+    handler->settings.setMinimumFrameRate(framerate);
+    handler->settings.setMinimumFrameRate(framerate);
 }
 
 void QtMultimediaCamera::SetResolution(const Service::CAM::Resolution& resolution) {
@@ -152,6 +175,8 @@ void QtMultimediaCameraHandler::CreateCamera(const std::string& camera_name) {
     if (!camera) { // no cameras found, using default camera
         camera = std::make_unique<QCamera>();
     }
+    settings.setMinimumFrameRate(30);
+    settings.setMaximumFrameRate(30);
     camera->setViewfinder(&camera_surface);
 }
 
@@ -161,6 +186,7 @@ void QtMultimediaCameraHandler::StopCamera() {
 }
 
 void QtMultimediaCameraHandler::StartCamera() {
+    camera->setViewfinderSettings(settings);
     camera->start();
     started = true;
 }

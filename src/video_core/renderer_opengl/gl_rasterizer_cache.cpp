@@ -1269,10 +1269,14 @@ const CachedTextureCube& RasterizerCacheOpenGL::GetTextureCube(const TextureCube
             info.format = config.format;
             info.SetDefaultStride();
             auto surface = GetTextureSurface(info);
-            if (surface)
+            if (surface) {
                 face.watcher = surface->CreateWatcher();
-            else
+            } else {
+                // Can occur when texture address is invalid. We mark the watcher with nullptr in
+                // this case and the content of the face wouldn't get updated. These are usually
+                // leftover setup in the texture unit and games are not supposed to draw using them.
                 face.watcher = nullptr;
+            }
         }
     }
 

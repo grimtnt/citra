@@ -4,10 +4,12 @@
 
 #pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 #include <QAbstractVideoSurface>
 #include <QCamera>
+#include <QCameraViewfinderSettings>
 #include <QImage>
 #include <QMutex>
 #include "citra_qt/camera/camera_util.h"
@@ -44,7 +46,7 @@ public:
     void SetFlip(Service::CAM::Flip) override;
     void SetEffect(Service::CAM::Effect) override;
     void SetFormat(Service::CAM::OutputFormat) override;
-    void SetFrameRate(Service::CAM::FrameRate frame_rate) override {}
+    void SetFrameRate(Service::CAM::FrameRate frame_rate) override;
     std::vector<u16> ReceiveFrame() override;
     bool IsPreviewAvailable() override;
 
@@ -92,6 +94,7 @@ private:
     std::unique_ptr<QCamera> camera;
     QtCameraSurface camera_surface{};
     bool started = false;
+    QCameraViewfinderSettings settings;
 
     static std::array<std::shared_ptr<QtMultimediaCameraHandler>, 3> handlers;
     static std::array<bool, 3> status;
