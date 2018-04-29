@@ -179,6 +179,12 @@ void Config::ReadValues() {
         qt_config->value("verify_endpoint_url", "https://api.citra-emu.org/profile")
             .toString()
             .toStdString();
+    Settings::values.announce_multiplayer_room_endpoint_url =
+        qt_config
+            ->value("announce_multiplayer_room_endpoint_url",
+                    "https://services.citra-emu.org/api/multiplayer/rooms")
+            .toString()
+            .toStdString();
     Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
     Settings::values.citra_token = qt_config->value("citra_token").toString().toStdString();
     qt_config->endGroup();
