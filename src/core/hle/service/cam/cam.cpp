@@ -22,6 +22,10 @@
 namespace Service {
 namespace CAM {
 
+static std::weak_ptr<CAM_C> current_cam_c;
+static std::weak_ptr<CAM_S> current_cam_s;
+static std::weak_ptr<CAM_U> current_cam_u;
+
 // built-in resolution parameters
 constexpr std::array<Resolution, 8> PRESET_RESOLUTION{{
     {640, 480, 0, 0, 639, 479},  // VGA
@@ -139,9 +143,8 @@ void Module::StartReceiving(int port_id) {
 
     // launches a capture task asynchronously
     CameraConfig& camera = cameras[port.camera_id];
-    port.capture_result = std::async(std::launch::async, [&camera, &port] {
-        if (Settings::values.camera_name[port.camera_id] != camera.name ||
-            Settings::values.camera_config[port.camera_id] != camera.config) {
+    port.capture_result = std::async(std::launch::async, [&camera, &port, this] {
+        if (is_camera_reload_pending.exchange(false)) {
             // reinitialize the camera according to new settings
             camera.impl->StopCapture();
             camera.impl = Camera::CreateCamera(Settings::values.camera_name[port.camera_id],
@@ -205,6 +208,10 @@ Module::Interface::Interface(std::shared_ptr<Module> cam, const char* name, u32 
     : ServiceFramework(name, max_session), cam(std::move(cam)) {}
 
 Module::Interface::~Interface() = default;
+
+void Module::Interface::ReloadCameraDevices() {
+    cam->is_camera_reload_pending.store(true);
+}
 
 void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x01, 1, 0);
@@ -1049,11 +1056,32 @@ Module::~Module() {
     CancelReceiving(1);
 }
 
+void ReloadCameraDevices() {
+    if (auto cam_u = current_cam_u.lock())
+        cam_u->ReloadCameraDevices();
+
+    if (auto cam_s = current_cam_s.lock())
+        cam_s->ReloadCameraDevices();
+
+    if (auto cam_c = current_cam_c.lock())
+        cam_c->ReloadCameraDevices();
+}
+
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     auto cam = std::make_shared<Module>();
-    std::make_shared<CAM_U>(cam)->InstallAsService(service_manager);
-    std::make_shared<CAM_S>(cam)->InstallAsService(service_manager);
-    std::make_shared<CAM_C>(cam)->InstallAsService(service_manager);
+
+    auto cam_u = std::make_shared<CAM_U>(cam);
+    cam_u->InstallAsService(service_manager);
+    current_cam_u = cam_u;
+
+    auto cam_s = std::make_shared<CAM_S>(cam);
+    cam_s->InstallAsService(service_manager);
+    current_cam_s = cam_s;
+
+    auto cam_c = std::make_shared<CAM_C>(cam);
+    cam_c->InstallAsService(service_manager);
+    current_cam_c = cam_c;
+
     std::make_shared<CAM_Q>()->InstallAsService(service_manager);
 }
 
