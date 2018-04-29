@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <QCamera>
+#include <QCameraInfo>
 #include <QImageReader>
 #include <QMessageBox>
 #include <QThread>
@@ -48,9 +49,10 @@ bool QtCameraSurface::present(const QVideoFrame& frame) {
 QtMultimediaCamera::QtMultimediaCamera(const std::string& camera_name)
     : handler(QtMultimediaCameraHandler::GetHandler()) {
     if (handler->thread() == QThread::currentThread()) {
-        handler->CreateCamera();
+        handler->CreateCamera(camera_name);
     } else {
-        QMetaObject::invokeMethod(handler.get(), "CreateCamera", Qt::BlockingQueuedConnection);
+        QMetaObject::invokeMethod(handler.get(), "CreateCamera", Qt::BlockingQueuedConnection,
+                                  Q_ARG(const std::string&, camera_name));
     }
 }
 
@@ -141,8 +143,15 @@ void QtMultimediaCameraHandler::ReleaseHandler(
     }
 }
 
-void QtMultimediaCameraHandler::CreateCamera() {
-    camera = std::make_unique<QCamera>();
+void QtMultimediaCameraHandler::CreateCamera(const std::string& camera_name) {
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    for (const QCameraInfo& cameraInfo : cameras) {
+        if (cameraInfo.deviceName().toStdString() == camera_name)
+            camera = std::make_unique<QCamera>(cameraInfo);
+    }
+    if (!camera) { // no cameras found, using default camera
+        camera = std::make_unique<QCamera>();
+    }
     camera->setViewfinder(&camera_surface);
 }
 
@@ -163,7 +172,7 @@ bool QtMultimediaCameraHandler::CameraAvailable() const {
 void QtMultimediaCameraHandler::StopCameras() {
     NGLOG_INFO(Service_CAM, "Stopping all cameras");
     for (auto& handler : handlers) {
-        if (handler->started) {
+        if (handler && handler->started) {
             handler->StopCamera();
         }
     }
@@ -171,7 +180,7 @@ void QtMultimediaCameraHandler::StopCameras() {
 
 void QtMultimediaCameraHandler::ResumeCameras() {
     for (auto& handler : handlers) {
-        if (handler->started) {
+        if (handler && handler->started) {
             handler->StartCamera();
         }
     }
