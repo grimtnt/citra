@@ -240,12 +240,12 @@ class Module final {
 public:
     Module();
     ~Module();
+    void ReloadCameraDevices();
 
     class Interface : public ServiceFramework<Interface> {
     public:
         Interface(std::shared_ptr<Module> cam, const char* name, u32 max_session);
         ~Interface();
-        void ReloadCameraDevices();
 
     protected:
         /**
@@ -740,7 +740,6 @@ private:
         std::array<ContextConfig, 2> contexts;
         int current_context;
         FrameRate frame_rate;
-        std::string name, config;
     };
 
     struct PortConfig {
@@ -772,6 +771,8 @@ private:
 
         void Clear();
     };
+
+    void LoadCameraImplementation(CameraConfig& camera, int camera_id);
 
     std::array<CameraConfig, NumCameras> cameras;
     std::array<PortConfig, 2> ports;
