@@ -18,6 +18,7 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
+#include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <glad/glad.h>
 #include "common/assert.h"
