@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <memory>
+#include <QCameraInfo>
 #include <QDirIterator>
 #include <QFileDialog>
 #include <QImageReader>
@@ -33,6 +34,10 @@ ConfigureCamera::ConfigureCamera(QWidget* parent)
                                      "existing OpenCV cameras have been replaced with Blank."));
             item = "blank";
         }
+    }
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    for (const QCameraInfo& cameraInfo : cameras) {
+        ui->system_camera->addItem(cameraInfo.deviceName());
     }
     updateCameraMode();
     setConfiguration();
@@ -90,6 +95,9 @@ void ConfigureCamera::connectEvents() {
         }
     });
     connect(ui->camera_file, &QLineEdit::textChanged, this, [=] { stopPreviewing(); });
+    connect(ui->system_camera,
+            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            [=] { stopPreviewing(); });
 }
 
 void ConfigureCamera::updateCameraMode() {
@@ -138,17 +146,30 @@ void ConfigureCamera::updateImageSourceUI() {
     default:
         NGLOG_ERROR(Service_CAM, "Unknown image source {}", image_source);
     }
+    ui->system_camera_label->setHidden(image_source != 2);
+    ui->system_camera->setHidden(image_source != 2);
 }
 
 void ConfigureCamera::recordConfig() {
     std::string implementation = Implementations[ui->image_source->currentIndex()];
+    int image_source = ui->image_source->currentIndex();
+    std::string config;
+    if (image_source == 2) { /* system camera */
+        if (ui->system_camera->currentIndex() == 0) {
+            config = "";
+        } else {
+            config = ui->system_camera->currentText().toStdString();
+        }
+    } else {
+        config = ui->camera_file->text().toStdString();
+    }
     if (current_selected == CameraPosition::RearBoth) {
         camera_name[0] = camera_name[2] = implementation;
-        camera_config[0] = camera_config[2] = ui->camera_file->text().toStdString();
+        camera_config[0] = camera_config[2] = config;
     } else if (current_selected != CameraPosition::Null) {
         int index = static_cast<int>(current_selected);
         camera_name[index] = implementation;
-        camera_config[index] = ui->camera_file->text().toStdString();
+        camera_config[index] = config;
     }
     current_selected = getCameraSelection();
 }
@@ -233,7 +254,14 @@ void ConfigureCamera::setConfiguration() {
             ui->camera_file->setText("");
         }
     }
-    ui->camera_file->setText(QString::fromStdString(camera_config[index]));
+    if (camera_name[index] == "qt") {
+        ui->system_camera->setCurrentIndex(0);
+        if (!camera_config[index].empty()) {
+            ui->system_camera->setCurrentText(QString::fromStdString(camera_config[index]));
+        }
+    } else {
+        ui->camera_file->setText(QString::fromStdString(camera_config[index]));
+    }
     updateImageSourceUI();
 }
 
