@@ -120,7 +120,7 @@
                       <string>Select where the image of the emulated camera come from. It may be an image or a real camera.</string>
                     </property>
                     <property name="text">
-                      <string>Image Source (Camera Implementation):</string>
+                      <string>Camera Image Source:</string>
                     </property>
                   </widget>
                 </item>
@@ -168,6 +168,29 @@
                     <property name="text">
                       <string>...</string>
                     </property>
+                  </widget>
+                </item>
+              </layout>
+            </item>
+            <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+                <item>
+                  <widget class="QLabel" name="system_camera_label">
+                    <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                    </property>
+                    <property name="text">
+                      <string>Camera:</string>
+                    </property>
+                  </widget>
+                </item>
+                <item>
+                  <widget class="QComboBox" name="system_camera">
+                    <item>
+                      <property name="text">
+                        <string>&lt;Default&gt;</string>
+                      </property>
+                    </item>
                   </widget>
                 </item>
               </layout>
