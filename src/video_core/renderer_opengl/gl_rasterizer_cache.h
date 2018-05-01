@@ -263,7 +263,7 @@ struct SurfaceParams {
  */
 struct SurfaceWatcher {
 public:
-    explicit SurfaceWatcher(std::weak_ptr<CachedSurface>&& surface) : surface(surface) {}
+    explicit SurfaceWatcher(std::weak_ptr<CachedSurface>&& surface) : surface(std::move(surface)) {}
 
     /**
      * Checks whether the surface has been changed.
@@ -369,22 +369,25 @@ struct TextureCubeConfig {
     bool operator!=(const TextureCubeConfig& rhs) const {
         return !(*this == rhs);
     }
-
-    struct Hash {
-        std::size_t operator()(const TextureCubeConfig& config) const {
-            std::size_t hash = 0;
-            boost::hash_combine(hash, config.px);
-            boost::hash_combine(hash, config.nx);
-            boost::hash_combine(hash, config.py);
-            boost::hash_combine(hash, config.ny);
-            boost::hash_combine(hash, config.pz);
-            boost::hash_combine(hash, config.nz);
-            boost::hash_combine(hash, config.width);
-            boost::hash_combine(hash, static_cast<u32>(config.format));
-            return hash;
-        }
-    };
 };
+
+namespace std {
+template <>
+struct hash<TextureCubeConfig> {
+    size_t operator()(const TextureCubeConfig& config) const {
+        std::size_t hash = 0;
+        boost::hash_combine(hash, config.px);
+        boost::hash_combine(hash, config.nx);
+        boost::hash_combine(hash, config.py);
+        boost::hash_combine(hash, config.ny);
+        boost::hash_combine(hash, config.pz);
+        boost::hash_combine(hash, config.nz);
+        boost::hash_combine(hash, config.width);
+        boost::hash_combine(hash, static_cast<u32>(config.format));
+        return hash;
+    }
+};
+} // namespace std
 
 struct CachedTextureCube {
     OGLTexture texture;
@@ -481,6 +484,5 @@ private:
     GLint d24s8_abgr_tbo_size_u_id;
     GLint d24s8_abgr_viewport_u_id;
 
-    std::unordered_map<TextureCubeConfig, CachedTextureCube, TextureCubeConfig::Hash>
-        texture_cube_cache;
+    std::unordered_map<TextureCubeConfig, CachedTextureCube> texture_cube_cache;
 };
