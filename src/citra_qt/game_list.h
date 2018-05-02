@@ -35,6 +35,7 @@ public:
     enum {
         COLUMN_NAME,
         COLUMN_COMPATIBILITY,
+        COLUMN_REGION,
         COLUMN_FILE_TYPE,
         COLUMN_SIZE,
         COLUMN_COUNT, // Number of columns
