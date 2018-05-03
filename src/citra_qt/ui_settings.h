@@ -55,9 +55,9 @@ struct Values {
 
     QString roms_path;
     QString symbols_path;
-    QString gamedir_depreciated;
-    bool gamedir_depreciated_deepscan;
-    QList<UISettings::GameDir> gamedirs;
+    QString game_dir_deprecated;
+    bool game_dir_deprecated_deepscan;
+    QList<UISettings::GameDir> game_dirs;
     QStringList recent_files;
     QString language;
 
