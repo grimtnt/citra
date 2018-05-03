@@ -43,12 +43,14 @@ public:
 
     class SearchField : public QWidget {
     public:
-        int visible;
-        int total;
+        explicit SearchField(GameList* parent = nullptr);
+
         void setFilterResult(int visible, int total);
         void clear();
         void setFocus();
-        explicit SearchField(GameList* parent = nullptr);
+
+        int visible;
+        int total;
 
     private:
         class KeyReleaseEater : public QObject {
@@ -80,7 +82,7 @@ public:
     bool isEmpty();
 
     void LoadCompatibilityList();
-    void PopulateAsync(QList<UISettings::GameDir>& gamedirs);
+    void PopulateAsync(QList<UISettings::GameDir>& game_dirs);
 
     void SaveInterfaceLayout();
     void LoadInterfaceLayout();
