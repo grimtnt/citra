@@ -152,10 +152,6 @@ public:
     static const int TitleRole = Qt::UserRole + 2;
     static const int ProgramIdRole = Qt::UserRole + 3;
 
-    int type() const override {
-        return static_cast<int>(GameListItemType::Game);
-    }
-
     GameListItemPath() : GameListItem() {}
     GameListItemPath(const QString& game_path, const std::vector<u8>& smdh_data, u64 program_id)
         : GameListItem() {
@@ -179,6 +175,10 @@ public:
                 TitleRole);
     }
 
+    int type() const override {
+        return static_cast<int>(GameListItemType::Game);
+    }
+
     QVariant data(int role) const override {
         if (role == Qt::DisplayRole) {
             std::string filename;
@@ -196,10 +196,6 @@ class GameListItemCompat : public GameListItem {
 public:
     static const int CompatNumberRole = Qt::UserRole + 1;
 
-    int type() const override {
-        return static_cast<int>(GameListItemType::Game);
-    }
-
     GameListItemCompat() = default;
     explicit GameListItemCompat(const QString compatiblity) {
         auto iterator = status_data.find(compatiblity);
@@ -212,6 +208,10 @@ public:
         setText(QCoreApplication::translate("GameList", status.text));
         setToolTip(QCoreApplication::translate("GameList", status.tooltip));
         setData(CreateCirclePixmapFromColor(status.color), Qt::DecorationRole);
+    }
+
+    int type() const override {
+        return static_cast<int>(GameListItemType::Game);
     }
 
     bool operator<(const QStandardItem& other) const override {
@@ -244,10 +244,6 @@ class GameListItemSize : public GameListItem {
 public:
     static const int SizeRole = Qt::UserRole + 1;
 
-    int type() const override {
-        return static_cast<int>(GameListItemType::Game);
-    }
-
     GameListItemSize() : GameListItem() {}
     GameListItemSize(const qulonglong size_bytes) : GameListItem() {
         setData(size_bytes, SizeRole);
@@ -263,6 +259,10 @@ public:
         } else {
             GameListItem::setData(value, role);
         }
+    }
+
+    int type() const override {
+        return static_cast<int>(GameListItemType::Game);
     }
 
     /**
@@ -283,8 +283,8 @@ public:
     explicit GameListDir(UISettings::GameDir& directory,
                          GameListItemType type = GameListItemType::CustomDir)
         : dir_type{type} {
-        UISettings::GameDir* gamedir = &directory;
-        setData(QVariant::fromValue(gamedir), GamedirRole);
+        UISettings::GameDir* game_dir = &directory;
+        setData(QVariant::fromValue(game_dir), GameDirRole);
         switch (dir_type) {
         case GameListItemType::InstalledDir:
             setData(QIcon::fromTheme("sd_card").pixmap(48), Qt::DecorationRole);
@@ -295,13 +295,13 @@ public:
             setData("System Titles", Qt::DisplayRole);
             break;
         case GameListItemType::CustomDir:
-            QString icon_name = QFileInfo::exists(gamedir->path) ? "folder" : "bad_folder";
+            QString icon_name = QFileInfo::exists(game_dir->path) ? "folder" : "bad_folder";
             setData(QIcon::fromTheme(icon_name).pixmap(48), Qt::DecorationRole);
-            setData(gamedir->path, Qt::DisplayRole);
+            setData(game_dir->path, Qt::DisplayRole);
             break;
         };
     };
-    static const int GamedirRole = Qt::UserRole + 1;
+    static const int GameDirRole = Qt::UserRole + 1;
 
 private:
     GameListItemType dir_type;
@@ -326,9 +326,9 @@ class GameListWorker : public QObject, public QRunnable {
     Q_OBJECT
 
 public:
-    explicit GameListWorker(QList<UISettings::GameDir>& gamedirs,
+    explicit GameListWorker(QList<UISettings::GameDir>& game_dirs,
                             const std::unordered_map<std::string, QString>& compatibility_list)
-        : QObject(), QRunnable(), gamedirs(gamedirs), compatibility_list(compatibility_list) {}
+        : QObject(), QRunnable(), game_dirs(game_dirs), compatibility_list(compatibility_list) {}
 
 public slots:
     /// Starts the processing of directory tree information.
@@ -355,7 +355,7 @@ signals:
 private:
     QStringList watch_list;
     const std::unordered_map<std::string, QString>& compatibility_list;
-    QList<UISettings::GameDir>& gamedirs;
+    QList<UISettings::GameDir>& game_dirs;
     std::atomic_bool stop_processing;
 
     void AddFstEntriesToGameList(const std::string& dir_path, unsigned int recursion,
