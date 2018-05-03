@@ -135,7 +135,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     show();
 
     game_list->LoadCompatibilityList();
-    game_list->PopulateAsync(UISettings::values.gamedirs);
+    game_list->PopulateAsync(UISettings::values.game_dirs);
 
     // Show one-time "callout" messages to the user
     ShowCallouts();
@@ -950,10 +950,10 @@ void GMainWindow::OnGameListAddDirectory() {
     QString dir_path = QFileDialog::getExistingDirectory(this, tr("Select Directory"));
     if (dir_path.isEmpty())
         return;
-    UISettings::GameDir gamedir{dir_path, false, true};
-    if (!UISettings::values.gamedirs.contains(gamedir)) {
-        UISettings::values.gamedirs.append(gamedir);
-        game_list->PopulateAsync(UISettings::values.gamedirs);
+    UISettings::GameDir game_dir{dir_path, false, true};
+    if (!UISettings::values.game_dirs.contains(game_dir)) {
+        UISettings::values.game_dirs.append(game_dir);
+        game_list->PopulateAsync(UISettings::values.game_dirs);
     } else {
         NGLOG_WARNING(Frontend, "Selected directory is already in the game list");
     }
