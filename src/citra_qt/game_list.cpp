@@ -181,7 +181,7 @@ void GameList::onItemExpanded(const QModelIndex& item) {
     GameListItemType type = static_cast<GameListItemType>(child->type());
     if (type == GameListItemType::CustomDir || type == GameListItemType::InstalledDir ||
         type == GameListItemType::SystemDir)
-        child->data(GameListDir::GamedirRole).value<UISettings::GameDir*>()->expanded =
+        child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()->expanded =
             tree_view->isExpanded(child->index());
 }
 
@@ -252,9 +252,9 @@ void GameList::onUpdateThemedIcons() {
             child->setData(QIcon::fromTheme("chip").pixmap(48), Qt::DecorationRole);
             break;
         case GameListItemType::CustomDir: {
-            const UISettings::GameDir* gamedir =
-                child->data(GameListDir::GamedirRole).value<UISettings::GameDir*>();
-            QString icon_name = QFileInfo::exists(gamedir->path) ? "folder" : "bad_folder";
+            const UISettings::GameDir* game_dir =
+                child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
+            QString icon_name = QFileInfo::exists(game_dir->path) ? "folder" : "bad_folder";
             child->setData(QIcon::fromTheme(icon_name).pixmap(48), Qt::DecorationRole);
             break;
         }
@@ -337,7 +337,7 @@ void GameList::AddDirEntry(GameListDir* entry_items) {
     item_model->invisibleRootItem()->appendRow(entry_items);
     tree_view->setExpanded(
         entry_items->index(),
-        entry_items->data(GameListDir::GamedirRole).value<UISettings::GameDir*>()->expanded);
+        entry_items->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()->expanded);
 }
 
 void GameList::AddEntry(const QList<QStandardItem*>& entry_items, GameListDir* parent) {
@@ -472,28 +472,28 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id) {
 };
 
 void GameList::AddCustomDirPopup(QMenu& context_menu, QStandardItem* child) {
-    UISettings::GameDir& gamedir =
-        *child->data(GameListDir::GamedirRole).value<UISettings::GameDir*>();
+    UISettings::GameDir& game_dir =
+        *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
 
     QAction* deep_scan = context_menu.addAction(tr("Scan Subfolders"));
     QAction* delete_dir = context_menu.addAction(tr("Remove Game Directory"));
 
     deep_scan->setCheckable(true);
-    deep_scan->setChecked(gamedir.deep_scan);
+    deep_scan->setChecked(game_dir.deep_scan);
 
     connect(deep_scan, &QAction::triggered, [&] {
-        gamedir.deep_scan = !gamedir.deep_scan;
-        PopulateAsync(UISettings::values.gamedirs);
+        game_dir.deep_scan = !game_dir.deep_scan;
+        PopulateAsync(UISettings::values.game_dirs);
     });
     connect(delete_dir, &QAction::triggered, [&, child] {
-        UISettings::values.gamedirs.removeOne(gamedir);
+        UISettings::values.game_dirs.removeOne(game_dir);
         item_model->invisibleRootItem()->removeRow(child->row());
     });
 }
 
 void GameList::AddPermDirPopup(QMenu& context_menu, QStandardItem* child) {
-    UISettings::GameDir& gamedir =
-        *child->data(GameListDir::GamedirRole).value<UISettings::GameDir*>();
+    UISettings::GameDir& game_dir =
+        *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
 
     QAction* move_up = context_menu.addAction(tr(u8"\U000025b2 Move Up"));
     QAction* move_down = context_menu.addAction(tr(u8"\U000025bc Move Down "));
@@ -506,33 +506,33 @@ void GameList::AddPermDirPopup(QMenu& context_menu, QStandardItem* child) {
 
     connect(move_up, &QAction::triggered, [&, child, row] {
         // find the indices of the items in settings and swap them
-        UISettings::values.gamedirs.swap(
-            UISettings::values.gamedirs.indexOf(gamedir),
-            UISettings::values.gamedirs.indexOf(*item_model->invisibleRootItem()
-                                                     ->child(row - 1, COLUMN_NAME)
-                                                     ->data(GameListDir::GamedirRole)
-                                                     .value<UISettings::GameDir*>()));
+        UISettings::values.game_dirs.swap(
+            UISettings::values.game_dirs.indexOf(game_dir),
+            UISettings::values.game_dirs.indexOf(*item_model->invisibleRootItem()
+                                                      ->child(row - 1, COLUMN_NAME)
+                                                      ->data(GameListDir::GameDirRole)
+                                                      .value<UISettings::GameDir*>()));
         // move the treeview items
         QList<QStandardItem*> item = item_model->takeRow(row);
         item_model->invisibleRootItem()->insertRow(row - 1, item);
-        tree_view->setExpanded(child->index(), gamedir.expanded);
+        tree_view->setExpanded(child->index(), game_dir.expanded);
     });
     connect(move_down, &QAction::triggered, [&, child, row] {
         // find the indices of the items in settings and swap them
-        UISettings::values.gamedirs.swap(
-            UISettings::values.gamedirs.indexOf(
-                *child->data(GameListDir::GamedirRole).value<UISettings::GameDir*>()),
-            UISettings::values.gamedirs.indexOf(*item_model->invisibleRootItem()
-                                                     ->child(row + 1, COLUMN_NAME)
-                                                     ->data(GameListDir::GamedirRole)
-                                                     .value<UISettings::GameDir*>()));
+        UISettings::values.game_dirs.swap(
+            UISettings::values.game_dirs.indexOf(
+                *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()),
+            UISettings::values.game_dirs.indexOf(*item_model->invisibleRootItem()
+                                                      ->child(row + 1, COLUMN_NAME)
+                                                      ->data(GameListDir::GameDirRole)
+                                                      .value<UISettings::GameDir*>()));
         // move the treeview items
         QList<QStandardItem*> item = item_model->takeRow(row);
         item_model->invisibleRootItem()->insertRow(row + 1, item);
-        tree_view->setExpanded(child->index(), gamedir.expanded);
+        tree_view->setExpanded(child->index(), game_dir.expanded);
     });
     connect(open_directory_location, &QAction::triggered,
-            [&] { emit OpenDirectory(gamedir.path); });
+            [&] { emit OpenDirectory(game_dir.path); });
 }
 
 void GameList::LoadCompatibilityList() {
@@ -572,7 +572,7 @@ QStandardItemModel* GameList::GetModel() const {
     return item_model;
 }
 
-void GameList::PopulateAsync(QList<UISettings::GameDir>& gamedirs) {
+void GameList::PopulateAsync(QList<UISettings::GameDir>& game_dirs) {
     tree_view->setEnabled(false);
     // Delete any rows that might already exist if we're repopulating
     item_model->removeRows(0, item_model->rowCount());
@@ -580,7 +580,7 @@ void GameList::PopulateAsync(QList<UISettings::GameDir>& gamedirs) {
 
     emit ShouldCancelWorker();
 
-    GameListWorker* worker = new GameListWorker(gamedirs, compatibility_list);
+    GameListWorker* worker = new GameListWorker(game_dirs, compatibility_list);
 
     connect(worker, &GameListWorker::EntryReady, this, &GameList::AddEntry, Qt::QueuedConnection);
     connect(worker, &GameListWorker::DirEntryReady, this, &GameList::AddDirEntry,
@@ -620,9 +620,9 @@ static bool HasSupportedFileExtension(const std::string& file_name) {
 }
 
 void GameList::RefreshGameDirectory() {
-    if (!UISettings::values.gamedirs.isEmpty() && current_worker != nullptr) {
+    if (!UISettings::values.game_dirs.isEmpty() && current_worker != nullptr) {
         NGLOG_INFO(Frontend, "Change detected in the games directory. Reloading game list.");
-        PopulateAsync(UISettings::values.gamedirs);
+        PopulateAsync(UISettings::values.game_dirs);
     }
 }
 
@@ -690,6 +690,7 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
                     new GameListItemSize(FileUtil::GetSize(physical_name)),
                 },
                 parent_dir);
+
         } else if (is_dir && recursion > 0) {
             watch_list.append(QString::fromStdString(physical_name));
             AddFstEntriesToGameList(physical_name, recursion - 1, parent_dir);
@@ -703,8 +704,8 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
 
 void GameListWorker::run() {
     stop_processing = false;
-    for (UISettings::GameDir& gamedir : gamedirs) {
-        if (gamedir.path == "INSTALLED") {
+    for (UISettings::GameDir& game_dir : game_dirs) {
+        if (game_dir.path == "INSTALLED") {
             QString path =
                 QString::fromStdString((Settings::values.sd_card_root.empty()
                                             ? FileUtil::GetUserPath(D_SDMC_IDX)
@@ -713,23 +714,23 @@ void GameListWorker::run() {
                                        "3DS/00000000000000000000000000000000/"
                                        "00000000000000000000000000000000/title/00040000");
             watch_list.append(path);
-            GameListDir* game_list_dir = new GameListDir(gamedir, GameListItemType::InstalledDir);
+            GameListDir* game_list_dir = new GameListDir(game_dir, GameListItemType::InstalledDir);
             emit DirEntryReady({game_list_dir});
             AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
-        } else if (gamedir.path == "SYSTEM") {
+        } else if (game_dir.path == "SYSTEM") {
             QString path = QString(FileUtil::GetUserPath(D_NAND_IDX).c_str()) +
                            "00000000000000000000000000000000/title/00040010";
             watch_list.append(path);
-            GameListDir* game_list_dir = new GameListDir(gamedir, GameListItemType::SystemDir);
+            GameListDir* game_list_dir = new GameListDir(game_dir, GameListItemType::SystemDir);
             emit DirEntryReady({game_list_dir});
             AddFstEntriesToGameList(std::string(FileUtil::GetUserPath(D_NAND_IDX).c_str()) +
                                         "00000000000000000000000000000000/title/00040010",
                                     2, game_list_dir);
         } else {
-            watch_list.append(gamedir.path);
-            GameListDir* game_list_dir = new GameListDir(gamedir);
+            watch_list.append(game_dir.path);
+            GameListDir* game_list_dir = new GameListDir(game_dir);
             emit DirEntryReady({game_list_dir});
-            AddFstEntriesToGameList(gamedir.path.toStdString(), gamedir.deep_scan ? 256 : 0,
+            AddFstEntriesToGameList(game_dir.path.toStdString(), game_dir.deep_scan ? 256 : 0,
                                     game_list_dir);
         }
     };
