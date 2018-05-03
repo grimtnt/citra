@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "common/common_types.h"
 #include "common/logging/log.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
@@ -35,8 +34,8 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
 void Module::Interface::Set3DLEDState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x0009, 1, 0);
     u8 state = rp.Pop<u8>();
-    Settings::values.sp_enable_3d = state == 0 ? false : true;
     SharedPage::shared_page.ledstate_3d = state;
+    Settings::values.sp_enable_3d = state == 0 ? false : true;
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 }

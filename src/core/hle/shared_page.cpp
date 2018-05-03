@@ -95,4 +95,8 @@ void SetMacAddress(const MacAddress& addr) {
     std::memcpy(shared_page.wifi_macaddr, addr.data(), sizeof(MacAddress));
 }
 
+void SetWifiLinkLevel(WifiLinkLevel level) {
+    shared_page.wifi_link_level = static_cast<u8>(level);
+}
+
 } // namespace SharedPage

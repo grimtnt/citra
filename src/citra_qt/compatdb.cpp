@@ -11,7 +11,7 @@
 
 CompatDB::CompatDB(QWidget* parent)
     : QWizard(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui{std::make_unique<Ui::CompatDB>()} {
+      ui(std::make_unique<Ui::CompatDB>()) {
     ui->setupUi(this);
     connect(ui->radioButton_Perfect, &QRadioButton::clicked, this, &CompatDB::EnableNext);
     connect(ui->radioButton_Great, &QRadioButton::clicked, this, &CompatDB::EnableNext);
@@ -22,7 +22,7 @@ CompatDB::CompatDB(QWidget* parent)
     connect(button(NextButton), &QPushButton::clicked, this, &CompatDB::Submit);
 }
 
-CompatDB::~CompatDB() = default;
+CompatDB::~CompatDB() {}
 
 enum class CompatDBPage { Intro = 0, Selection = 1, Final = 2 };
 

@@ -4,23 +4,21 @@
 
 #pragma once
 
+#include <memory>
 #include <QDialog>
-#include "common/common_types.h"
 
 namespace Ui {
 class ControlPanel;
-}
+} // namespace Ui
 
 class ControlPanel : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ControlPanel(QWidget* parent = 0);
+    explicit ControlPanel(QWidget* parent = nullptr);
     ~ControlPanel();
 
 public slots:
-    int nsti(u8 state);
-    u8 itns(int index);
     void On3DEnabledChanged();
     void OnAdapterConnectedChanged();
     void OnBatteryChargingChanged();
@@ -30,5 +28,5 @@ public slots:
     void OnNetworkStateChanged();
 
 private:
-    Ui::ControlPanel* ui;
+    std::unique_ptr<Ui::ControlPanel> ui;
 };

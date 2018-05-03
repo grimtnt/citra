@@ -41,7 +41,7 @@ inline void Read(T& var, const u32 raw_addr) {
         return;
     }
 
-    var = g_regs[addr / 4];
+    var = g_regs[index];
 }
 
 static Math::Vec4<u8> DecodePixel(Regs::PixelFormat input_format, const u8* src_pixel) {

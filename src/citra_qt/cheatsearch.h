@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -8,10 +9,9 @@
 
 namespace Ui {
 class CheatSearch;
-}
+} // namespace Ui
 
-class FoundItem {
-public:
+struct FoundItem {
     std::string address;
     std::string value;
 };
@@ -20,17 +20,18 @@ class CheatSearch : public QDialog {
     Q_OBJECT
 
 public:
-    explicit CheatSearch(QWidget* parent = 0);
+    explicit CheatSearch(QWidget* parent = nullptr);
     ~CheatSearch();
 
 private:
-    Ui::CheatSearch* ui;
+    std::unique_ptr<Ui::CheatSearch> ui;
     std::vector<FoundItem> previous_found;
+
     void OnScan(bool isNextScan);
     void OnScanTypeChanged(int index);
     void OnValueTypeChanged(int index);
     void OnHexCheckedChanged(bool checked);
-    void LoadTable(std::vector<FoundItem> items);
+    void LoadTable(const std::vector<FoundItem>& items);
 
     template <typename T>
     std::vector<FoundItem> FirstSearch(const T value, std::function<bool(int, int, int)> comparer);

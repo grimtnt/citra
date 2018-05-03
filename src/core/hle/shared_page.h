@@ -42,6 +42,13 @@ using MacAddress = std::array<u8, 6>;
 // Default MAC address in the Nintendo 3DS range
 constexpr MacAddress DefaultMac = {0x40, 0xF4, 0x07, 0x00, 0x00, 0x00};
 
+enum class WifiLinkLevel : u8 {
+    Off = 0,
+    Poor = 1,
+    Good = 2,
+    Best = 3,
+};
+
 struct SharedPageDef {
     // Most of these names are taken from the 3dbrew page linked above.
     u32_le date_time_counter; // 0
@@ -72,5 +79,7 @@ extern SharedPageDef shared_page;
 void Init();
 
 void SetMacAddress(const MacAddress&);
+
+void SetWifiLinkLevel(WifiLinkLevel);
 
 } // namespace SharedPage

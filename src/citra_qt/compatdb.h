@@ -9,7 +9,7 @@
 
 namespace Ui {
 class CompatDB;
-}
+} // namespace Ui
 
 class CompatDB : public QWizard {
     Q_OBJECT
