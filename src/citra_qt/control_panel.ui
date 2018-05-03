@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tabSharedPage">
     <attribute name="title">
@@ -229,6 +229,7 @@
            <property name="text">
             <string>Best</string>
            </property>
+          </item>
          </widget>
         </item>
        </layout>
