@@ -349,7 +349,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             if (!vertex_cache_hit) {
                 // Initialize data for the current vertex
                 Shader::AttributeBuffer input;
-                loader.LoadVertex(base_address, index, vertex, input, memory_accesses);
+                loader.LoadVertex(base_address, index, vertex, input);
 
                 shader_unit.LoadInput(regs.vs, input);
                 shader_engine->Run(g_state.vs, shader_unit);
