@@ -217,6 +217,9 @@ private:
     /// Syncs the specified light's distance attenuation scale to match the PICA register
     void SyncLightDistanceAttenuationScale(int light_index);
 
+    /// Upload the uniform blocks to the uniform buffer object
+    void UploadUniforms(bool use_gs);
+
     OpenGLState state;
 
     RasterizerCacheOpenGL res_cache;
@@ -239,15 +242,22 @@ private:
 
     std::unique_ptr<ShaderProgramManager> shader_program_manager;
 
+    // They shall be big enough for about one frame.
+    static constexpr size_t VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
+    static constexpr size_t UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
+
     OGLVertexArray sw_vao;
     OGLVertexArray hw_vao;
     std::array<bool, 16> hw_vao_enabled_attributes;
 
     std::array<SamplerInfo, 3> texture_samplers;
-    static constexpr size_t VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
     OGLStreamBuffer vertex_buffer;
-    OGLBuffer uniform_buffer;
+    OGLStreamBuffer uniform_buffer;
     OGLFramebuffer framebuffer;
+    GLint uniform_buffer_alignment;
+    size_t uniform_size_aligned_vs;
+    size_t uniform_size_aligned_gs;
+    size_t uniform_size_aligned_fs;
 
     SamplerInfo texture_cube_sampler;
 
@@ -286,11 +296,7 @@ private:
     void AnalyzeVertexArray(bool is_indexed);
     void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset);
 
-    OGLBuffer vs_uniform_buffer;
-
     bool SetupVertexShader();
-
-    OGLBuffer gs_uniform_buffer;
 
     bool SetupGeometryShader();
 
