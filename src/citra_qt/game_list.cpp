@@ -438,7 +438,7 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
     QMenu context_menu;
     switch (static_cast<GameListItemType>(child->type())) {
     case GameListItemType::Game:
-        AddGamePopup(context_menu, item.data(GameListItemPath::ProgramIdRole).toULongLong());
+        AddGamePopup(context_menu, child->data(GameListItemPath::ProgramIdRole).toULongLong());
         break;
     case GameListItemType::CustomDir:
         AddPermDirPopup(context_menu, child);
@@ -463,12 +463,15 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id) {
     open_update_location->setEnabled(0x00040000'00000000 <= program_id &&
                                      program_id <= 0x00040000'FFFFFFFF);
 
-    connect(open_save_location, &QAction::triggered,
-            [&]() { emit OpenFolderRequested(program_id, GameListOpenTarget::SAVE_DATA); });
-    connect(open_application_location, &QAction::triggered,
-            [&]() { emit OpenFolderRequested(program_id, GameListOpenTarget::APPLICATION); });
-    connect(open_update_location, &QAction::triggered,
-            [&]() { emit OpenFolderRequested(program_id, GameListOpenTarget::UPDATE_DATA); });
+    connect(open_save_location, &QAction::triggered, [&, program_id]() {
+        emit OpenFolderRequested(program_id, GameListOpenTarget::SAVE_DATA);
+    });
+    connect(open_application_location, &QAction::triggered, [&, program_id]() {
+        emit OpenFolderRequested(program_id, GameListOpenTarget::APPLICATION);
+    });
+    connect(open_update_location, &QAction::triggered, [&, program_id]() {
+        emit OpenFolderRequested(program_id, GameListOpenTarget::UPDATE_DATA);
+    });
 };
 
 void GameList::AddCustomDirPopup(QMenu& context_menu, QStandardItem* child) {
