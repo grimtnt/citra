@@ -234,7 +234,6 @@ void GMainWindow::InitializeDebugWidgets() {
     connect(this, &GMainWindow::EmulationStopping, stereoscopicControllerWidget,
             &StereoscopicControllerWidget::OnEmulationStopping);
 
-    ui.menu_Emulation->addSeparator();
     ui.menu_Emulation->addAction(stereoscopicControllerWidget->toggleViewAction());
 }
 
