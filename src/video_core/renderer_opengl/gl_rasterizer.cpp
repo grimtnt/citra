@@ -1535,6 +1535,10 @@ void RasterizerOpenGL::SyncCullMode() {
     const auto& regs = Pica::g_state.regs;
 
     switch (regs.rasterizer.cull_mode) {
+    case Pica::RasterizerRegs::CullMode::KeepAll:
+        state.cull.enabled = false;
+        break;
+
     case Pica::RasterizerRegs::CullMode::KeepClockWise:
         state.cull.enabled = true;
         state.cull.front_face = GL_CW;

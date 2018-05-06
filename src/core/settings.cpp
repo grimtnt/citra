@@ -15,7 +15,7 @@ namespace Settings {
 Values values = {};
 
 void Apply() {
-    VideoCore::g_renderer_selection = static_cast<VideoCore::Renderer>(values.renderer);
+    VideoCore::g_hw_renderer_enabled = values.use_hw_renderer;
     VideoCore::g_shader_jit_enabled = values.use_shader_jit;
 
     if (VideoCore::g_emu_window) {
@@ -30,7 +30,6 @@ void Apply() {
 
     Service::HID::ReloadInputDevices();
     Service::IR::ReloadInputDevices();
-    Service::CAM::ReloadCameraDevices();
 }
 
 } // namespace Settings
