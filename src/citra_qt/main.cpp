@@ -281,8 +281,11 @@ void GMainWindow::InitializeHotkeys() {
             }
         }
     });
-    connect(GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this,
-            [&] { BootGame(QString(UISettings::values.recent_files.first())); });
+    connect(GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this, [&] {
+        if (!Core::System::GetInstance().IsPoweredOn())
+            return;
+        BootGame(QString(UISettings::values.recent_files.first()));
+    });
     connect(GetHotkey("Main Window", "Swap Screens", render_window), &QShortcut::activated,
             ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
     connect(GetHotkey("Main Window", "Toggle Screen Layout", render_window), &QShortcut::activated,
