@@ -111,8 +111,11 @@ void Config::ReadValues() {
         sdl2_config->GetInteger("Core", "swkbd_implementation", 0));
 
     // Renderer
-    Settings::values.renderer =
-        static_cast<Settings::RenderBackend>(sdl2_config->GetInteger("Renderer", "renderer", 1));
+    Settings::values.use_hw_renderer = sdl2_config->GetBoolean("Renderer", "use_hw_renderer", true);
+    Settings::values.hw_shaders =
+        static_cast<Settings::HwShaders>(sdl2_config->GetInteger("Renderer", "hw_shaders", 1));
+    Settings::values.shaders_accurate_mul =
+        sdl2_config->GetBoolean("Renderer", "shaders_accurate_mul", true);
     Settings::values.hw_shaders =
         static_cast<Settings::HwShaders>(sdl2_config->GetInteger("Renderer", "hw_shaders", 1));
     Settings::values.shaders_accurate_mul =
