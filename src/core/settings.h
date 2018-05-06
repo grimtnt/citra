@@ -13,8 +13,6 @@ namespace Settings {
 
 enum class HwShaders { Off, All, VSOnly };
 
-enum class RenderBackend { Software, OpenGL };
-
 enum class SwkbdImplementation { StdIn, Qt };
 
 enum class LayoutOption {
@@ -122,7 +120,7 @@ struct Values {
     bool enable_new_mode;
 
     // Renderer
-    RenderBackend renderer;
+    bool use_hw_renderer;
     HwShaders hw_shaders;
     bool shaders_accurate_mul;
     bool use_shader_jit;
