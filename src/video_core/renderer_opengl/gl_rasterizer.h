@@ -218,7 +218,17 @@ private:
     void SyncLightDistanceAttenuationScale(int light_index);
 
     /// Upload the uniform blocks to the uniform buffer object
-    void UploadUniforms(bool use_gs);
+    void UploadUniforms(bool accelerate_draw, bool use_gs);
+
+    /// Generic draw function for DrawTriangles and AccelerateDrawBatch
+    void Draw(bool accelerate, bool is_indexed);
+
+    void AccelerateDrawBatchInternal(bool is_indexed, bool use_gs);
+
+    void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint vs_input_index_min,
+                          GLuint vs_input_index_max);
+    bool SetupVertexShader();
+    bool SetupGeometryShader();
 
     OpenGLState state;
 
@@ -288,18 +298,4 @@ private:
     OGLBuffer proctex_diff_lut_buffer;
     OGLTexture proctex_diff_lut;
     std::array<GLvec4, 256> proctex_diff_lut_data{};
-
-    GLint vs_input_index_min = 0;
-    GLint vs_input_index_max = 0;
-    GLsizeiptr vs_input_size = 0;
-
-    void AnalyzeVertexArray(bool is_indexed);
-    void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset);
-
-    bool SetupVertexShader();
-
-    bool SetupGeometryShader();
-
-    enum class AccelDraw { Disabled, Arrays, Indexed };
-    AccelDraw accelerate_draw;
 };
