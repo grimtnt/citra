@@ -1555,6 +1555,7 @@ void RasterizerOpenGL::SyncCullMode() {
         state.cull.enabled = true;
         state.cull.front_face = GL_CW;
         state.cull.mode = GL_FRONT;
+        break;
 
     default:
         LOG_CRITICAL(Render_OpenGL, "Unknown cull mode %u",
