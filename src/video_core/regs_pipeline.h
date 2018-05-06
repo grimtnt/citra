@@ -46,7 +46,6 @@ struct PipelineRegs {
             BitField<26, 2, u32> size6;
             BitField<28, 2, VertexAttributeFormat> format7;
             BitField<30, 2, u32> size7;
-            u32 format_low_raw;
         };
 
         union {
@@ -63,39 +62,37 @@ struct PipelineRegs {
 
             // number of total attributes minus 1
             BitField<28, 4, u32> max_attribute_index;
-
-            u32 format_high_raw;
         };
 
-        inline VertexAttributeFormat GetFormat(int n) const {
+        VertexAttributeFormat GetFormat(std::size_t n) const {
             VertexAttributeFormat formats[] = {format0, format1, format2,  format3,
                                                format4, format5, format6,  format7,
                                                format8, format9, format10, format11};
             return formats[n];
         }
 
-        inline int GetNumElements(int n) const {
+        u32 GetNumElements(std::size_t n) const {
             u32 sizes[] = {size0, size1, size2, size3, size4,  size5,
                            size6, size7, size8, size9, size10, size11};
-            return (int)sizes[n] + 1;
+            return sizes[n] + 1;
         }
 
-        inline int GetElementSizeInBytes(int n) const {
+        u32 GetElementSizeInBytes(std::size_t n) const {
             return (GetFormat(n) == VertexAttributeFormat::FLOAT)
                        ? 4
                        : (GetFormat(n) == VertexAttributeFormat::SHORT) ? 2 : 1;
         }
 
-        inline int GetStride(int n) const {
+        u32 GetStride(std::size_t n) const {
             return GetNumElements(n) * GetElementSizeInBytes(n);
         }
 
-        inline bool IsDefaultAttribute(int id) const {
+        bool IsDefaultAttribute(std::size_t id) const {
             return (id >= 12) || (attribute_mask & (1ULL << id)) != 0;
         }
 
-        inline int GetNumTotalAttributes() const {
-            return (int)max_attribute_index + 1;
+        u32 GetNumTotalAttributes() const {
+            return max_attribute_index + 1;
         }
 
         // Attribute loaders map the source vertex data to input attributes
@@ -113,8 +110,6 @@ struct PipelineRegs {
                 BitField<20, 4, u32> comp5;
                 BitField<24, 4, u32> comp6;
                 BitField<28, 4, u32> comp7;
-
-                u32 config_low_raw;
             };
 
             union {
@@ -127,14 +122,12 @@ struct PipelineRegs {
                 BitField<16, 8, u32> byte_count;
 
                 BitField<28, 4, u32> component_count;
-
-                u32 config_high_raw;
             };
 
-            inline int GetComponent(int n) const {
+            u32 GetComponent(std::size_t n) const {
                 u32 components[] = {comp0, comp1, comp2, comp3, comp4,  comp5,
                                     comp6, comp7, comp8, comp9, comp10, comp11};
-                return (int)components[n];
+                return components[n];
             }
         } attribute_loaders[12];
     } vertex_attributes;
