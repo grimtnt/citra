@@ -569,6 +569,7 @@ void RasterizerOpenGL::DrawTriangles() {
                 using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
                 switch (texture.config.type.Value()) {
                 case TextureType::TextureCube:
+                case TextureType::ShadowCube:
                     using CubeFace = Pica::TexturingRegs::CubeFace;
                     TextureCubeConfig config;
                     config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
@@ -1556,12 +1557,19 @@ void RasterizerOpenGL::SyncCullMode() {
     case Pica::RasterizerRegs::CullMode::KeepClockWise:
         state.cull.enabled = true;
         state.cull.front_face = GL_CW;
+        state.cull.mode = GL_BACK;
         break;
 
     case Pica::RasterizerRegs::CullMode::KeepCounterClockWise:
         state.cull.enabled = true;
         state.cull.front_face = GL_CCW;
+        state.cull.mode = GL_BACK;
         break;
+
+    case Pica::RasterizerRegs::CullMode::KeepClockWiseFront:
+        state.cull.enabled = true;
+        state.cull.front_face = GL_CW;
+        state.cull.mode = GL_FRONT;
 
     default:
         LOG_CRITICAL(Render_OpenGL, "Unknown cull mode %u",

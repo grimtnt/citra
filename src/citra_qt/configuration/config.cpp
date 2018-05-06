@@ -105,9 +105,10 @@ void Config::ReadValues() {
     Settings::values.resolution_factor =
         static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
     Settings::values.use_vsync = qt_config->value("use_vsync", false).toBool();
+    Settings::values.use_bos = qt_config->value("use_bos", false).toBool();
+    Settings ::values.skip_flush_region = qt_config->value("skip_flush_region", false).toBool();
     Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
     Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
-    Settings::values.use_bos = qt_config->value("use_bos", false).toBool();
 
     Settings::values.bg_red = qt_config->value("bg_red", 0.0).toFloat();
     Settings::values.bg_green = qt_config->value("bg_green", 0.0).toFloat();
@@ -131,7 +132,6 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Audio");
     Settings::values.sink_id = qt_config->value("output_engine", "auto").toString().toStdString();
-    Settings::values.enable_pipe3 = qt_config->value("enable_pipe3", true).toBool();
     Settings::values.enable_audio_stretching =
         qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.audio_device_id =
@@ -181,8 +181,7 @@ void Config::ReadValues() {
             .toStdString();
     Settings::values.announce_multiplayer_room_endpoint_url =
         qt_config
-            ->value("announce_multiplayer_room_endpoint_url",
-                    "https://api.citra-emu.org/lobby")
+            ->value("announce_multiplayer_room_endpoint_url", "https://api.citra-emu.org/lobby")
             .toString()
             .toStdString();
     Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
@@ -332,9 +331,10 @@ void Config::SaveValues() {
     qt_config->setValue("use_shader_jit", Settings::values.use_shader_jit);
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
     qt_config->setValue("use_vsync", Settings::values.use_vsync);
+    qt_config->setValue("use_bos", Settings::values.use_bos);
+    qt_config->setValue("skip_flush_region", Settings::values.skip_flush_region);
     qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);
-    qt_config->setValue("use_bos", Settings::values.use_bos);
 
     // Cast to double because Qt's written float values are not human-readable
     qt_config->setValue("bg_red", (double)Settings::values.bg_red);
@@ -358,7 +358,6 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Audio");
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
-    qt_config->setValue("enable_pipe3", Settings::values.enable_pipe3);
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
     qt_config->endGroup();

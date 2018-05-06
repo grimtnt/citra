@@ -53,6 +53,8 @@ FramebufferLayout SingleFrameLayout(unsigned width, unsigned height, bool is_swa
  */
 FramebufferLayout LargeFrameLayout(unsigned width, unsigned height, bool is_swapped);
 
+FramebufferLayout MediumFrameLayout(unsigned width, unsigned height, bool is_swapped);
+
 /**
  * Factory method for constructing a Frame with the Top screen and bottom
  * screen side by side

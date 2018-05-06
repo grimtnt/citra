@@ -1559,7 +1559,8 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
         }
 
         // Load data from 3DS memory
-        FlushRegion(params.addr, params.size);
+        if (!Settings::values.skip_flush_region)
+            FlushRegion(params.addr, params.size);
         surface->LoadGLBuffer(params.addr, params.end);
         surface->UploadGLTexture(surface->GetSubRect(params), read_framebuffer.handle,
                                  draw_framebuffer.handle);

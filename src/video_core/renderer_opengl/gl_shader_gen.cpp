@@ -1646,6 +1646,19 @@ void setemit(uint vertex_id_, bool prim_emit_, bool winding_) {
     winding = winding_;
 }
 
+void main() {
+)";
+    for (u32 i = 0; i < config.state.num_outputs; ++i) {
+        out +=
+            "    output_buffer.attributes[" + std::to_string(i) + "] = vec4(0.0, 0.0, 0.0, 1.0);\n";
+    }
+
+    // execute shader
+    out += "\n    exec_shader();\n\n";
+
+    out += "}\n\n";
+    out += R"(
+
 void emit() {
     prim_buffer[vertex_id] = output_buffer;
 
@@ -1658,18 +1671,7 @@ void emit() {
         }
     }
 }
-
-void main() {
-)";
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
-        out +=
-            "    output_buffer.attributes[" + std::to_string(i) + "] = vec4(0.0, 0.0, 0.0, 1.0);\n";
-    }
-
-    // execute shader
-    out += "\n    exec_shader();\n\n";
-
-    out += "}\n\n";
+    )";
 
     out += program_source;
 

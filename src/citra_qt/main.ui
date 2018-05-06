@@ -71,6 +71,7 @@
     <addaction name="action_Start"/>
     <addaction name="action_Pause"/>
     <addaction name="action_Stop"/>
+    <addaction name="action_Restart"/>
     <addaction name="separator"/>
     <addaction name="action_Configure"/>
     <addaction name="action_Cheats"/>
@@ -89,6 +90,7 @@
      </property>
      <addaction name="action_Screen_Layout_Default"/>
      <addaction name="action_Screen_Layout_Single_Screen"/>
+     <addaction name="action_Screen_Layout_Medium_Screen"/>
      <addaction name="action_Screen_Layout_Large_Screen"/>
      <addaction name="action_Screen_Layout_Side_by_Side"/>
      <addaction name="separator"/>
@@ -307,6 +309,14 @@
     <string>Single Screen</string>
    </property>
   </action>
+  <action name="action_Screen_Layout_Medium_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Medium Screen</string>
+   </property>
+  </action>
   <action name="action_Screen_Layout_Large_Screen">
    <property name="checkable">
     <bool>true</bool>
@@ -370,6 +380,14 @@
   <action name="action_Set_Play_Coins">
    <property name="text">
     <string>Set Play Coins</string>
+   </property>
+  </action>
+  <action name="action_Restart">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Restart</string>
    </property>
   </action>
  </widget>

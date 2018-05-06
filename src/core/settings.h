@@ -20,6 +20,7 @@ enum class SwkbdImplementation { StdIn, Qt };
 enum class LayoutOption {
     Default,
     SingleScreen,
+    MediumScreen,
     LargeScreen,
     SideScreen,
 };
@@ -127,9 +128,10 @@ struct Values {
     bool use_shader_jit;
     u16 resolution_factor;
     bool use_vsync;
+    bool use_bos;
+    bool skip_flush_region;
     bool use_frame_limit;
     u16 frame_limit;
-    bool use_bos;
 
     LayoutOption layout_option;
     bool swap_screen;
@@ -152,7 +154,6 @@ struct Values {
 
     // Audio
     std::string sink_id;
-    bool enable_pipe3;
     bool enable_audio_stretching;
     std::string audio_device_id;
 

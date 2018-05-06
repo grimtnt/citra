@@ -121,10 +121,12 @@ void Config::ReadValues() {
     Settings::values.resolution_factor =
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "resolution_factor", 1));
     Settings::values.use_vsync = sdl2_config->GetBoolean("Renderer", "use_vsync", false);
+    Settings::values.use_bos = sdl2_config->GetBoolean("Renderer", "use_bos", false);
+    Settings::values.skip_flush_region =
+        sdl2_config->GetBoolean("Renderer", "skip_flush_region", false);
     Settings::values.use_frame_limit = sdl2_config->GetBoolean("Renderer", "use_frame_limit", true);
     Settings::values.frame_limit =
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "frame_limit", 100));
-    Settings::values.use_bos = sdl2_config->GetBoolean("Renderer", "use_bos", false);
 
     Settings::values.bg_red = (float)sdl2_config->GetReal("Renderer", "bg_red", 0.0);
     Settings::values.bg_green = (float)sdl2_config->GetReal("Renderer", "bg_green", 0.0);
@@ -154,7 +156,6 @@ void Config::ReadValues() {
 
     // Audio
     Settings::values.sink_id = sdl2_config->Get("Audio", "output_engine", "auto");
-    Settings::values.enable_pipe3 = sdl2_config->GetBoolean("Audio", "enable_pipe3", true);
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");

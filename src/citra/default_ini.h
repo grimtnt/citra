@@ -124,6 +124,14 @@ resolution_factor =
 # 0 (default): Off, 1: On
 use_vsync =
 
+# Ignore format reinterpretation
+# 0 (default): disabled, 1: enabled
+use_bos =
+
+# Skip flush region
+# 0 (default): disabled, 1: enabled
+skip_flush_region =
+
 # Turns on the frame limiter, which will limit frames output to the target game speed
 # 0: Off, 1: On (default)
 use_frame_limit =
@@ -131,10 +139,6 @@ use_frame_limit =
 # Limits the speed of the game to run no faster than this value as a percentage of target speed
 # 1 - 9999: Speed limit as a percentage of target game speed. 100 (default)
 frame_limit =
-
-# Ignore format reinterpretation
-# 0 (default): disabled, 1: enabled
-use_bos =
 
 # The clear color for the renderer. What shows up on the sides of the bottom screen.
 # Must be in range of 0.0-1.0. Defaults to 1.0 for all.
@@ -171,9 +175,6 @@ swap_screen =
 # Which audio output engine to use.
 # auto (default): Auto-select, null: No audio output, sdl2: SDL2 (if available)
 output_engine =
-
-# Enable Pipe 2 Channel 3 (Binary Pipe)
-enable_pipe3 =
 
 # Whether or not to enable the audio-stretching post-processing effect.
 # This effect adjusts audio speed to match emulation speed and helps prevent audio stutter,

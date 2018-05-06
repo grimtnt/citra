@@ -16,7 +16,6 @@
 #include <QtWidgets>
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
-#include "citra_qt/util/console.h"
 #include "citra_qt/camera/qt_multimedia_camera.h"
 #include "citra_qt/camera/still_image_camera.h"
 #include "citra_qt/cheat_gui.h"
@@ -33,6 +32,7 @@
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/updater/updater.h"
 #include "citra_qt/util/clickable_label.h"
+#include "citra_qt/util/console.h"
 #include "common/common_paths.h"
 #include "common/logging/backend.h"
 #include "common/logging/filter.h"
@@ -221,6 +221,7 @@ void GMainWindow::InitializeWidgets() {
     QActionGroup* actionGroup_ScreenLayouts = new QActionGroup(this);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Default);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Single_Screen);
+    actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Medium_Screen);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Large_Screen);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Side_by_Side);
 }
@@ -253,6 +254,7 @@ void GMainWindow::InitializeHotkeys() {
     RegisterHotkey("Main Window", "Load File", QKeySequence::Open);
     RegisterHotkey("Main Window", "Start Emulation");
     RegisterHotkey("Main Window", "Continue/Pause", QKeySequence(Qt::Key_F4));
+    RegisterHotkey("Main Window", "Restart", QKeySequence(Qt::Key_F5));
     RegisterHotkey("Main Window", "Swap Screens", QKeySequence("F9"));
     RegisterHotkey("Main Window", "Toggle Screen Layout", QKeySequence("F10"));
     RegisterHotkey("Main Window", "Fullscreen", QKeySequence::FullScreen);
@@ -279,6 +281,8 @@ void GMainWindow::InitializeHotkeys() {
             }
         }
     });
+    connect(GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this,
+            [&] { BootGame(QString(UISettings::values.recent_files.first())); });
     connect(GetHotkey("Main Window", "Swap Screens", render_window), &QShortcut::activated,
             ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
     connect(GetHotkey("Main Window", "Toggle Screen Layout", render_window), &QShortcut::activated,
@@ -409,6 +413,8 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start, &QAction::triggered, this, &GMainWindow::OnStartGame);
     connect(ui.action_Pause, &QAction::triggered, this, &GMainWindow::OnPauseGame);
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
+    connect(ui.action_Restart, &QAction::triggered, this,
+            [&] { BootGame(QString(UISettings::values.recent_files.first())); });
     connect(ui.action_Report_Compatibility, &QAction::triggered, this,
             &GMainWindow::OnMenuReportCompatibility);
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
@@ -434,6 +440,8 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Screen_Layout_Default, &QAction::triggered, this,
             &GMainWindow::ChangeScreenLayout);
     connect(ui.action_Screen_Layout_Single_Screen, &QAction::triggered, this,
+            &GMainWindow::ChangeScreenLayout);
+    connect(ui.action_Screen_Layout_Medium_Screen, &QAction::triggered, this,
             &GMainWindow::ChangeScreenLayout);
     connect(ui.action_Screen_Layout_Large_Screen, &QAction::triggered, this,
             &GMainWindow::ChangeScreenLayout);
@@ -704,6 +712,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Start->setText(tr("Start"));
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(false);
+    ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
@@ -1077,6 +1086,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Start->setText(tr("Continue"));
     ui.action_Pause->setEnabled(true);
     ui.action_Stop->setEnabled(true);
+    ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
@@ -1178,6 +1188,8 @@ void GMainWindow::ChangeScreenLayout() {
         new_layout = Settings::LayoutOption::Default;
     } else if (ui.action_Screen_Layout_Single_Screen->isChecked()) {
         new_layout = Settings::LayoutOption::SingleScreen;
+    } else if (ui.action_Screen_Layout_Medium_Screen->isChecked()) {
+        new_layout = Settings::LayoutOption::MediumScreen;
     } else if (ui.action_Screen_Layout_Large_Screen->isChecked()) {
         new_layout = Settings::LayoutOption::LargeScreen;
     } else if (ui.action_Screen_Layout_Side_by_Side->isChecked()) {
@@ -1196,6 +1208,9 @@ void GMainWindow::ToggleScreenLayout() {
         new_layout = Settings::LayoutOption::SingleScreen;
         break;
     case Settings::LayoutOption::SingleScreen:
+        new_layout = Settings::LayoutOption::MediumScreen;
+        break;
+    case Settings::LayoutOption::MediumScreen:
         new_layout = Settings::LayoutOption::LargeScreen;
         break;
     case Settings::LayoutOption::LargeScreen:
@@ -1548,6 +1563,8 @@ void GMainWindow::SyncMenuUISettings() {
                                                 Settings::LayoutOption::Default);
     ui.action_Screen_Layout_Single_Screen->setChecked(Settings::values.layout_option ==
                                                       Settings::LayoutOption::SingleScreen);
+    ui.action_Screen_Layout_Medium_Screen->setChecked(Settings::values.layout_option ==
+                                                      Settings::LayoutOption::MediumScreen);
     ui.action_Screen_Layout_Large_Screen->setChecked(Settings::values.layout_option ==
                                                      Settings::LayoutOption::LargeScreen);
     ui.action_Screen_Layout_Side_by_Side->setChecked(Settings::values.layout_option ==

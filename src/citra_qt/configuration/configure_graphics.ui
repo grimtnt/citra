@@ -37,6 +37,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="skip_flush_region">
+          <property name="text">
+           <string>Skip flush region</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QCheckBox" name="toggle_frame_limit">
@@ -307,6 +314,11 @@
             <item>
              <property name="text">
               <string>Single Screen</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Medium Screen</string>
              </property>
             </item>
             <item>

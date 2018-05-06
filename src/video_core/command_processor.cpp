@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 #include "common/assert.h"
+#include "common/bit_set.h"
 #include "common/logging/log.h"
 #include "common/vector_math.h"
 #include "core/hle/service/gsp/gsp.h"
@@ -25,8 +26,6 @@
 #include "video_core/shader/shader.h"
 #include "video_core/vertex_loader.h"
 #include "video_core/video_core.h"
-
-#include "common/bit_set.h"
 
 namespace Pica {
 
@@ -300,6 +299,8 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         // Load vertices
         const auto& index_info = regs.pipeline.index_array;
         const u8* index_address_8 = Memory::GetPhysicalPointer(base_address + index_info.offset);
+        if (!index_address_8)
+            break;
         const u16* index_address_16 = reinterpret_cast<const u16*>(index_address_8);
         bool index_u16 = index_info.format != 0;
 
