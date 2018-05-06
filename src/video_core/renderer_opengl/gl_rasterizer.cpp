@@ -29,7 +29,8 @@ using SurfaceType = SurfaceParams::SurfaceType;
 
 RasterizerOpenGL::RasterizerOpenGL()
     : shader_dirty(true), vertex_buffer(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE),
-      uniform_buffer(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE) {
+      uniform_buffer(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE),
+      index_buffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE) {
     // Clipping plane 0 is always enabled for PICA fixed clip plane z <= 0
     state.clip_distance[0] = true;
 
@@ -180,7 +181,7 @@ RasterizerOpenGL::RasterizerOpenGL()
 
     state.draw.vertex_array = hw_vao.handle;
     state.Apply();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_buffer.GetHandle());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer.GetHandle());
 
     shader_program_manager =
         std::make_unique<ShaderProgramManager>(GLAD_GL_ARB_separate_shader_objects);
@@ -472,50 +473,34 @@ void RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs)
         }
     }
 
+    shader_program_manager->ApplyTo(state);
+
     const bool index_u16 = regs.pipeline.index_array.format != 0;
     const size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
 
-    auto[vs_input_index_min, vs_input_index_max, vs_input_size] = AnalyzeVertexArray(is_indexed);
+    auto [vs_input_index_min, vs_input_index_max, vs_input_size] = AnalyzeVertexArray(is_indexed);
 
     state.draw.vertex_buffer = vertex_buffer.GetHandle();
     state.Apply();
 
-    size_t buffer_size = vs_input_size;
-    if (is_indexed) {
-        buffer_size = Common::AlignUp(buffer_size, 4) + index_buffer_size;
-    }
-
-    size_t ptr_pos = 0;
     u8* buffer_ptr;
     GLintptr buffer_offset;
-    std::tie(buffer_ptr, buffer_offset, std::ignore) = vertex_buffer.Map(buffer_size, 4);
-
+    std::tie(buffer_ptr, buffer_offset, std::ignore) = vertex_buffer.Map(vs_input_size, 4);
     SetupVertexArray(buffer_ptr, buffer_offset, vs_input_index_min, vs_input_index_max);
-    ptr_pos += vs_input_size;
+    vertex_buffer.Unmap(vs_input_size);
 
-    GLintptr index_buffer_offset = 0;
     if (is_indexed) {
-        ptr_pos = Common::AlignUp(ptr_pos, 4);
-
         const u8* index_data =
             Memory::GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
                                        regs.pipeline.index_array.offset);
+        std::tie(buffer_ptr, buffer_offset, std::ignore) = index_buffer.Map(index_buffer_size, 4);
+        std::memcpy(buffer_ptr, index_data, index_buffer_size);
+        index_buffer.Unmap(index_buffer_size);
 
-        std::memcpy(&buffer_ptr[ptr_pos], index_data, index_buffer_size);
-
-        index_buffer_offset = buffer_offset + ptr_pos;
-        ptr_pos += index_buffer_size;
-    }
-
-    vertex_buffer.Unmap(buffer_size);
-
-    shader_program_manager->ApplyTo(state);
-    state.Apply();
-    if (is_indexed) {
         glDrawRangeElementsBaseVertex(
             primitive_mode, vs_input_index_min, vs_input_index_max, regs.pipeline.num_vertices,
             index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
-            reinterpret_cast<const void*>(index_buffer_offset), -vs_input_index_min);
+            reinterpret_cast<const void*>(buffer_offset), -vs_input_index_min);
     } else {
         glDrawArrays(primitive_mode, 0, regs.pipeline.num_vertices);
     }
