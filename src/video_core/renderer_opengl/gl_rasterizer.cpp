@@ -641,6 +641,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                 using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
                 switch (texture.config.type.Value()) {
                 case TextureType::TextureCube:
+                case TextureType::ShadowCube:
                     using CubeFace = Pica::TexturingRegs::CubeFace;
                     TextureCubeConfig config;
                     config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
