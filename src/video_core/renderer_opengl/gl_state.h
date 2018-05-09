@@ -20,14 +20,14 @@ constexpr TextureUnit PicaTexture(int unit) {
     return TextureUnit{unit};
 }
 
-constexpr TextureUnit LightingLUT{3};
-constexpr TextureUnit FogLUT{4};
-constexpr TextureUnit ProcTexNoiseLUT{5};
-constexpr TextureUnit ProcTexColorMap{6};
-constexpr TextureUnit ProcTexAlphaMap{7};
-constexpr TextureUnit ProcTexLUT{8};
-constexpr TextureUnit ProcTexDiffLUT{9};
-constexpr TextureUnit TextureCube{10};
+constexpr TextureUnit LightingLUT{4};
+constexpr TextureUnit FogLUT{5};
+constexpr TextureUnit ProcTexNoiseLUT{6};
+constexpr TextureUnit ProcTexColorMap{7};
+constexpr TextureUnit ProcTexAlphaMap{8};
+constexpr TextureUnit ProcTexLUT{9};
+constexpr TextureUnit ProcTexDiffLUT{10};
+constexpr TextureUnit TextureCube{11};
 
 } // namespace TextureUnits
 
@@ -82,11 +82,11 @@ public:
 
     GLenum logic_op; // GL_LOGIC_OP_MODE
 
-    // 3 texture units - one for each that is used in PICA fragment shader emulation
+    // 4 texture units - one for each that is used in PICA fragment shader emulation
     struct {
         GLuint texture_2d; // GL_TEXTURE_BINDING_2D
         GLuint sampler;    // GL_SAMPLER_BINDING
-    } texture_units[3];
+    } texture_units[4];
 
     struct {
         GLuint texture_cube; // GL_TEXTURE_BINDING_CUBE_MAP
