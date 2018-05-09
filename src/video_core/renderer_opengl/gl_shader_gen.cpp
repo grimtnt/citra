@@ -129,6 +129,9 @@ PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
     state.fog_mode = regs.texturing.fog_mode;
     state.fog_flip = regs.texturing.fog_flip != 0;
 
+    state.shadow.orthographic = regs.texturing.shadow.orthographic != 0;
+    state.shadow.bias = regs.texturing.shadow.bias;
+
     state.combiner_buffer_input = regs.texturing.tev_combiner_buffer_input.update_mask_rgb.Value() |
                                   regs.texturing.tev_combiner_buffer_input.update_mask_a.Value()
                                       << 4;
@@ -300,11 +303,11 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         case TexturingRegs::TextureConfig::TextureCube:
             return "texture(tex_cube, vec3(texcoord0, texcoord0_w))";
         case TexturingRegs::TextureConfig::Shadow2D:
-            return "texture(tex0, texcoord0, texture(tex_shadow, vec3(texcoord0, texcoord0_w)))";
+            return "ShadowTex(texture(tex0, texcoord_shadow, texture(tex_shadow, vec3(texcoord_shadow, texcoord0_w))))";
         case TexturingRegs::TextureConfig::ShadowCube:
-            return "texture(tex_cube, vec3(texcoord0, texcoord0_w), texture(tex_cube_shadow, vec4(texcoord0, texcoord0_w, 0.5)))";
+            return "ShadowTex(texture(tex_cube, vec3(texcoord_shadow, texcoord0_w), texture(tex_cube_shadow, vec4(texcoord_shadow, texcoord0_w, 0.5))))";
         case TexturingRegs::TextureConfig::ProjectionShadow:
-            return "texture(tex0, texcoord0, textureProj(tex_shadow, vec4(texcoord0, texcoord0_w, 0.5)))";
+            return "ShadowTex(texture(tex0, texcoord_shadow, textureProj(tex_shadow, vec4(texcoord_shadow, texcoord0_w, 0.5))))";
         default:
             LOG_CRITICAL(HW_GPU, "Unhandled texture type %x",
                          static_cast<int>(state.texture0_type));
@@ -1257,6 +1260,14 @@ vec4 byteround(vec4 x) {
     if (config.state.proctex.enable)
         AppendProcTexSampler(out, config);
 
+    if (state.texture0_type == TexturingRegs::TextureConfig::Shadow2D ||
+        state.texture0_type == TexturingRegs::TextureConfig::ShadowCube ||
+        state.texture0_type == TexturingRegs::TextureConfig::ProjectionShadow) {
+        // NOTE: need density process?
+        out += "vec4 ShadowTex(vec4 shadow_tex) {\n";
+        out += "return shadow_tex;\n}\n";
+    }
+
     // We round the interpolated primary color to the nearest 1/255th
     // This maintains the PICA's 8 bits of precision
     out += R"(
@@ -1264,6 +1275,8 @@ void main() {
 vec4 rounded_primary_color = byteround(primary_color);
 vec4 primary_fragment_color = vec4(0.0);
 vec4 secondary_fragment_color = vec4(0.0);
+vec2 texcoord_shadow = texcoord0;
+float tex_shadow_bias = 0.5;
 )";
 
     // Do not do any sort of processing if it's obvious we're not going to pass the alpha test
@@ -1291,6 +1304,14 @@ vec4 secondary_fragment_color = vec4(0.0);
     out += "float depth = z_over_w * depth_scale + depth_offset;\n";
     if (state.depthmap_enable == RasterizerRegs::DepthBuffering::WBuffering) {
         out += "depth /= gl_FragCoord.w;\n";
+    }
+
+    if (state.texture0_type == TexturingRegs::TextureConfig::Shadow2D ||
+        state.texture0_type == TexturingRegs::TextureConfig::ShadowCube ||
+        state.texture0_type == TexturingRegs::TextureConfig::ProjectionShadow) {
+        if (!state.shadow.orthographic) {
+            out += "texcoord_shadow = vec2(texcoord_shadow.x / texcoord0_w, texcoord_shadow.y / texcoord0_w);\n";
+        }
     }
 
     if (state.lighting.enable)
