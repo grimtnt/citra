@@ -321,8 +321,8 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         if (state.proctex.enable) {
             return "ProcTex()";
         } else {
-            LOG_ERROR(Render_OpenGL, "Using Texture3 without enabling it");
-            return "vec4(0.0)";
+            // NOTE: unknwon using texcoord for tex3
+            return "texture(tex3, texcoord0)";
         }
     default:
         UNREACHABLE();
@@ -1196,6 +1196,7 @@ out vec4 color;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform sampler2D tex2;
+uniform sampler2D tex3;
 uniform samplerCube tex_cube;
 uniform samplerBuffer lighting_lut;
 uniform samplerBuffer fog_lut;
