@@ -272,6 +272,7 @@ private:
     size_t uniform_size_aligned_fs;
 
     SamplerInfo texture_cube_sampler;
+    SamplerInfo texture_shadow_sampler;
 
     OGLBuffer lighting_lut_buffer;
     OGLTexture lighting_lut;
