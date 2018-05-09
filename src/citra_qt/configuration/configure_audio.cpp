@@ -51,6 +51,7 @@ void ConfigureAudio::setConfiguration() {
         }
     }
     ui->audio_device_combo_box->setCurrentIndex(new_device_index);
+    ui->sound_volume->setValue(Settings::values.sound_volume * 100);
 }
 
 void ConfigureAudio::applyConfiguration() {
@@ -61,6 +62,7 @@ void ConfigureAudio::applyConfiguration() {
     Settings::values.audio_device_id =
         ui->audio_device_combo_box->itemText(ui->audio_device_combo_box->currentIndex())
             .toStdString();
+    Settings::values.sound_volume = ui->sound_volume->value() * 0.01;
     Settings::Apply();
 }
 
