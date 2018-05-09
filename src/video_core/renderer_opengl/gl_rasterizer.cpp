@@ -44,6 +44,10 @@ RasterizerOpenGL::RasterizerOpenGL()
     texture_cube_sampler.Create();
     state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
 
+    // Create shadow texture and sampler
+    texture_shadow_sampler.Create();
+    state.texture_shadow_unit.sampler = texture_shadow_sampler.sampler.handle;
+
     // Generate VBO, VAO and UBO
     sw_vao.Create();
     hw_vao.Create();
@@ -658,6 +662,19 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                     texture_cube_sampler.SyncWithConfig(texture.config);
                     state.texture_units[texture_index].texture_2d = 0;
                     continue; // Texture unit 0 setup finished. Continue to next unit
+                case TextureType::Shadow2D:
+                case TextureType::ProjectionShadow: {
+                    texture_samplers[texture_index].SyncWithConfig(texture.config);
+                    texture_shadow_sampler.SyncWithConfig(texture.config);
+                    Surface surface = res_cache.GetTextureSurface(texture);
+                    if (surface != nullptr) {
+                        state.texture_units[texture_index].texture_2d = surface->texture.handle;
+                        state.texture_shadow_unit.texture_shadow = surface->texture.handle;
+                    } else {
+                        state.texture_units[texture_index].texture_2d = 0;
+                    }
+                    continue; // Texture unit 0 setup finished. Continue to next unit
+                } 
                 }
             }
 
@@ -775,6 +792,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         state.texture_units[texture_index].texture_2d = 0;
     }
     state.texture_cube_unit.texture_cube = 0;
+    state.texture_shadow_unit.texture_shadow = 0;
     state.Apply();
 
     // Mark framebuffer surfaces as dirty
