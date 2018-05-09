@@ -59,6 +59,10 @@ struct PicaFSConfigState {
     Pica::RasterizerRegs::DepthBuffering depthmap_enable;
     Pica::TexturingRegs::FogMode fog_mode;
     bool fog_flip;
+    struct {
+        bool orthographic;
+        u32 bias;
+    } shadow;
 
     struct {
         struct {
