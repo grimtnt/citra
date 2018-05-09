@@ -135,6 +135,7 @@ void Config::ReadValues() {
         qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
+    Settings::values.sound_volume = qt_config->value("sound_volume", 100).toInt() * 0.01;
     qt_config->endGroup();
 
     using namespace Service::CAM;
@@ -359,6 +360,7 @@ void Config::SaveValues() {
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
+    qt_config->setValue("sound_volume", (double)Settings::values.sound_volume);
     qt_config->endGroup();
 
     using namespace Service::CAM;
