@@ -301,8 +301,9 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
             return "texture(tex_cube, vec3(texcoord0, texcoord0_w))";
         case TexturingRegs::TextureConfig::Shadow2D:
             // NOTE: must use tex shadow coord, to need implement
-            return "texture(tex0, texcoord0)";
+            return "texture(tex0, texcoord0, texture(tex_shadow, vec3(texcoord0, texcoord0_w)))";
         case TexturingRegs::TextureConfig::ShadowCube:
+            // NOTE: must use tex shadow coord, to need implement
             return "texture(tex_cube, normalize(vec3(texcoord0, texcoord0_w)))";
         case TexturingRegs::TextureConfig::ProjectionShadow:
             // NOTE: must use tex shadow coord, to need implement
@@ -1200,6 +1201,7 @@ uniform sampler2D tex0;
 uniform sampler2D tex1;
 uniform sampler2D tex2;
 uniform sampler2D tex3;
+uniform sampler2DShadow tex_shadow;
 uniform samplerCube tex_cube;
 uniform samplerBuffer lighting_lut;
 uniform samplerBuffer fog_lut;
