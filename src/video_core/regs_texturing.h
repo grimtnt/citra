@@ -172,18 +172,22 @@ struct TexturingRegs {
     INSERT_PADDING_WORDS(0x2);
     TextureConfig texture2;
     BitField<0, 4, TextureFormat> texture2_format;
-    INSERT_PADDING_WORDS(0x9);
+    INSERT_PADDING_WORDS(0x2);
+    TextureConfig texture3;
+    BitField<0, 4, TextureFormat> texture3_format;
+    INSERT_PADDING_WORDS(0x1);
 
     struct FullTextureConfig {
         const bool enabled;
         const TextureConfig config;
         const TextureFormat format;
     };
-    const std::array<FullTextureConfig, 3> GetTextures() const {
+    const std::array<FullTextureConfig, 4> GetTextures() const {
         return {{
             {main_config.texture0_enable.ToBool(), texture0, texture0_format},
             {main_config.texture1_enable.ToBool(), texture1, texture1_format},
             {main_config.texture2_enable.ToBool(), texture2, texture2_format},
+            {main_config.texture3_enable.ToBool(), texture3, texture3_format},
         }};
     }
 
