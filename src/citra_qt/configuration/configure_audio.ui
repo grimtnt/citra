@@ -46,6 +46,24 @@
        </layout>
       </item>
       <item>
+       <layout class="QHBoxLayout" name="layout_sound_volume">
+        <item>
+         <widget class="QLabel" name="label_sound_volume">
+          <property name="text">
+           <string>Sound volume:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="sound_volume">
+          <property name="maximum">
+           <number>100</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
        <widget class="QCheckBox" name="toggle_audio_stretching">
         <property name="toolTip">
          <string>This post-processing effect adjusts audio speed to match emulation speed and helps prevent audio stutter. This however increases audio latency.</string>
