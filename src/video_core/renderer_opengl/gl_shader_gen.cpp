@@ -302,7 +302,7 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         case TexturingRegs::TextureConfig::Shadow2D:
             return "texture(tex0, texcoord0, texture(tex_shadow, vec3(texcoord0, texcoord0_w)))";
         case TexturingRegs::TextureConfig::ShadowCube:
-            return "texture(tex_cube, normalize(vec3(texcoord0, texcoord0_w)))";
+            return "texture(tex_cube, vec3(texcoord0, texcoord0_w), texture(tex_cube_shadow, vec4(texcoord0, texcoord0_w, 0.5)))";
         case TexturingRegs::TextureConfig::ProjectionShadow:
             return "texture(tex0, texcoord0, textureProj(tex_shadow, vec4(texcoord0, texcoord0_w, 0.5)))";
         default:
@@ -1200,6 +1200,7 @@ uniform sampler2D tex2;
 uniform sampler2D tex3;
 uniform sampler2DShadow tex_shadow;
 uniform samplerCube tex_cube;
+uniform samplerCubeShadow tex_cube_shadow;
 uniform samplerBuffer lighting_lut;
 uniform samplerBuffer fog_lut;
 uniform samplerBuffer proctex_noise_lut;
