@@ -300,10 +300,8 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         case TexturingRegs::TextureConfig::TextureCube:
             return "texture(tex_cube, vec3(texcoord0, texcoord0_w))";
         case TexturingRegs::TextureConfig::Shadow2D:
-            // NOTE: must use tex shadow coord, to need implement
             return "texture(tex0, texcoord0, texture(tex_shadow, vec3(texcoord0, texcoord0_w)))";
         case TexturingRegs::TextureConfig::ShadowCube:
-            // NOTE: must use tex shadow coord, to need implement
             return "texture(tex_cube, normalize(vec3(texcoord0, texcoord0_w)))";
         case TexturingRegs::TextureConfig::ProjectionShadow:
             return "texture(tex0, texcoord0, textureProj(tex_shadow, vec4(texcoord0, texcoord0_w, 0.5)))";
@@ -324,7 +322,7 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         if (state.proctex.enable) {
             return "ProcTex()";
         } else {
-            // NOTE: unknwon using texcoord for tex3
+            // NOTE: unknown using texcoord for tex3
             return "texture(tex3, texcoord0)";
         }
     default:
