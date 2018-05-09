@@ -9,34 +9,35 @@
 #include "video_core/renderer_opengl/gl_state.h"
 #include "video_core/renderer_opengl/gl_stream_buffer.h"
 
-GLsizeiptr Hack(GLsizeiptr size) {
-    return size * 2;
-}
-
-OGLStreamBuffer::OGLStreamBuffer(GLenum target, GLsizeiptr size, bool coherent)
-    : gl_target(target), map_flags(GL_MAP_WRITE_BIT), buffer_size(size) {
+OGLStreamBuffer::OGLStreamBuffer(GLenum target, GLsizeiptr size, bool prefer_coherent)
+    : gl_target(target), buffer_size(size) {
     gl_buffer.Create();
     glBindBuffer(gl_target, gl_buffer.handle);
 
-    if (GLAD_GL_ARB_buffer_storage) {
-        map_flags |= GL_MAP_PERSISTENT_BIT;
-        if (coherent) {
-            map_flags |= GL_MAP_COHERENT_BIT;
-        }
-        glBufferStorage(gl_target, Hack(buffer_size), nullptr, map_flags);
+    GLsizeiptr allocate_size = size;
+    if (target == GL_ARRAY_BUFFER) {
+        // On AMD GPU there is a strange crash in indexed drawing. The crash happens when the buffer
+        // read position is near the end and the crash looks like an out-of-bound access. Doubling
+        // the allocation size for the vertex buffer seems to avoid the crash.
+        // TODO (wwylele): investigate what actually happens here.
+        allocate_size *= 2;
+    }
 
-        if (!coherent) {
-            map_flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-        }
-        mapped_ptr = static_cast<u8*>(glMapBufferRange(gl_target, 0, buffer_size, map_flags));
+    if (GLAD_GL_ARB_buffer_storage) {
+        persistent = true;
+        coherent = prefer_coherent;
+        GLbitfield flags =
+            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | (coherent ? GL_MAP_COHERENT_BIT : 0);
+        glBufferStorage(gl_target, allocate_size, nullptr, flags);
+        mapped_ptr = static_cast<u8*>(glMapBufferRange(
+            gl_target, 0, buffer_size, flags | (coherent ? 0 : GL_MAP_FLUSH_EXPLICIT_BIT)));
     } else {
-        map_flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-        glBufferData(gl_target, Hack(buffer_size), nullptr, GL_STREAM_DRAW);
+        glBufferData(gl_target, allocate_size, nullptr, GL_STREAM_DRAW);
     }
 }
 
 OGLStreamBuffer::~OGLStreamBuffer() {
-    if (map_flags & GL_MAP_PERSISTENT_BIT) {
+    if (persistent) {
         glBindBuffer(gl_target, gl_buffer.handle);
         glUnmapBuffer(gl_target);
     }
@@ -60,36 +61,36 @@ std::tuple<u8*, GLintptr, bool> OGLStreamBuffer::Map(GLsizeiptr size, GLintptr a
         buffer_pos = Common::AlignUp<size_t>(buffer_pos, alignment);
     }
 
-    GLbitfield flags = map_flags;
+    bool invalidate = false;
     if (buffer_pos + size > buffer_size) {
         buffer_pos = 0;
-        flags |= GL_MAP_INVALIDATE_BUFFER_BIT;
+        invalidate = true;
 
-        if (flags & GL_MAP_PERSISTENT_BIT) {
+        if (persistent) {
             glUnmapBuffer(gl_target);
         }
-    } else if (!(flags & GL_MAP_PERSISTENT_BIT)) {
-        flags |= GL_MAP_UNSYNCHRONIZED_BIT;
     }
 
-    if (flags & GL_MAP_INVALIDATE_BUFFER_BIT || !(flags & GL_MAP_PERSISTENT_BIT)) {
+    if (invalidate | !persistent) {
+        GLbitfield flags = GL_MAP_WRITE_BIT | (persistent ? GL_MAP_PERSISTENT_BIT : 0) |
+                           (coherent ? GL_MAP_COHERENT_BIT : GL_MAP_FLUSH_EXPLICIT_BIT) |
+                           (invalidate ? GL_MAP_INVALIDATE_BUFFER_BIT : GL_MAP_UNSYNCHRONIZED_BIT);
         mapped_ptr = static_cast<u8*>(
             glMapBufferRange(gl_target, buffer_pos, buffer_size - buffer_pos, flags));
         mapped_offset = buffer_pos;
     }
 
-    return std::make_tuple(mapped_ptr + buffer_pos - mapped_offset, buffer_pos,
-                           flags & GL_MAP_INVALIDATE_BUFFER_BIT);
+    return std::make_tuple(mapped_ptr + buffer_pos - mapped_offset, buffer_pos, invalidate);
 }
 
 void OGLStreamBuffer::Unmap(GLsizeiptr size) {
     ASSERT(size <= mapped_size);
 
-    if (!(map_flags & GL_MAP_COHERENT_BIT)) {
+    if (!coherent) {
         glFlushMappedBufferRange(gl_target, buffer_pos - mapped_offset, size);
     }
 
-    if (!(map_flags & GL_MAP_PERSISTENT_BIT)) {
+    if (!persistent) {
         glUnmapBuffer(gl_target);
     }
 
