@@ -43,6 +43,8 @@ RasterizerOpenGL::RasterizerOpenGL()
     // Create cubemap texture and sampler objects
     texture_cube_sampler.Create();
     state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
+    texture_cube_shadow_sampler.Create();
+    state.texture_cube_shadow_unit.sampler = texture_cube_shadow_sampler.sampler.handle;
 
     // Create shadow texture and sampler
     texture_shadow_sampler.Create();
@@ -644,8 +646,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
             if (texture_index == 0) {
                 using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
                 switch (texture.config.type.Value()) {
-                case TextureType::TextureCube:
-                case TextureType::ShadowCube:
+                case TextureType::TextureCube: {
                     using CubeFace = Pica::TexturingRegs::CubeFace;
                     TextureCubeConfig config;
                     config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
@@ -662,6 +663,28 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                     texture_cube_sampler.SyncWithConfig(texture.config);
                     state.texture_units[texture_index].texture_2d = 0;
                     continue; // Texture unit 0 setup finished. Continue to next unit
+                }
+                case TextureType::ShadowCube: {
+                    using CubeFace = Pica::TexturingRegs::CubeFace;
+                    TextureCubeConfig config;
+                    config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
+                    config.nx = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX);
+                    config.py = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY);
+                    config.ny = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY);
+                    config.pz = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ);
+                    config.nz = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ);
+                    config.width = texture.config.width;
+                    config.format = texture.format;
+                    state.texture_cube_unit.texture_cube =
+                        res_cache.GetTextureCube(config).texture.handle;
+                    state.texture_cube_shadow_unit.texture_cube =
+                        res_cache.GetTextureCube(config).texture.handle;
+
+                    texture_cube_sampler.SyncWithConfig(texture.config);
+                    texture_cube_shadow_sampler.SyncWithConfig(texture.config);
+                    state.texture_units[texture_index].texture_2d = 0;
+                    continue; // Texture unit 0 setup finished. Continue to next unit
+                }
                 case TextureType::Shadow2D:
                 case TextureType::ProjectionShadow: {
                     texture_samplers[texture_index].SyncWithConfig(texture.config);
@@ -674,7 +697,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                         state.texture_units[texture_index].texture_2d = 0;
                     }
                     continue; // Texture unit 0 setup finished. Continue to next unit
-                } 
+                }
                 }
             }
 
@@ -793,6 +816,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     }
     state.texture_cube_unit.texture_cube = 0;
     state.texture_shadow_unit.texture_shadow = 0;
+    state.texture_cube_shadow_unit.texture_cube = 0;
     state.Apply();
 
     // Mark framebuffer surfaces as dirty
