@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>444</height>
+    <height>455</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -282,9 +282,9 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <widget class="QLabel" name="label2">
+           <widget class="QLabel" name="label_background_color">
             <property name="text">
              <string>Background color:</string>
             </property>
