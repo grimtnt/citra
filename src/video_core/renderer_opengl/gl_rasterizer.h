@@ -261,7 +261,7 @@ private:
     OGLVertexArray hw_vao;
     std::array<bool, 16> hw_vao_enabled_attributes;
 
-    std::array<SamplerInfo, 3> texture_samplers;
+    std::array<SamplerInfo, 4> texture_samplers;
     OGLStreamBuffer vertex_buffer;
     OGLStreamBuffer uniform_buffer;
     OGLStreamBuffer index_buffer;
