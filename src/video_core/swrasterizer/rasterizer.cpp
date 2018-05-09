@@ -356,7 +356,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                         v /= tc0_w;
                         break;
                     }
-                    case TexturingRegs::TextureConfig::ProjectionShadow {
+                        case TexturingRegs::TextureConfig::ProjectionShadow: {
                         auto tc0_w = GetInterpolatedAttribute(v0.tc0_w, v1.tc0_w, v2.tc0_w);
                         if (!regs.texturing.shadow.orthographic) {
                             u /= tc0_w;
@@ -372,7 +372,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                         }
 
                         shadow_z = float24::FromFloat32(std::abs(tc0_w.ToFloat32()));
-                        break;
+                        break;d
                     }
                     default:
                         // TODO: Change to LOG_ERROR when more types are handled.
