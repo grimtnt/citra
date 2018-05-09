@@ -304,6 +304,9 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
             return "texture(tex0, texcoord0)";
         case TexturingRegs::TextureConfig::ShadowCube:
             return "texture(tex_cube, normalize(vec3(texcoord0, texcoord0_w)))";
+        case TexturingRegs::TextureConfig::ProjectionShadow:
+            // NOTE: must use tex shadow coord, to need implement
+            return "textureProj(tex0, vec3(texcoord0, texcoord0_w))";
         default:
             LOG_CRITICAL(HW_GPU, "Unhandled texture type %x",
                          static_cast<int>(state.texture0_type));
