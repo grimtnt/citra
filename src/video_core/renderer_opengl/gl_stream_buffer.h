@@ -9,7 +9,7 @@
 
 class OGLStreamBuffer : private NonCopyable {
 public:
-    explicit OGLStreamBuffer(GLenum target, GLsizeiptr size, bool coherent = false);
+    explicit OGLStreamBuffer(GLenum target, GLsizeiptr size, bool prefer_coherent = false);
     ~OGLStreamBuffer();
 
     GLuint GetHandle() const;
@@ -30,7 +30,9 @@ public:
 private:
     OGLBuffer gl_buffer;
     GLenum gl_target;
-    GLbitfield map_flags;
+
+    bool coherent = false;
+    bool persistent = false;
 
     GLintptr buffer_pos = 0;
     GLsizeiptr buffer_size = 0;
