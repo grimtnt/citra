@@ -372,7 +372,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                         }
 
                         shadow_z = float24::FromFloat32(std::abs(tc0_w.ToFloat32()));
-                        break;d
+                        break;
                     }
                     default:
                         // TODO: Change to LOG_ERROR when more types are handled.
