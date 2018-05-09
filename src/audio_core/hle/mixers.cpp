@@ -8,6 +8,7 @@
 #include "common/assert.h"
 #include "common/logging/log.h"
 #include "common/math_util.h"
+#include "core/settings.h"
 
 namespace AudioCore {
 namespace HLE {
@@ -92,8 +93,10 @@ static s16 ClampToS16(s32 value) {
 
 static std::array<s16, 2> AddAndClampToS16(const std::array<s16, 2>& a,
                                            const std::array<s16, 2>& b) {
-    return {ClampToS16(static_cast<s32>(a[0]) + static_cast<s32>(b[0])),
-            ClampToS16(static_cast<s32>(a[1]) + static_cast<s32>(b[1]))};
+    float volume = Settings::values.sound_volume;
+
+    return {ClampToS16(static_cast<s32>(a[0] * volume) + static_cast<s32>(b[0] * volume)),
+            ClampToS16(static_cast<s32>(a[1] * volume) + static_cast<s32>(b[1] * volume))};
 }
 
 void Mixers::DownmixAndMixIntoCurrentFrame(float gain, const QuadFrame32& samples) {
