@@ -300,6 +300,8 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         case TexturingRegs::TextureConfig::TextureCube:
             return "texture(tex_cube, vec3(texcoord0, texcoord0_w))";
         case TexturingRegs::TextureConfig::Shadow2D:
+            // NOTE: must use tex shadow coord, to need implement
+            return "texture(tex0, texcoord0)";
         case TexturingRegs::TextureConfig::ShadowCube:
             NGLOG_CRITICAL(HW_GPU, "Unhandled shadow texture");
             UNIMPLEMENTED();
@@ -1658,7 +1660,6 @@ void main() {
 
     out += "}\n\n";
     out += R"(
-
 void emit() {
     prim_buffer[vertex_id] = output_buffer;
 
