@@ -21,7 +21,8 @@ struct TexturingRegs {
             Shadow2D = 2,
             Projection2D = 3,
             ShadowCube = 4,
-            Disabled = 5,
+            ProjectionShadow = 5,
+            Disabled = 6,
         };
 
         enum WrapMode : u32 {
