@@ -58,6 +58,9 @@ OpenGLState::OpenGLState() {
     texture_shadow_unit.texture_shadow = 0;
     texture_shadow_unit.sampler = 0;
 
+    texture_cube_shadow_unit.texture_cube = 0;
+    texture_cube_shadow_unit.sampler = 0;
+
     lighting_lut.texture_buffer = 0;
 
     fog_lut.texture_buffer = 0;
@@ -208,6 +211,7 @@ void OpenGLState::Apply() const {
         }
     }
 
+    // Texture Cube
     if (texture_cube_unit.texture_cube != cur_state.texture_cube_unit.texture_cube) {
         glActiveTexture(TextureUnits::TextureCube.Enum());
         glBindTexture(GL_TEXTURE_CUBE_MAP, texture_cube_unit.texture_cube);
@@ -223,6 +227,15 @@ void OpenGLState::Apply() const {
     }
     if (texture_shadow_unit.sampler != cur_state.texture_shadow_unit.sampler) {
         glBindSampler(TextureUnits::TextureShadow.id, texture_shadow_unit.sampler);
+    }
+
+    // Shadow Cube
+    if (texture_cube_shadow_unit.texture_cube != cur_state.texture_cube_shadow_unit.texture_cube) {
+        glActiveTexture(TextureUnits::TextureCubeShadow.Enum());
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture_cube_shadow_unit.texture_cube);
+    }
+    if (texture_cube_shadow_unit.sampler != cur_state.texture_cube_shadow_unit.sampler) {
+        glBindSampler(TextureUnits::TextureCubeShadow.id, texture_cube_shadow_unit.sampler);
     }
 
     // Lighting LUTs
@@ -344,6 +357,8 @@ OpenGLState& OpenGLState::ResetTexture(GLuint handle) {
         texture_cube_unit.texture_cube = 0;
     if (texture_shadow_unit.texture_shadow == handle)
         texture_shadow_unit.texture_shadow = 0;
+    if (texture_cube_shadow_unit.texture_cube == handle)
+        texture_cube_shadow_unit.texture_cube = 0;
     if (lighting_lut.texture_buffer == handle)
         lighting_lut.texture_buffer = 0;
     if (fog_lut.texture_buffer == handle)
@@ -372,6 +387,9 @@ OpenGLState& OpenGLState::ResetSampler(GLuint handle) {
     }
     if (texture_shadow_unit.sampler == handle) {
         texture_shadow_unit.sampler = 0;
+    }
+    if (texture_cube_shadow_unit.sampler == handle) {
+        texture_cube_shadow_unit.sampler = 0;
     }
     return *this;
 }
