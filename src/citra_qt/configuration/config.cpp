@@ -105,7 +105,6 @@ void Config::ReadValues() {
         static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
     Settings::values.use_vsync = qt_config->value("use_vsync", false).toBool();
     Settings::values.use_bos = qt_config->value("use_bos", false).toBool();
-    Settings ::values.skip_flush_region = qt_config->value("skip_flush_region", false).toBool();
     Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
     Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
 
@@ -333,7 +332,6 @@ void Config::SaveValues() {
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
     qt_config->setValue("use_vsync", Settings::values.use_vsync);
     qt_config->setValue("use_bos", Settings::values.use_bos);
-    qt_config->setValue("skip_flush_region", Settings::values.skip_flush_region);
     qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);
 
