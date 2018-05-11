@@ -29,7 +29,6 @@ constexpr TextureUnit ProcTexLUT{9};
 constexpr TextureUnit ProcTexDiffLUT{10};
 constexpr TextureUnit TextureCube{11};
 constexpr TextureUnit TextureShadow{12};
-constexpr TextureUnit TextureCubeShadow{13};
 
 } // namespace TextureUnits
 
@@ -96,15 +95,9 @@ public:
     } texture_cube_unit;
 
     struct {
-        GLuint texture_shadow; // GL_TEXTURE_BINDING_SHADOW_MAP
-        GLuint sampler;      // GL_SAMPLER_BINDING
-        GLfloat bias;
+        GLuint texture_2d; // GL_TEXTURE_BINDING_2D
+        GLuint sampler;    // GL_SAMPLER_BINDING
     } texture_shadow_unit;
-
-    struct {
-        GLuint texture_cube; // GL_TEXTURE_BINDING_CUBE_MAP
-        GLuint sampler;      // GL_SAMPLER_BINDING
-    } texture_cube_shadow_unit;
 
     struct {
         GLuint texture_buffer; // GL_TEXTURE_BINDING_BUFFER
