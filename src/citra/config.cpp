@@ -122,8 +122,6 @@ void Config::ReadValues() {
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "resolution_factor", 1));
     Settings::values.use_vsync = sdl2_config->GetBoolean("Renderer", "use_vsync", false);
     Settings::values.use_bos = sdl2_config->GetBoolean("Renderer", "use_bos", false);
-    Settings::values.skip_flush_region =
-        sdl2_config->GetBoolean("Renderer", "skip_flush_region", false);
     Settings::values.use_frame_limit = sdl2_config->GetBoolean("Renderer", "use_frame_limit", true);
     Settings::values.frame_limit =
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "frame_limit", 100));
