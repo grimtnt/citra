@@ -56,7 +56,6 @@ void ConfigureGraphics::setConfiguration() {
     ui->layout_bg->setStyleSheet(
         QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
     ui->toggle_bos->setChecked(Settings::values.use_bos);
-    ui->skip_flush_region->setChecked(Settings::values.skip_flush_region);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -73,7 +72,6 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.bg_red = bg_color.redF();
     Settings::values.bg_green = bg_color.greenF();
     Settings::values.bg_blue = bg_color.blueF();
-    Settings::values.skip_flush_region = ui->skip_flush_region->isChecked();
     Settings::values.use_bos = ui->toggle_bos->isChecked();
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
