@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>427</height>
+    <height>442</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,6 +24,13 @@
        <widget class="QCheckBox" name="toggle_vsync">
         <property name="text">
          <string>Enable V-Sync</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="toggle_bos">
+        <property name="text">
+         <string>Ignore format reinterpretation</string>
         </property>
        </widget>
       </item>
@@ -245,6 +252,20 @@
            </property>
           </item>
          </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QLabel" name="label_background_color">
+          <property name="text">
+           <string>Background color:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="layout_bg"/>
         </item>
        </layout>
       </item>
