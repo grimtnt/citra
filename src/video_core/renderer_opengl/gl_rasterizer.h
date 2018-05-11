@@ -72,6 +72,10 @@ private:
         u32 border_color;
     };
 
+    struct ShadowSamplerInfo : public SamplerInfo {
+        void Create();
+    };
+
     /// Structure that the hardware rendered vertices are composed of
     struct HardwareVertex {
         HardwareVertex() = default;
@@ -223,11 +227,17 @@ private:
     /// Generic draw function for DrawTriangles and AccelerateDrawBatch
     void Draw(bool accelerate, bool is_indexed);
 
+    /// Internal implementation for AccelerateDrawBatch
     void AccelerateDrawBatchInternal(bool is_indexed, bool use_gs);
 
+    /// Setup vertex array for AccelerateDrawBatch
     void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint vs_input_index_min,
                           GLuint vs_input_index_max);
+
+    /// Setup vertex shader for AccelerateDrawBatch
     bool SetupVertexShader();
+
+    /// Setup geometry shader for AccelerateDrawBatch
     bool SetupGeometryShader();
 
     OpenGLState state;
@@ -257,8 +267,8 @@ private:
     static constexpr size_t INDEX_BUFFER_SIZE = 32 * 1024 * 1024;
     static constexpr size_t UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
 
-    OGLVertexArray sw_vao;
-    OGLVertexArray hw_vao;
+    OGLVertexArray sw_vao; // VAO for software shader draw
+    OGLVertexArray hw_vao; // VAO for hardware shader / accelerate draw
     std::array<bool, 16> hw_vao_enabled_attributes;
 
     std::array<SamplerInfo, 4> texture_samplers;
@@ -272,8 +282,7 @@ private:
     size_t uniform_size_aligned_fs;
 
     SamplerInfo texture_cube_sampler;
-    SamplerInfo texture_shadow_sampler;
-    SamplerInfo texture_cube_shadow_sampler;
+    ShadowSamplerInfo texture_shadow_sampler;
 
     OGLBuffer lighting_lut_buffer;
     OGLTexture lighting_lut;
