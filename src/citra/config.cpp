@@ -112,12 +112,9 @@ void Config::ReadValues() {
 
     // Renderer
     Settings::values.use_hw_renderer = sdl2_config->GetBoolean("Renderer", "use_hw_renderer", true);
-    Settings::values.hw_shaders =
-        static_cast<Settings::HwShaders>(sdl2_config->GetInteger("Renderer", "hw_shaders", 1));
-    Settings::values.shaders_accurate_mul =
-        sdl2_config->GetBoolean("Renderer", "shaders_accurate_mul", true);
-    Settings::values.hw_shaders =
-        static_cast<Settings::HwShaders>(sdl2_config->GetInteger("Renderer", "hw_shaders", 1));
+    Settings::values.use_hw_shader = sdl2_config->GetBoolean("Renderer", "use_hw_shader", true);
+    Settings::values.shaders_accurate_gs =
+        sdl2_config->GetBoolean("Renderer", "shaders_accurate_gs", true);
     Settings::values.shaders_accurate_mul =
         sdl2_config->GetBoolean("Renderer", "shaders_accurate_mul", true);
     Settings::values.use_shader_jit = sdl2_config->GetBoolean("Renderer", "use_shader_jit", true);
