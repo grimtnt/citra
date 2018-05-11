@@ -11,8 +11,6 @@
 
 namespace Settings {
 
-enum class HwShaders { Off, All, VSOnly };
-
 enum class SwkbdImplementation { StdIn, Qt };
 
 enum class LayoutOption {
@@ -121,7 +119,8 @@ struct Values {
 
     // Renderer
     bool use_hw_renderer;
-    HwShaders hw_shaders;
+    bool use_hw_shader;
+    bool shaders_accurate_gs;
     bool shaders_accurate_mul;
     bool use_shader_jit;
     u16 resolution_factor;
