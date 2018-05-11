@@ -14,7 +14,6 @@
 #include "common/scope_exit.h"
 #include "common/vector_math.h"
 #include "core/hw/gpu.h"
-#include "core/settings.h"
 #include "video_core/pica_state.h"
 #include "video_core/regs_framebuffer.h"
 #include "video_core/regs_rasterizer.h"
@@ -40,17 +39,15 @@ RasterizerOpenGL::RasterizerOpenGL()
         state.texture_units[i].sampler = texture_samplers[i].sampler.handle;
     }
 
-    // Create cubemap texture and sampler objects
-    texture_cube_sampler.Create();
-    state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
-    texture_cube_shadow_sampler.Create();
-    state.texture_cube_shadow_unit.sampler = texture_cube_shadow_sampler.sampler.handle;
-
-    // Create shadow texture and sampler
+    // Create shadow map texture and sampler objects
     texture_shadow_sampler.Create();
     state.texture_shadow_unit.sampler = texture_shadow_sampler.sampler.handle;
 
-    // Generate VBO, VAO and UBO
+    // Create cubemap texture and sampler objects
+    texture_cube_sampler.Create();
+    state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
+
+    // Generate VAO
     sw_vao.Create();
     hw_vao.Create();
     hw_vao_enabled_attributes.fill(false);
@@ -75,7 +72,7 @@ RasterizerOpenGL::RasterizerOpenGL()
     uniform_size_aligned_fs =
         Common::AlignUp<size_t>(sizeof(UniformData), uniform_buffer_alignment);
 
-    // Set vertex attributes
+    // Set vertex attributes for software shader path
     state.draw.vertex_array = sw_vao.handle;
     state.draw.vertex_buffer = vertex_buffer.GetHandle();
     state.Apply();
@@ -185,6 +182,7 @@ RasterizerOpenGL::RasterizerOpenGL()
     glActiveTexture(TextureUnits::ProcTexDiffLUT.Enum());
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, proctex_diff_lut_buffer.handle);
 
+    // Bind index buffer for hardware shader path
     state.draw.vertex_array = hw_vao.handle;
     state.Apply();
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer.GetHandle());
@@ -332,9 +330,7 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
 
     std::array<bool, 16> enable_attributes{};
 
-    for (u32 i = 0; i < 12; ++i) {
-        const auto& loader = vertex_attributes.attribute_loaders[i];
-
+    for (const auto& loader : vertex_attributes.attribute_loaders) {
         if (loader.component_count == 0 || loader.byte_count == 0) {
             continue;
         }
@@ -379,7 +375,7 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
         buffer_offset += data_size;
     }
 
-    for (u32 i = 0; i < 16; ++i) {
+    for (std::size_t i = 0; i < enable_attributes.size(); ++i) {
         if (enable_attributes[i] != hw_vao_enabled_attributes[i]) {
             if (enable_attributes[i]) {
                 glEnableVertexAttribArray(i);
@@ -438,27 +434,21 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
     return true;
 }
 
-void RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs) {
+static GLenum GetCurrentPrimitiveMode(bool use_gs) {
     const auto& regs = Pica::g_state.regs;
-    GLenum primitive_mode;
     if (use_gs) {
         switch ((regs.gs.max_input_attribute_index + 1) /
                 (regs.pipeline.vs_outmap_total_minus_1_a + 1)) {
         case 1:
-            primitive_mode = GL_POINTS;
-            break;
+            return GL_POINTS;
         case 2:
-            primitive_mode = GL_LINES;
-            break;
+            return GL_LINES;
         case 4:
-            primitive_mode = GL_LINES_ADJACENCY;
-            break;
+            return GL_LINES_ADJACENCY;
         case 3:
-            primitive_mode = GL_TRIANGLES;
-            break;
+            return GL_TRIANGLES;
         case 6:
-            primitive_mode = GL_TRIANGLES_ADJACENCY;
-            break;
+            return GL_TRIANGLES_ADJACENCY;
         default:
             UNREACHABLE();
         }
@@ -466,23 +456,20 @@ void RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs)
         switch (regs.pipeline.triangle_topology) {
         case Pica::PipelineRegs::TriangleTopology::Shader:
         case Pica::PipelineRegs::TriangleTopology::List:
-            primitive_mode = GL_TRIANGLES;
-            break;
+            return GL_TRIANGLES;
         case Pica::PipelineRegs::TriangleTopology::Fan:
-            primitive_mode = GL_TRIANGLE_FAN;
-            break;
+            return GL_TRIANGLE_FAN;
         case Pica::PipelineRegs::TriangleTopology::Strip:
-            primitive_mode = GL_TRIANGLE_STRIP;
-            break;
+            return GL_TRIANGLE_STRIP;
         default:
             UNREACHABLE();
         }
     }
+}
 
-    shader_program_manager->ApplyTo(state);
-
-    const bool index_u16 = regs.pipeline.index_array.format != 0;
-    const size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
+void RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs) {
+    const auto& regs = Pica::g_state.regs;
+    GLenum primitive_mode = GetCurrentPrimitiveMode(use_gs);
 
     auto [vs_input_index_min, vs_input_index_max, vs_input_size] = AnalyzeVertexArray(is_indexed);
 
@@ -495,7 +482,12 @@ void RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs)
     SetupVertexArray(buffer_ptr, buffer_offset, vs_input_index_min, vs_input_index_max);
     vertex_buffer.Unmap(vs_input_size);
 
+    shader_program_manager->ApplyTo(state);
+    state.Apply();
+
     if (is_indexed) {
+        bool index_u16 = regs.pipeline.index_array.format != 0;
+        std::size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
         const u8* index_data =
             Memory::GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
                                        regs.pipeline.index_array.offset);
@@ -506,7 +498,7 @@ void RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs)
         glDrawRangeElementsBaseVertex(
             primitive_mode, vs_input_index_min, vs_input_index_max, regs.pipeline.num_vertices,
             index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
-            reinterpret_cast<const void*>(buffer_offset), -vs_input_index_min);
+            reinterpret_cast<const void*>(buffer_offset), -static_cast<GLint>(vs_input_index_min));
     } else {
         glDrawArrays(primitive_mode, 0, regs.pipeline.num_vertices);
     }
@@ -646,7 +638,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
             if (texture_index == 0) {
                 using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
                 switch (texture.config.type.Value()) {
-                case TextureType::TextureCube: {
+                case TextureType::TextureCube:
                     using CubeFace = Pica::TexturingRegs::CubeFace;
                     TextureCubeConfig config;
                     config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
@@ -663,41 +655,16 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                     texture_cube_sampler.SyncWithConfig(texture.config);
                     state.texture_units[texture_index].texture_2d = 0;
                     continue; // Texture unit 0 setup finished. Continue to next unit
-                }
-                case TextureType::ShadowCube: {
-                    using CubeFace = Pica::TexturingRegs::CubeFace;
-                    TextureCubeConfig config;
-                    config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
-                    config.nx = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX);
-                    config.py = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY);
-                    config.ny = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY);
-                    config.pz = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ);
-                    config.nz = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ);
-                    config.width = texture.config.width;
-                    config.format = texture.format;
-                    state.texture_cube_unit.texture_cube =
-                        res_cache.GetTextureCube(config).texture.handle;
-                    state.texture_cube_shadow_unit.texture_cube =
-                        res_cache.GetTextureCube(config).texture.handle;
-
-                    texture_cube_sampler.SyncWithConfig(texture.config);
-                    texture_cube_shadow_sampler.SyncWithConfig(texture.config);
-                    state.texture_units[texture_index].texture_2d = 0;
-                    continue; // Texture unit 0 setup finished. Continue to next unit
-                }
                 case TextureType::Shadow2D:
-                case TextureType::ProjectionShadow: {
-                    texture_samplers[texture_index].SyncWithConfig(texture.config);
                     texture_shadow_sampler.SyncWithConfig(texture.config);
+                    state.texture_units[texture_index].texture_2d = 0;
                     Surface surface = res_cache.GetTextureSurface(texture);
                     if (surface != nullptr) {
-                        state.texture_units[texture_index].texture_2d = surface->texture.handle;
-                        state.texture_shadow_unit.texture_shadow = surface->texture.handle;
+                        state.texture_shadow_unit.texture_2d = surface->texture.handle;
                     } else {
-                        state.texture_units[texture_index].texture_2d = 0;
+                        state.texture_shadow_unit.texture_2d = 0;
                     }
-                    continue; // Texture unit 0 setup finished. Continue to next unit
-                }
+                    continue;
                 }
             }
 
@@ -790,11 +757,11 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         shader_program_manager->ApplyTo(state);
         state.Apply();
 
-        size_t max_vertices = 3 * (VERTEX_BUFFER_SIZE / (3 * sizeof(HardwareVertex)));
-        for (size_t base_vertex = 0; base_vertex < vertex_batch.size();
+        std::size_t max_vertices = 3 * (VERTEX_BUFFER_SIZE / (3 * sizeof(HardwareVertex)));
+        for (std::size_t base_vertex = 0; base_vertex < vertex_batch.size();
              base_vertex += max_vertices) {
-            size_t vertices = std::min(max_vertices, vertex_batch.size() - base_vertex);
-            size_t vertex_size = vertices * sizeof(HardwareVertex);
+            std::size_t vertices = std::min(max_vertices, vertex_batch.size() - base_vertex);
+            std::size_t vertex_size = vertices * sizeof(HardwareVertex);
             u8* vbo;
             GLintptr offset;
             std::tie(vbo, offset, std::ignore) =
@@ -815,8 +782,6 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         state.texture_units[texture_index].texture_2d = 0;
     }
     state.texture_cube_unit.texture_cube = 0;
-    state.texture_shadow_unit.texture_shadow = 0;
-    state.texture_cube_shadow_unit.texture_cube = 0;
     state.Apply();
 
     // Mark framebuffer surfaces as dirty
@@ -870,9 +835,13 @@ void RasterizerOpenGL::NotifyPicaRegisterChanged(u32 id) {
         shader_dirty = true;
         break;
 
-    // Blending
-    case PICA_REG_INDEX(framebuffer.output_merger.alphablend_enable):
+    // Blending and fragment mode
+    case PICA_REG_INDEX(framebuffer.output_merger.fragment_operation_mode):
         SyncBlendEnabled();
+        SyncStencilWriteMask();
+        SyncDepthWriteMask();
+        SyncStencilTest();
+        SyncDepthTest();
         break;
     case PICA_REG_INDEX(framebuffer.output_merger.alpha_blending):
         SyncBlendFuncs();
@@ -1523,6 +1492,12 @@ void RasterizerOpenGL::SamplerInfo::Create() {
     // Other attributes have correct defaults
 }
 
+void RasterizerOpenGL::ShadowSamplerInfo::Create() {
+    SamplerInfo::Create();
+    glSamplerParameteri(sampler.handle, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glSamplerParameteri(sampler.handle, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+}
+
 void RasterizerOpenGL::SamplerInfo::SyncWithConfig(
     const Pica::TexturingRegs::TextureConfig& config) {
 
@@ -1792,6 +1767,11 @@ void RasterizerOpenGL::SyncColorWriteMask() {
 
 void RasterizerOpenGL::SyncStencilWriteMask() {
     const auto& regs = Pica::g_state.regs;
+    if (regs.framebuffer.output_merger.fragment_operation_mode ==
+        Pica::FramebufferRegs::FragmentOperationMode::Shadow) {
+        state.stencil.write_mask = 0;
+        return;
+    }
     state.stencil.write_mask =
         (regs.framebuffer.framebuffer.allow_depth_stencil_write != 0)
             ? static_cast<GLuint>(regs.framebuffer.output_merger.stencil_test.write_mask)
@@ -1800,6 +1780,11 @@ void RasterizerOpenGL::SyncStencilWriteMask() {
 
 void RasterizerOpenGL::SyncDepthWriteMask() {
     const auto& regs = Pica::g_state.regs;
+    if (regs.framebuffer.output_merger.fragment_operation_mode ==
+        Pica::FramebufferRegs::FragmentOperationMode::Shadow) {
+        state.depth.write_mask = GL_TRUE;
+        return;
+    }
     state.depth.write_mask = (regs.framebuffer.framebuffer.allow_depth_stencil_write != 0 &&
                               regs.framebuffer.output_merger.depth_write_enable)
                                  ? GL_TRUE
@@ -1808,6 +1793,11 @@ void RasterizerOpenGL::SyncDepthWriteMask() {
 
 void RasterizerOpenGL::SyncStencilTest() {
     const auto& regs = Pica::g_state.regs;
+    if (regs.framebuffer.output_merger.fragment_operation_mode ==
+        Pica::FramebufferRegs::FragmentOperationMode::Shadow) {
+        state.stencil.test_enabled = GL_FALSE;
+        return;
+    }
     state.stencil.test_enabled =
         regs.framebuffer.output_merger.stencil_test.enable &&
         regs.framebuffer.framebuffer.depth_format == Pica::FramebufferRegs::DepthFormat::D24S8;
@@ -1825,6 +1815,12 @@ void RasterizerOpenGL::SyncStencilTest() {
 
 void RasterizerOpenGL::SyncDepthTest() {
     const auto& regs = Pica::g_state.regs;
+    if (regs.framebuffer.output_merger.fragment_operation_mode ==
+        Pica::FramebufferRegs::FragmentOperationMode::Shadow) {
+        state.depth.test_enabled = GL_TRUE;
+        state.depth.test_func = GL_LESS; // this is hard-coded for shadow map rendering
+        return;
+    }
     state.depth.test_enabled = regs.framebuffer.output_merger.depth_test_enable == 1 ||
                                regs.framebuffer.output_merger.depth_write_enable == 1;
     state.depth.test_func =
