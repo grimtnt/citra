@@ -1589,7 +1589,7 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
 }
 
 void RasterizerCacheOpenGL::FlushRegion(PAddr addr, u32 size, Surface flush_surface) {
-    if (size == 0 || Settings::values.skip_flush_region)
+    if (size == 0)
         return;
 
     const SurfaceInterval flush_interval(addr, addr + size);
