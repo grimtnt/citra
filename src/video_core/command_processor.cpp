@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 #include "common/assert.h"
-#include "common/bit_set.h"
 #include "common/logging/log.h"
 #include "common/vector_math.h"
 #include "core/hle/service/gsp/gsp.h"
@@ -213,6 +212,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                     auto* shader_engine = Shader::GetEngine();
                     shader_engine->SetupBatch(g_state.vs, regs.vs.main_offset);
 
+                    // Send to vertex shader
                     Shader::UnitState shader_unit;
                     Shader::AttributeBuffer output{};
 
@@ -261,10 +261,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
         PrimitiveAssembler<Shader::OutputVertex>& primitive_assembler = g_state.primitive_assembler;
 
-        auto hw_shaders_setting = Settings::values.hw_shaders;
-        bool accelerate_draw = hw_shaders_setting != Settings::HwShaders::Off;
-
-        accelerate_draw &= primitive_assembler.IsEmpty();
+        bool accelerate_draw = Settings::values.use_hw_shader && primitive_assembler.IsEmpty();
 
         if (regs.pipeline.use_gs == PipelineRegs::UseGS::No) {
             switch (primitive_assembler.GetTopology()) {
@@ -279,7 +276,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                 UNREACHABLE();
             }
         } else {
-            if (hw_shaders_setting == Settings::HwShaders::VSOnly) {
+            if (Settings::values.shaders_accurate_gs) {
                 accelerate_draw = false;
             }
         }
