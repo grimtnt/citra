@@ -333,19 +333,9 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                     switch (texture.config.type) {
                     case TexturingRegs::TextureConfig::Texture2D:
                         break;
+                    case TexturingRegs::TextureConfig::ShadowCube:
                     case TexturingRegs::TextureConfig::TextureCube: {
                         auto w = GetInterpolatedAttribute(v0.tc0_w, v1.tc0_w, v2.tc0_w);
-                        std::tie(u, v, shadow_z, texture_address) =
-                            ConvertCubeCoord(u, v, w, regs.texturing);
-                        break;
-                    }
-                    case TexturingRegs::TextureConfig::ShadowCube: {
-                        auto w = GetInterpolatedAttribute(v0.tc0_w, v1.tc0_w, v2.tc0_w);
-                        auto tc0_w = GetInterpolatedAttribute(v0.tc0_w, v1.tc0_w, v2.tc0_w);
-                        if (!regs.texturing.shadow.orthographic) {
-                            u /= tc0_w;
-                            v /= tc0_w;
-                        }
                         std::tie(u, v, shadow_z, texture_address) =
                             ConvertCubeCoord(u, v, w, regs.texturing);
                         break;
@@ -354,14 +344,6 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                         auto tc0_w = GetInterpolatedAttribute(v0.tc0_w, v1.tc0_w, v2.tc0_w);
                         u /= tc0_w;
                         v /= tc0_w;
-                        break;
-                    }
-                        case TexturingRegs::TextureConfig::ProjectionShadow: {
-                        auto tc0_w = GetInterpolatedAttribute(v0.tc0_w, v1.tc0_w, v2.tc0_w);
-                        if (!regs.texturing.shadow.orthographic) {
-                            u /= tc0_w;
-                            v /= tc0_w;
-                        }
                         break;
                     }
                     case TexturingRegs::TextureConfig::Shadow2D: {
