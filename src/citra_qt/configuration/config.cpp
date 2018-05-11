@@ -96,9 +96,9 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");
-     Settings::values.use_hw_renderer = qt_config->value("use_hw_renderer", true).toBool();
-    Settings::values.hw_shaders =
-        static_cast<Settings::HwShaders>(qt_config->value("hw_shaders", 1).toInt());
+    Settings::values.use_hw_renderer = qt_config->value("use_hw_renderer", true).toBool();
+    Settings::values.use_hw_shader = qt_config->value("use_hw_shader", true).toBool();
+    Settings::values.shaders_accurate_gs = qt_config->value("shaders_accurate_gs", true).toBool();
     Settings::values.shaders_accurate_mul = qt_config->value("shaders_accurate_mul", true).toBool();
     Settings::values.use_shader_jit = qt_config->value("use_shader_jit", true).toBool();
     Settings::values.resolution_factor =
@@ -326,7 +326,8 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Renderer");
     qt_config->setValue("use_hw_renderer", Settings::values.use_hw_renderer);
-    qt_config->setValue("hw_shaders", static_cast<int>(Settings::values.hw_shaders));
+    qt_config->setValue("use_hw_shader", Settings::values.use_hw_shader);
+    qt_config->setValue("shaders_accurate_gs", Settings::values.shaders_accurate_gs);
     qt_config->setValue("shaders_accurate_mul", Settings::values.shaders_accurate_mul);
     qt_config->setValue("use_shader_jit", Settings::values.use_shader_jit);
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
