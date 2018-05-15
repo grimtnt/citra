@@ -783,6 +783,7 @@ void RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         state.texture_units[texture_index].texture_2d = 0;
     }
     state.texture_cube_unit.texture_cube = 0;
+    state.texture_shadow_unit.texture_2d = 0;
     state.Apply();
 
     // Mark framebuffer surfaces as dirty
