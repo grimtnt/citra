@@ -55,9 +55,19 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="sound_volume">
+         <widget class="QSlider" name="sound_volume">
           <property name="maximum">
            <number>100</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_sound_volume_value">
+          <property name="text">
+           <string>100</string>
           </property>
          </widget>
         </item>

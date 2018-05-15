@@ -115,7 +115,6 @@ int main(int argc, char** argv) {
     std::string movie_record;
     std::string movie_play;
 
-    char* endarg;
 #ifdef _WIN32
     int argc_w;
     auto argv_w = CommandLineToArgvW(GetCommandLineW(), &argc_w);

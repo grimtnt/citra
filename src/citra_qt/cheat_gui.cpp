@@ -42,9 +42,9 @@ CheatDialog::~CheatDialog() {}
 void CheatDialog::LoadCheats() {
     cheats = CheatEngine::CheatEngine::ReadFileContents();
 
-    ui->tableCheats->setRowCount(cheats.size());
+    ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
 
-    for (size_t i = 0; i < cheats.size(); i++) {
+    for (int i = 0; i < static_cast<int>(cheats.size()); i++) {
         auto enabled = new QCheckBox();
         enabled->setChecked(cheats[i]->GetEnabled());
         enabled->setStyleSheet("margin-left:7px;");
@@ -140,7 +140,7 @@ void CheatDialog::OnAddCheat() {
     cheats.push_back(result);
     int new_cheat_index = static_cast<int>(cheats.size() - 1);
     auto enabled = new QCheckBox();
-    ui->tableCheats->setRowCount(cheats.size());
+    ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
     enabled->setCheckState(Qt::CheckState::Unchecked);
     enabled->setStyleSheet("margin-left:7px;");
     ui->tableCheats->setItem(new_cheat_index, 0, new QTableWidgetItem());

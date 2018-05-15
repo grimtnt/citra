@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <cstddef>
-
 #include "audio_core/hle/mixers.h"
 #include "common/assert.h"
 #include "common/logging/log.h"
@@ -93,7 +92,7 @@ static s16 ClampToS16(s32 value) {
 
 static std::array<s16, 2> AddAndClampToS16(const std::array<s16, 2>& a,
                                            const std::array<s16, 2>& b) {
-    float volume = Settings::values.sound_volume;
+    float volume = static_cast<float>(Settings::values.sound_volume * 0.01);
 
     return {ClampToS16(static_cast<s32>(a[0] * volume) + static_cast<s32>(b[0] * volume)),
             ClampToS16(static_cast<s32>(a[1] * volume) + static_cast<s32>(b[1] * volume))};

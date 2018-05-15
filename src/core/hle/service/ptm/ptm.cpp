@@ -186,21 +186,9 @@ void Module::SetPlayCoins(u16 play_coins) {
     auto archive_result =
         Service::FS::OpenArchive(Service::FS::ArchiveIdCode::SharedExtSaveData, archive_path);
 
-    // If the archive didn't exist, create it
-    if (archive_result.Code() == FileSys::ERR_NOT_FORMATTED) {
-        // Format the archive to create the directories
-        Service::FS::FormatArchive(Service::FS::ArchiveIdCode::SharedExtSaveData,
-                                   FileSys::ArchiveFormatInfo(), archive_path);
-
-        // Open it again to get a valid archive now that the folder exists
-        archive_result =
-            Service::FS::OpenArchive(Service::FS::ArchiveIdCode::SharedExtSaveData, archive_path);
-    }
-
     ASSERT_MSG(archive_result.Succeeded(), "Could not open the PTM SharedExtSaveData archive!");
 
     FileSys::Path gamecoin_path("/gamecoin.dat");
-    Service::FS::CreateFileInArchive(*archive_result, gamecoin_path, sizeof(GameCoin));
     FileSys::Mode open_mode = {};
     open_mode.read_flag.Assign(1);
     open_mode.write_flag.Assign(1);

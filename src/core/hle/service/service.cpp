@@ -38,7 +38,7 @@
 #include "core/hle/service/mcu/mcu.h"
 #include "core/hle/service/mic_u.h"
 #include "core/hle/service/mvd/mvd.h"
-#include "core/hle/service/ndm/ndm.h"
+#include "core/hle/service/ndm_u.h"
 #include "core/hle/service/news/news.h"
 #include "core/hle/service/nfc/nfc.h"
 #include "core/hle/service/nim/nim.h"
@@ -252,7 +252,7 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     HID::InstallInterfaces(*sm);
     IR::InstallInterfaces(*sm);
     MVD::Init();
-    NDM::Init();
+    NDM::InstallInterfaces(*sm);
     NEWS::InstallInterfaces(*sm);
     NFC::InstallInterfaces(*sm);
     NIM::InstallInterfaces(*sm);
@@ -274,7 +274,6 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
 
 /// Shutdown ServiceManager
 void Shutdown() {
-    NDM::Shutdown();
     DLP::Shutdown();
     CECD::Shutdown();
     BOSS::Shutdown();

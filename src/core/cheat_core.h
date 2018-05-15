@@ -74,7 +74,7 @@ struct CheatLine {
             address = std::stoi(line.substr(1, 8), 0, 16);
             value = std::stoi(line.substr(10, 8), 0, 16);
             cheat_line = line;
-        } catch (const std::exception& e) {
+        } catch (const std::exception&) {
             type = CheatType::Null;
             cheat_line = line;
             return;

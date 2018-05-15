@@ -69,8 +69,8 @@ APT_A::APT_A(std::shared_ptr<Module> apt)
         {0x00390040, nullptr, "PrepareToStartResidentApplet"},
         {0x003A0044, nullptr, "StartResidentApplet"},
         {0x003B0040, &APT_A::CancelLibraryApplet, "CancelLibraryApplet"},
-        {0x003C0042, nullptr, "SendDspSleep"},
-        {0x003D0042, nullptr, "SendDspWakeUp"},
+        {0x003C0042, &APT_A::SendDspSleep, "SendDspSleep"},
+        {0x003D0042, &APT_A::SendDspWakeUp, "SendDspWakeUp"},
         {0x003E0080, &APT_A::ReplySleepQuery, "ReplySleepQuery"},
         {0x003F0040, nullptr, "ReplySleepNotificationComplete"},
         {0x00400042, &APT_A::SendCaptureBufferInfo, "SendCaptureBufferInfo"},
@@ -99,7 +99,7 @@ APT_A::APT_A(std::shared_ptr<Module> apt)
         {0x00580002, nullptr, "GetProgramID"},
         {0x01010000, &APT_A::CheckNew3DSApp, "CheckNew3DSApp"},
         {0x01020000, &APT_A::CheckNew3DS, "CheckNew3DS"},
-        {0x01040000, nullptr, "IsStandardMemoryLayout"},
+        {0x01040000, &APT_A::IsStandardMemoryLayout, "IsStandardMemoryLayout"},
         {0x01050100, nullptr, "IsTitleAllowed"},
     };
     RegisterHandlers(functions);

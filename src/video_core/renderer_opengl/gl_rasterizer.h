@@ -230,6 +230,15 @@ private:
     /// Internal implementation for AccelerateDrawBatch
     void AccelerateDrawBatchInternal(bool is_indexed, bool use_gs);
 
+    struct VertexArrayInfo {
+        u32 vs_input_index_min;
+        u32 vs_input_index_max;
+        u32 vs_input_size;
+    };
+
+    /// Retrieve the range and the size of the input vertex
+    VertexArrayInfo AnalyzeVertexArray(bool is_indexed);
+
     /// Setup vertex array for AccelerateDrawBatch
     void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint vs_input_index_min,
                           GLuint vs_input_index_max);
@@ -264,12 +273,12 @@ private:
 
     // They shall be big enough for about one frame.
     static constexpr size_t VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
-    static constexpr size_t INDEX_BUFFER_SIZE = 32 * 1024 * 1024;
+    static constexpr size_t INDEX_BUFFER_SIZE = 1 * 1024 * 1024;
     static constexpr size_t UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
 
     OGLVertexArray sw_vao; // VAO for software shader draw
     OGLVertexArray hw_vao; // VAO for hardware shader / accelerate draw
-    std::array<bool, 16> hw_vao_enabled_attributes;
+    std::array<bool, 16> hw_vao_enabled_attributes{};
 
     std::array<SamplerInfo, 4> texture_samplers;
     OGLStreamBuffer vertex_buffer;

@@ -116,7 +116,7 @@ void Config::ReadValues() {
     Settings::values.shaders_accurate_gs =
         sdl2_config->GetBoolean("Renderer", "shaders_accurate_gs", true);
     Settings::values.shaders_accurate_mul =
-        sdl2_config->GetBoolean("Renderer", "shaders_accurate_mul", true);
+        sdl2_config->GetBoolean("Renderer", "shaders_accurate_mul", false);
     Settings::values.use_shader_jit = sdl2_config->GetBoolean("Renderer", "use_shader_jit", true);
     Settings::values.resolution_factor =
         static_cast<u16>(sdl2_config->GetInteger("Renderer", "resolution_factor", 1));
@@ -157,7 +157,7 @@ void Config::ReadValues() {
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");
-    Settings::values.sound_volume = sdl2_config->GetInteger("Audio", "sound_volume", 100) * 0.01;
+    Settings::values.sound_volume = sdl2_config->GetInteger("Audio", "sound_volume", 100);
 
     // Data Storage
     Settings::values.use_virtual_sd =

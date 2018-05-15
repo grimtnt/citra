@@ -38,6 +38,12 @@ struct CaptureBufferInfo {
 };
 static_assert(sizeof(CaptureBufferInfo) == 0x20, "CaptureBufferInfo struct has incorrect size");
 
+enum class QueryReply : u32 {
+    ReplyReject = 0,
+    ReplyAccept = 1,
+    ReplyLater = 2,
+};
+
 enum class StartupArgumentType : u32 {
     OtherApp = 0,
     Restart = 1,
@@ -424,6 +430,32 @@ public:
         void CancelLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
+         * APT::SendDspSleep service function
+         *  Inputs:
+         *      0 : Command header [0x003C0042]
+         *      1 : Unknown
+         *		2 : 0x0
+         *		3 : Handle
+         *  Outputs:
+         *      0 : Header code
+         *      1 : Result code
+         */
+        void SendDspSleep(Kernel::HLERequestContext& ctx);
+
+        /**
+         * APT::SendDspWakeUp service function
+         *  Inputs:
+         *      0 : Command header [0x003D0042]
+         *      1 : Unknown
+         *		2 : 0x0
+         *		3 : Handle
+         *  Outputs:
+         *      0 : Header code
+         *      1 : Result code
+         */
+        void SendDspWakeUp(Kernel::HLERequestContext& ctx);
+
+        /**
          * APT::SendCaptureBufferInfo service function
          *  Inputs:
          *      0 : Command header [0x00400042]
@@ -505,6 +537,14 @@ public:
          *      2: u8 output: 0 = Old3DS, 1 = New3DS.
          */
         void CheckNew3DS(Kernel::HLERequestContext& ctx);
+
+        /**
+         * APT::IsStandardMemoryLayout service function
+         *  Outputs:
+         *      1: Result code, 0 on success, otherwise error code
+         *      2: Standard Memory Layout (0 = non-standard, 1 = standard)
+         */
+        void IsStandardMemoryLayout(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::ReplySleepQuery service function

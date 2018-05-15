@@ -2,17 +2,19 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include "audio_core/hle/hle.h"
 #include "common/common_paths.h"
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/file_sys/file_backend.h"
 #include "core/hle/applets/applet.h"
+#include "core/hle/config_mem.h"
 #include "core/hle/kernel/mutex.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/romfs.h"
 #include "core/hle/service/apt/applet_manager.h"
-#include "core/hle/service/apt/apt.h"
+#include "core/hle/service/apt/apt.h "
 #include "core/hle/service/apt/apt_a.h"
 #include "core/hle/service/apt/apt_s.h"
 #include "core/hle/service/apt/apt_u.h"
@@ -23,6 +25,7 @@
 #include "core/hle/service/service.h"
 #include "core/hw/aes/ccm.h"
 #include "core/hw/aes/key.h"
+#include "core/settings.h"
 
 namespace Service {
 namespace APT {
@@ -575,6 +578,30 @@ void Module::Interface::CancelLibraryApplet(Kernel::HLERequestContext& ctx) {
     NGLOG_WARNING(Service_APT, "(STUBBED) called exiting={}", exiting);
 }
 
+void Module::Interface::SendDspSleep(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x3C, 1, 2); // 0x003C0042
+    u32 unknown = rp.Pop<u32>();
+    u32 zero = rp.Pop<u32>();
+    u32 handle = rp.Pop<u32>();
+    std::vector<u8> buffer(4);
+    buffer[0] = 3;
+    Core::DSP().PipeWrite(AudioCore::DspPipe::Audio, buffer);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
+void Module::Interface::SendDspWakeUp(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x3D, 1, 2); // 0x003D0042
+    u32 unknown = rp.Pop<u32>();
+    u32 zero = rp.Pop<u32>();
+    u32 handle = rp.Pop<u32>();
+    std::vector<u8> buffer(4);
+    buffer[0] = 2;
+    Core::DSP().PipeWrite(AudioCore::DspPipe::Audio, buffer);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
 void Module::Interface::SendCaptureBufferInfo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x40, 1, 2); // 0x00400042
     u32 size = rp.Pop<u32>();
@@ -784,12 +811,25 @@ void Module::Interface::CheckNew3DS(Kernel::HLERequestContext& ctx) {
     NGLOG_WARNING(Service_APT, "(STUBBED) called");
 }
 
-void Module::Interface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x3E, 0, 80); // 0x003E0080
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-
+void Module::Interface::IsStandardMemoryLayout(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x104, 0, 0); // 0x01040000
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    LOG_WARNING(Service_APT, "(STUBBED) ReplySleepQuery called");
+
+    if (Settings::values.enable_new_mode)
+        rb.Push<u32>((ConfigMem::config_mem.app_mem_type != 7) ? 1 : 0);
+    else
+        rb.Push<u32>((ConfigMem::config_mem.app_mem_type == 0) ? 1 : 0);
+}
+
+void Module::Interface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x3E, 2, 0); // 0x003E0080
+    AppletId app_id = rp.PopEnum<AppletId>();
+    QueryReply query_reply = rp.PopEnum<QueryReply>();
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    NGLOG_WARNING(Service_APT, "(STUBBED) called");
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> apt, const char* name, u32 max_session)

@@ -99,7 +99,8 @@ void Config::ReadValues() {
     Settings::values.use_hw_renderer = qt_config->value("use_hw_renderer", true).toBool();
     Settings::values.use_hw_shader = qt_config->value("use_hw_shader", true).toBool();
     Settings::values.shaders_accurate_gs = qt_config->value("shaders_accurate_gs", true).toBool();
-    Settings::values.shaders_accurate_mul = qt_config->value("shaders_accurate_mul", true).toBool();
+    Settings::values.shaders_accurate_mul =
+        qt_config->value("shaders_accurate_mul", false).toBool();
     Settings::values.use_shader_jit = qt_config->value("use_shader_jit", true).toBool();
     Settings::values.resolution_factor =
         static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
@@ -134,7 +135,7 @@ void Config::ReadValues() {
         qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
-    Settings::values.sound_volume = qt_config->value("sound_volume", 100).toInt() * 0.01;
+    Settings::values.sound_volume = qt_config->value("sound_volume", 100).toInt();
     qt_config->endGroup();
 
     using namespace Service::CAM;
@@ -359,7 +360,7 @@ void Config::SaveValues() {
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
-    qt_config->setValue("sound_volume", (double)Settings::values.sound_volume);
+    qt_config->setValue("sound_volume", Settings::values.sound_volume);
     qt_config->endGroup();
 
     using namespace Service::CAM;

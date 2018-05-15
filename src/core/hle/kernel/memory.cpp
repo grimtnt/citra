@@ -10,6 +10,7 @@
 #include <vector>
 #include "common/assert.h"
 #include "common/common_types.h"
+#include "common/file_util.h"
 #include "common/logging/log.h"
 #include "core/hle/config_mem.h"
 #include "core/hle/kernel/memory.h"
@@ -44,7 +45,9 @@ static const u32 memory_region_sizes[8][3] = {
 
 void MemoryInit(u32 mem_type) {
     if (Settings::values.enable_new_mode) {
-        if (mem_type <= 5) {
+        if (FileUtil::Exists(FileUtil::GetUserPath(D_USER_IDX) + ".dev")) {
+            mem_type = 7;
+        } else if (mem_type <= 5) {
             mem_type = 6;
         }
     }
@@ -67,10 +70,10 @@ void MemoryInit(u32 mem_type) {
     }
 
     // We must've allocated the entire FCRAM by the end
-    if (mem_type != 6) {
-        ASSERT(base == Memory::FCRAM_SIZE);
-    } else {
+    if (mem_type > 5) {
         ASSERT(base == Memory::FCRAM_N3DS_SIZE);
+    } else {
+        ASSERT(base == Memory::FCRAM_SIZE);
     }
 
     using ConfigMem::config_mem;

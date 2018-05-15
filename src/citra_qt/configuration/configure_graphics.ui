@@ -72,6 +72,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_6">
       <item>
        <widget class="QCheckBox" name="toggle_hw_renderer">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use OpenGL to accelerate rendering.&lt;/p&gt;&lt;p&gt;Unless you want to debug graphics problems, you always want this on.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Enable Hardware Renderer</string>
         </property>
@@ -164,6 +167,9 @@
          </item>
          <item>
           <widget class="QCheckBox" name="toggle_hw_shader">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use OpenGL to accelerate shader emulation.&lt;/p&gt;&lt;p&gt;This requires a relatively powerful GPU to gain higher performance.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string>Enable Hardware Shader</string>
            </property>
@@ -186,6 +192,9 @@
             </property>
             <item>
              <widget class="QCheckBox" name="toggle_accurate_mul">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Correctly handle all edge cases in multiplication operation in shaders. &lt;/p&gt;&lt;p&gt;Some games requires this on for hardware shader to render properly.&lt;/p&gt;&lt;p&gt;However this would cause performance lost in most games.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Accurate Multiplication</string>
               </property>
@@ -193,6 +202,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="toggle_accurate_gs">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Force to fall back to software shader emulation when geometry shaders are used. &lt;/p&gt;&lt;p&gt;Some games require this on for hardware shader to render properly.&lt;/p&gt;&lt;p&gt;However this might cause a little bit performance loss in some games.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Accurate Geometry Shader</string>
               </property>
@@ -206,6 +218,9 @@
       </item>
       <item>
        <widget class="QCheckBox" name="toggle_shader_jit">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the JIT engine instead of the interpreter for software shader emulation. &lt;/p&gt;&lt;p&gt;Enable this for higher performance.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Enable Shader JIT</string>
         </property>

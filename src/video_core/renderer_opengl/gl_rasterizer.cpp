@@ -50,7 +50,6 @@ RasterizerOpenGL::RasterizerOpenGL()
     // Generate VAO
     sw_vao.Create();
     hw_vao.Create();
-    hw_vao_enabled_attributes.fill(false);
 
     uniform_block_data.dirty = true;
 
@@ -282,21 +281,23 @@ struct VertexArrayInfo {
     u32 vs_input_size;
 };
 
-static VertexArrayInfo AnalyzeVertexArray(bool is_indexed) {
+RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_indexed) {
     const auto& regs = Pica::g_state.regs;
     const auto& vertex_attributes = regs.pipeline.vertex_attributes;
 
     u32 vertex_min;
     u32 vertex_max;
     if (is_indexed) {
-        PAddr base_address = vertex_attributes.GetPhysicalBaseAddress();
         const auto& index_info = regs.pipeline.index_array;
-        const u8* index_address_8 = Memory::GetPhysicalPointer(base_address + index_info.offset);
+        PAddr address = vertex_attributes.GetPhysicalBaseAddress() + index_info.offset;
+        const u8* index_address_8 = Memory::GetPhysicalPointer(address);
         const u16* index_address_16 = reinterpret_cast<const u16*>(index_address_8);
         bool index_u16 = index_info.format != 0;
 
         vertex_min = 0xFFFF;
         vertex_max = 0;
+        std::size_t size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
+        res_cache.FlushRegion(address, size, nullptr);
         for (u32 index = 0; index < regs.pipeline.num_vertices; ++index) {
             u32 vertex = index_u16 ? index_address_16[index] : index_address_8[index];
             vertex_min = std::min(vertex_min, vertex);
