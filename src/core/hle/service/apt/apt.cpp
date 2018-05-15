@@ -14,7 +14,7 @@
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/romfs.h"
 #include "core/hle/service/apt/applet_manager.h"
-#include "core/hle/service/apt/apt.h "
+#include "core/hle/service/apt/apt.h"
 #include "core/hle/service/apt/apt_a.h"
 #include "core/hle/service/apt/apt_s.h"
 #include "core/hle/service/apt/apt_u.h"
