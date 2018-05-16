@@ -1099,6 +1099,89 @@ void RasterizerCacheOpenGL::ConvertD24S8toABGR(GLuint src_tex,
     glBindTexture(GL_TEXTURE_BUFFER, 0);
 }
 
+void RasterizerCacheOpenGL::ConvertShadowtoABGR(GLuint src_tex,
+                                                const MathUtil::Rectangle<u32>& src_rect,
+                                                GLuint dst_tex,
+                                                const MathUtil::Rectangle<u32>& dst_rect) {
+    ASSERT(src_rect.GetWidth() == dst_rect.GetWidth());
+    ASSERT(src_rect.GetHeight() == dst_rect.GetHeight());
+
+    OpenGLState prev_state = OpenGLState::GetCurState();
+    SCOPE_EXIT({ prev_state.Apply(); });
+
+    OpenGLState state;
+    state.draw.read_framebuffer = read_framebuffer.handle;
+    state.draw.draw_framebuffer = draw_framebuffer.handle;
+    state.Apply();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, d24s8_abgr_buffer.handle);
+
+    GLsizeiptr target_pbo_size = src_rect.GetWidth() * src_rect.GetHeight() * 4;
+    if (target_pbo_size > d24s8_abgr_buffer_size) {
+        d24s8_abgr_buffer_size = target_pbo_size * 2;
+        glBufferData(GL_PIXEL_PACK_BUFFER, d24s8_abgr_buffer_size, nullptr, GL_STREAM_COPY);
+    }
+
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, src_tex,
+                           0);
+    glReadPixels(static_cast<GLint>(src_rect.left), static_cast<GLint>(src_rect.bottom),
+                 static_cast<GLsizei>(src_rect.GetWidth()),
+                 static_cast<GLsizei>(src_rect.GetHeight()), GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8,
+                 0);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    state.texture_units[0].texture_2d = dst_tex;
+    state.Apply();
+    glActiveTexture(GL_TEXTURE0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, d24s8_abgr_buffer.handle);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, dst_rect.left, dst_rect.bottom, dst_rect.GetWidth(),
+                    dst_rect.GetHeight(), GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void RasterizerCacheOpenGL::ConvertABGRtoShadow(GLuint src_tex,
+                                                const MathUtil::Rectangle<u32>& src_rect,
+                                                GLuint dst_tex,
+                                                const MathUtil::Rectangle<u32>& dst_rect) {
+    ASSERT(src_rect.GetWidth() == dst_rect.GetWidth());
+    ASSERT(src_rect.GetHeight() == dst_rect.GetHeight());
+
+    OpenGLState prev_state = OpenGLState::GetCurState();
+    SCOPE_EXIT({ prev_state.Apply(); });
+
+    OpenGLState state;
+    state.draw.read_framebuffer = read_framebuffer.handle;
+    state.draw.draw_framebuffer = draw_framebuffer.handle;
+    state.Apply();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, d24s8_abgr_buffer.handle);
+
+    GLsizeiptr target_pbo_size = src_rect.GetWidth() * src_rect.GetHeight() * 4;
+    if (target_pbo_size > d24s8_abgr_buffer_size) {
+        d24s8_abgr_buffer_size = target_pbo_size * 2;
+        glBufferData(GL_PIXEL_PACK_BUFFER, d24s8_abgr_buffer_size, nullptr, GL_STREAM_COPY);
+    }
+
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src_tex, 0);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+    glReadPixels(static_cast<GLint>(src_rect.left), static_cast<GLint>(src_rect.bottom),
+                 static_cast<GLsizei>(src_rect.GetWidth()),
+                 static_cast<GLsizei>(src_rect.GetHeight()), GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV,
+                 0);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    state.texture_units[0].texture_2d = dst_tex;
+    state.Apply();
+    glActiveTexture(GL_TEXTURE0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, d24s8_abgr_buffer.handle);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, dst_rect.left, dst_rect.bottom, dst_rect.GetWidth(),
+                    dst_rect.GetHeight(), GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
 Surface RasterizerCacheOpenGL::GetSurface(const SurfaceParams& params, ScaleMatch match_res_scale,
                                           bool load_if_create) {
     if (params.addr == 0 || params.height * params.width == 0) {
@@ -1558,7 +1641,7 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
             continue;
         }
 
-        // D24S8 to RGBA8
+        // D24S8 or Shadow to RGBA8
         if (surface->pixel_format == PixelFormat::RGBA8) {
             params.pixel_format = PixelFormat::D24S8;
             Surface reinterpret_surface =
@@ -1577,6 +1660,59 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
                 surface->invalid_regions.erase(convert_interval);
                 continue;
             }
+
+            params.pixel_format = PixelFormat::Shadow;
+            reinterpret_surface =
+                FindMatch<MatchFlags::Copy>(surface_cache, params, ScaleMatch::Exact, interval);
+            if (reinterpret_surface != nullptr) {
+                ASSERT(reinterpret_surface->pixel_format == PixelFormat::Shadow);
+
+                SurfaceInterval convert_interval = params.GetCopyableInterval(reinterpret_surface);
+                SurfaceParams convert_params = surface->FromInterval(convert_interval);
+                auto src_rect = reinterpret_surface->GetScaledSubRect(convert_params);
+                auto dest_rect = surface->GetScaledSubRect(convert_params);
+
+                ConvertShadowtoABGR(reinterpret_surface->texture.handle, src_rect,
+                                    surface->texture.handle, dest_rect);
+
+                surface->invalid_regions.erase(convert_interval);
+                continue;
+            }
+        }
+
+        // RGBA8 to Shadow
+        if (surface->pixel_format == PixelFormat::Shadow) {
+            params.pixel_format = PixelFormat::RGBA8;
+            Surface reinterpret_surface =
+                FindMatch<MatchFlags::Copy>(surface_cache, params, ScaleMatch::Exact, interval);
+            if (reinterpret_surface != nullptr) {
+                ASSERT(reinterpret_surface->pixel_format == PixelFormat::RGBA8);
+
+                SurfaceInterval convert_interval = params.GetCopyableInterval(reinterpret_surface);
+                SurfaceParams convert_params = surface->FromInterval(convert_interval);
+                auto src_rect = reinterpret_surface->GetScaledSubRect(convert_params);
+                auto dest_rect = surface->GetScaledSubRect(convert_params);
+
+                ConvertABGRtoShadow(reinterpret_surface->texture.handle, src_rect,
+                                    surface->texture.handle, dest_rect);
+
+                surface->invalid_regions.erase(convert_interval);
+                continue;
+            }
+        }
+
+        if (Settings::values.use_bos) {
+            // HACK HACK HACK: Ignore format reinterpretation
+            // this is a placeholder for HW texture decoding/encoding
+            bool retry = false;
+
+            for (const auto& pair : RangeFromInterval(dirty_regions, interval)) {
+                surface->invalid_regions.erase(pair.first & interval);
+                retry = true;
+            }
+
+            if (retry)
+                continue;
         }
 
         // Load data from 3DS memory
