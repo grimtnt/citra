@@ -424,6 +424,12 @@ public:
     void ConvertD24S8toABGR(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
                             GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect);
 
+    void ConvertShadowtoABGR(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
+                             GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect);
+
+    void ConvertABGRtoShadow(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
+                             GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect);
+
     /// Copy one surface's region to another
     void CopySurface(const Surface& src_surface, const Surface& dst_surface,
                      SurfaceInterval copy_interval);
