@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <QLabel>
 #include <QMainWindow>
 #include <QTimer>
@@ -91,8 +93,11 @@ private:
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
-    ErrEulaResult ErrEulaCallback(const ErrEulaConfig& config);
-    std::pair<std::string, SwkbdResult> SwkbdCallback(const SoftwareKeyboardConfig& config);
+    Q_INVOKABLE void ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* out);
+    // Error fix
+    using SwkbdFrontendCallbackResult = std::pair<std::string, SwkbdResult>;
+    Q_INVOKABLE void SwkbdCallback(const SoftwareKeyboardConfig& config,
+                                   SwkbdFrontendCallbackResult* out);
     void SyncMenuUISettings();
     void RestoreUIState();
 
@@ -215,6 +220,10 @@ private:
 
     bool explicit_update_check = false;
     bool defer_update_prompt = false;
+
+    bool applet_open = false;
+    std::mutex applet_mutex;
+    std::condition_variable applet_cv;
 
     std::shared_ptr<ControlPanel> controlPanel;
     std::shared_ptr<CheatSearch> cheatSearchWindow;

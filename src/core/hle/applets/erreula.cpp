@@ -70,11 +70,10 @@ void ErrEula::Update() {
         NGLOG_INFO(Service_APT, "Error Code: {:#010X}", config.error_code);
         break;
     case ErrEulaErrorType::LocalizedErrorText:
-    case ErrEulaErrorType::ErrorText: {
+    case ErrEulaErrorType::ErrorText:
         NGLOG_INFO(Service_APT, "Error Code: {:#x}", config.error_code);
         NGLOG_INFO(Service_APT, "Error Text: {}", Common::UTF16ToUTF8(config.error_text));
         break;
-    }
     case ErrEulaErrorType::Agree:
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:

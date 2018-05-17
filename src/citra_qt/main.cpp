@@ -684,12 +684,23 @@ void GMainWindow::BootGame(const QString& filename) {
     OnStartGame();
 
     Core::System::GetInstance().GetAppletFactories().erreula.Register(
-        "qt",
-        [this](const ErrEulaConfig& config) -> ErrEulaResult { return ErrEulaCallback(config); });
+        "qt", [this](const ErrEulaConfig& config) -> ErrEulaResult {
+            applet_open = true;
+            ErrEulaResult ret;
+            ErrEulaCallback(config, &ret);
+            std::unique_lock<std::mutex> lock(applet_mutex);
+            applet_cv.wait(lock, [&] { return !applet_open; });
+            return ret;
+        });
 
     Core::System::GetInstance().GetAppletFactories().swkbd.Register(
         "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
-            return SwkbdCallback(config);
+            applet_open = true;
+            std::pair<std::string, SwkbdResult> ret;
+            SwkbdCallback(config, &ret);
+            std::unique_lock<std::mutex> lock(applet_mutex);
+            applet_cv.wait(lock, [&] { return !applet_open; });
+            return ret;
         });
 }
 
@@ -755,14 +766,23 @@ void GMainWindow::StoreRecentFile(const QString& filename) {
     UpdateRecentFiles();
 }
 
-ErrEulaResult GMainWindow::ErrEulaCallback(const ErrEulaConfig& config) {
+void GMainWindow::ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* out) {
+    if (QThread::currentThread() != thread()) {
+        QMetaObject::invokeMethod(this, "ErrEulaCallback", Qt::BlockingQueuedConnection,
+                                  Q_ARG(const ErrEulaConfig&, config), Q_ARG(ErrEulaResult*, out));
+        return;
+    }
+
+    std::unique_lock<std::mutex> lock(applet_mutex);
+
     switch (config.error_type) {
-    case ErrEulaErrorType::ErrorCode:
+    case ErrEulaErrorType::ErrorCode: {
         QMessageBox::critical(this, tr("ErrEula"),
                               tr("Error Code: %1")
                                   .arg(QString::fromStdString(
                                       Common::StringFromFormat("0x%08X", config.error_code))));
         break;
+    }
     case ErrEulaErrorType::LocalizedErrorText:
     case ErrEulaErrorType::ErrorText: {
         std::string error = Common::UTF16ToUTF8(config.error_text);
@@ -776,27 +796,39 @@ ErrEulaResult GMainWindow::ErrEulaCallback(const ErrEulaConfig& config) {
     case ErrEulaErrorType::Agree:
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:
-    case ErrEulaErrorType::EulaFirstBoot:
+    case ErrEulaErrorType::EulaFirstBoot: {
         QMessageBox::information(this, tr("ErrEula"), tr("EULA accepted"));
         break;
     }
+    }
 
-    return ErrEulaResult::Success;
+    *out = ErrEulaResult::Success;
+    applet_open = false;
+    applet_cv.notify_one();
 }
 
-std::pair<std::string, SwkbdResult> GMainWindow::SwkbdCallback(
-    const SoftwareKeyboardConfig& config) {
+void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
+                                SwkbdFrontendCallbackResult* out) {
+    if (QThread::currentThread() != thread()) {
+        QMetaObject::invokeMethod(this, "SwkbdCallback", Qt::BlockingQueuedConnection,
+                                  Q_ARG(const SoftwareKeyboardConfig&, config),
+                                  Q_ARG(SwkbdFrontendCallbackResult*, out));
+        return;
+    }
+
+    std::unique_lock<std::mutex> lock(applet_mutex);
+    u16 max_length = config.max_text_length;
+    std::u16string hint(reinterpret_cast<const char16_t*>(config.hint_text));
+    std::u16string cancel_text(reinterpret_cast<const char16_t*>(config.button_text[0]));
+    std::u16string ok_text(reinterpret_cast<const char16_t*>(config.button_text[1]));
+
+    QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
+    dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
+                                                   : QString::fromStdU16String(cancel_text));
+    dialog.setOkButtonText(ok_text.empty() ? tr("Ok") : QString::fromStdU16String(ok_text));
+
     while (true) {
         bool ok;
-        u16 max_length = config.max_text_length;
-        std::u16string hint(reinterpret_cast<const char16_t*>(config.hint_text));
-        std::u16string cancel_text(reinterpret_cast<const char16_t*>(config.button_text[0]));
-        std::u16string ok_text(reinterpret_cast<const char16_t*>(config.button_text[1]));
-        QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
-
-        dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
-                                                       : QString::fromStdU16String(cancel_text));
-        dialog.setOkButtonText(ok_text.empty() ? tr("Ok") : QString::fromStdU16String(ok_text));
         std::string text =
             dialog
                 .getText(this, tr("Software Keyboard"), QString::fromStdU16String(hint),
@@ -805,64 +837,77 @@ std::pair<std::string, SwkbdResult> GMainWindow::SwkbdCallback(
         if (ok) {
             if (text.length() > max_length)
                 QMessageBox::critical(
-                    this, tr("Invalid input"),
+                    this, tr("Invalid Input"),
                     tr("Input is longer than the maximum length. Max: %1").arg(max_length));
             else if (((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) &&
                      Common::ContainsDigits(text))
-                QMessageBox::critical(this, tr("Invalid input"),
+                QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain any digits"));
             else if (((config.filter_flags & SwkbdFilter_At) == SwkbdFilter_At) &&
                      (text.find("@") != std::string::npos))
-                QMessageBox::critical(this, tr("Invalid input"),
+                QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain the @ symbol"));
             else if (((config.filter_flags & SwkbdFilter_Percent) == SwkbdFilter_Percent) &&
                      (text.find("%") != std::string::npos))
-                QMessageBox::critical(this, tr("Invalid input"),
+                QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain the % symbol"));
             else if (((config.filter_flags & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) &&
                      (text.find("\\") != std::string::npos))
-                QMessageBox::critical(this, tr("Invalid input"),
+                QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain the \\ symbol"));
             else if ((config.valid_input == SwkbdValidInput::FixedLen) &&
                      (text.length() != config.max_text_length))
-                QMessageBox::critical(this, tr("Invalid input"),
+                QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must be exactly %1 characters.").arg(max_length));
             else if ((config.valid_input == SwkbdValidInput::NotEmptyNotBlank) && text.empty() ||
                      (std::all_of(text.begin(), text.end(),
                                   [](const char c) { return std::isspace(c); })))
-                QMessageBox::critical(this, tr("Invalid input"),
+                QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not be empty or blank."));
             else if ((config.valid_input == SwkbdValidInput::NotBlank) &&
                      (std::all_of(text.begin(), text.end(),
                                   [](const char c) { return std::isspace(c); })))
-                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be blank."));
+                QMessageBox::critical(this, tr("Invalid Input"), tr("Input must not be blank."));
             else if ((config.valid_input == SwkbdValidInput::NotEmpty) && text.empty())
-                QMessageBox::critical(this, tr("Invalid input"), tr("Input must not be empty."));
+                QMessageBox::critical(this, tr("Invalid Input"), tr("Input must not be empty."));
             else {
                 switch (config.num_buttons_m1) {
                 case SwkbdButtonConfig::NoButton:
-                    return std::make_pair(text.substr(0, max_length), SwkbdResult::None);
+                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::None);
+                    break;
                 case SwkbdButtonConfig::SingleButton:
-                    return std::make_pair(text.substr(0, max_length), SwkbdResult::D0Click);
+                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::D0Click);
+                    break;
                 case SwkbdButtonConfig::DualButton:
-                    return std::make_pair(text.substr(0, max_length), SwkbdResult::D1Click1);
+                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::D1Click1);
+                    break;
                 case SwkbdButtonConfig::TripleButton:
-                    return std::make_pair(text.substr(0, max_length), SwkbdResult::D2Click2);
+                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::D2Click2);
+                    break;
                 }
+                break;
             }
         } else {
             switch (config.num_buttons_m1) {
             case SwkbdButtonConfig::NoButton:
-                return std::make_pair("", SwkbdResult::None);
+                *out = std::make_pair("", SwkbdResult::None);
+                break;
             case SwkbdButtonConfig::SingleButton:
-                return std::make_pair("", SwkbdResult::D0Click);
+                *out = std::make_pair("", SwkbdResult::D0Click);
+                break;
             case SwkbdButtonConfig::DualButton:
-                return std::make_pair("", SwkbdResult::D1Click0);
+                *out = std::make_pair("", SwkbdResult::D1Click0);
+                break;
             case SwkbdButtonConfig::TripleButton:
-                return std::make_pair("", SwkbdResult::D2Click0);
+                *out = std::make_pair("", SwkbdResult::D2Click0);
+                break;
             }
+            break;
         }
     }
+
+    applet_open = false;
+    applet_cv.notify_one();
 }
 
 void GMainWindow::UpdateRecentFiles() {
