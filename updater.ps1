@@ -22,7 +22,7 @@ if (!$valid) {
     throw "Invalid build type option"
 }
 $latest_release = (Invoke-WebRequest "https://api.github.com/repos/valentinvanelslande/citra/releases" | ConvertFrom-Json)[0]
-$local_commit = (Get-Content updater.cfg)[0]
+$local_commit = (Get-Content "updater.cfg").Split("`n")[1]
 $latest_commit = $latest_release.target_commitish.Remove(7, 33)
 if ($local_commit -eq $latest_commit) {
 if (Test-Path citra-qt.exe) {
