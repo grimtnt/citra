@@ -3,35 +3,52 @@ $progressPreference = 'silentlyContinue'
 Write-Host "Updating to latest unstable version..."
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/valentinvanelslande/citra/master/updater.ps1" -OutFile "updater.ps1"
 cls
-if (-not (Test-Path updater.cfg)) {
-    Add-Content -Path updater.cfg -Value 0
-    Add-Content -Path updater.cfg -Value 0
+if (!(Test-Path updater.cfg)) {
+    Add-Content -Path updater.cfg -Value "mingw"
+    Add-Content -Path updater.cfg -Value "0"
 }
 try {
 cls
 Write-Host "Starting..."
-$type = (Get-Content updater.cfg)[1]
-if ($type -cgt 1) {
+$type = (Get-Content "updater.cfg").Split("`n")[0]
+$valid = $false
+if ($type -eq "mingw") {
+    $valid = $true
+}
+if ($type -eq "msvc") {
+    $valid = $true
+}
+if (!$valid) {
     throw "Invalid build type option"
 }
-$releases = "https://api.github.com/repos/valentinvanelslande/citra/releases"
-$latest_release = (Invoke-WebRequest $releases | ConvertFrom-Json)[0]
+$latest_release = (Invoke-WebRequest "https://api.github.com/repos/valentinvanelslande/citra/releases" | ConvertFrom-Json)[0]
 $local_commit = (Get-Content updater.cfg)[0]
 $latest_commit = $latest_release.target_commitish.Remove(7, 33)
 if ($local_commit -eq $latest_commit) {
 if (Test-Path citra-qt.exe) {
     start citra-qt.exe
 }
-    Break
+    break
 }
 $tag = $latest_release.tag_name
 $assets = (Invoke-WebRequest $latest_release.assets_url | ConvertFrom-Json)
-if ($type -eq 0) {
-    $file = $assets[1].name
-    $size = $assets[1].size / 1Mb
-} elseif ($type -eq 1) {
-    $file = $assets[3].name
-    $size = $assets[3].size / 1Mb
+$found = $false
+for ($i = 0; $i -lt $assets.Count; ++$i) {
+    if ($assets[$i].name.StartsWith("citra-windows-$type") -and $assets[$i].name.EndsWith(".zip")) {
+        $found = $true
+        $file = $assets[$i].name
+        $size = $assets[$i].size / 1Mb
+        break
+    }
+}
+if (!$found) {
+    switch ($type) {
+        "mingw" { $build_string = "MinGW build" }
+        "msvc" { $build_string = "MSVC build" }
+    }
+    Write-Host "No $build_string for release $tag!"
+    Pause
+    break
 }
 $download = "https://github.com/valentinvanelslande/citra/releases/download/$tag/$file"
 cls
@@ -47,7 +64,7 @@ if (Test-Path "platforms") {
 if (Test-Path "mediaservice") {
     Remove-Item "mediaservice" -Force -Recurse
 }
-if ($type -eq 0) {
+if ($type -eq "mingw") {
     Move-Item "citra/head-mingw/*" "./" -Force
     Remove-Item "citra/head-mingw" -Force -Recurse
 } else {
