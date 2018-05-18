@@ -820,7 +820,9 @@ void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
     u16 max_length = config.max_text_length;
     std::u16string hint(reinterpret_cast<const char16_t*>(config.hint_text));
     std::u16string cancel_text(reinterpret_cast<const char16_t*>(config.button_text[0]));
-    std::u16string ok_text(reinterpret_cast<const char16_t*>(config.button_text[1]));
+    std::u16string ok_text(reinterpret_cast<const char16_t*>(
+        config.num_buttons_m1 == SwkbdButtonConfig::DualButton ? config.button_text[1]
+                                                               : config.button_text[2]));
 
     QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
     dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
@@ -830,10 +832,16 @@ void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
     while (true) {
         bool ok;
         std::string text =
-            dialog
-                .getText(this, tr("Software Keyboard"), QString::fromStdU16String(hint),
-                         QLineEdit::Normal, QString(), &ok, dialog.windowFlags())
-                .toStdString();
+            config.multiline
+                ? dialog
+                      .getMultiLineText(this, tr("Software Keyboard"),
+                                        QString::fromStdU16String(hint), QString(), &ok,
+                                        dialog.windowFlags())
+                      .toStdString()
+                : dialog
+                      .getText(this, tr("Software Keyboard"), QString::fromStdU16String(hint),
+                               QLineEdit::Normal, QString(), &ok, dialog.windowFlags())
+                      .toStdString();
         if (ok) {
             if (text.length() > max_length)
                 QMessageBox::critical(
@@ -870,6 +878,11 @@ void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
                 QMessageBox::critical(this, tr("Invalid Input"), tr("Input must not be blank."));
             else if ((config.valid_input == SwkbdValidInput::NotEmpty) && text.empty())
                 QMessageBox::critical(this, tr("Invalid Input"), tr("Input must not be empty."));
+            else if ((config.type == SwkbdType::Numpad) &&
+                     (std::all_of(text.begin(), text.end(),
+                                  [](const char c) { return !std::isdigit(c); })))
+                QMessageBox::critical(this, tr("Invalid Input"),
+                                      tr("All characters must be numbers."));
             else {
                 switch (config.num_buttons_m1) {
                 case SwkbdButtonConfig::NoButton:

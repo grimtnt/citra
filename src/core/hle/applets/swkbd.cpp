@@ -30,7 +30,7 @@ const static std::array<std::string, 3> swkbd_default_3_button = {"Cancel", "I F
 
 ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter const& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
-        LOG_ERROR(Service_APT, "unsupported signal %u", static_cast<u32>(parameter.signal));
+        NGLOG_ERROR(Service_APT, "unsupported signal {}", static_cast<u32>(parameter.signal));
         UNIMPLEMENTED();
         // TODO(Subv): Find the right error code
         return ResultCode(-1);
@@ -109,11 +109,11 @@ static bool ValidateFilters(const u32 filters, const std::string& input) {
     }
     if ((filters & SwkbdFilter_Profanity) == SwkbdFilter_Profanity) {
         // TODO: check the profanity filter
-        LOG_WARNING(Service_APT, "App requested profanity filter, but its not implemented.");
+        NGLOG_WARNING(Service_APT, "App requested profanity filter, but its not implemented.");
     }
     if ((filters & SwkbdFilter_Callback) == SwkbdFilter_Callback) {
         // TODO: check the callback
-        LOG_WARNING(Service_APT, "App requested a callback check, but its not implemented.");
+        NGLOG_WARNING(Service_APT, "App requested a callback check, but its not implemented.");
     }
     return valid;
 }
@@ -132,6 +132,7 @@ static bool ValidateInput(const SoftwareKeyboardConfig& config, const std::strin
     }
 
     bool valid;
+
     switch (config.valid_input) {
     case SwkbdValidInput::FixedLen:
         valid = input.size() == config.max_text_length;
@@ -160,9 +161,27 @@ static bool ValidateInput(const SoftwareKeyboardConfig& config, const std::strin
         break;
     default:
         // TODO(jroweboy): What does hardware do in this case?
-        LOG_CRITICAL(Service_APT, "Application requested unknown validation method. Method: %u",
-                     static_cast<u32>(config.valid_input));
+        NGLOG_CRITICAL(Service_APT, "Application requested unknown validation method. Method: {}",
+                       static_cast<u32>(config.valid_input));
         UNREACHABLE();
+        break;
+    }
+
+    bool local = true;
+
+    switch (config.type) {
+    case SwkbdType::QWERTY:
+    case SwkbdType::Western:
+    case SwkbdType::Normal:
+        valid &= true;
+        break;
+    case SwkbdType::Numpad:
+        valid &= local =
+            std::all_of(input.begin(), input.end(), [](const char c) { return std::isdigit(c); });
+        if (!local) {
+            std::cout << "All characters must be numbers." << std::endl;
+        }
+        break;
     }
 
     return valid;
@@ -204,7 +223,7 @@ void SoftwareKeyboard::Update() {
     } else {
         // Read from stdin
         std::string input;
-        std::cout << "SOFTWARE KEYBOARD" << std::endl;
+        std::cout << "Software Keyboard" << std::endl;
         // Display hint text
         std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
         if (!hint.empty()) {
@@ -267,8 +286,8 @@ void SoftwareKeyboard::Update() {
             break;
         default:
             // TODO: what does the hardware do
-            LOG_WARNING(Service_APT, "Unknown option for num_buttons_m1: %u",
-                        static_cast<u32>(config.num_buttons_m1));
+            NGLOG_WARNING(Service_APT, "Unknown option for num_buttons_m1: {}",
+                          static_cast<u32>(config.num_buttons_m1));
             config.return_code = SwkbdResult::None;
             break;
         }
