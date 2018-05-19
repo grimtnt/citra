@@ -17,9 +17,11 @@
 #include <QString>
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/util/util.h"
+#include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
 #include "core/loader/smdh.h"
+#include "core/settings.h"
 
 enum class GameListItemType {
     Game = QStandardItem::UserType + 1,
@@ -181,11 +183,27 @@ public:
 
     QVariant data(int role) const override {
         if (role == Qt::DisplayRole) {
-            std::string filename;
-            Common::SplitPath(data(FullPathRole).toString().toStdString(), nullptr, &filename,
-                              nullptr);
+            std::string path, filename, extension;
+            std::string sdmc_root = Settings::values.sd_card_root.empty()
+                                        ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                        : Settings::values.sd_card_root + "/";
+            Common::SplitPath(data(FullPathRole).toString().toStdString(), &path, &filename,
+                              &extension);
             QString title = data(TitleRole).toString();
-            return QString::fromStdString(filename) + (title.isEmpty() ? "" : "\n    " + title);
+            QString second_name = QString::fromStdString(filename + extension);
+            QRegExp installed_system_pattern(
+                QString::fromStdString(
+                    sdmc_root +
+                    "Nintendo "
+                    "3DS/00000000000000000000000000000000/00000000000000000000000000000000/" +
+                    "title/000400(0|1)0/[0-9a-f]{8}/content/")
+                    .replace("\\", "\\\\"));
+            if (installed_system_pattern.exactMatch(QString::fromStdString(path))) {
+                // Use a different mechanism for system / installed titles showing program ID
+                second_name =
+                    "000" + QString::number(data(ProgramIdRole).toULongLong(), 16).toUpper();
+            }
+            return title + (title.isEmpty() ? "" : "\n     ") + second_name;
         } else {
             return GameListItem::data(role);
         }
