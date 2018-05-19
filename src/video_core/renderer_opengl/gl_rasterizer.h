@@ -290,11 +290,6 @@ private:
     size_t uniform_size_aligned_gs;
     size_t uniform_size_aligned_fs;
 
-    // Framebuffer attachments
-    GLuint color_attachment = 0;
-    GLuint depth_attachment = 0;
-    GLuint stencil_attachment = 0;
-
     SamplerInfo texture_cube_sampler;
     ShadowSamplerInfo texture_shadow_sampler;
 
