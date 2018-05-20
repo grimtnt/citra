@@ -45,7 +45,6 @@ static void SetShaderSamplerBindings(GLuint shader) {
     SetShaderSamplerBinding(shader, "tex0", TextureUnits::PicaTexture(0));
     SetShaderSamplerBinding(shader, "tex1", TextureUnits::PicaTexture(1));
     SetShaderSamplerBinding(shader, "tex2", TextureUnits::PicaTexture(2));
-    SetShaderSamplerBinding(shader, "tex3", TextureUnits::PicaTexture(3));
     SetShaderSamplerBinding(shader, "tex_cube", TextureUnits::TextureCube);
     SetShaderSamplerBinding(shader, "tex_shadow", TextureUnits::TextureShadow);
 
