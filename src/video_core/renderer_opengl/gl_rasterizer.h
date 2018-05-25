@@ -72,10 +72,6 @@ private:
         u32 border_color;
     };
 
-    struct ShadowSamplerInfo : public SamplerInfo {
-        void Create();
-    };
-
     /// Structure that the hardware rendered vertices are composed of
     struct HardwareVertex {
         HardwareVertex() = default;
@@ -221,6 +217,9 @@ private:
     /// Syncs the specified light's distance attenuation scale to match the PICA register
     void SyncLightDistanceAttenuationScale(int light_index);
 
+    /// Syncs the shadow rendering bias to match the PICA register
+    void SyncShadowBias();
+
     /// Upload the uniform blocks to the uniform buffer object
     void UploadUniforms(bool accelerate_draw, bool use_gs);
 
@@ -291,7 +290,6 @@ private:
     size_t uniform_size_aligned_fs;
 
     SamplerInfo texture_cube_sampler;
-    ShadowSamplerInfo texture_shadow_sampler;
 
     OGLBuffer lighting_lut_buffer;
     OGLTexture lighting_lut;
@@ -320,4 +318,6 @@ private:
     OGLBuffer proctex_diff_lut_buffer;
     OGLTexture proctex_diff_lut;
     std::array<GLvec4, 256> proctex_diff_lut_data{};
+
+    bool allow_shadow;
 };
