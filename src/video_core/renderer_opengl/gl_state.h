@@ -28,9 +28,13 @@ constexpr TextureUnit ProcTexAlphaMap{7};
 constexpr TextureUnit ProcTexLUT{8};
 constexpr TextureUnit ProcTexDiffLUT{9};
 constexpr TextureUnit TextureCube{10};
-constexpr TextureUnit TextureShadow{11};
 
 } // namespace TextureUnits
+
+namespace ImageUnits {
+constexpr GLuint ShadowBuffer = 0;
+constexpr GLuint ShadowTexture = 1;
+} // namespace ImageUnits
 
 class OpenGLState {
 public:
@@ -93,11 +97,6 @@ public:
         GLuint texture_cube; // GL_TEXTURE_BINDING_CUBE_MAP
         GLuint sampler;      // GL_SAMPLER_BINDING
     } texture_cube_unit;
-
-    struct {
-        GLuint texture_2d; // GL_TEXTURE_BINDING_2D
-        GLuint sampler;    // GL_SAMPLER_BINDING
-    } texture_shadow_unit;
 
     struct {
         GLuint texture_buffer; // GL_TEXTURE_BINDING_BUFFER
