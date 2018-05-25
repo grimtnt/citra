@@ -111,8 +111,9 @@ struct PicaFSConfigState {
         Pica::TexturingRegs::ProcTexFilter lut_filter;
     } proctex;
 
+    bool shadow_rendering;
     bool shadow_texture_orthographic;
-    float shadow_texture_bias;
+    u32 shadow_texture_bias;
 };
 
 /**
