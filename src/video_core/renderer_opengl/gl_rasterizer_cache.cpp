@@ -261,11 +261,6 @@ static bool BlitTextures(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rec
     OpenGLState prev_state = OpenGLState::GetCurState();
     SCOPE_EXIT({ prev_state.Apply(); });
 
-    // Make sure textures aren't bound to texture units, since going to bind them to framebuffer
-    // components
-    state.ResetTexture(src_tex);
-    state.ResetTexture(dst_tex);
-
     OpenGLState state;
     state.draw.read_framebuffer = read_fb_handle;
     state.draw.draw_framebuffer = draw_fb_handle;

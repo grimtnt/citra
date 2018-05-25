@@ -19,6 +19,8 @@ CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "E
 option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
 option(CITRA_ENABLE_COMPATIBILITY_REPORTING "Enable compatibility reporting" OFF)
 
+option(ENABLE_CUBEB "Enables the cubeb audio backend" ON)
+
 # Sanity check : Check that all submodules are present
 # =======================================================================
 

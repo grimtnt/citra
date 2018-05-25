@@ -445,7 +445,7 @@ public:
 
     /// Get a surface based on the texture configuration
     Surface GetTextureSurface(const Pica::TexturingRegs::FullTextureConfig& config);
-    Surface GetTextureSurface(const Pica::Texture::TextureInfo& info, bool shadow = false);
+    Surface GetTextureSurface(const Pica::Texture::TextureInfo& info);
 
     /// Get a texture cube based on the texture configuration
     const CachedTextureCube& GetTextureCube(const TextureCubeConfig& config);

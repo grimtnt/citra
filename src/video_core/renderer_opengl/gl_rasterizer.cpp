@@ -667,6 +667,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         uniform_block_data.dirty = true;
     }
 
+    bool use_shadow_texture = false;
     // Sync and bind the texture surfaces
     const auto pica_textures = regs.texturing.GetTextures();
     for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
@@ -683,7 +684,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                     Surface surface = res_cache.GetTextureSurface(texture);
                     glBindImageTexture(ImageUnits::ShadowTexture, surface->texture.handle, 0,
                                        GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
-
+                    use_shadow_texture = true;
                     continue;
                 }
                 case TextureType::TextureCube:
@@ -825,6 +826,10 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     }
     state.texture_cube_unit.texture_cube = 0;
     state.Apply();
+
+    if (use_shadow_texture) {
+        glBindImageTexture(ImageUnits::ShadowTexture, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
 
     // Mark framebuffer surfaces as dirty
     MathUtil::Rectangle<u32> draw_rect_unscaled{
