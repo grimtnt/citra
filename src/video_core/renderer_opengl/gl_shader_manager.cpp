@@ -36,6 +36,13 @@ static void SetShaderSamplerBinding(GLuint shader, const char* name,
     }
 }
 
+static void SetShaderImageBinding(GLuint shader, const char* name, GLuint binding) {
+    GLint uniform_tex = glGetUniformLocation(shader, name);
+    if (uniform_tex != -1) {
+        glUniform1i(uniform_tex, static_cast<GLint>(binding));
+    }
+}
+
 static void SetShaderSamplerBindings(GLuint shader) {
     OpenGLState cur_state = OpenGLState::GetCurState();
     GLuint old_program = std::exchange(cur_state.draw.shader_program, shader);
@@ -46,7 +53,6 @@ static void SetShaderSamplerBindings(GLuint shader) {
     SetShaderSamplerBinding(shader, "tex1", TextureUnits::PicaTexture(1));
     SetShaderSamplerBinding(shader, "tex2", TextureUnits::PicaTexture(2));
     SetShaderSamplerBinding(shader, "tex_cube", TextureUnits::TextureCube);
-    SetShaderSamplerBinding(shader, "tex_shadow", TextureUnits::TextureShadow);
 
     // Set the texture samplers to correspond to different lookup table texture units
     SetShaderSamplerBinding(shader, "lighting_lut", TextureUnits::LightingLUT);
@@ -56,6 +62,9 @@ static void SetShaderSamplerBindings(GLuint shader) {
     SetShaderSamplerBinding(shader, "proctex_alpha_map", TextureUnits::ProcTexAlphaMap);
     SetShaderSamplerBinding(shader, "proctex_lut", TextureUnits::ProcTexLUT);
     SetShaderSamplerBinding(shader, "proctex_diff_lut", TextureUnits::ProcTexDiffLUT);
+
+    SetShaderImageBinding(shader, "shadow_texture", ImageUnits::ShadowTexture);
+    SetShaderImageBinding(shader, "shadow_buffer", ImageUnits::ShadowBuffer);
 
     cur_state.draw.shader_program = old_program;
     cur_state.Apply();
