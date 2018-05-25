@@ -4,31 +4,31 @@
 
 #pragma once
 
-#include "audio_core/sink.h"
 #include <cstddef>
 #include <memory>
+#include "audio_core/sink.h"
 
 namespace AudioCore {
 
-	class CubebSink final : public Sink {
-	public:
-		CubebSink();
-		~CubebSink() override;
+class CubebSink final : public Sink {
+public:
+    CubebSink();
+    ~CubebSink() override;
 
-		unsigned int GetNativeSampleRate() const override;
+    unsigned int GetNativeSampleRate() const override;
 
-		void EnqueueSamples(const s16* samples, size_t sample_count) override;
+    void EnqueueSamples(const s16* samples, size_t sample_count) override;
 
-		size_t SamplesInQueue() const override;
+    size_t SamplesInQueue() const override;
 
-		std::vector<std::string> GetDeviceList() const override;
-		void SetDevice(int device_id) override;
+    std::vector<std::string> GetDeviceList() const override;
+    void SetDevice(int device_id) override;
 
-	private:
-		struct Impl;
-		std::unique_ptr<Impl> impl;
-		int device_id;
-		std::vector<std::string> device_list;
-	};
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl;
+    int device_id;
+    std::vector<std::string> device_list;
+};
 
 } // namespace AudioCore
