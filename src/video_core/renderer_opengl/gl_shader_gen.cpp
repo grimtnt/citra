@@ -1281,39 +1281,20 @@ uint EncodeShadow(uvec2 pixel) {
     return (pixel.x << 8) | pixel.y;
 }
 
-float SampleShadowBoarder(readonly uimage2D tex, ivec2 uv, uint z) {
-    if (any(bvec4( lessThan(uv, ivec2(0)), greaterThanEqual(uv, imageSize(tex)) )))
-        return 1.0;
-    uvec2 pixel = DecodeShadow(imageLoad(tex, uv).x);
-    return mix(float(pixel.y) * (1.0 / 255.0), 0.0, pixel.x <= z);
+float CompareShadow(uint pixel, uint z) {
+    uvec2 p = DecodeShadow(pixel);
+    return mix(float(p.y) * (1.0 / 255.0), 0.0, p.x <= z);
 }
 
-float SampleShadowEdge(readonly uimage2D tex, ivec2 uv, uint z) {
-    ivec2 clamped = clamp(uv, ivec2(0), imageSize(tex) - ivec2(1,1));
-    uvec2 pixel = DecodeShadow(imageLoad(tex, clamped).x);
-    return mix(float(pixel.y) * (1.0 / 255.0), 0.0, pixel.x <= z);
+float SampleShadow2D(ivec2 uv, uint z) {
+    if (any(bvec4( lessThan(uv, ivec2(0)), greaterThanEqual(uv, imageSize(shadow_texture_px)) )))
+        return 1.0;
+    return CompareShadow(imageLoad(shadow_texture_px, uv).x, z);
 }
 
 float mix2(vec4 s, vec2 a) {
     vec2 t = mix(s.xy, s.zw, a.yy);
     return mix(t.x, t.y, a.x);
-}
-
-vec4 SampleShadowCubeFace(readonly uimage2D face, vec2 uv, float w) {
-)";
-    out += "uint z = uint(max(0, int(min(w, 1.0) * 0xFFFFFF) - " +
-           std::to_string(state.shadow_texture_bias) + "));";
-    out += R"(
-    vec2 coord = imageSize(face) * (uv / w * vec2(0.5) + vec2(0.5)) - vec2(0.5);
-    vec2 coord_floor = floor(coord);
-    vec2 f = coord - coord_floor;
-    ivec2 i = ivec2(coord_floor);
-    vec4 s = vec4(
-        SampleShadowEdge(face, i              , z),
-        SampleShadowEdge(face, i + ivec2(1, 0), z),
-        SampleShadowEdge(face, i + ivec2(0, 1), z),
-        SampleShadowEdge(face, i + ivec2(1, 1), z));
-    return vec4(mix2(s, f));
 }
 
 vec4 shadowTexture(vec2 uv, float w) {
@@ -1324,40 +1305,100 @@ vec4 shadowTexture(vec2 uv, float w) {
     out += "uint z = uint(max(0, int(min(abs(w), 1.0) * 0xFFFFFF) - " +
            std::to_string(state.shadow_texture_bias) + "));";
     out += R"(
-    vec2 coord = imageSize(shadow_texture_px) * uv - vec2(0.5);
+    vec2 coord = vec2(imageSize(shadow_texture_px)) * uv - vec2(0.5);
     vec2 coord_floor = floor(coord);
     vec2 f = coord - coord_floor;
     ivec2 i = ivec2(coord_floor);
     vec4 s = vec4(
-        SampleShadowBoarder(shadow_texture_px, i              , z),
-        SampleShadowBoarder(shadow_texture_px, i + ivec2(1, 0), z),
-        SampleShadowBoarder(shadow_texture_px, i + ivec2(0, 1), z),
-        SampleShadowBoarder(shadow_texture_px, i + ivec2(1, 1), z));
+        SampleShadow2D(i              , z),
+        SampleShadow2D(i + ivec2(1, 0), z),
+        SampleShadow2D(i + ivec2(0, 1), z),
+        SampleShadow2D(i + ivec2(1, 1), z));
     return vec4(mix2(s, f));
 }
 
 vec4 shadowTextureCube(vec2 uv, float w) {
+    ivec2 size = imageSize(shadow_texture_px);
     vec3 c = vec3(uv, w);
     vec3 a = abs(c);
     if (a.x > a.y && a.x > a.z) {
-        if (c.x > 0.0) {
-            return SampleShadowCubeFace(shadow_texture_px, -c.zy, a.x);
-        } else {
-            return SampleShadowCubeFace(shadow_texture_nx, vec2(c.z, -c.y), a.x);
-        }
+        w = a.x;
+        uv = -c.zy;
+        if (c.x < 0.0) uv.x = -uv.x;
     } else if (a.y > a.z) {
-        if (c.y > 0.0) {
-            return SampleShadowCubeFace(shadow_texture_py, c.xz, c.y);
-        } else {
-            return SampleShadowCubeFace(shadow_texture_ny, vec2(c.x, -c.z), a.y);
-        }
+        w = a.y;
+        uv = c.xz;
+        if (c.y < 0.0) uv.y = -uv.y;
     } else {
-        if (c.z > 0.0) {
-            return SampleShadowCubeFace(shadow_texture_pz, vec2(c.x, -c.y), a.z);
-        } else {
-            return SampleShadowCubeFace(shadow_texture_nz, -c.xy, a.z);
-        }
+        w = a.z;
+        uv = -c.xy;
+        if (c.z > 0.0) uv.x = -uv.x;
     }
+)";
+    out += "uint z = uint(max(0, int(min(w, 1.0) * 0xFFFFFF) - " +
+           std::to_string(state.shadow_texture_bias) + "));";
+    out += R"(
+    vec2 coord = vec2(size) * (uv / w * vec2(0.5) + vec2(0.5)) - vec2(0.5);
+    vec2 coord_floor = floor(coord);
+    vec2 f = coord - coord_floor;
+    ivec2 i00 = ivec2(coord_floor);
+    ivec2 i10 = i00 + ivec2(1, 0);
+    ivec2 i01 = i00 + ivec2(0, 1);
+    ivec2 i11 = i00 + ivec2(1, 1);
+    ivec2 cmin = ivec2(0), cmax = size - ivec2(1, 1);
+    i00 = clamp(i00, cmin, cmax);
+    i10 = clamp(i10, cmin, cmax);
+    i01 = clamp(i01, cmin, cmax);
+    i11 = clamp(i11, cmin, cmax);
+    uvec4 pixels;
+    // This part should have been refactored into functions,
+    // but many drivers don't like passing uimage2D as parameters
+    if (a.x > a.y && a.x > a.z) {
+        if (c.x > 0.0)
+            pixels = uvec4(
+                imageLoad(shadow_texture_px, i00).r,
+                imageLoad(shadow_texture_px, i10).r,
+                imageLoad(shadow_texture_px, i01).r,
+                imageLoad(shadow_texture_px, i11).r);
+        else
+            pixels = uvec4(
+                imageLoad(shadow_texture_nx, i00).r,
+                imageLoad(shadow_texture_nx, i10).r,
+                imageLoad(shadow_texture_nx, i01).r,
+                imageLoad(shadow_texture_nx, i11).r);
+    } else if (a.y > a.z) {
+        if (c.y > 0.0)
+            pixels = uvec4(
+                imageLoad(shadow_texture_py, i00).r,
+                imageLoad(shadow_texture_py, i10).r,
+                imageLoad(shadow_texture_py, i01).r,
+                imageLoad(shadow_texture_py, i11).r);
+        else
+            pixels = uvec4(
+                imageLoad(shadow_texture_ny, i00).r,
+                imageLoad(shadow_texture_ny, i10).r,
+                imageLoad(shadow_texture_ny, i01).r,
+                imageLoad(shadow_texture_ny, i11).r);
+    } else {
+        if (c.z > 0.0)
+            pixels = uvec4(
+                imageLoad(shadow_texture_pz, i00).r,
+                imageLoad(shadow_texture_pz, i10).r,
+                imageLoad(shadow_texture_pz, i01).r,
+                imageLoad(shadow_texture_pz, i11).r);
+        else
+            pixels = uvec4(
+                imageLoad(shadow_texture_nz, i00).r,
+                imageLoad(shadow_texture_nz, i10).r,
+                imageLoad(shadow_texture_nz, i01).r,
+                imageLoad(shadow_texture_nz, i11).r);
+    }
+    vec4 s = vec4(
+        CompareShadow(pixels.x, z),
+        CompareShadow(pixels.y, z),
+        CompareShadow(pixels.z, z),
+        CompareShadow(pixels.w, z));
+    return vec4(mix2(s, f));
 }
 
 #else
