@@ -144,14 +144,19 @@ void Config::ReadValues() {
         qt_config->value("camera_outer_right_name", "blank").toString().toStdString();
     Settings::values.camera_config[OuterRightCamera] =
         qt_config->value("camera_outer_right_config", "").toString().toStdString();
+    Settings::values.camera_flip[OuterRightCamera] =
+        qt_config->value("camera_outer_right_flip", 0).toInt();
     Settings::values.camera_name[InnerCamera] =
         qt_config->value("camera_inner_name", "blank").toString().toStdString();
     Settings::values.camera_config[InnerCamera] =
         qt_config->value("camera_inner_config", "").toString().toStdString();
+    Settings::values.camera_flip[InnerCamera] = qt_config->value("camera_inner_flip", 0).toInt();
     Settings::values.camera_name[OuterLeftCamera] =
         qt_config->value("camera_outer_left_name", "blank").toString().toStdString();
     Settings::values.camera_config[OuterLeftCamera] =
         qt_config->value("camera_outer_left_config", "").toString().toStdString();
+    Settings::values.camera_flip[OuterLeftCamera] =
+        qt_config->value("camera_outer_left_flip", 0).toInt();
     qt_config->endGroup();
 
     qt_config->beginGroup("Data Storage");

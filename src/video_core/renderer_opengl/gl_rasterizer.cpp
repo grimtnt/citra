@@ -549,7 +549,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     const bool using_color_fb =
         regs.framebuffer.framebuffer.GetColorBufferPhysicalAddress() != 0 && write_color_fb;
     const bool using_depth_fb =
-        regs.framebuffer.framebuffer.GetDepthBufferPhysicalAddress() != 0 &&
+        !shadow_rendering && regs.framebuffer.framebuffer.GetDepthBufferPhysicalAddress() != 0 &&
         (write_depth_fb || regs.framebuffer.output_merger.depth_test_enable != 0 ||
          (has_stencil && state.stencil.test_enabled));
 
@@ -667,8 +667,13 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         uniform_block_data.dirty = true;
     }
 
-    bool use_shadow_texture = false;
     // Sync and bind the texture surfaces
+    bool use_shadow_texture_px = false;
+    bool use_shadow_texture_nx = false;
+    bool use_shadow_texture_py = false;
+    bool use_shadow_texture_ny = false;
+    bool use_shadow_texture_pz = false;
+    bool use_shadow_texture_nz = false;
     const auto pica_textures = regs.texturing.GetTextures();
     for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
         const auto& texture = pica_textures[texture_index];
@@ -682,9 +687,75 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                         continue;
 
                     Surface surface = res_cache.GetTextureSurface(texture);
-                    glBindImageTexture(ImageUnits::ShadowTexture, surface->texture.handle, 0,
-                                       GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
-                    use_shadow_texture = true;
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTexturePX, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_px = true;
+                    }
+                    continue;
+                }
+                case TextureType::ShadowCube: {
+                    if (!allow_shadow)
+                        continue;
+                    Pica::Texture::TextureInfo info = Pica::Texture::TextureInfo::FromPicaRegister(
+                        texture.config, texture.format);
+                    Surface surface;
+
+                    using CubeFace = Pica::TexturingRegs::CubeFace;
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTexturePX, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_px = true;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTextureNX, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_nx = true;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTexturePY, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_py = true;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTextureNY, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_ny = true;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTexturePZ, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_pz = true;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        glBindImageTexture(ImageUnits::ShadowTextureNZ, surface->texture.handle, 0,
+                                           GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+                        use_shadow_texture_nz = true;
+                    }
+
                     continue;
                 }
                 case TextureType::TextureCube:
@@ -812,12 +883,6 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         }
     }
 
-    if (shadow_rendering) {
-        glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
-                        GL_TEXTURE_UPDATE_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
-        glBindImageTexture(ImageUnits::ShadowBuffer, 0, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
-    }
-
     vertex_batch.clear();
 
     // Unbind textures for potential future use as framebuffer attachments
@@ -827,8 +892,34 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     state.texture_cube_unit.texture_cube = 0;
     state.Apply();
 
-    if (use_shadow_texture) {
-        glBindImageTexture(ImageUnits::ShadowTexture, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    if (use_shadow_texture_px) {
+        glBindImageTexture(ImageUnits::ShadowTexturePX, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
+
+    if (use_shadow_texture_nx) {
+        glBindImageTexture(ImageUnits::ShadowTextureNX, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
+
+    if (use_shadow_texture_py) {
+        glBindImageTexture(ImageUnits::ShadowTexturePY, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
+
+    if (use_shadow_texture_ny) {
+        glBindImageTexture(ImageUnits::ShadowTextureNY, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
+
+    if (use_shadow_texture_pz) {
+        glBindImageTexture(ImageUnits::ShadowTexturePZ, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
+
+    if (use_shadow_texture_nz) {
+        glBindImageTexture(ImageUnits::ShadowTextureNZ, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32UI);
+    }
+
+    if (shadow_rendering) {
+        glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
+                        GL_TEXTURE_UPDATE_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
+        glBindImageTexture(ImageUnits::ShadowBuffer, 0, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI);
     }
 
     // Mark framebuffer surfaces as dirty

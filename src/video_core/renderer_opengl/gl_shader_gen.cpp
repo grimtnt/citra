@@ -310,9 +310,7 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         case TexturingRegs::TextureConfig::Shadow2D:
             return "shadowTexture(texcoord0, texcoord0_w)";
         case TexturingRegs::TextureConfig::ShadowCube:
-            NGLOG_CRITICAL(HW_GPU, "Unhandled shadow texture");
-            UNIMPLEMENTED();
-            return "vec4(1.0)"; // stubbed to avoid rendering with wrong shadow
+            return "shadowTextureCube(texcoord0, texcoord0_w)";
         default:
             LOG_CRITICAL(HW_GPU, "Unhandled texture type %x",
                          static_cast<int>(state.texture0_type));
@@ -1221,7 +1219,12 @@ uniform samplerBuffer proctex_lut;
 uniform samplerBuffer proctex_diff_lut;
 
 #if ALLOW_SHADOW
-layout(r32ui) uniform readonly uimage2D shadow_texture;
+layout(r32ui) uniform readonly uimage2D shadow_texture_px;
+layout(r32ui) uniform readonly uimage2D shadow_texture_nx;
+layout(r32ui) uniform readonly uimage2D shadow_texture_py;
+layout(r32ui) uniform readonly uimage2D shadow_texture_ny;
+layout(r32ui) uniform readonly uimage2D shadow_texture_pz;
+layout(r32ui) uniform readonly uimage2D shadow_texture_nz;
 layout(r32ui) uniform uimage2D shadow_buffer;
 #endif
 )";
@@ -1278,11 +1281,39 @@ uint EncodeShadow(uvec2 pixel) {
     return (pixel.x << 8) | pixel.y;
 }
 
-float SampleShadow(ivec2 uv, uint z) {
-    if (any(bvec4( lessThan(uv, ivec2(0)), greaterThanEqual(uv, imageSize(shadow_texture)) )))
+float SampleShadowBoarder(readonly uimage2D tex, ivec2 uv, uint z) {
+    if (any(bvec4( lessThan(uv, ivec2(0)), greaterThanEqual(uv, imageSize(tex)) )))
         return 1.0;
-    uvec2 pixel = DecodeShadow(imageLoad(shadow_texture, uv).x);
+    uvec2 pixel = DecodeShadow(imageLoad(tex, uv).x);
     return mix(float(pixel.y) * (1.0 / 255.0), 0.0, pixel.x <= z);
+}
+
+float SampleShadowEdge(readonly uimage2D tex, ivec2 uv, uint z) {
+    ivec2 clamped = clamp(uv, ivec2(0), imageSize(tex) - ivec2(1,1));
+    uvec2 pixel = DecodeShadow(imageLoad(tex, clamped).x);
+    return mix(float(pixel.y) * (1.0 / 255.0), 0.0, pixel.x <= z);
+}
+
+float mix2(vec4 s, vec2 a) {
+    vec2 t = mix(s.xy, s.zw, a.yy);
+    return mix(t.x, t.y, a.x);
+}
+
+vec4 SampleShadowCubeFace(readonly uimage2D face, vec2 uv, float w) {
+)";
+    out += "uint z = uint(max(0, int(min(w, 1.0) * 0xFFFFFF) - " +
+           std::to_string(state.shadow_texture_bias) + "));";
+    out += R"(
+    vec2 coord = imageSize(face) * (uv / w * vec2(0.5) + vec2(0.5)) - vec2(0.5);
+    vec2 coord_floor = floor(coord);
+    vec2 f = coord - coord_floor;
+    ivec2 i = ivec2(coord_floor);
+    vec4 s = vec4(
+        SampleShadowEdge(face, i              , z),
+        SampleShadowEdge(face, i + ivec2(1, 0), z),
+        SampleShadowEdge(face, i + ivec2(0, 1), z),
+        SampleShadowEdge(face, i + ivec2(1, 1), z));
+    return vec4(mix2(s, f));
 }
 
 vec4 shadowTexture(vec2 uv, float w) {
@@ -1293,19 +1324,49 @@ vec4 shadowTexture(vec2 uv, float w) {
     out += "uint z = uint(max(0, int(min(abs(w), 1.0) * 0xFFFFFF) - " +
            std::to_string(state.shadow_texture_bias) + "));";
     out += R"(
-vec2 coord = imageSize(shadow_texture) * uv - vec2(0.5);
-vec2 coord_floor = floor(coord);
-vec2 f = coord - coord_floor;
-ivec2 i = ivec2(coord_floor);
-vec2 s0 = vec2(SampleShadow(i              , z), SampleShadow(i + ivec2(1, 0), z));
-vec2 s1 = vec2(SampleShadow(i + ivec2(0, 1), z), SampleShadow(i + ivec2(1, 1), z));
-vec2 s = mix(s0, s1, f.yy);
-return vec4(mix(s.x, s.y, f.x));
+    vec2 coord = imageSize(shadow_texture_px) * uv - vec2(0.5);
+    vec2 coord_floor = floor(coord);
+    vec2 f = coord - coord_floor;
+    ivec2 i = ivec2(coord_floor);
+    vec4 s = vec4(
+        SampleShadowBoarder(shadow_texture_px, i              , z),
+        SampleShadowBoarder(shadow_texture_px, i + ivec2(1, 0), z),
+        SampleShadowBoarder(shadow_texture_px, i + ivec2(0, 1), z),
+        SampleShadowBoarder(shadow_texture_px, i + ivec2(1, 1), z));
+    return vec4(mix2(s, f));
+}
+
+vec4 shadowTextureCube(vec2 uv, float w) {
+    vec3 c = vec3(uv, w);
+    vec3 a = abs(c);
+    if (a.x > a.y && a.x > a.z) {
+        if (c.x > 0.0) {
+            return SampleShadowCubeFace(shadow_texture_px, -c.zy, a.x);
+        } else {
+            return SampleShadowCubeFace(shadow_texture_nx, vec2(c.z, -c.y), a.x);
+        }
+    } else if (a.y > a.z) {
+        if (c.y > 0.0) {
+            return SampleShadowCubeFace(shadow_texture_py, c.xz, c.y);
+        } else {
+            return SampleShadowCubeFace(shadow_texture_ny, vec2(c.x, -c.z), a.y);
+        }
+    } else {
+        if (c.z > 0.0) {
+            return SampleShadowCubeFace(shadow_texture_pz, vec2(c.x, -c.y), a.z);
+        } else {
+            return SampleShadowCubeFace(shadow_texture_nz, -c.xy, a.z);
+        }
+    }
 }
 
 #else
 
 vec4 shadowTexture(vec2 uv, float w) {
+    return vec4(1.0);
+}
+
+vec4 shadowTextureCube(vec2 uv, float w) {
     return vec4(1.0);
 }
 

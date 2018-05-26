@@ -63,8 +63,13 @@ static void SetShaderSamplerBindings(GLuint shader) {
     SetShaderSamplerBinding(shader, "proctex_lut", TextureUnits::ProcTexLUT);
     SetShaderSamplerBinding(shader, "proctex_diff_lut", TextureUnits::ProcTexDiffLUT);
 
-    SetShaderImageBinding(shader, "shadow_texture", ImageUnits::ShadowTexture);
     SetShaderImageBinding(shader, "shadow_buffer", ImageUnits::ShadowBuffer);
+    SetShaderImageBinding(shader, "shadow_texture_px", ImageUnits::ShadowTexturePX);
+    SetShaderImageBinding(shader, "shadow_texture_nx", ImageUnits::ShadowTextureNX);
+    SetShaderImageBinding(shader, "shadow_texture_py", ImageUnits::ShadowTexturePY);
+    SetShaderImageBinding(shader, "shadow_texture_ny", ImageUnits::ShadowTextureNY);
+    SetShaderImageBinding(shader, "shadow_texture_pz", ImageUnits::ShadowTexturePZ);
+    SetShaderImageBinding(shader, "shadow_texture_nz", ImageUnits::ShadowTextureNZ);
 
     cur_state.draw.shader_program = old_program;
     cur_state.Apply();
