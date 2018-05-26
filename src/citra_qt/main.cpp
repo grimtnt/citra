@@ -424,7 +424,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
-    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, &GMainWindow::OnSetPlayCoins);
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -452,6 +451,9 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::ChangeScreenLayout);
     connect(ui.action_Screen_Layout_Swap_Screens, &QAction::triggered, this,
             &GMainWindow::OnSwapScreens);
+
+    // Misc
+    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, &GMainWindow::OnSetPlayCoins);
 
     // Movie
     connect(ui.action_Record, &QAction::triggered, this, &GMainWindow::OnRecordMovie);

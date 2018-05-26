@@ -77,8 +77,6 @@
     <addaction name="action_Cheats"/>
     <addaction name="action_Cheat_Search"/>
     <addaction name="action_Control_Panel"/>
-    <addaction name="separator"/>
-    <addaction name="action_Set_Play_Coins"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -137,9 +135,16 @@
     <addaction name="action_Play"/>
     <addaction name="action_Record"/>
    </widget>
+   <widget class="QMenu" name="menu_Misc">
+    <property name="title">
+     <string>Misc</string>
+    </property>
+    <addaction name="action_Set_Play_Coins"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Emulation"/>
    <addaction name="menu_View"/>
+   <addaction name="menu_Misc"/>
    <addaction name="menu_Movie"/>
    <addaction name="menu_Multiplayer"/>
    <addaction name="menu_Help"/>
@@ -377,17 +382,17 @@
     <string>Cheat Search...</string>
    </property>
   </action>
-  <action name="action_Set_Play_Coins">
-   <property name="text">
-    <string>Set Play Coins</string>
-   </property>
-  </action>
   <action name="action_Restart">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
     <string>Restart</string>
+   </property>
+  </action>
+  <action name="action_Set_Play_Coins">
+   <property name="text">
+    <string>Set Play Coins</string>
    </property>
   </action>
  </widget>
