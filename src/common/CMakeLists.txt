@@ -2,7 +2,7 @@
 # Also if this is a AppVeyor build, add the build number to the scm_rev file as well
 set(BUILD_VERSION "0")
 if ($ENV{APPVEYOR})
-  set(BUILD_TAG $ENV{APPVEYOR_REPO_TAG_NAME})
+  set(BUILD_VERSION $ENV{APPVEYOR_BUILD_NUMBER})
   if (BUILD_VERSION)
     set(BUILD_FULLNAME "#${BUILD_VERSION} ")
   else()
