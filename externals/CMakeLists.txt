@@ -55,6 +55,10 @@ endif()
 add_subdirectory(enet)
 target_include_directories(enet INTERFACE ./enet/include)
 
+# Discord RPC
+add_subdirectory(discord-rpc)
+target_include_directories(discord-rpc INTERFACE ./discord-rpc/include)
+
 if (ENABLE_WEB_SERVICE)
     # LibreSSL
     set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")

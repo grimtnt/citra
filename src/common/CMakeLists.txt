@@ -1,21 +1,12 @@
 # Generate cpp with Git revision from template
-# Also if this is a AppVeyor build, add the build name (ie: Nightly, Bleeding Edge) to the scm_rev file as well
-set(REPO_NAME "")
+# Also if this is a AppVeyor build, add the build number to the scm_rev file as well
+set(BUILD_VERSION "0")
 if ($ENV{APPVEYOR})
-  set(BUILD_REPOSITORY $ENV{APPVEYOR_REPO_NAME})
-  # regex capture the string nightly or bleeding-edge into CMAKE_MATCH_1
-  string(REGEX MATCH "citra-emu/citra-?(.*)" OUTVAR ${BUILD_REPOSITORY})
-  if (${CMAKE_MATCH_COUNT} GREATER 0)
-    # capitalize the first letter of each word in the repo name.
-    string(REPLACE "-" ";" REPO_NAME_LIST ${CMAKE_MATCH_1})
-    foreach(WORD ${REPO_NAME_LIST})
-      string(SUBSTRING ${WORD} 0 1 FIRST_LETTER)
-      string(SUBSTRING ${WORD} 1 -1 REMAINDER)
-      string(TOUPPER ${FIRST_LETTER} FIRST_LETTER)
-      # this leaves a trailing space on the last word, but we actually want that
-      # because of how it's styled in the title bar.
-      set(REPO_NAME "${REPO_NAME}${FIRST_LETTER}${REMAINDER} ")
-    endforeach()
+  set(BUILD_TAG $ENV{APPVEYOR_REPO_TAG_NAME})
+  if (BUILD_VERSION)
+    set(BUILD_FULLNAME "#${BUILD_VERSION} ")
+  else()
+    set(BUILD_FULLNAME "")
   endif()
 endif()
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scm_rev.cpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/scm_rev.cpp" @ONLY)

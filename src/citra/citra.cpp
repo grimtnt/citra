@@ -31,6 +31,7 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/cia_container.h"
+#include "core/frontend/discord.h"
 #include "core/hle/service/am/am.h"
 #include "core/loader/loader.h"
 #include "core/movie.h"
@@ -283,6 +284,8 @@ int main(int argc, char** argv) {
         break; // Expected case
     }
 
+    discordInit();
+
     Core::Telemetry().AddField(Telemetry::FieldType::App, "Frontend", "SDL");
 
     if (use_multiplayer) {
@@ -298,9 +301,15 @@ int main(int argc, char** argv) {
         }
     }
 
+    std::string title;
+    system.GetAppLoader().ReadTitle(title);
+    discordInit();
+    updateDiscordPresence(title);
+
     while (emu_window->IsOpen()) {
         system.RunLoop();
     }
 
+    discordShutdown();
     return 0;
 }

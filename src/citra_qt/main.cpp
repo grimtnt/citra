@@ -43,6 +43,7 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
+#include "core/frontend/discord.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/loader/loader.h"
@@ -131,8 +132,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     ConnectWidgetEvents();
 
     SetupUIStrings();
-    NGLOG_INFO(Frontend, "Citra Version: {} | {}-{}", Common::g_build_name, Common::g_scm_branch,
-               Common::g_scm_desc);
+    NGLOG_INFO(Frontend, "Citra Version: {} | {}-{}", Common::g_build_fullname,
+               Common::g_scm_branch, Common::g_scm_desc);
 
     show();
 
@@ -704,9 +705,16 @@ void GMainWindow::BootGame(const QString& filename) {
             applet_cv.wait(lock, [&] { return !applet_open; });
             return ret;
         });
+
+    std::string title;
+    Core::System::GetInstance().GetAppLoader().ReadTitle(title);
+    discordInit();
+    updateDiscordPresence(title);
 }
 
 void GMainWindow::ShutdownGame() {
+    discordShutdown();
+
     Core::Movie::GetInstance().SetPlayFile("");
     Core::Movie::GetInstance().SetRecordFile("");
 
@@ -1082,15 +1090,15 @@ void GMainWindow::OnMenuInstallCIA() {
 }
 
 void GMainWindow::OnUpdateProgress(size_t written, size_t total) {
-    progress_bar->setMaximum(total);
-    progress_bar->setValue(written);
+    progress_bar->setMaximum(static_cast<int>(total));
+    progress_bar->setValue(static_cast<int>(written));
 }
 
 void GMainWindow::OnCIAInstallReport(Service::AM::InstallStatus status, QString filepath) {
     QString filename = QFileInfo(filepath).fileName();
     switch (status) {
     case Service::AM::InstallStatus::Success:
-        this->statusBar()->showMessage(tr("%1 installed").arg(filename));
+        statusBar()->showMessage(tr("%1 installed").arg(filename));
         break;
     case Service::AM::InstallStatus::ErrorFailedToOpenFile:
         QMessageBox::critical(this, tr("Unable to open File"),
@@ -1617,8 +1625,8 @@ void GMainWindow::OnLanguageChanged(const QString& locale) {
 }
 
 void GMainWindow::SetupUIStrings() {
-    setWindowTitle(
-        tr("Citra %1| %2-%3").arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
+    setWindowTitle(tr("Citra %1| %2-%3")
+                       .arg(Common::g_build_fullname, Common::g_scm_branch, Common::g_scm_desc));
 }
 
 void GMainWindow::SyncMenuUISettings() {

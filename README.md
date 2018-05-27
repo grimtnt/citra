@@ -1,6 +1,6 @@
 **BEFORE FILING AN ISSUE, READ THE RELEVANT SECTION IN THE [CONTRIBUTING](https://github.com/valentinvanelslande/citra/blob/master/CONTRIBUTING.md#reporting-issues) FILE!!!**
 
-Citra Emulator
+Citra
 ==============
 [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/k213m9mio0bhwo6a?svg=true)](https://ci.appveyor.com/project/valentinvanelslande/citra)
 
