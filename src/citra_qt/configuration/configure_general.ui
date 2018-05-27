@@ -264,7 +264,7 @@
        <property name="title">
         <string>Logging</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_7">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>
