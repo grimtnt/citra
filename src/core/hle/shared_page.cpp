@@ -84,7 +84,7 @@ void Init() {
     shared_page.wifi_link_level = Settings::values.n_wifi_link_level;
     shared_page.network_state = Settings::values.n_state;
 
-    shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 0 : 1;
+    shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
 
     update_time_event =
         CoreTiming::RegisterEvent("SharedPage::UpdateTimeCallback", UpdateTimeCallback);

@@ -77,7 +77,7 @@ ControlPanel::ControlPanel(QWidget* parent)
 ControlPanel::~ControlPanel() {}
 
 void ControlPanel::On3DEnabledChanged() {
-    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 0 : 1;
+    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
     Settings::values.sp_enable_3d = ui->shared_page_enable_3d->isChecked();
 }
 
