@@ -38,7 +38,7 @@
 #include "core/hle/service/mcu/mcu.h"
 #include "core/hle/service/mic_u.h"
 #include "core/hle/service/mvd/mvd.h"
-#include "core/hle/service/ndm_u.h"
+#include "core/hle/service/ndm/ndm_u.h"
 #include "core/hle/service/news/news.h"
 #include "core/hle/service/nfc/nfc.h"
 #include "core/hle/service/nim/nim.h"
