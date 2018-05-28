@@ -131,6 +131,15 @@ public:
         GLuint texture_buffer; // GL_TEXTURE_BINDING_BUFFER
     } proctex_diff_lut;
 
+    // GL_IMAGE_BINDING_NAME
+    GLuint image_shadow_buffer;
+    GLuint image_shadow_texture_px;
+    GLuint image_shadow_texture_nx;
+    GLuint image_shadow_texture_py;
+    GLuint image_shadow_texture_ny;
+    GLuint image_shadow_texture_pz;
+    GLuint image_shadow_texture_nz;
+
     struct {
         GLuint read_framebuffer; // GL_READ_FRAMEBUFFER_BINDING
         GLuint draw_framebuffer; // GL_DRAW_FRAMEBUFFER_BINDING
