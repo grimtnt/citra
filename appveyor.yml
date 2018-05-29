@@ -102,8 +102,6 @@ after_build:
           7z a -tzip $MSVC_BUILD_PDB $RELEASE_DIST\*.pdb
           rm $RELEASE_DIST\*.pdb
 
-          Add-Content -Path $RELEASE_DIST\updater.cfg -Value "msvc"
-          Add-Content -Path $RELEASE_DIST\updater.cfg -Value $GITREV
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
           7z a $MSVC_SEVENZIP $RELEASE_DIST
         } else {
@@ -129,9 +127,8 @@ after_build:
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/README.md" -destination $RELEASE_DIST
-          Copy-Item -path "$CMAKE_SOURCE_DIR/updater.ps1" -destination $RELEASE_DIST
-          Add-Content -Path $RELEASE_DIST/updater.cfg -Value "mingw"
-          Add-Content -Path $RELEASE_DIST/updater.cfg -Value $GITREV
+          curl -o updater.zip "https://github.com/valentinvanelslande/CitraUpdater/releases/download/latest/build.zip"
+          7z x updater.zip -o$RELEASE_DIST
 
           # copy all the dll dependencies to the release folder
           . "./.appveyor/FindDependencies.ps1"
