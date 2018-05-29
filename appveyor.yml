@@ -127,8 +127,6 @@ after_build:
           Get-ChildItem "$CMAKE_BINARY_DIR" -Recurse -Filter "citra*.exe" | Copy-Item -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/license.txt" -destination $RELEASE_DIST
           Copy-Item -path "$CMAKE_SOURCE_DIR/README.md" -destination $RELEASE_DIST
-          curl -o updater.zip "https://github.com/valentinvanelslande/CitraUpdater/releases/download/latest/build.zip"
-          7z x updater.zip -o$RELEASE_DIST
 
           # copy all the dll dependencies to the release folder
           . "./.appveyor/FindDependencies.ps1"
