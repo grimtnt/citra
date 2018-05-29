@@ -49,12 +49,7 @@ struct Values {
     bool confirm_before_closing;
     bool first_start;
 
-    bool updater_found;
-    bool update_on_close;
-    bool check_for_update_on_start;
-
     QString roms_path;
-    QString symbols_path;
     QString game_dir_deprecated;
     bool game_dir_deprecated_deepscan;
     QList<UISettings::GameDir> game_dirs;

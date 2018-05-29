@@ -153,7 +153,7 @@ void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(ac->ac_connected);
 
-    LOG_WARNING(Service_AC, "(STUBBED) called unk=%08X descriptor=%08X param=%08X", unk,
+    LOG_WARNING(Service_AC, "(STUBBED) called, unk=%08X, unk_descriptor=%08X, unk_param=%08X", unk,
                 unk_descriptor, unk_param);
 }
 

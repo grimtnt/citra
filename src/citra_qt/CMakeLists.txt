@@ -71,9 +71,6 @@ add_executable(citra-qt
     main.h
     ui_settings.cpp
     ui_settings.h
-    updater/updater.cpp
-    updater/updater.h
-    updater/updater_p.h
     util/spinbox.cpp
     util/clickable_label.cpp
     util/clickable_label.h
@@ -82,8 +79,6 @@ add_executable(citra-qt
     util/spinbox.h
     util/util.cpp
     util/util.h
-    compatdb.cpp
-    compatdb.h
     control_panel.cpp
     control_panel.h
 )
@@ -103,7 +98,6 @@ set(UIS
     cheat_gui.ui
     cheatsearch.ui
     main.ui
-    compatdb.ui
     control_panel.ui
     multiplayer/direct_connect.ui
     multiplayer/lobby.ui

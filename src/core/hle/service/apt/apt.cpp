@@ -191,9 +191,6 @@ void Module::Interface::GetSharedFont(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x44, 0, 0); // 0x00440000
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
 
-    // Log in telemetry if the game uses the shared font
-    Core::Telemetry().AddField(Telemetry::FieldType::Session, "RequiresSharedFont", true);
-
     if (!apt->shared_font_loaded) {
         // On real 3DS, font loading happens on booting. However, we load it on demand to coordinate
         // with CFG region auto configuration, which happens later than APT initialization.
@@ -234,7 +231,7 @@ void Module::Interface::NotifyToWait(Kernel::HLERequestContext& ctx) {
     u32 app_id = rp.Pop<u32>();
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS); // No error
-    NGLOG_WARNING(Service_APT, "(STUBBED) app_id={}", app_id);
+    NGLOG_WARNING(Service_APT, "(STUBBED) called, app_id={}", app_id);
 }
 
 void Module::Interface::GetLockHandle(Kernel::HLERequestContext& ctx) {
@@ -420,7 +417,7 @@ void Module::Interface::PrepareToStartApplication(Kernel::HLERequestContext& ctx
 
     NGLOG_WARNING(
         Service_APT,
-        "(STUBBED) called title_info1={:#010X}, title_info2={:#010X}, title_info3={:#010X},"
+        "(STUBBED) called, title_info1={:#010X}, title_info2={:#010X}, title_info3={:#010X},"
         "title_info4={:#010X}, flags={:#010X}",
         title_info1, title_info2, title_info3, title_info4, flags);
 }

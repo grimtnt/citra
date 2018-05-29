@@ -51,10 +51,11 @@ void RegisterStorage(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x2, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
-                  "unk_flag={:#010X}",
-                  unk_param1, unk_param2, unk_param3, unk_flag);
+    NGLOG_WARNING(
+        Service_BOSS,
+        "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
+        "unk_flag={:#010X}",
+        unk_param1, unk_param2, unk_param3, unk_flag);
 }
 
 void UnregisterStorage(Service::Interface* self) {
@@ -802,7 +803,7 @@ void SetNsDataNewFlag(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x2B, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}, ns_data_new_flag={:#010X}",
+    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#010X}",
                   unk_param1, ns_data_new_flag);
 }
 
@@ -815,7 +816,7 @@ void GetNsDataNewFlag(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = ns_data_new_flag;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}, ns_data_new_flag={:#010X}",
+    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#010X}",
                   unk_param1, ns_data_new_flag);
 }
 
@@ -829,7 +830,7 @@ void GetNsDataLastUpdate(Service::Interface* self) {
     cmd_buff[2] = 0; // stub 0 (32bit value)
     cmd_buff[3] = 0; // stub 0 (32bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}", unk_param1);
+    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}", unk_param1);
 }
 
 void GetErrorCode(Service::Interface* self) {
@@ -841,7 +842,7 @@ void GetErrorCode(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = 0; // stub 0 (32bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}", unk_param1);
+    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}", unk_param1);
 }
 
 void RegisterStorageEntry(Service::Interface* self) {
@@ -856,10 +857,11 @@ void RegisterStorageEntry(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x2F, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED)  unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
-                  "unk_param4={:#010X}, unk_param5={:#010X}",
-                  unk_param1, unk_param2, unk_param3, unk_param4, unk_param5);
+    NGLOG_WARNING(
+        Service_BOSS,
+        "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
+        "unk_param4={:#010X}, unk_param5={:#010X}",
+        unk_param1, unk_param2, unk_param3, unk_param4, unk_param5);
 }
 
 void GetStorageEntryInfo(Service::Interface* self) {
@@ -885,7 +887,7 @@ void SetStorageOption(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
     NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED)  unk_param1={:#010X}, unk_param2={:#010X}, "
+                  "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, "
                   "unk_param3={:#010X}, unk_param4={:#010X}",
                   unk_param1, unk_param2, unk_param3, unk_param4);
 }
@@ -917,7 +919,7 @@ void StartBgImmediate(Service::Interface* self) {
     cmd_buff[3] = buff_addr;
 
     NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED) buff_size={:#010X}, unk_param2={:#010X}, "
+                  "(STUBBED) called, buff_size={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
 }
@@ -937,7 +939,7 @@ void GetTaskActivePriority(Service::Interface* self) {
     cmd_buff[4] = buff_addr;
 
     NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED) buff_size={:#010X}, unk_param2={:#010X}, "
+                  "(STUBBED) called, buff_size={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
 }
@@ -957,10 +959,11 @@ void RegisterImmediateTask(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
-                  "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
-                  unk_param1, unk_param2, unk_param3, translation, buff_addr, buff_size);
+    NGLOG_WARNING(
+        Service_BOSS,
+        "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
+        "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
+        unk_param1, unk_param2, unk_param3, translation, buff_addr, buff_size);
 }
 
 void SetTaskQuery(Service::Interface* self) {
@@ -983,7 +986,7 @@ void SetTaskQuery(Service::Interface* self) {
     cmd_buff[3] = buff2_addr;
 
     NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, "
+                  "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, "
                   "translation1={:#010X}, buff1_addr={:#010X}, buff1_size={:#010X}, "
                   "translation2={:#010X}, buff2_addr={:#010X}, buff2_size={:#010X}",
                   unk_param1, unk_param2, translation1, buff1_addr, buff1_size, translation2,
@@ -1010,7 +1013,7 @@ void GetTaskQuery(Service::Interface* self) {
     cmd_buff[3] = buff2_addr;
 
     NGLOG_WARNING(Service_BOSS,
-                  "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, "
+                  "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, "
                   "translation1={:#010X}, buff1_addr={:#010X}, buff1_size={:#010X}, "
                   "translation2={:#010X}, buff2_addr={:#010X}, buff2_size={:#010X}",
                   unk_param1, unk_param2, translation1, buff1_addr, buff1_size, translation2,

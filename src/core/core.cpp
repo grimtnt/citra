@@ -155,7 +155,6 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     dsp_core->SetSink(Settings::values.sink_id);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
-    telemetry_session = std::make_unique<Core::TelemetrySession>();
     service_manager = std::make_shared<Service::SM::ServiceManager>();
 
     HW::Init();
@@ -186,15 +185,6 @@ const Service::SM::ServiceManager& System::ServiceManager() const {
 }
 
 void System::Shutdown() {
-    // Log last frame performance stats
-    auto perf_results = GetAndResetPerfStats();
-    Telemetry().AddField(Telemetry::FieldType::Performance, "Shutdown_EmulationSpeed",
-                         perf_results.emulation_speed * 100.0);
-    Telemetry().AddField(Telemetry::FieldType::Performance, "Shutdown_Framerate",
-                         perf_results.game_fps);
-    Telemetry().AddField(Telemetry::FieldType::Performance, "Shutdown_Frametime",
-                         perf_results.frametime * 1000.0);
-
     // Shutdown emulation session
     Movie::GetInstance().Shutdown();
     CheatCore::Shutdown();
@@ -202,7 +192,6 @@ void System::Shutdown() {
     Service::Shutdown();
     Kernel::Shutdown();
     HW::Shutdown();
-    telemetry_session.reset();
     service_manager.reset();
     dsp_core.reset();
     cpu_core.reset();

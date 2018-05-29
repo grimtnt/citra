@@ -23,7 +23,6 @@ public:
     void retranslateUi();
 
 public slots:
-    void RefreshTelemetryID();
     void OnLoginChanged();
     void VerifyLogin();
     void OnLoginVerified();

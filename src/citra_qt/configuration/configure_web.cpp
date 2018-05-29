@@ -6,14 +6,12 @@
 #include <QMessageBox>
 #include "citra_qt/configuration/configure_web.h"
 #include "core/settings.h"
-#include "core/telemetry_session.h"
 #include "ui_configure_web.h"
+#include "web_service/verify_login.h"
 
 ConfigureWeb::ConfigureWeb(QWidget* parent)
     : QWidget(parent), ui(std::make_unique<Ui::ConfigureWeb>()) {
     ui->setupUi(this);
-    connect(ui->button_regenerate_telemetry_id, &QPushButton::clicked, this,
-            &ConfigureWeb::RefreshTelemetryID);
     connect(ui->button_verify_login, &QPushButton::clicked, this, &ConfigureWeb::VerifyLogin);
     connect(this, &ConfigureWeb::LoginVerified, this, &ConfigureWeb::OnLoginVerified);
 
@@ -24,13 +22,6 @@ ConfigureWeb::~ConfigureWeb() {}
 
 void ConfigureWeb::setConfiguration() {
     ui->web_credentials_disclaimer->setWordWrap(true);
-    ui->telemetry_learn_more->setOpenExternalLinks(true);
-    ui->telemetry_learn_more->setText(tr("<a "
-                                         "href='https://citra-emu.org/entry/"
-                                         "telemetry-and-why-thats-a-good-thing/'><span "
-                                         "style=\"text-decoration: underline; "
-                                         "color:#039be5;\">Learn more</span></a>"));
-
     ui->web_signup_link->setOpenExternalLinks(true);
     ui->web_signup_link->setText(
         tr("<a href='https://services.citra-emu.org/'><span style=\"text-decoration: underline; "
@@ -40,19 +31,15 @@ void ConfigureWeb::setConfiguration() {
         tr("<a href='https://citra-emu.org/wiki/citra-web-service/'><span style=\"text-decoration: "
            "underline; color:#039be5;\">What is my token?</span></a>"));
 
-    ui->toggle_telemetry->setChecked(Settings::values.enable_telemetry);
     ui->edit_username->setText(QString::fromStdString(Settings::values.citra_username));
     ui->edit_token->setText(QString::fromStdString(Settings::values.citra_token));
     // Connect after setting the values, to avoid calling OnLoginChanged now
     connect(ui->edit_token, &QLineEdit::textChanged, this, &ConfigureWeb::OnLoginChanged);
     connect(ui->edit_username, &QLineEdit::textChanged, this, &ConfigureWeb::OnLoginChanged);
-    ui->label_telemetry_id->setText(
-        tr("Telemetry ID: 0x%1").arg(QString::number(Core::GetTelemetryId(), 16).toUpper()));
     user_verified = true;
 }
 
 void ConfigureWeb::applyConfiguration() {
-    Settings::values.enable_telemetry = ui->toggle_telemetry->isChecked();
     if (user_verified) {
         Settings::values.citra_username = ui->edit_username->text().toStdString();
         Settings::values.citra_token = ui->edit_token->text().toStdString();
@@ -62,12 +49,6 @@ void ConfigureWeb::applyConfiguration() {
                                 "username and/or token have not been saved."));
     }
     Settings::Apply();
-}
-
-void ConfigureWeb::RefreshTelemetryID() {
-    const u64 new_telemetry_id{Core::RegenerateTelemetryId()};
-    ui->label_telemetry_id->setText(
-        tr("Telemetry ID: 0x%1").arg(QString::number(new_telemetry_id, 16).toUpper()));
 }
 
 void ConfigureWeb::OnLoginChanged() {
@@ -83,9 +64,10 @@ void ConfigureWeb::OnLoginChanged() {
 }
 
 void ConfigureWeb::VerifyLogin() {
-    verified =
-        Core::VerifyLogin(ui->edit_username->text().toStdString(),
-                          ui->edit_token->text().toStdString(), [&]() { emit LoginVerified(); });
+    std::string username = ui->edit_username->text().toStdString();
+    std::string token = ui->edit_token->text().toStdString();
+    verified = WebService::VerifyLogin(username, token, Settings::values.verify_endpoint_url,
+                                       [&]() { emit LoginVerified(); });
     ui->button_verify_login->setDisabled(true);
     ui->button_verify_login->setText(tr("Verifying"));
 }

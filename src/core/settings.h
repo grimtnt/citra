@@ -160,9 +160,7 @@ struct Values {
     std::array<std::string, Service::CAM::NumCameras> camera_config;
     std::array<int, Service::CAM::NumCameras> camera_flip;
 
-    // WebService
-    bool enable_telemetry;
-    std::string telemetry_endpoint_url;
+    // Web Service
     std::string verify_endpoint_url;
     std::string announce_multiplayer_room_endpoint_url;
     std::string citra_username;

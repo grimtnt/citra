@@ -58,6 +58,7 @@ public:
     void Compile_MOV(Instruction instr);
     void Compile_NOP(Instruction instr);
     void Compile_END(Instruction instr);
+    void Compile_BREAKC(Instruction instr);
     void Compile_CALL(Instruction instr);
     void Compile_CALLC(Instruction instr);
     void Compile_CALLU(Instruction instr);
@@ -118,6 +119,9 @@ private:
 
     /// Mapping of Pica VS instructions to pointers in the emitted code
     std::array<Xbyak::Label, MAX_PROGRAM_CODE_LENGTH> instruction_labels;
+
+    /// label used for linking break command and outside the loop command
+    Xbyak::Label loop_break_label;
 
     /// Offsets in code where a return needs to be inserted
     std::vector<unsigned> return_offsets;

@@ -175,11 +175,6 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("WebService");
-    Settings::values.enable_telemetry = qt_config->value("enable_telemetry", true).toBool();
-    Settings::values.telemetry_endpoint_url =
-        qt_config->value("telemetry_endpoint_url", "https://api.citra-emu.org/telemetry")
-            .toString()
-            .toStdString();
     Settings::values.verify_endpoint_url =
         qt_config->value("verify_endpoint_url", "https://api.citra-emu.org/profile")
             .toString()
@@ -201,12 +196,6 @@ void Config::ReadValues() {
     qt_config->beginGroup("UI");
     UISettings::values.theme = qt_config->value("theme", UISettings::themes[0].second).toString();
 
-    qt_config->beginGroup("Updater");
-    UISettings::values.check_for_update_on_start =
-        qt_config->value("check_for_update_on_start", true).toBool();
-    UISettings::values.update_on_close = qt_config->value("update_on_close", false).toBool();
-    qt_config->endGroup();
-
     qt_config->beginGroup("UILayout");
     UISettings::values.geometry = qt_config->value("geometry").toByteArray();
     UISettings::values.state = qt_config->value("state").toByteArray();
@@ -218,7 +207,6 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Paths");
     UISettings::values.roms_path = qt_config->value("romsPath").toString();
-    UISettings::values.symbols_path = qt_config->value("symbolsPath").toString();
     UISettings::values.game_dir_deprecated = qt_config->value("gameListRootDir", ".").toString();
     UISettings::values.game_dir_deprecated_deepscan =
         qt_config->value("gameListDeepScan", false).toBool();
@@ -399,9 +387,6 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("WebService");
-    qt_config->setValue("enable_telemetry", Settings::values.enable_telemetry);
-    qt_config->setValue("telemetry_endpoint_url",
-                        QString::fromStdString(Settings::values.telemetry_endpoint_url));
     qt_config->setValue("verify_endpoint_url",
                         QString::fromStdString(Settings::values.verify_endpoint_url));
     qt_config->setValue(
@@ -419,11 +404,6 @@ void Config::SaveValues() {
     qt_config->beginGroup("UI");
     qt_config->setValue("theme", UISettings::values.theme);
 
-    qt_config->beginGroup("Updater");
-    qt_config->setValue("check_for_update_on_start", UISettings::values.check_for_update_on_start);
-    qt_config->setValue("update_on_close", UISettings::values.update_on_close);
-    qt_config->endGroup();
-
     qt_config->beginGroup("UILayout");
     qt_config->setValue("geometry", UISettings::values.geometry);
     qt_config->setValue("state", UISettings::values.state);
@@ -433,7 +413,6 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Paths");
     qt_config->setValue("romsPath", UISettings::values.roms_path);
-    qt_config->setValue("symbolsPath", UISettings::values.symbols_path);
     qt_config->beginWriteArray("gamedirs");
     for (int i = 0; i < UISettings::values.game_dirs.size(); ++i) {
         qt_config->setArrayIndex(i);

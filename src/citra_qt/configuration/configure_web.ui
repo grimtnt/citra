@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>926</width>
+    <width>730</width>
     <height>561</height>
    </rect>
   </property>
@@ -25,7 +25,7 @@
         <item>
          <widget class="QLabel" name="web_credentials_disclaimer">
           <property name="text">
-           <string>By providing your username and token, you agree to allow Citra to collect additional usage data, which may include user identifying information.</string>
+           <string>If you provide your username and token, you will be able to announce multiplayer rooms to the public lobby.</string>
           </property>
          </widget>
         </item>
@@ -69,8 +69,7 @@
            </widget>
           </item>
           <item row="1" column="4">
-           <widget class="QLabel" name="label_token_verified">
-           </widget>
+           <widget class="QLabel" name="label_token_verified"/>
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_username">
@@ -80,8 +79,7 @@
            </widget>
           </item>
           <item row="0" column="4">
-           <widget class="QLabel" name="label_username_verified">
-           </widget>
+           <widget class="QLabel" name="label_username_verified"/>
           </item>
           <item row="1" column="1" colspan="3">
            <widget class="QLineEdit" name="edit_token">
@@ -112,56 +110,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox">
-       <property name="title">
-        <string>Telemetry</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QCheckBox" name="toggle_telemetry">
-          <property name="text">
-           <string>Share anonymous usage data with the Citra team</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="telemetry_learn_more">
-          <property name="text">
-           <string>Learn more</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="gridLayoutTelemetryId">
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_telemetry_id">
-            <property name="text">
-             <string>Telemetry ID:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="button_regenerate_telemetry_id">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="layoutDirection">
-             <enum>Qt::RightToLeft</enum>
-            </property>
-            <property name="text">
-             <string>Regenerate</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>

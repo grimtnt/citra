@@ -20,7 +20,6 @@
 #include "citra_qt/camera/still_image_camera.h"
 #include "citra_qt/cheat_gui.h"
 #include "citra_qt/cheatsearch.h"
-#include "citra_qt/compatdb.h"
 #include "citra_qt/configuration/config.h"
 #include "citra_qt/configuration/configure_dialog.h"
 #include "citra_qt/control_panel.h"
@@ -30,7 +29,6 @@
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/stereoscopic_controller.h"
 #include "citra_qt/ui_settings.h"
-#include "citra_qt/updater/updater.h"
 #include "citra_qt/util/clickable_label.h"
 #include "citra_qt/util/console.h"
 #include "common/common_paths.h"
@@ -67,9 +65,7 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
  * is a bitfield "callout_flags" options, used to track if a message has already been shown to the
  * user. This is 32-bits - if we have more than 32 callouts, we should retire and recyle old ones.
  */
-enum class CalloutFlag : uint32_t {
-    Telemetry = 0x1,
-};
+enum class CalloutFlag : uint32_t {};
 
 static void ShowCalloutMessage(const QString& message, CalloutFlag flag) {
     if (UISettings::values.callout_flags & static_cast<uint32_t>(flag)) {
@@ -86,22 +82,7 @@ static void ShowCalloutMessage(const QString& message, CalloutFlag flag) {
     msg.exec();
 }
 
-void GMainWindow::ShowCallouts() {
-    static const QString telemetry_message =
-        tr("To help improve Citra, the Citra Team collects anonymous usage data. No private or "
-           "personally identifying information is collected. This data helps us to understand how "
-           "people use Citra and prioritize our efforts. Furthermore, it helps us to more easily "
-           "identify emulation bugs and performance issues. This data includes:<ul><li>Information"
-           " about the version of Citra you are using</li><li>Performance data about the games you "
-           "play</li><li>Your configuration settings</li><li>Information about your computer "
-           "hardware</li><li>Emulation errors and crash information</li></ul>By default, this "
-           "feature is enabled. To disable this feature, click 'Emulation' from the menu and then "
-           "select 'Configure...'. Then, on the 'Web' tab, uncheck 'Share anonymous usage data with"
-           " the Citra team'. <br/><br/>By using this software, you agree to the above terms.<br/>"
-           "<br/><a href='https://citra-emu.org/entry/telemetry-and-why-thats-a-good-thing/'>Learn "
-           "more</a>");
-    ShowCalloutMessage(telemetry_message, CalloutFlag::Telemetry);
-}
+void GMainWindow::ShowCallouts() {}
 
 GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     // register types to use in slots and signals
@@ -123,7 +104,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     InitializeDebugWidgets();
     InitializeRecentFileMenuActions();
     InitializeHotkeys();
-    ShowUpdaterWidgets();
 
     SetDefaultUIGeometry();
     RestoreUIState();
@@ -143,10 +123,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     // Show one-time "callout" messages to the user
     ShowCallouts();
 
-    if (UISettings::values.check_for_update_on_start) {
-        CheckForUpdates();
-    }
-
     QStringList args = QApplication::arguments();
     if (args.length() >= 2) {
         BootGame(args[1]);
@@ -161,9 +137,6 @@ GMainWindow::~GMainWindow() {
 }
 
 void GMainWindow::InitializeWidgets() {
-#ifdef CITRA_ENABLE_COMPATIBILITY_REPORTING
-    ui.action_Report_Compatibility->setVisible(true);
-#endif
     render_window = new GRenderWindow(this, emu_thread.get());
     render_window->hide();
 
@@ -177,10 +150,6 @@ void GMainWindow::InitializeWidgets() {
     multiplayer_state = new MultiplayerState(this, game_list->GetModel(), ui.action_Leave_Room,
                                              ui.action_Show_Room);
     multiplayer_state->setVisible(false);
-
-    // Setup updater
-    updater = new Updater(this);
-    UISettings::values.updater_found = updater->HasUpdater();
 
     // Create status bar
     message_label = new QLabel();
@@ -322,13 +291,6 @@ void GMainWindow::InitializeHotkeys() {
             });
 }
 
-void GMainWindow::ShowUpdaterWidgets() {
-    ui.action_Check_For_Updates->setVisible(UISettings::values.updater_found);
-    ui.action_Open_Maintenance_Tool->setVisible(UISettings::values.updater_found);
-
-    connect(updater, &Updater::CheckUpdatesDone, this, &GMainWindow::OnUpdateFound);
-}
-
 void GMainWindow::SetDefaultUIGeometry() {
     // geometry: 55% of the window contents are in the upper screen half, 45% in the lower half
     const QRect screenRect = QApplication::desktop()->screenGeometry(this);
@@ -419,8 +381,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
     connect(ui.action_Restart, &QAction::triggered, this,
             [&] { BootGame(QString(UISettings::values.recent_files.first())); });
-    connect(ui.action_Report_Compatibility, &QAction::triggered, this,
-            &GMainWindow::OnMenuReportCompatibility);
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
@@ -476,10 +436,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
-    connect(ui.action_Check_For_Updates, &QAction::triggered, this,
-            &GMainWindow::OnCheckForUpdates);
-    connect(ui.action_Open_Maintenance_Tool, &QAction::triggered, this,
-            &GMainWindow::OnOpenUpdater);
 }
 
 void GMainWindow::OnDepthChanged(float v) {
@@ -508,73 +464,6 @@ void GMainWindow::OnDisplayTitleBars(bool show) {
                 delete old;
         }
     }
-}
-
-void GMainWindow::OnCheckForUpdates() {
-    explicit_update_check = true;
-    CheckForUpdates();
-}
-
-void GMainWindow::CheckForUpdates() {
-    if (updater->CheckForUpdates()) {
-        NGLOG_INFO(Frontend, "Update check started");
-    } else {
-        NGLOG_WARNING(Frontend, "Unable to start check for updates");
-    }
-}
-
-void GMainWindow::OnUpdateFound(bool found, bool error) {
-    if (error) {
-        NGLOG_WARNING(Frontend, "Update check failed");
-        return;
-    }
-
-    if (!found) {
-        NGLOG_INFO(Frontend, "No updates found");
-
-        // If the user explicitly clicked the "Check for Updates" button, we are
-        //  going to want to show them a prompt anyway.
-        if (explicit_update_check) {
-            explicit_update_check = false;
-            ShowNoUpdatePrompt();
-        }
-        return;
-    }
-
-    if (emulation_running && !explicit_update_check) {
-        NGLOG_INFO(Frontend, "Update found, deferring as game is running");
-        defer_update_prompt = true;
-        return;
-    }
-
-    NGLOG_INFO(Frontend, "Update found!");
-    explicit_update_check = false;
-
-    ShowUpdatePrompt();
-}
-
-void GMainWindow::ShowUpdatePrompt() {
-    defer_update_prompt = false;
-
-    auto result = QMessageBox::question(
-        this, tr("Update available!"),
-        tr("An update for Citra is available. Do you wish to install it now?<br /><br />"
-           "This <b>will</b> terminate emulation, if it is running."),
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-
-    if (result == QMessageBox::Yes) {
-        updater->LaunchUIOnExit();
-        close();
-    }
-}
-
-void GMainWindow::ShowNoUpdatePrompt() {
-    QMessageBox::information(this, tr("No update found"), tr("No update has been found for Citra."),
-                             QMessageBox::Ok, QMessageBox::Ok);
-}
-
-void GMainWindow::OnOpenUpdater() {
-    updater->LaunchUI();
 }
 
 bool GMainWindow::LoadROM(const QString& filename) {
@@ -651,7 +540,6 @@ bool GMainWindow::LoadROM(const QString& filename) {
         return false;
     }
 
-    Core::Telemetry().AddField(Telemetry::FieldType::App, "Frontend", "Qt");
     return true;
 }
 
@@ -744,7 +632,6 @@ void GMainWindow::ShutdownGame() {
     ui.action_Play->setEnabled(false);
     ui.action_Record->setText(tr("Record"));
     ui.action_Record->setEnabled(false);
-    ui.action_Report_Compatibility->setEnabled(false);
     render_window->hide();
     if (game_list->isEmpty())
         game_list_placeholder->show();
@@ -760,10 +647,6 @@ void GMainWindow::ShutdownGame() {
     emu_frametime_label->setVisible(false);
 
     emulation_running = false;
-
-    if (defer_update_prompt) {
-        ShowUpdatePrompt();
-    }
 }
 
 void GMainWindow::StoreRecentFile(const QString& filename) {
@@ -814,7 +697,6 @@ void GMainWindow::ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* ou
 
     *out = ErrEulaResult::Success;
     applet_open = false;
-    applet_cv.notify_one();
 }
 
 void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
@@ -930,7 +812,6 @@ void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
     }
 
     applet_open = false;
-    applet_cv.notify_one();
 }
 
 void GMainWindow::UpdateRecentFiles() {
@@ -1163,7 +1044,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Play->setEnabled(true);
     ui.action_Record->setEnabled(true);
-    ui.action_Report_Compatibility->setEnabled(true);
 }
 
 void GMainWindow::OnPauseGame() {
@@ -1176,20 +1056,6 @@ void GMainWindow::OnPauseGame() {
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
-}
-
-void GMainWindow::OnMenuReportCompatibility() {
-    if (!Settings::values.citra_token.empty() && !Settings::values.citra_username.empty()) {
-        CompatDB compatdb{this};
-        compatdb.exec();
-    } else {
-        QMessageBox::critical(
-            this, tr("Missing Citra Account"),
-            tr("In order to submit a game compatibility test case, you must link your Citra "
-               "account.<br><br/>To link your Citra account, go to Emulation &gt; Configuration "
-               "&gt; "
-               "Web."));
-    }
 }
 
 void GMainWindow::ToggleFullscreen() {

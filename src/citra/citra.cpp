@@ -286,8 +286,6 @@ int main(int argc, char** argv) {
 
     discordInit();
 
-    Core::Telemetry().AddField(Telemetry::FieldType::App, "Frontend", "SDL");
-
     if (use_multiplayer) {
         if (auto member = Network::GetRoomMember().lock()) {
             member->BindOnChatMessageRecieved(OnMessageReceived);

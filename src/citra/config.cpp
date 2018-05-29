@@ -157,7 +157,8 @@ void Config::ReadValues() {
     Settings::values.enable_audio_stretching =
         sdl2_config->GetBoolean("Audio", "enable_audio_stretching", true);
     Settings::values.audio_device_id = sdl2_config->Get("Audio", "output_device", "auto");
-    Settings::values.sound_volume = sdl2_config->GetInteger("Audio", "sound_volume", 100);
+    Settings::values.sound_volume =
+        static_cast<u16>(sdl2_config->GetInteger("Audio", "sound_volume", 100));
 
     // Data Storage
     Settings::values.use_virtual_sd =
@@ -194,10 +195,6 @@ void Config::ReadValues() {
     Settings::values.log_filter = sdl2_config->Get("Miscellaneous", "log_filter", "*:Info");
 
     // Web Service
-    Settings::values.enable_telemetry =
-        sdl2_config->GetBoolean("WebService", "enable_telemetry", true);
-    Settings::values.telemetry_endpoint_url = sdl2_config->Get(
-        "WebService", "telemetry_endpoint_url", "https://api.citra-emu.org/telemetry");
     Settings::values.verify_endpoint_url =
         sdl2_config->Get("WebService", "verify_endpoint_url", "https://api.citra-emu.org/profile");
     Settings::values.announce_multiplayer_room_endpoint_url = sdl2_config->Get(

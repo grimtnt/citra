@@ -65,7 +65,6 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     ui->toggle_new_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->button_sd_card_root->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->button_sd_card_root_empty->setEnabled(!Core::System::GetInstance().IsPoweredOn());
-    ui->updateBox->setVisible(UISettings::values.updater_found);
 }
 
 ConfigureGeneral::~ConfigureGeneral() {}
@@ -75,9 +74,6 @@ void ConfigureGeneral::setConfiguration() {
     ui->toggle_new_mode->setChecked(Settings::values.enable_new_mode);
     ui->toggle_cpu_jit->setChecked(Settings::values.use_cpu_jit);
     ui->sd_card_root->setText(QString::fromStdString(Settings::values.sd_card_root));
-
-    ui->toggle_update_check->setChecked(UISettings::values.check_for_update_on_start);
-    ui->toggle_auto_update->setChecked(UISettings::values.update_on_close);
 
     // The first item is "auto-select" with actual value -1, so plus one here will do the trick
     ui->region_combobox->setCurrentIndex(Settings::values.region_value + 1);
@@ -101,10 +97,6 @@ void ConfigureGeneral::applyConfiguration() {
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     sd_card_root_changed = Settings::values.sd_card_root != ui->sd_card_root->text().toStdString();
     Settings::values.sd_card_root = ui->sd_card_root->text().toStdString();
-
-    UISettings::values.check_for_update_on_start = ui->toggle_update_check->isChecked();
-    UISettings::values.update_on_close = ui->toggle_auto_update->isChecked();
-
     Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
     Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
     UISettings::values.show_console = ui->toggle_console->isChecked();

@@ -34,7 +34,6 @@ class MultiplayerState;
 template <typename>
 class QFutureWatcher;
 class QProgressBar;
-class Updater;
 class StereoscopicControllerWidget;
 
 using namespace HLE::Applets;
@@ -109,10 +108,6 @@ private:
     void ShutdownGame();
 
     void ShowCallouts();
-    void ShowUpdaterWidgets();
-    void ShowUpdatePrompt();
-    void ShowNoUpdatePrompt();
-    void CheckForUpdates();
 
     /**
      * Stores the filename in the recently loaded files list.
@@ -148,7 +143,6 @@ private slots:
     void OnStartGame();
     void OnPauseGame();
     void OnStopGame();
-    void OnMenuReportCompatibility();
     /// Called whenever a user selects a game in the game list widget.
     void OnGameListLoadFile(QString game_path);
     void OnGameListOpenFolder(u64 program_id, GameListOpenTarget target);
@@ -180,9 +174,6 @@ private slots:
     void OnCoreError(Core::System::ResultStatus, std::string);
     /// Called whenever a user selects Help->About Citra
     void OnMenuAboutCitra();
-    void OnUpdateFound(bool found, bool error);
-    void OnCheckForUpdates();
-    void OnOpenUpdater();
     void OnDepthChanged(float v);
     void OnStereoscopeModeChanged(EmuWindow::StereoscopicMode);
     void OnLanguageChanged(const QString& locale);
@@ -216,10 +207,6 @@ private:
     std::unique_ptr<EmuThread> emu_thread;
 
     StereoscopicControllerWidget* stereoscopicControllerWidget;
-    Updater* updater;
-
-    bool explicit_update_check = false;
-    bool defer_update_prompt = false;
 
     bool applet_open = false;
     std::mutex applet_mutex;

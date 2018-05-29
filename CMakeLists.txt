@@ -16,8 +16,7 @@ option(ENABLE_QT "Enable the Qt frontend" ON)
 option(ENABLE_QT_TRANSLATION "Enable translations for the Qt frontend" OFF)
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "ENABLE_QT;MSVC" OFF)
 
-option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
-option(CITRA_ENABLE_COMPATIBILITY_REPORTING "Enable compatibility reporting" OFF)
+option(ENABLE_WEB_SERVICE "Enable web services" ON)
 
 option(ENABLE_CUBEB "Enables the cubeb audio backend" ON)
 
@@ -247,9 +246,6 @@ endif()
 if (ENABLE_WEB_SERVICE)
     add_definitions(-DENABLE_WEB_SERVICE)
 endif()
-if (CITRA_ENABLE_COMPATIBILITY_REPORTING)
-    add_definitions(-DCITRA_ENABLE_COMPATIBILITY_REPORTING)
-endif()
 
 # Platform-specific library requirements
 # ======================================
@@ -367,7 +363,6 @@ get_timestamp(BUILD_DATE)
 enable_testing()
 add_subdirectory(externals)
 add_subdirectory(src)
-add_subdirectory(dist/installer)
 
 
 # Installation instructions

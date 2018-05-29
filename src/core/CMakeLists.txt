@@ -417,8 +417,6 @@ add_library(core STATIC
     perf_stats.h
     settings.cpp
     settings.h
-    telemetry_session.cpp
-    telemetry_session.h
 )
 
 create_target_directory_groups(core)

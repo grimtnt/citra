@@ -235,11 +235,6 @@ camera_inner_flip =
 log_filter = *:Info
 
 [WebService]
-# Whether or not to enable telemetry
-# 0: No, 1 (default): Yes
-enable_telemetry =
-# Endpoint URL for submitting telemetry data
-telemetry_endpoint_url = https://api.citra-emu.org/telemetry
 # Endpoint URL to verify the username and token
 verify_endpoint_url = https://api.citra-emu.org/profile
 # Endpoint URL for announcing public rooms
