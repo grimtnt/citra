@@ -46,12 +46,12 @@ void Shutdown() {
 
 void Update(const std::string& title) {
     if (g_send_presence) {
-        DiscordRichPresence discordPresence{};
-        discordPresence.state = title.empty() ? "Unknown game" : title.c_str();
-        discordPresence.details = "Playing";
-        discordPresence.startTimestamp = g_start_time;
-        discordPresence.largeImageKey = "citra-logo";
-        Discord_UpdatePresence(&discordPresence);
+        DiscordRichPresence presence{};
+        presence.state = title.empty() ? "Unknown game" : title.c_str();
+        presence.details = "Playing";
+        presence.startTimestamp = g_start_time;
+        presence.largeImageKey = "citra-logo";
+        Discord_UpdatePresence(&presence);
     } else {
         Discord_ClearPresence();
     }
