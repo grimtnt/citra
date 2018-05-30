@@ -284,8 +284,6 @@ int main(int argc, char** argv) {
         break; // Expected case
     }
 
-    discordInit();
-
     if (use_multiplayer) {
         if (auto member = Network::GetRoomMember().lock()) {
             member->BindOnChatMessageRecieved(OnMessageReceived);
