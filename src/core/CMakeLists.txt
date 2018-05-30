@@ -76,6 +76,8 @@ add_library(core STATIC
     frontend/camera/factory.h
     frontend/camera/interface.cpp
     frontend/camera/interface.h
+    frontend/discord.cpp
+    frontend/discord.h
     frontend/emu_window.cpp
     frontend/emu_window.h
     frontend/framebuffer_layout.cpp
