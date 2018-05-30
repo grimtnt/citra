@@ -13,10 +13,12 @@
 #include "core/hle/result.h"
 #include "core/hle/service/gsp/gsp.h"
 #include "core/hle/service/gsp/gsp_gpu.h"
+#include "core/hle/shared_page.h"
 #include "core/hw/gpu.h"
 #include "core/hw/hw.h"
 #include "core/hw/lcd.h"
 #include "core/memory.h"
+#include "core/settings.h"
 
 namespace Service {
 namespace GSP {
@@ -307,7 +309,7 @@ void GSP_GPU::FlushDataCache(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_DEBUG(Service_GSP, "(STUBBED) called address=0x%08X, size=0x%08X, process=%u", address,
+    LOG_DEBUG(Service_GSP, "(STUBBED) called, address=0x%08X, size=0x%08X, process=%u", address,
               size, process->process_id);
 }
 
@@ -318,7 +320,7 @@ void GSP_GPU::SetAxiConfigQoSMode(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_DEBUG(Service_GSP, "(STUBBED) called mode=0x%08X", mode);
+    LOG_DEBUG(Service_GSP, "(STUBBED) called, mode=0x%08X", mode);
 }
 
 void GSP_GPU::RegisterInterruptRelayQueue(Kernel::HLERequestContext& ctx) {
@@ -689,8 +691,22 @@ void GSP_GPU::StoreDataCache(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_DEBUG(Service_GSP, "(STUBBED) called address=0x%08X, size=0x%08X, process=%u", address,
+    LOG_DEBUG(Service_GSP, "(STUBBED) called, address=0x%08X, size=0x%08X, process=%u", address,
               size, process->process_id);
+}
+
+void GSP_GPU::SetLedForceOff(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x1C, 1, 0);
+
+    u8 state = rp.Pop<u8>();
+
+    Settings::values.sp_enable_3d = state == 0;
+    SharedPage::shared_page.ledstate_3d = state;
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    NGLOG_DEBUG(Service_GSP, "(STUBBED) called");
 }
 
 SessionData* GSP_GPU::FindRegisteredThreadData(u32 thread_id) {
@@ -733,7 +749,7 @@ GSP_GPU::GSP_GPU() : ServiceFramework("gsp::Gpu", 2) {
         {0x00190000, nullptr, "SaveVramSysArea"},
         {0x001A0000, nullptr, "RestoreVramSysArea"},
         {0x001B0000, nullptr, "ResetGpuCore"},
-        {0x001C0040, nullptr, "SetLedForceOff"},
+        {0x001C0040, &GSP_GPU::SetLedForceOff, "SetLedForceOff"},
         {0x001D0040, nullptr, "SetTestCommand"},
         {0x001E0080, nullptr, "SetInternalPriorities"},
         {0x001F0082, &GSP_GPU::StoreDataCache, "StoreDataCache"},
