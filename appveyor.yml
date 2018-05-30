@@ -181,7 +181,3 @@ deploy:
    name: ghreleases
    on:
      branch: master
-
-notifications:
-  - provider: Webhook
-    url: https://api.citra-emu.org/code/appveyor/notify
