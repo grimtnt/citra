@@ -596,12 +596,12 @@ void GMainWindow::BootGame(const QString& filename) {
 
     std::string title;
     Core::System::GetInstance().GetAppLoader().ReadTitle(title);
-    discordInit();
-    updateDiscordPresence(title);
+    DiscordRPC::Init();
+    DiscordRPC::Update(title);
 }
 
 void GMainWindow::ShutdownGame() {
-    discordShutdown();
+    DiscordRPC::Shutdown();
 
     Core::Movie::GetInstance().SetPlayFile("");
     Core::Movie::GetInstance().SetRecordFile("");
