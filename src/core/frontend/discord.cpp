@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <ctime>
+#include <discord_rpc.h>
 #include "common/common_types.h"
 #include "core/frontend/discord.h"
 
@@ -26,8 +27,8 @@ static void HandleDiscordJoinRequest(const DiscordUser* request) {
 }
 
 void Init() {
-    start_time = time(NULL);
-    send_presence = true;
+    g_start_time = time(NULL);
+    g_send_presence = true;
     DiscordEventHandlers handlers{};
     handlers.ready = HandleDiscordReady;
     handlers.disconnected = HandleDiscordDisconnected;
