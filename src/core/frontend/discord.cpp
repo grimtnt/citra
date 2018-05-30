@@ -25,19 +25,6 @@ static void HandleDiscordJoinRequest(const DiscordUser* request) {
     Discord_Respond(request->userId, DISCORD_REPLY_NO);
 }
 
-void Update(const std::string& title) {
-    if (g_send_presence) {
-        DiscordRichPresence discordPresence{};
-        discordPresence.state = title.empty() ? "Unknown game" : title.c_str();
-        discordPresence.details = "Playing";
-        discordPresence.startTimestamp = g_start_time;
-        discordPresence.largeImageKey = "citra-logo";
-        Discord_UpdatePresence(&discordPresence);
-    } else {
-        Discord_ClearPresence();
-    }
-}
-
 void Init() {
     start_time = time(NULL);
     send_presence = true;
@@ -55,6 +42,19 @@ void Shutdown() {
     g_send_presence = false;
     Discord_ClearPresence();
     Discord_Shutdown();
+}
+
+void Update(const std::string& title) {
+    if (g_send_presence) {
+        DiscordRichPresence discordPresence{};
+        discordPresence.state = title.empty() ? "Unknown game" : title.c_str();
+        discordPresence.details = "Playing";
+        discordPresence.startTimestamp = g_start_time;
+        discordPresence.largeImageKey = "citra-logo";
+        Discord_UpdatePresence(&discordPresence);
+    } else {
+        Discord_ClearPresence();
+    }
 }
 
 } // namespace DiscordRPC
