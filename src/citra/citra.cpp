@@ -299,13 +299,13 @@ int main(int argc, char** argv) {
 
     std::string title;
     system.GetAppLoader().ReadTitle(title);
-    discordInit();
-    updateDiscordPresence(title);
+    DiscordRPC::Init();
+    DiscordRPC::Update(title);
 
     while (emu_window->IsOpen()) {
         system.RunLoop();
     }
 
-    discordShutdown();
+    DiscordRPC::Shutdown();
     return 0;
 }
