@@ -456,7 +456,7 @@ void Module::Interface::SetTransferBytes(Kernel::HLERequestContext& ctx) {
         rb.Push(ERROR_INVALID_ENUM_VALUE);
     }
 
-    LOG_WARNING(Service_CAM, "(STUBBED)called, port_select=%u, bytes=%u, width=%u, height=%u",
+    LOG_WARNING(Service_CAM, "(STUBBED) called, port_select=%u, bytes=%u, width=%u, height=%u",
                 port_select.m_val, transfer_bytes, width, height);
 }
 
