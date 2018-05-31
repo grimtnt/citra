@@ -879,6 +879,22 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
 
     vertex_batch.clear();
 
+    // Reset textures in rasterizer state context because the rasterizer cache might delete them
+    for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
+        state.texture_units[texture_index].texture_2d = 0;
+    }
+    state.texture_cube_unit.texture_cube = 0;
+    if (allow_shadow) {
+        state.image_shadow_buffer = 0;
+        state.image_shadow_texture_px = 0;
+        state.image_shadow_texture_nx = 0;
+        state.image_shadow_texture_py = 0;
+        state.image_shadow_texture_ny = 0;
+        state.image_shadow_texture_pz = 0;
+        state.image_shadow_texture_nz = 0;
+    }
+    // No need to sync the state here, though
+
     if (shadow_rendering) {
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
                         GL_TEXTURE_UPDATE_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
