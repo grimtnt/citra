@@ -2,13 +2,10 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <iostream>
-#include <numeric>
 #include <vector>
 #include <cubeb/cubeb.h>
 #include "audio_core/audio_types.h"
 #include "audio_core/cubeb_sink.h"
-#include "common/assert.h"
 #include "common/logging/log.h"
 #include "core/settings.h"
 
@@ -16,6 +13,7 @@ namespace AudioCore {
 
 struct CubebSink::Impl {
     unsigned int sample_rate = 0;
+    std::vector<std::string> device_list;
 
     cubeb* ctx = nullptr;
     cubeb_stream* stream = nullptr;
@@ -60,7 +58,7 @@ CubebSink::CubebSink() : impl(std::make_unique<Impl>()) {
         for (size_t i = 0; i < collection.count; i++) {
             const cubeb_device_info& device = collection.device[i];
             if (device.friendly_name) {
-                device_list.emplace_back(device.friendly_name);
+                impl->device_list.emplace_back(device.friendly_name);
 
                 if (target_device_name && strcmp(target_device_name, device.friendly_name) == 0) {
                     output_device = device.devid;
@@ -72,7 +70,7 @@ CubebSink::CubebSink() : impl(std::make_unique<Impl>()) {
     }
 
     if (cubeb_stream_init(impl->ctx, &impl->stream, "Citra Audio Output", nullptr, nullptr,
-                          output_device, &params, std::max(1024u, minimum_latency),
+                          output_device, &params, std::max(512u, minimum_latency),
                           &Impl::DataCallback, &Impl::StateCallback, impl.get()) != CUBEB_OK) {
         NGLOG_CRITICAL(Audio_Sink, "Error initializing cubeb stream");
         return;
@@ -104,7 +102,7 @@ unsigned int CubebSink::GetNativeSampleRate() const {
 }
 
 std::vector<std::string> CubebSink::GetDeviceList() const {
-    return device_list;
+    return impl->device_list;
 }
 
 void CubebSink::EnqueueSamples(const s16* samples, size_t sample_count) {
@@ -126,14 +124,13 @@ void CubebSink::SetDevice(int device_id) {}
 
 long CubebSink::Impl::DataCallback(cubeb_stream* stream, void* user_data, const void* input_buffer,
                                    void* output_buffer, long num_frames) {
-    Impl* impl = reinterpret_cast<Impl*>(user_data);
+    Impl* impl = static_cast<Impl*>(user_data);
     u8* buffer = reinterpret_cast<u8*>(output_buffer);
 
     if (!impl)
         return 0;
 
-    long frames_written = 0; // Number of frames written to the output buffer
-    long frames_to_write = std::min(impl->queue.size() / 2, static_cast<size_t>(num_frames));
+    size_t frames_to_write = std::min(impl->queue.size() / 2, static_cast<size_t>(num_frames));
 
     memcpy(buffer, impl->queue.data(), frames_to_write * sizeof(s16) * 2);
     impl->queue.erase(impl->queue.begin(), impl->queue.begin() + frames_to_write * 2);
