@@ -19,6 +19,9 @@
 #include <shellapi.h>
 #endif
 
+#ifdef ENABLE_DISCORD_RPC
+#include <discord_rpc.h>
+#endif
 #include "citra/config.h"
 #include "citra/emu_window/emu_window_sdl2.h"
 #include "common/common_paths.h"
@@ -31,7 +34,6 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/cia_container.h"
-#include "core/frontend/discord.h"
 #include "core/hle/service/am/am.h"
 #include "core/loader/loader.h"
 #include "core/movie.h"
@@ -42,6 +44,18 @@
 extern "C" {
 // tells Nvidia drivers to use the dedicated GPU by default on laptops with switchable graphics
 __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+}
+#endif
+
+#ifdef ENABLE_DISCORD_RPC
+s64 g_start_time = 0;
+
+static void HandleDiscordDisconnected(int errorCode, const char* message) {
+    NGLOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
+}
+
+static void HandleDiscordError(int errorCode, const char* message) {
+    NGLOG_ERROR(Frontend, "Error: {} ({})", message, errorCode);
 }
 #endif
 
@@ -297,15 +311,29 @@ int main(int argc, char** argv) {
         }
     }
 
+#ifdef ENABLE_DISCORD_RPC
     std::string title;
     system.GetAppLoader().ReadTitle(title);
-    DiscordRPC::Init();
-    DiscordRPC::Update(title);
+    g_start_time = time(NULL);
+    DiscordEventHandlers handlers{};
+    handlers.disconnected = HandleDiscordDisconnected;
+    handlers.errored = HandleDiscordError;
+    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
+    DiscordRichPresence presence{};
+    presence.state = title.empty() ? "Unknown game" : title.c_str();
+    presence.details = "Playing";
+    presence.startTimestamp = g_start_time;
+    presence.largeImageKey = "icon";
+    Discord_UpdatePresence(&presence);
+#endif
 
     while (emu_window->IsOpen()) {
         system.RunLoop();
     }
 
-    DiscordRPC::Shutdown();
+#ifdef ENABLE_DISCORD_RPC
+    Discord_ClearPresence();
+    Discord_Shutdown();
+#endif
     return 0;
 }

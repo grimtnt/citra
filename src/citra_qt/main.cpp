@@ -14,6 +14,9 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtGui>
 #include <QtWidgets>
+#ifdef ENABLE_DISCORD_RPC
+#include <discord_rpc.h>
+#endif
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
 #include "citra_qt/camera/qt_multimedia_camera.h"
@@ -41,7 +44,6 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
-#include "core/frontend/discord.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/loader/loader.h"
@@ -66,6 +68,18 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
  * user. This is 32-bits - if we have more than 32 callouts, we should retire and recyle old ones.
  */
 enum class CalloutFlag : uint32_t {};
+
+#ifdef ENABLE_DISCORD_RPC
+s64 g_start_time = 0;
+
+static void HandleDiscordDisconnected(int errorCode, const char* message) {
+    NGLOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
+}
+
+static void HandleDiscordError(int errorCode, const char* message) {
+    NGLOG_ERROR(Frontend, "Error: {} ({})", message, errorCode);
+}
+#endif
 
 static void ShowCalloutMessage(const QString& message, CalloutFlag flag) {
     if (UISettings::values.callout_flags & static_cast<uint32_t>(flag)) {
@@ -594,14 +608,28 @@ void GMainWindow::BootGame(const QString& filename) {
             return ret;
         });
 
+#ifdef ENABLE_DISCORD_RPC
     std::string title;
     Core::System::GetInstance().GetAppLoader().ReadTitle(title);
-    DiscordRPC::Init();
-    DiscordRPC::Update(title);
+    g_start_time = time(NULL);
+    DiscordEventHandlers handlers{};
+    handlers.disconnected = HandleDiscordDisconnected;
+    handlers.errored = HandleDiscordError;
+    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
+    DiscordRichPresence presence{};
+    presence.state = title.empty() ? "Unknown game" : title.c_str();
+    presence.details = "Playing";
+    presence.startTimestamp = g_start_time;
+    presence.largeImageKey = "icon";
+    Discord_UpdatePresence(&presence);
+#endif
 }
 
 void GMainWindow::ShutdownGame() {
-    DiscordRPC::Shutdown();
+#ifdef ENABLE_DISCORD_RPC
+    Discord_ClearPresence();
+    Discord_Shutdown();
+#endif
 
     Core::Movie::GetInstance().SetPlayFile("");
     Core::Movie::GetInstance().SetRecordFile("");

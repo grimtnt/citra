@@ -76,8 +76,6 @@ add_library(core STATIC
     frontend/camera/factory.h
     frontend/camera/interface.cpp
     frontend/camera/interface.h
-    frontend/discord.cpp
-    frontend/discord.h
     frontend/emu_window.cpp
     frontend/emu_window.h
     frontend/framebuffer_layout.cpp
@@ -424,7 +422,7 @@ add_library(core STATIC
 create_target_directory_groups(core)
 
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core)
-target_link_libraries(core PUBLIC Boost::boost discord-rpc PRIVATE cryptopp fmt)
+target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt)
 if (ENABLE_WEB_SERVICE)
     target_link_libraries(core PUBLIC json-headers web_service)
 endif()
