@@ -329,6 +329,8 @@ static bool FillSurface(const Surface& surface, const u8* fill_data,
     state.draw.draw_framebuffer = draw_fb_handle;
     state.Apply();
 
+    surface->InvalidateAllWatcher();
+
     if (surface->type == SurfaceType::Color || surface->type == SurfaceType::Texture) {
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                                surface->texture.handle, 0);
