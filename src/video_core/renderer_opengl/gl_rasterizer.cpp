@@ -885,15 +885,15 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     }
     state.texture_cube_unit.texture_cube = 0;
     if (allow_shadow) {
-        state.image_shadow_buffer = 0;
         state.image_shadow_texture_px = 0;
         state.image_shadow_texture_nx = 0;
         state.image_shadow_texture_py = 0;
         state.image_shadow_texture_ny = 0;
         state.image_shadow_texture_pz = 0;
         state.image_shadow_texture_nz = 0;
+        state.image_shadow_buffer = 0;
     }
-    // No need to sync the state here, though
+    state.Apply();
 
     if (shadow_rendering) {
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
