@@ -2,1876 +2,2113 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <array>
-#include <cstddef>
-#include <cstring>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <glad/glad.h>
+#include "common/alignment.h"
 #include "common/assert.h"
-#include "common/bit_field.h"
-#include "common/bit_set.h"
 #include "common/logging/log.h"
-#include "core/core.h"
+#include "common/math_util.h"
+#include "common/microprofile.h"
+#include "common/scope_exit.h"
+#include "common/vector_math.h"
+#include "core/hw/gpu.h"
+#include "video_core/pica_state.h"
 #include "video_core/regs_framebuffer.h"
-#include "video_core/regs_lighting.h"
 #include "video_core/regs_rasterizer.h"
 #include "video_core/regs_texturing.h"
 #include "video_core/renderer_opengl/gl_rasterizer.h"
-#include "video_core/renderer_opengl/gl_shader_decompiler.h"
 #include "video_core/renderer_opengl/gl_shader_gen.h"
-#include "video_core/renderer_opengl/gl_shader_util.h"
-#include "video_core/video_core.h"
+#include "video_core/renderer_opengl/pica_to_gl.h"
+#include "video_core/renderer_opengl/renderer_opengl.h"
 
-using Pica::FramebufferRegs;
-using Pica::LightingRegs;
-using Pica::RasterizerRegs;
-using Pica::TexturingRegs;
-using TevStageConfig = TexturingRegs::TevStageConfig;
-using VSOutputAttributes = RasterizerRegs::VSOutputAttributes;
+using PixelFormat = SurfaceParams::PixelFormat;
+using SurfaceType = SurfaceParams::SurfaceType;
 
-namespace GLShader {
+MICROPROFILE_DEFINE(OpenGL_VAO, "OpenGL", "Vertex Array Setup", MP_RGB(255, 128, 0));
+MICROPROFILE_DEFINE(OpenGL_VS, "OpenGL", "Vertex Shader Setup", MP_RGB(192, 128, 128));
+MICROPROFILE_DEFINE(OpenGL_GS, "OpenGL", "Geometry Shader Setup", MP_RGB(128, 192, 128));
+MICROPROFILE_DEFINE(OpenGL_Drawing, "OpenGL", "Drawing", MP_RGB(128, 128, 192));
+MICROPROFILE_DEFINE(OpenGL_Blits, "OpenGL", "Blits", MP_RGB(100, 100, 255));
+MICROPROFILE_DEFINE(OpenGL_CacheManagement, "OpenGL", "Cache Mgmt", MP_RGB(100, 255, 100));
 
-static const std::string UniformBlockDef = R"(
-#define NUM_TEV_STAGES 6
-#define NUM_LIGHTS 8
+RasterizerOpenGL::RasterizerOpenGL()
+    : shader_dirty(true), vertex_buffer(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE),
+      uniform_buffer(GL_UNIFORM_BUFFER, UNIFORM_BUFFER_SIZE),
+      index_buffer(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE) {
 
-struct LightSrc {
-    vec3 specular_0;
-    vec3 specular_1;
-    vec3 diffuse;
-    vec3 ambient;
-    vec3 position;
-    vec3 spot_direction;
-    float dist_atten_bias;
-    float dist_atten_scale;
+    allow_shadow = GLAD_GL_ARB_shader_image_load_store && GLAD_GL_ARB_shader_image_size &&
+                   GLAD_GL_ARB_framebuffer_no_attachments;
+    if (!allow_shadow) {
+        NGLOG_WARNING(
+            Render_OpenGL,
+            "Shadow might not be able to render because of unsupported OpenGL extensions.");
+    }
+
+    // Clipping plane 0 is always enabled for PICA fixed clip plane z <= 0
+    state.clip_distance[0] = true;
+
+    // Create sampler objects
+    for (size_t i = 0; i < texture_samplers.size(); ++i) {
+        texture_samplers[i].Create();
+        state.texture_units[i].sampler = texture_samplers[i].sampler.handle;
+    }
+
+    // Create cubemap texture and sampler objects
+    texture_cube_sampler.Create();
+    state.texture_cube_unit.sampler = texture_cube_sampler.sampler.handle;
+
+    // Generate VAO
+    sw_vao.Create();
+    hw_vao.Create();
+
+    uniform_block_data.dirty = true;
+
+    uniform_block_data.lut_dirty.fill(true);
+
+    uniform_block_data.fog_lut_dirty = true;
+
+    uniform_block_data.proctex_noise_lut_dirty = true;
+    uniform_block_data.proctex_color_map_dirty = true;
+    uniform_block_data.proctex_alpha_map_dirty = true;
+    uniform_block_data.proctex_lut_dirty = true;
+    uniform_block_data.proctex_diff_lut_dirty = true;
+
+    glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniform_buffer_alignment);
+    uniform_size_aligned_vs =
+        Common::AlignUp<size_t>(sizeof(VSUniformData), uniform_buffer_alignment);
+    uniform_size_aligned_gs =
+        Common::AlignUp<size_t>(sizeof(GSUniformData), uniform_buffer_alignment);
+    uniform_size_aligned_fs =
+        Common::AlignUp<size_t>(sizeof(UniformData), uniform_buffer_alignment);
+
+    // Set vertex attributes for software shader path
+    state.draw.vertex_array = sw_vao.handle;
+    state.draw.vertex_buffer = vertex_buffer.GetHandle();
+    state.Apply();
+
+    glVertexAttribPointer(GLShader::ATTRIBUTE_POSITION, 4, GL_FLOAT, GL_FALSE,
+                          sizeof(HardwareVertex), (GLvoid*)offsetof(HardwareVertex, position));
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_POSITION);
+
+    glVertexAttribPointer(GLShader::ATTRIBUTE_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(HardwareVertex),
+                          (GLvoid*)offsetof(HardwareVertex, color));
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_COLOR);
+
+    glVertexAttribPointer(GLShader::ATTRIBUTE_TEXCOORD0, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(HardwareVertex), (GLvoid*)offsetof(HardwareVertex, tex_coord0));
+    glVertexAttribPointer(GLShader::ATTRIBUTE_TEXCOORD1, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(HardwareVertex), (GLvoid*)offsetof(HardwareVertex, tex_coord1));
+    glVertexAttribPointer(GLShader::ATTRIBUTE_TEXCOORD2, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(HardwareVertex), (GLvoid*)offsetof(HardwareVertex, tex_coord2));
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_TEXCOORD0);
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_TEXCOORD1);
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_TEXCOORD2);
+
+    glVertexAttribPointer(GLShader::ATTRIBUTE_TEXCOORD0_W, 1, GL_FLOAT, GL_FALSE,
+                          sizeof(HardwareVertex), (GLvoid*)offsetof(HardwareVertex, tex_coord0_w));
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_TEXCOORD0_W);
+
+    glVertexAttribPointer(GLShader::ATTRIBUTE_NORMQUAT, 4, GL_FLOAT, GL_FALSE,
+                          sizeof(HardwareVertex), (GLvoid*)offsetof(HardwareVertex, normquat));
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_NORMQUAT);
+
+    glVertexAttribPointer(GLShader::ATTRIBUTE_VIEW, 3, GL_FLOAT, GL_FALSE, sizeof(HardwareVertex),
+                          (GLvoid*)offsetof(HardwareVertex, view));
+    glEnableVertexAttribArray(GLShader::ATTRIBUTE_VIEW);
+
+    // Create render framebuffer
+    framebuffer.Create();
+
+    // Allocate and bind lighting lut textures
+    lighting_lut.Create();
+    state.lighting_lut.texture_buffer = lighting_lut.handle;
+    state.Apply();
+    lighting_lut_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, lighting_lut_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER,
+                 sizeof(GLfloat) * 2 * 256 * Pica::LightingRegs::NumLightingSampler, nullptr,
+                 GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::LightingLUT.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, lighting_lut_buffer.handle);
+
+    // Setup the LUT for the fog
+    fog_lut.Create();
+    state.fog_lut.texture_buffer = fog_lut.handle;
+    state.Apply();
+    fog_lut_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, fog_lut_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::FogLUT.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, fog_lut_buffer.handle);
+
+    // Setup the noise LUT for proctex
+    proctex_noise_lut.Create();
+    state.proctex_noise_lut.texture_buffer = proctex_noise_lut.handle;
+    state.Apply();
+    proctex_noise_lut_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, proctex_noise_lut_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::ProcTexNoiseLUT.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, proctex_noise_lut_buffer.handle);
+
+    // Setup the color map for proctex
+    proctex_color_map.Create();
+    state.proctex_color_map.texture_buffer = proctex_color_map.handle;
+    state.Apply();
+    proctex_color_map_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, proctex_color_map_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::ProcTexColorMap.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, proctex_color_map_buffer.handle);
+
+    // Setup the alpha map for proctex
+    proctex_alpha_map.Create();
+    state.proctex_alpha_map.texture_buffer = proctex_alpha_map.handle;
+    state.Apply();
+    proctex_alpha_map_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, proctex_alpha_map_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 2 * 128, nullptr, GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::ProcTexAlphaMap.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RG32F, proctex_alpha_map_buffer.handle);
+
+    // Setup the LUT for proctex
+    proctex_lut.Create();
+    state.proctex_lut.texture_buffer = proctex_lut.handle;
+    state.Apply();
+    proctex_lut_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, proctex_lut_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 4 * 256, nullptr, GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::ProcTexLUT.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, proctex_lut_buffer.handle);
+
+    // Setup the difference LUT for proctex
+    proctex_diff_lut.Create();
+    state.proctex_diff_lut.texture_buffer = proctex_diff_lut.handle;
+    state.Apply();
+    proctex_diff_lut_buffer.Create();
+    glBindBuffer(GL_TEXTURE_BUFFER, proctex_diff_lut_buffer.handle);
+    glBufferData(GL_TEXTURE_BUFFER, sizeof(GLfloat) * 4 * 256, nullptr, GL_DYNAMIC_DRAW);
+    glActiveTexture(TextureUnits::ProcTexDiffLUT.Enum());
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, proctex_diff_lut_buffer.handle);
+
+    // Bind index buffer for hardware shader path
+    state.draw.vertex_array = hw_vao.handle;
+    state.Apply();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer.GetHandle());
+
+    shader_program_manager =
+        std::make_unique<ShaderProgramManager>(GLAD_GL_ARB_separate_shader_objects);
+
+    glEnable(GL_BLEND);
+
+    SyncEntireState();
+}
+
+RasterizerOpenGL::~RasterizerOpenGL() {}
+
+void RasterizerOpenGL::SyncEntireState() {
+    // Sync fixed function OpenGL state
+    SyncClipEnabled();
+    SyncCullMode();
+    SyncBlendEnabled();
+    SyncBlendFuncs();
+    SyncBlendColor();
+    SyncLogicOp();
+    SyncStencilTest();
+    SyncDepthTest();
+    SyncColorWriteMask();
+    SyncStencilWriteMask();
+    SyncDepthWriteMask();
+
+    // Sync uniforms
+    SyncClipCoef();
+    SyncDepthScale();
+    SyncDepthOffset();
+    SyncAlphaTest();
+    SyncCombinerColor();
+    auto& tev_stages = Pica::g_state.regs.texturing.GetTevStages();
+    for (std::size_t index = 0; index < tev_stages.size(); ++index)
+        SyncTevConstColor(index, tev_stages[index]);
+
+    SyncGlobalAmbient();
+    for (unsigned light_index = 0; light_index < 8; light_index++) {
+        SyncLightSpecular0(light_index);
+        SyncLightSpecular1(light_index);
+        SyncLightDiffuse(light_index);
+        SyncLightAmbient(light_index);
+        SyncLightPosition(light_index);
+        SyncLightDistanceAttenuationBias(light_index);
+        SyncLightDistanceAttenuationScale(light_index);
+    }
+
+    SyncFogColor();
+    SyncProcTexNoise();
+    SyncShadowBias();
+}
+
+/**
+ * This is a helper function to resolve an issue when interpolating opposite quaternions. See below
+ * for a detailed description of this issue (yuriks):
+ *
+ * For any rotation, there are two quaternions Q, and -Q, that represent the same rotation. If you
+ * interpolate two quaternions that are opposite, instead of going from one rotation to another
+ * using the shortest path, you'll go around the longest path. You can test if two quaternions are
+ * opposite by checking if Dot(Q1, Q2) < 0. In that case, you can flip either of them, therefore
+ * making Dot(Q1, -Q2) positive.
+ *
+ * This solution corrects this issue per-vertex before passing the quaternions to OpenGL. This is
+ * correct for most cases but can still rotate around the long way sometimes. An implementation
+ * which did `lerp(lerp(Q1, Q2), Q3)` (with proper weighting), applying the dot product check
+ * between each step would work for those cases at the cost of being more complex to implement.
+ *
+ * Fortunately however, the 3DS hardware happens to also use this exact same logic to work around
+ * these issues, making this basic implementation actually more accurate to the hardware.
+ */
+static bool AreQuaternionsOpposite(Math::Vec4<Pica::float24> qa, Math::Vec4<Pica::float24> qb) {
+    Math::Vec4f a{qa.x.ToFloat32(), qa.y.ToFloat32(), qa.z.ToFloat32(), qa.w.ToFloat32()};
+    Math::Vec4f b{qb.x.ToFloat32(), qb.y.ToFloat32(), qb.z.ToFloat32(), qb.w.ToFloat32()};
+
+    return (Math::Dot(a, b) < 0.f);
+}
+
+void RasterizerOpenGL::AddTriangle(const Pica::Shader::OutputVertex& v0,
+                                   const Pica::Shader::OutputVertex& v1,
+                                   const Pica::Shader::OutputVertex& v2) {
+    vertex_batch.emplace_back(v0, false);
+    vertex_batch.emplace_back(v1, AreQuaternionsOpposite(v0.quat, v1.quat));
+    vertex_batch.emplace_back(v2, AreQuaternionsOpposite(v0.quat, v2.quat));
+}
+
+static constexpr std::array<GLenum, 4> vs_attrib_types{
+    GL_BYTE,          // VertexAttributeFormat::BYTE
+    GL_UNSIGNED_BYTE, // VertexAttributeFormat::UBYTE
+    GL_SHORT,         // VertexAttributeFormat::SHORT
+    GL_FLOAT          // VertexAttributeFormat::FLOAT
 };
 
-layout (std140) uniform shader_data {
-    int framebuffer_scale;
-    int alphatest_ref;
-    float depth_scale;
-    float depth_offset;
-    float shadow_bias_constant;
-    float shadow_bias_linear;
-    int scissor_x1;
-    int scissor_y1;
-    int scissor_x2;
-    int scissor_y2;
-    vec3 fog_color;
-    vec2 proctex_noise_f;
-    vec2 proctex_noise_a;
-    vec2 proctex_noise_p;
-    vec3 lighting_global_ambient;
-    LightSrc light_src[NUM_LIGHTS];
-    vec4 const_color[NUM_TEV_STAGES];
-    vec4 tev_combiner_buffer_color;
-    vec4 clip_coef;
+struct VertexArrayInfo {
+    u32 vs_input_index_min;
+    u32 vs_input_index_max;
+    u32 vs_input_size;
 };
-)";
 
-static std::string GetVertexInterfaceDeclaration(bool is_output, bool separable_shader) {
-    std::string out;
-
-    auto append_variable = [&](const char* var, int location) {
-        if (separable_shader) {
-            out += "layout (location=" + std::to_string(location) + ") ";
-        }
-        out += std::string(is_output ? "out " : "in ") + var + ";\n";
-    };
-
-    append_variable("vec4 primary_color", ATTRIBUTE_COLOR);
-    append_variable("vec2 texcoord0", ATTRIBUTE_TEXCOORD0);
-    append_variable("vec2 texcoord1", ATTRIBUTE_TEXCOORD1);
-    append_variable("vec2 texcoord2", ATTRIBUTE_TEXCOORD2);
-    append_variable("float texcoord0_w", ATTRIBUTE_TEXCOORD0_W);
-    append_variable("vec4 normquat", ATTRIBUTE_NORMQUAT);
-    append_variable("vec3 view", ATTRIBUTE_VIEW);
-
-    if (is_output && separable_shader) {
-        // gl_PerVertex redeclaration is required for separate shader object
-        out += R"(
-out gl_PerVertex {
-    vec4 gl_Position;
-    float gl_ClipDistance[2];
-};
-)";
-    }
-
-    return out;
-}
-
-PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
-    PicaFSConfig res;
-
-    auto& state = res.state;
-
-    state.scissor_test_mode = regs.rasterizer.scissor_test.mode;
-
-    state.depthmap_enable = regs.rasterizer.depthmap_enable;
-
-    state.alpha_test_func = regs.framebuffer.output_merger.alpha_test.enable
-                                ? regs.framebuffer.output_merger.alpha_test.func.Value()
-                                : Pica::FramebufferRegs::CompareFunc::Always;
-
-    state.texture0_type = regs.texturing.texture0.type;
-
-    state.texture2_use_coord1 = regs.texturing.main_config.texture2_use_coord1 != 0;
-
-    // Copy relevant tev stages fields.
-    // We don't sync const_color here because of the high variance, it is a
-    // shader uniform instead.
-    const auto& tev_stages = regs.texturing.GetTevStages();
-    DEBUG_ASSERT(state.tev_stages.size() == tev_stages.size());
-    for (size_t i = 0; i < tev_stages.size(); i++) {
-        const auto& tev_stage = tev_stages[i];
-        state.tev_stages[i].sources_raw = tev_stage.sources_raw;
-        state.tev_stages[i].modifiers_raw = tev_stage.modifiers_raw;
-        state.tev_stages[i].ops_raw = tev_stage.ops_raw;
-        state.tev_stages[i].scales_raw = tev_stage.scales_raw;
-    }
-
-    state.fog_mode = regs.texturing.fog_mode;
-    state.fog_flip = regs.texturing.fog_flip != 0;
-
-    state.combiner_buffer_input = regs.texturing.tev_combiner_buffer_input.update_mask_rgb.Value() |
-                                  regs.texturing.tev_combiner_buffer_input.update_mask_a.Value()
-                                      << 4;
-
-    // Fragment lighting
-
-    state.lighting.enable = !regs.lighting.disable;
-    state.lighting.src_num = regs.lighting.max_light_index + 1;
-
-    for (unsigned light_index = 0; light_index < state.lighting.src_num; ++light_index) {
-        unsigned num = regs.lighting.light_enable.GetNum(light_index);
-        const auto& light = regs.lighting.light[num];
-        state.lighting.light[light_index].num = num;
-        state.lighting.light[light_index].directional = light.config.directional != 0;
-        state.lighting.light[light_index].two_sided_diffuse = light.config.two_sided_diffuse != 0;
-        state.lighting.light[light_index].geometric_factor_0 = light.config.geometric_factor_0 != 0;
-        state.lighting.light[light_index].geometric_factor_1 = light.config.geometric_factor_1 != 0;
-        state.lighting.light[light_index].dist_atten_enable =
-            !regs.lighting.IsDistAttenDisabled(num);
-        state.lighting.light[light_index].spot_atten_enable =
-            !regs.lighting.IsSpotAttenDisabled(num);
-        state.lighting.light[light_index].shadow_enable = !regs.lighting.IsShadowDisabled(num);
-    }
-
-    state.lighting.lut_d0.enable = regs.lighting.config1.disable_lut_d0 == 0;
-    state.lighting.lut_d0.abs_input = regs.lighting.abs_lut_input.disable_d0 == 0;
-    state.lighting.lut_d0.type = regs.lighting.lut_input.d0.Value();
-    state.lighting.lut_d0.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.d0);
-
-    state.lighting.lut_d1.enable = regs.lighting.config1.disable_lut_d1 == 0;
-    state.lighting.lut_d1.abs_input = regs.lighting.abs_lut_input.disable_d1 == 0;
-    state.lighting.lut_d1.type = regs.lighting.lut_input.d1.Value();
-    state.lighting.lut_d1.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.d1);
-
-    // this is a dummy field due to lack of the corresponding register
-    state.lighting.lut_sp.enable = true;
-    state.lighting.lut_sp.abs_input = regs.lighting.abs_lut_input.disable_sp == 0;
-    state.lighting.lut_sp.type = regs.lighting.lut_input.sp.Value();
-    state.lighting.lut_sp.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.sp);
-
-    state.lighting.lut_fr.enable = regs.lighting.config1.disable_lut_fr == 0;
-    state.lighting.lut_fr.abs_input = regs.lighting.abs_lut_input.disable_fr == 0;
-    state.lighting.lut_fr.type = regs.lighting.lut_input.fr.Value();
-    state.lighting.lut_fr.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.fr);
-
-    state.lighting.lut_rr.enable = regs.lighting.config1.disable_lut_rr == 0;
-    state.lighting.lut_rr.abs_input = regs.lighting.abs_lut_input.disable_rr == 0;
-    state.lighting.lut_rr.type = regs.lighting.lut_input.rr.Value();
-    state.lighting.lut_rr.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.rr);
-
-    state.lighting.lut_rg.enable = regs.lighting.config1.disable_lut_rg == 0;
-    state.lighting.lut_rg.abs_input = regs.lighting.abs_lut_input.disable_rg == 0;
-    state.lighting.lut_rg.type = regs.lighting.lut_input.rg.Value();
-    state.lighting.lut_rg.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.rg);
-
-    state.lighting.lut_rb.enable = regs.lighting.config1.disable_lut_rb == 0;
-    state.lighting.lut_rb.abs_input = regs.lighting.abs_lut_input.disable_rb == 0;
-    state.lighting.lut_rb.type = regs.lighting.lut_input.rb.Value();
-    state.lighting.lut_rb.scale = regs.lighting.lut_scale.GetScale(regs.lighting.lut_scale.rb);
-
-    state.lighting.config = regs.lighting.config0.config;
-    state.lighting.enable_primary_alpha = regs.lighting.config0.enable_primary_alpha;
-    state.lighting.enable_secondary_alpha = regs.lighting.config0.enable_secondary_alpha;
-    state.lighting.bump_mode = regs.lighting.config0.bump_mode;
-    state.lighting.bump_selector = regs.lighting.config0.bump_selector;
-    state.lighting.bump_renorm = regs.lighting.config0.disable_bump_renorm == 0;
-    state.lighting.clamp_highlights = regs.lighting.config0.clamp_highlights != 0;
-
-    state.lighting.enable_shadow = regs.lighting.config0.enable_shadow != 0;
-    state.lighting.shadow_primary = regs.lighting.config0.shadow_primary != 0;
-    state.lighting.shadow_secondary = regs.lighting.config0.shadow_secondary != 0;
-    state.lighting.shadow_invert = regs.lighting.config0.shadow_invert != 0;
-    state.lighting.shadow_alpha = regs.lighting.config0.shadow_alpha != 0;
-    state.lighting.shadow_selector = regs.lighting.config0.shadow_selector;
-
-    state.proctex.enable = regs.texturing.main_config.texture3_enable;
-    if (state.proctex.enable) {
-        state.proctex.coord = regs.texturing.main_config.texture3_coordinates;
-        state.proctex.u_clamp = regs.texturing.proctex.u_clamp;
-        state.proctex.v_clamp = regs.texturing.proctex.v_clamp;
-        state.proctex.color_combiner = regs.texturing.proctex.color_combiner;
-        state.proctex.alpha_combiner = regs.texturing.proctex.alpha_combiner;
-        state.proctex.separate_alpha = regs.texturing.proctex.separate_alpha;
-        state.proctex.noise_enable = regs.texturing.proctex.noise_enable;
-        state.proctex.u_shift = regs.texturing.proctex.u_shift;
-        state.proctex.v_shift = regs.texturing.proctex.v_shift;
-        state.proctex.lut_width = regs.texturing.proctex_lut.width;
-        state.proctex.lut_offset = regs.texturing.proctex_lut_offset;
-        state.proctex.lut_filter = regs.texturing.proctex_lut.filter;
-    }
-
-    state.shadow_rendering = regs.framebuffer.output_merger.fragment_operation_mode ==
-                             Pica::FramebufferRegs::FragmentOperationMode::Shadow;
-
-    state.shadow_texture_orthographic = regs.texturing.shadow.orthographic != 0;
-    state.shadow_texture_bias = regs.texturing.shadow.bias << 1;
-
-    return res;
-}
-
-void PicaShaderConfigCommon::Init(const Pica::ShaderRegs& regs, Pica::Shader::ShaderSetup& setup) {
-    program_hash = setup.GetProgramCodeHash();
-    swizzle_hash = setup.GetSwizzleDataHash();
-    main_offset = regs.main_offset;
-    sanitize_mul = VideoCore::g_hw_shader_accurate_mul;
-
-    num_outputs = 0;
-    output_map.fill(16);
-
-    for (int reg : Common::BitSet<u32>(regs.output_mask)) {
-        output_map[reg] = num_outputs++;
-    }
-}
-
-void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
-    vs_output_attributes = Common::BitSet<u32>(regs.vs.output_mask).Count();
-    gs_output_attributes = vs_output_attributes;
-
-    semantic_maps.fill({16, 0});
-    for (u32 attrib = 0; attrib < regs.rasterizer.vs_output_total; ++attrib) {
-        std::array<VSOutputAttributes::Semantic, 4> semantics = {
-            regs.rasterizer.vs_output_attributes[attrib].map_x,
-            regs.rasterizer.vs_output_attributes[attrib].map_y,
-            regs.rasterizer.vs_output_attributes[attrib].map_z,
-            regs.rasterizer.vs_output_attributes[attrib].map_w};
-        for (u32 comp = 0; comp < 4; ++comp) {
-            const auto semantic = semantics[comp];
-            if (static_cast<size_t>(semantic) < 24) {
-                semantic_maps[static_cast<size_t>(semantic)] = {attrib, comp};
-            } else if (semantic != VSOutputAttributes::INVALID) {
-                NGLOG_ERROR(Render_OpenGL, "Invalid/unknown semantic id: {}",
-                            static_cast<u32>(semantic));
-            }
-        }
-    }
-}
-
-void PicaGSConfigRaw::Init(const Pica::Regs& regs, Pica::Shader::ShaderSetup& setup) {
-    PicaShaderConfigCommon::Init(regs.gs, setup);
-    PicaGSConfigCommonRaw::Init(regs);
-
-    num_inputs = regs.gs.max_input_attribute_index + 1;
-    input_map.fill(16);
-
-    for (u32 attr = 0; attr < num_inputs; ++attr) {
-        input_map[regs.gs.GetRegisterForAttribute(attr)] = attr;
-    }
-
-    attributes_per_vertex = regs.pipeline.vs_outmap_total_minus_1_a + 1;
-
-    gs_output_attributes = num_outputs;
-}
-
-/// Detects if a TEV stage is configured to be skipped (to avoid generating unnecessary code)
-static bool IsPassThroughTevStage(const TevStageConfig& stage) {
-    return (stage.color_op == TevStageConfig::Operation::Replace &&
-            stage.alpha_op == TevStageConfig::Operation::Replace &&
-            stage.color_source1 == TevStageConfig::Source::Previous &&
-            stage.alpha_source1 == TevStageConfig::Source::Previous &&
-            stage.color_modifier1 == TevStageConfig::ColorModifier::SourceColor &&
-            stage.alpha_modifier1 == TevStageConfig::AlphaModifier::SourceAlpha &&
-            stage.GetColorMultiplier() == 1 && stage.GetAlphaMultiplier() == 1);
-}
-
-static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_unit) {
-    const auto& state = config.state;
-    switch (texture_unit) {
-    case 0:
-        // Only unit 0 respects the texturing type
-        switch (state.texture0_type) {
-        case TexturingRegs::TextureConfig::Texture2D:
-            return "texture(tex0, texcoord0)";
-        case TexturingRegs::TextureConfig::Projection2D:
-            return "textureProj(tex0, vec3(texcoord0, texcoord0_w))";
-        case TexturingRegs::TextureConfig::TextureCube:
-            return "texture(tex_cube, vec3(texcoord0, texcoord0_w))";
-        case TexturingRegs::TextureConfig::Shadow2D:
-            return "shadowTexture(texcoord0, texcoord0_w)";
-        case TexturingRegs::TextureConfig::ShadowCube:
-            return "shadowTextureCube(texcoord0, texcoord0_w)";
-        default:
-            LOG_CRITICAL(HW_GPU, "Unhandled texture type %x",
-                         static_cast<int>(state.texture0_type));
-            UNIMPLEMENTED();
-            return "texture(tex0, texcoord0)";
-        }
-    case 1:
-        return "texture(tex1, texcoord1)";
-    case 2:
-        if (state.texture2_use_coord1)
-            return "texture(tex2, texcoord1)";
-        else
-            return "texture(tex2, texcoord2)";
-    case 3:
-        if (state.proctex.enable) {
-            return "ProcTex()";
-        } else {
-            LOG_ERROR(Render_OpenGL, "Using Texture3 without enabling it");
-            return "vec4(0.0)";
-        }
-    default:
-        UNREACHABLE();
-        return "";
-    }
-}
-
-/// Writes the specified TEV stage source component(s)
-static void AppendSource(std::string& out, const PicaFSConfig& config,
-                         TevStageConfig::Source source, const std::string& index_name) {
-    const auto& state = config.state;
-    using Source = TevStageConfig::Source;
-    switch (source) {
-    case Source::PrimaryColor:
-        out += "rounded_primary_color";
-        break;
-    case Source::PrimaryFragmentColor:
-        out += "primary_fragment_color";
-        break;
-    case Source::SecondaryFragmentColor:
-        out += "secondary_fragment_color";
-        break;
-    case Source::Texture0:
-        out += SampleTexture(config, 0);
-        break;
-    case Source::Texture1:
-        out += SampleTexture(config, 1);
-        break;
-    case Source::Texture2:
-        out += SampleTexture(config, 2);
-        break;
-    case Source::Texture3:
-        out += SampleTexture(config, 3);
-        break;
-    case Source::PreviousBuffer:
-        out += "combiner_buffer";
-        break;
-    case Source::Constant:
-        ((out += "const_color[") += index_name) += ']';
-        break;
-    case Source::Previous:
-        out += "last_tex_env_out";
-        break;
-    default:
-        out += "vec4(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown source op %u", static_cast<u32>(source));
-        break;
-    }
-}
-
-/// Writes the color components to use for the specified TEV stage color modifier
-static void AppendColorModifier(std::string& out, const PicaFSConfig& config,
-                                TevStageConfig::ColorModifier modifier,
-                                TevStageConfig::Source source, const std::string& index_name) {
-    using ColorModifier = TevStageConfig::ColorModifier;
-    switch (modifier) {
-    case ColorModifier::SourceColor:
-        AppendSource(out, config, source, index_name);
-        out += ".rgb";
-        break;
-    case ColorModifier::OneMinusSourceColor:
-        out += "vec3(1.0) - ";
-        AppendSource(out, config, source, index_name);
-        out += ".rgb";
-        break;
-    case ColorModifier::SourceAlpha:
-        AppendSource(out, config, source, index_name);
-        out += ".aaa";
-        break;
-    case ColorModifier::OneMinusSourceAlpha:
-        out += "vec3(1.0) - ";
-        AppendSource(out, config, source, index_name);
-        out += ".aaa";
-        break;
-    case ColorModifier::SourceRed:
-        AppendSource(out, config, source, index_name);
-        out += ".rrr";
-        break;
-    case ColorModifier::OneMinusSourceRed:
-        out += "vec3(1.0) - ";
-        AppendSource(out, config, source, index_name);
-        out += ".rrr";
-        break;
-    case ColorModifier::SourceGreen:
-        AppendSource(out, config, source, index_name);
-        out += ".ggg";
-        break;
-    case ColorModifier::OneMinusSourceGreen:
-        out += "vec3(1.0) - ";
-        AppendSource(out, config, source, index_name);
-        out += ".ggg";
-        break;
-    case ColorModifier::SourceBlue:
-        AppendSource(out, config, source, index_name);
-        out += ".bbb";
-        break;
-    case ColorModifier::OneMinusSourceBlue:
-        out += "vec3(1.0) - ";
-        AppendSource(out, config, source, index_name);
-        out += ".bbb";
-        break;
-    default:
-        out += "vec3(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown color modifier op %u", static_cast<u32>(modifier));
-        break;
-    }
-}
-
-/// Writes the alpha component to use for the specified TEV stage alpha modifier
-static void AppendAlphaModifier(std::string& out, const PicaFSConfig& config,
-                                TevStageConfig::AlphaModifier modifier,
-                                TevStageConfig::Source source, const std::string& index_name) {
-    using AlphaModifier = TevStageConfig::AlphaModifier;
-    switch (modifier) {
-    case AlphaModifier::SourceAlpha:
-        AppendSource(out, config, source, index_name);
-        out += ".a";
-        break;
-    case AlphaModifier::OneMinusSourceAlpha:
-        out += "1.0 - ";
-        AppendSource(out, config, source, index_name);
-        out += ".a";
-        break;
-    case AlphaModifier::SourceRed:
-        AppendSource(out, config, source, index_name);
-        out += ".r";
-        break;
-    case AlphaModifier::OneMinusSourceRed:
-        out += "1.0 - ";
-        AppendSource(out, config, source, index_name);
-        out += ".r";
-        break;
-    case AlphaModifier::SourceGreen:
-        AppendSource(out, config, source, index_name);
-        out += ".g";
-        break;
-    case AlphaModifier::OneMinusSourceGreen:
-        out += "1.0 - ";
-        AppendSource(out, config, source, index_name);
-        out += ".g";
-        break;
-    case AlphaModifier::SourceBlue:
-        AppendSource(out, config, source, index_name);
-        out += ".b";
-        break;
-    case AlphaModifier::OneMinusSourceBlue:
-        out += "1.0 - ";
-        AppendSource(out, config, source, index_name);
-        out += ".b";
-        break;
-    default:
-        out += "0.0";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha modifier op %u", static_cast<u32>(modifier));
-        break;
-    }
-}
-
-/// Writes the combiner function for the color components for the specified TEV stage operation
-static void AppendColorCombiner(std::string& out, TevStageConfig::Operation operation,
-                                const std::string& variable_name) {
-    out += "clamp(";
-    using Operation = TevStageConfig::Operation;
-    switch (operation) {
-    case Operation::Replace:
-        out += variable_name + "[0]";
-        break;
-    case Operation::Modulate:
-        out += variable_name + "[0] * " + variable_name + "[1]";
-        break;
-    case Operation::Add:
-        out += variable_name + "[0] + " + variable_name + "[1]";
-        break;
-    case Operation::AddSigned:
-        out += variable_name + "[0] + " + variable_name + "[1] - vec3(0.5)";
-        break;
-    case Operation::Lerp:
-        out += variable_name + "[0] * " + variable_name + "[2] + " + variable_name +
-               "[1] * (vec3(1.0) - " + variable_name + "[2])";
-        break;
-    case Operation::Subtract:
-        out += variable_name + "[0] - " + variable_name + "[1]";
-        break;
-    case Operation::MultiplyThenAdd:
-        out += variable_name + "[0] * " + variable_name + "[1] + " + variable_name + "[2]";
-        break;
-    case Operation::AddThenMultiply:
-        out += "min(" + variable_name + "[0] + " + variable_name + "[1], vec3(1.0)) * " +
-               variable_name + "[2]";
-        break;
-    case Operation::Dot3_RGB:
-    case Operation::Dot3_RGBA:
-        out += "vec3(dot(" + variable_name + "[0] - vec3(0.5), " + variable_name +
-               "[1] - vec3(0.5)) * 4.0)";
-        break;
-    default:
-        out += "vec3(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown color combiner operation: %u",
-                     static_cast<u32>(operation));
-        break;
-    }
-    out += ", vec3(0.0), vec3(1.0))"; // Clamp result to 0.0, 1.0
-}
-
-/// Writes the combiner function for the alpha component for the specified TEV stage operation
-static void AppendAlphaCombiner(std::string& out, TevStageConfig::Operation operation,
-                                const std::string& variable_name) {
-    out += "clamp(";
-    using Operation = TevStageConfig::Operation;
-    switch (operation) {
-    case Operation::Replace:
-        out += variable_name + "[0]";
-        break;
-    case Operation::Modulate:
-        out += variable_name + "[0] * " + variable_name + "[1]";
-        break;
-    case Operation::Add:
-        out += variable_name + "[0] + " + variable_name + "[1]";
-        break;
-    case Operation::AddSigned:
-        out += variable_name + "[0] + " + variable_name + "[1] - 0.5";
-        break;
-    case Operation::Lerp:
-        out += variable_name + "[0] * " + variable_name + "[2] + " + variable_name +
-               "[1] * (1.0 - " + variable_name + "[2])";
-        break;
-    case Operation::Subtract:
-        out += variable_name + "[0] - " + variable_name + "[1]";
-        break;
-    case Operation::MultiplyThenAdd:
-        out += variable_name + "[0] * " + variable_name + "[1] + " + variable_name + "[2]";
-        break;
-    case Operation::AddThenMultiply:
-        out += "min(" + variable_name + "[0] + " + variable_name + "[1], 1.0) * " + variable_name +
-               "[2]";
-        break;
-    default:
-        out += "0.0";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha combiner operation: %u",
-                     static_cast<u32>(operation));
-        break;
-    }
-    out += ", 0.0, 1.0)";
-}
-
-/// Writes the if-statement condition used to evaluate alpha testing
-static void AppendAlphaTestCondition(std::string& out, FramebufferRegs::CompareFunc func) {
-    using CompareFunc = FramebufferRegs::CompareFunc;
-    switch (func) {
-    case CompareFunc::Never:
-        out += "true";
-        break;
-    case CompareFunc::Always:
-        out += "false";
-        break;
-    case CompareFunc::Equal:
-    case CompareFunc::NotEqual:
-    case CompareFunc::LessThan:
-    case CompareFunc::LessThanOrEqual:
-    case CompareFunc::GreaterThan:
-    case CompareFunc::GreaterThanOrEqual: {
-        static const char* op[] = {"!=", "==", ">=", ">", "<=", "<"};
-        unsigned index = (unsigned)func - (unsigned)CompareFunc::Equal;
-        out += "int(last_tex_env_out.a * 255.0) " + std::string(op[index]) + " alphatest_ref";
-        break;
-    }
-
-    default:
-        out += "false";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha test condition %u", static_cast<u32>(func));
-        break;
-    }
-}
-
-/// Writes the code to emulate the specified TEV stage
-static void WriteTevStage(std::string& out, const PicaFSConfig& config, unsigned index) {
-    const auto stage =
-        static_cast<const TexturingRegs::TevStageConfig>(config.state.tev_stages[index]);
-    if (!IsPassThroughTevStage(stage)) {
-        std::string index_name = std::to_string(index);
-
-        out += "vec3 color_results_" + index_name + "[3] = vec3[3](";
-        AppendColorModifier(out, config, stage.color_modifier1, stage.color_source1, index_name);
-        out += ", ";
-        AppendColorModifier(out, config, stage.color_modifier2, stage.color_source2, index_name);
-        out += ", ";
-        AppendColorModifier(out, config, stage.color_modifier3, stage.color_source3, index_name);
-        out += ");\n";
-
-        // Round the output of each TEV stage to maintain the PICA's 8 bits of precision
-        out += "vec3 color_output_" + index_name + " = byteround(";
-        AppendColorCombiner(out, stage.color_op, "color_results_" + index_name);
-        out += ");\n";
-
-        if (stage.color_op == TevStageConfig::Operation::Dot3_RGBA) {
-            // result of Dot3_RGBA operation is also placed to the alpha component
-            out += "float alpha_output_" + index_name + " = color_output_" + index_name + "[0];\n";
-        } else {
-            out += "float alpha_results_" + index_name + "[3] = float[3](";
-            AppendAlphaModifier(out, config, stage.alpha_modifier1, stage.alpha_source1,
-                                index_name);
-            out += ", ";
-            AppendAlphaModifier(out, config, stage.alpha_modifier2, stage.alpha_source2,
-                                index_name);
-            out += ", ";
-            AppendAlphaModifier(out, config, stage.alpha_modifier3, stage.alpha_source3,
-                                index_name);
-            out += ");\n";
-
-            out += "float alpha_output_" + index_name + " = byteround(";
-            AppendAlphaCombiner(out, stage.alpha_op, "alpha_results_" + index_name);
-            out += ");\n";
-        }
-
-        out += "last_tex_env_out = vec4("
-               "clamp(color_output_" +
-               index_name + " * " + std::to_string(stage.GetColorMultiplier()) +
-               ".0, vec3(0.0), vec3(1.0)),"
-               "clamp(alpha_output_" +
-               index_name + " * " + std::to_string(stage.GetAlphaMultiplier()) +
-               ".0, 0.0, 1.0));\n";
-    }
-
-    out += "combiner_buffer = next_combiner_buffer;\n";
-
-    if (config.TevStageUpdatesCombinerBufferColor(index))
-        out += "next_combiner_buffer.rgb = last_tex_env_out.rgb;\n";
-
-    if (config.TevStageUpdatesCombinerBufferAlpha(index))
-        out += "next_combiner_buffer.a = last_tex_env_out.a;\n";
-}
-
-/// Writes the code to emulate fragment lighting
-static void WriteLighting(std::string& out, const PicaFSConfig& config) {
-    const auto& lighting = config.state.lighting;
-
-    // Define lighting globals
-    out += "vec4 diffuse_sum = vec4(0.0, 0.0, 0.0, 1.0);\n"
-           "vec4 specular_sum = vec4(0.0, 0.0, 0.0, 1.0);\n"
-           "vec3 light_vector = vec3(0.0);\n"
-           "vec3 refl_value = vec3(0.0);\n"
-           "vec3 spot_dir = vec3(0.0);\n"
-           "vec3 half_vector = vec3(0.0);\n"
-           "float dot_product = 0.0;\n"
-           "float clamp_highlights = 1.0;\n"
-           "float geo_factor = 1.0;\n";
-
-    // Compute fragment normals and tangents
-    auto Perturbation = [&]() {
-        return "2.0 * (" + SampleTexture(config, lighting.bump_selector) + ").rgb - 1.0";
-    };
-    if (lighting.bump_mode == LightingRegs::LightingBumpMode::NormalMap) {
-        // Bump mapping is enabled using a normal map
-        out += "vec3 surface_normal = " + Perturbation() + ";\n";
-
-        // Recompute Z-component of perturbation if 'renorm' is enabled, this provides a higher
-        // precision result
-        if (lighting.bump_renorm) {
-            std::string val =
-                "(1.0 - (surface_normal.x*surface_normal.x + surface_normal.y*surface_normal.y))";
-            out += "surface_normal.z = sqrt(max(" + val + ", 0.0));\n";
-        }
-
-        // The tangent vector is not perturbed by the normal map and is just a unit vector.
-        out += "vec3 surface_tangent = vec3(1.0, 0.0, 0.0);\n";
-    } else if (lighting.bump_mode == LightingRegs::LightingBumpMode::TangentMap) {
-        // Bump mapping is enabled using a tangent map
-        out += "vec3 surface_tangent = " + Perturbation() + ";\n";
-        // Mathematically, recomputing Z-component of the tangent vector won't affect the relevant
-        // computation below, which is also confirmed on 3DS. So we don't bother recomputing here
-        // even if 'renorm' is enabled.
-
-        // The normal vector is not perturbed by the tangent map and is just a unit vector.
-        out += "vec3 surface_normal = vec3(0.0, 0.0, 1.0);\n";
-    } else {
-        // No bump mapping - surface local normal and tangent are just unit vectors
-        out += "vec3 surface_normal = vec3(0.0, 0.0, 1.0);\n";
-        out += "vec3 surface_tangent = vec3(1.0, 0.0, 0.0);\n";
-    }
-
-    // Rotate the surface-local normal by the interpolated normal quaternion to convert it to
-    // eyespace.
-    out += "vec4 normalized_normquat = normalize(normquat);\n";
-    out += "vec3 normal = quaternion_rotate(normalized_normquat, surface_normal);\n";
-    out += "vec3 tangent = quaternion_rotate(normalized_normquat, surface_tangent);\n";
-
-    if (lighting.enable_shadow) {
-        std::string shadow_texture = SampleTexture(config, lighting.shadow_selector);
-        if (lighting.shadow_invert) {
-            out += "vec4 shadow = vec4(1.0) - " + shadow_texture + ";\n";
-        } else {
-            out += "vec4 shadow = " + shadow_texture + ";\n";
+RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_indexed) {
+    const auto& regs = Pica::g_state.regs;
+    const auto& vertex_attributes = regs.pipeline.vertex_attributes;
+
+    u32 vertex_min;
+    u32 vertex_max;
+    if (is_indexed) {
+        const auto& index_info = regs.pipeline.index_array;
+        PAddr address = vertex_attributes.GetPhysicalBaseAddress() + index_info.offset;
+        const u8* index_address_8 = Memory::GetPhysicalPointer(address);
+        const u16* index_address_16 = reinterpret_cast<const u16*>(index_address_8);
+        bool index_u16 = index_info.format != 0;
+
+        vertex_min = 0xFFFF;
+        vertex_max = 0;
+        std::size_t size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
+        res_cache.FlushRegion(address, size, nullptr);
+        for (u32 index = 0; index < regs.pipeline.num_vertices; ++index) {
+            u32 vertex = index_u16 ? index_address_16[index] : index_address_8[index];
+            vertex_min = std::min(vertex_min, vertex);
+            vertex_max = std::max(vertex_max, vertex);
         }
     } else {
-        out += "vec4 shadow = vec4(1.0);\n";
+        vertex_min = regs.pipeline.vertex_offset;
+        vertex_max = regs.pipeline.vertex_offset + regs.pipeline.num_vertices - 1;
     }
 
-    // Samples the specified lookup table for specular lighting
-    auto GetLutValue = [&lighting](LightingRegs::LightingSampler sampler, unsigned light_num,
-                                   LightingRegs::LightingLutInput input, bool abs) {
-        std::string index;
-        switch (input) {
-        case LightingRegs::LightingLutInput::NH:
-            index = "dot(normal, normalize(half_vector))";
-            break;
+    u32 vertex_num = vertex_max - vertex_min + 1;
+    u32 vs_input_size = 0;
+    for (auto& loader : vertex_attributes.attribute_loaders) {
+        if (loader.component_count != 0) {
+            vs_input_size += loader.byte_count * vertex_num;
+        }
+    }
 
-        case LightingRegs::LightingLutInput::VH:
-            index = std::string("dot(normalize(view), normalize(half_vector))");
-            break;
+    return {vertex_min, vertex_max, vs_input_size};
+}
 
-        case LightingRegs::LightingLutInput::NV:
-            index = std::string("dot(normal, normalize(view))");
-            break;
+void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
+                                        GLuint vs_input_index_min, GLuint vs_input_index_max) {
+    MICROPROFILE_SCOPE(OpenGL_VAO);
+    const auto& regs = Pica::g_state.regs;
+    const auto& vertex_attributes = regs.pipeline.vertex_attributes;
+    PAddr base_address = vertex_attributes.GetPhysicalBaseAddress();
 
-        case LightingRegs::LightingLutInput::LN:
-            index = std::string("dot(light_vector, normal)");
-            break;
+    state.draw.vertex_array = hw_vao.handle;
+    state.draw.vertex_buffer = vertex_buffer.GetHandle();
+    state.Apply();
 
-        case LightingRegs::LightingLutInput::SP:
-            index = std::string("dot(light_vector, spot_dir)");
-            break;
+    std::array<bool, 16> enable_attributes{};
 
-        case LightingRegs::LightingLutInput::CP:
-            // CP input is only available with configuration 7
-            if (lighting.config == LightingRegs::LightingConfig::Config7) {
-                // Note: even if the normal vector is modified by normal map, which is not the
-                // normal of the tangent plane anymore, the half angle vector is still projected
-                // using the modified normal vector.
-                std::string half_angle_proj =
-                    "normalize(half_vector) - normal * dot(normal, normalize(half_vector))";
-                // Note: the half angle vector projection is confirmed not normalized before the dot
-                // product. The result is in fact not cos(phi) as the name suggested.
-                index = "dot(" + half_angle_proj + ", tangent)";
+    for (const auto& loader : vertex_attributes.attribute_loaders) {
+        if (loader.component_count == 0 || loader.byte_count == 0) {
+            continue;
+        }
+
+        u32 offset = 0;
+        for (u32 comp = 0; comp < loader.component_count && comp < 12; ++comp) {
+            u32 attribute_index = loader.GetComponent(comp);
+            if (attribute_index < 12) {
+                if (vertex_attributes.GetNumElements(attribute_index) != 0) {
+                    offset = Common::AlignUp(
+                        offset, vertex_attributes.GetElementSizeInBytes(attribute_index));
+
+                    u32 input_reg = regs.vs.GetRegisterForAttribute(attribute_index);
+                    GLint size = vertex_attributes.GetNumElements(attribute_index);
+                    GLenum type = vs_attrib_types[static_cast<u32>(
+                        vertex_attributes.GetFormat(attribute_index))];
+                    GLsizei stride = loader.byte_count;
+                    glVertexAttribPointer(input_reg, size, type, GL_FALSE, stride,
+                                          reinterpret_cast<GLvoid*>(buffer_offset + offset));
+                    enable_attributes[input_reg] = true;
+
+                    offset += vertex_attributes.GetStride(attribute_index);
+                }
             } else {
-                index = "0.0";
+                // Attribute ids 12, 13, 14 and 15 signify 4, 8, 12 and 16-byte paddings,
+                // respectively
+                offset = Common::AlignUp(offset, 4);
+                offset += (attribute_index - 11) * 4;
             }
-            break;
+        }
 
+        PAddr data_addr =
+            base_address + loader.data_offset + (vs_input_index_min * loader.byte_count);
+
+        u32 vertex_num = vs_input_index_max - vs_input_index_min + 1;
+        u32 data_size = loader.byte_count * vertex_num;
+
+        res_cache.FlushRegion(data_addr, data_size, nullptr);
+        std::memcpy(array_ptr, Memory::GetPhysicalPointer(data_addr), data_size);
+
+        array_ptr += data_size;
+        buffer_offset += data_size;
+    }
+
+    for (std::size_t i = 0; i < enable_attributes.size(); ++i) {
+        if (enable_attributes[i] != hw_vao_enabled_attributes[i]) {
+            if (enable_attributes[i]) {
+                glEnableVertexAttribArray(i);
+            } else {
+                glDisableVertexAttribArray(i);
+            }
+            hw_vao_enabled_attributes[i] = enable_attributes[i];
+        }
+
+        if (vertex_attributes.IsDefaultAttribute(i)) {
+            u32 reg = regs.vs.GetRegisterForAttribute(i);
+            if (!enable_attributes[reg]) {
+                const auto& attr = Pica::g_state.input_default_attributes.attr[i];
+                glVertexAttrib4f(reg, attr.x.ToFloat32(), attr.y.ToFloat32(), attr.z.ToFloat32(),
+                                 attr.w.ToFloat32());
+            }
+        }
+    }
+}
+
+bool RasterizerOpenGL::SetupVertexShader() {
+    MICROPROFILE_SCOPE(OpenGL_VS);
+    GLShader::PicaVSConfig vs_config(Pica::g_state.regs, Pica::g_state.vs);
+    return shader_program_manager->UseProgrammableVertexShader(vs_config, Pica::g_state.vs);
+}
+
+bool RasterizerOpenGL::SetupGeometryShader() {
+    MICROPROFILE_SCOPE(OpenGL_GS);
+    const auto& regs = Pica::g_state.regs;
+    if (regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::No) {
+        GLShader::PicaFixedGSConfig gs_config(regs);
+        shader_program_manager->UseFixedGeometryShader(gs_config);
+        return true;
+    } else {
+        GLShader::PicaGSConfig gs_config(regs, Pica::g_state.gs);
+        return shader_program_manager->UseProgrammableGeometryShader(gs_config, Pica::g_state.gs);
+    }
+}
+
+bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
+    const auto& regs = Pica::g_state.regs;
+    if (regs.pipeline.use_gs != Pica::PipelineRegs::UseGS::No) {
+        if (regs.pipeline.gs_config.mode != Pica::PipelineRegs::GSMode::Point) {
+            return false;
+        }
+        if (regs.pipeline.triangle_topology != Pica::PipelineRegs::TriangleTopology::Shader) {
+            return false;
+        }
+    }
+
+    if (!SetupVertexShader())
+        return false;
+
+    if (!SetupGeometryShader())
+        return false;
+
+    return Draw(true, is_indexed);
+}
+
+static GLenum GetCurrentPrimitiveMode(bool use_gs) {
+    const auto& regs = Pica::g_state.regs;
+    if (use_gs) {
+        switch ((regs.gs.max_input_attribute_index + 1) /
+                (regs.pipeline.vs_outmap_total_minus_1_a + 1)) {
+        case 1:
+            return GL_POINTS;
+        case 2:
+            return GL_LINES;
+        case 4:
+            return GL_LINES_ADJACENCY;
+        case 3:
+            return GL_TRIANGLES;
+        case 6:
+            return GL_TRIANGLES_ADJACENCY;
         default:
-            LOG_CRITICAL(HW_GPU, "Unknown lighting LUT input %d\n", (int)input);
-            UNIMPLEMENTED();
-            index = "0.0";
+            UNREACHABLE();
+        }
+    } else {
+        switch (regs.pipeline.triangle_topology) {
+        case Pica::PipelineRegs::TriangleTopology::Shader:
+        case Pica::PipelineRegs::TriangleTopology::List:
+            return GL_TRIANGLES;
+        case Pica::PipelineRegs::TriangleTopology::Fan:
+            return GL_TRIANGLE_FAN;
+        case Pica::PipelineRegs::TriangleTopology::Strip:
+            return GL_TRIANGLE_STRIP;
+        default:
+            UNREACHABLE();
+        }
+    }
+}
+
+bool RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs) {
+    const auto& regs = Pica::g_state.regs;
+    GLenum primitive_mode = GetCurrentPrimitiveMode(use_gs);
+
+    auto [vs_input_index_min, vs_input_index_max, vs_input_size] = AnalyzeVertexArray(is_indexed);
+
+    if (vs_input_size > VERTEX_BUFFER_SIZE) {
+        NGLOG_WARNING(Render_OpenGL, "Too large vertex input size {}", vs_input_size);
+        return false;
+    }
+
+    state.draw.vertex_buffer = vertex_buffer.GetHandle();
+    state.Apply();
+
+    u8* buffer_ptr;
+    GLintptr buffer_offset;
+    std::tie(buffer_ptr, buffer_offset, std::ignore) = vertex_buffer.Map(vs_input_size, 4);
+    SetupVertexArray(buffer_ptr, buffer_offset, vs_input_index_min, vs_input_index_max);
+    vertex_buffer.Unmap(vs_input_size);
+
+    shader_program_manager->ApplyTo(state);
+    state.Apply();
+
+    if (is_indexed) {
+        bool index_u16 = regs.pipeline.index_array.format != 0;
+        std::size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
+
+        if (index_buffer_size > INDEX_BUFFER_SIZE) {
+            NGLOG_WARNING(Render_OpenGL, "Too large index input size {}", index_buffer_size);
+            return false;
+        }
+
+        const u8* index_data =
+            Memory::GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
+                                       regs.pipeline.index_array.offset);
+        std::tie(buffer_ptr, buffer_offset, std::ignore) = index_buffer.Map(index_buffer_size, 4);
+        std::memcpy(buffer_ptr, index_data, index_buffer_size);
+        index_buffer.Unmap(index_buffer_size);
+
+        glDrawRangeElementsBaseVertex(
+            primitive_mode, vs_input_index_min, vs_input_index_max, regs.pipeline.num_vertices,
+            index_u16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_BYTE,
+            reinterpret_cast<const void*>(buffer_offset), -static_cast<GLint>(vs_input_index_min));
+    } else {
+        glDrawArrays(primitive_mode, 0, regs.pipeline.num_vertices);
+    }
+    return true;
+}
+
+void RasterizerOpenGL::DrawTriangles() {
+    if (vertex_batch.empty())
+        return;
+    Draw(false, false);
+}
+
+bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
+    MICROPROFILE_SCOPE(OpenGL_Drawing);
+    const auto& regs = Pica::g_state.regs;
+
+    bool shadow_rendering = regs.framebuffer.output_merger.fragment_operation_mode ==
+                            Pica::FramebufferRegs::FragmentOperationMode::Shadow;
+
+    const bool has_stencil =
+        regs.framebuffer.framebuffer.depth_format == Pica::FramebufferRegs::DepthFormat::D24S8;
+
+    const bool write_color_fb = shadow_rendering || state.color_mask.red_enabled == GL_TRUE ||
+                                state.color_mask.green_enabled == GL_TRUE ||
+                                state.color_mask.blue_enabled == GL_TRUE ||
+                                state.color_mask.alpha_enabled == GL_TRUE;
+
+    const bool write_depth_fb =
+        (state.depth.test_enabled && state.depth.write_mask == GL_TRUE) ||
+        (has_stencil && state.stencil.test_enabled && state.stencil.write_mask != 0);
+
+    const bool using_color_fb =
+        regs.framebuffer.framebuffer.GetColorBufferPhysicalAddress() != 0 && write_color_fb;
+    const bool using_depth_fb =
+        !shadow_rendering && regs.framebuffer.framebuffer.GetDepthBufferPhysicalAddress() != 0 &&
+        (write_depth_fb || regs.framebuffer.output_merger.depth_test_enable != 0 ||
+         (has_stencil && state.stencil.test_enabled));
+
+    MathUtil::Rectangle<s32> viewport_rect_unscaled{
+        // These registers hold half-width and half-height, so must be multiplied by 2
+        regs.rasterizer.viewport_corner.x,  // left
+        regs.rasterizer.viewport_corner.y + // top
+            static_cast<s32>(Pica::float24::FromRaw(regs.rasterizer.viewport_size_y).ToFloat32() *
+                             2),
+        regs.rasterizer.viewport_corner.x + // right
+            static_cast<s32>(Pica::float24::FromRaw(regs.rasterizer.viewport_size_x).ToFloat32() *
+                             2),
+        regs.rasterizer.viewport_corner.y // bottom
+    };
+
+    Surface color_surface;
+    Surface depth_surface;
+    MathUtil::Rectangle<u32> surfaces_rect;
+    std::tie(color_surface, depth_surface, surfaces_rect) =
+        res_cache.GetFramebufferSurfaces(using_color_fb, using_depth_fb, viewport_rect_unscaled);
+
+    const u16 res_scale = color_surface != nullptr
+                              ? color_surface->res_scale
+                              : (depth_surface == nullptr ? 1u : depth_surface->res_scale);
+
+    MathUtil::Rectangle<u32> draw_rect{
+        static_cast<u32>(MathUtil::Clamp<s32>(static_cast<s32>(surfaces_rect.left) +
+                                                  viewport_rect_unscaled.left * res_scale,
+                                              surfaces_rect.left, surfaces_rect.right)), // Left
+        static_cast<u32>(MathUtil::Clamp<s32>(static_cast<s32>(surfaces_rect.bottom) +
+                                                  viewport_rect_unscaled.top * res_scale,
+                                              surfaces_rect.bottom, surfaces_rect.top)), // Top
+        static_cast<u32>(MathUtil::Clamp<s32>(static_cast<s32>(surfaces_rect.left) +
+                                                  viewport_rect_unscaled.right * res_scale,
+                                              surfaces_rect.left, surfaces_rect.right)), // Right
+        static_cast<u32>(MathUtil::Clamp<s32>(static_cast<s32>(surfaces_rect.bottom) +
+                                                  viewport_rect_unscaled.bottom * res_scale,
+                                              surfaces_rect.bottom, surfaces_rect.top))}; // Bottom
+
+    // Bind the framebuffer surfaces
+    state.draw.draw_framebuffer = framebuffer.handle;
+    state.Apply();
+
+    if (shadow_rendering) {
+        if (!allow_shadow || color_surface == nullptr) {
+            return true;
+        }
+        glFramebufferParameteri(GL_DRAW_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH,
+                                color_surface->width * color_surface->res_scale);
+        glFramebufferParameteri(GL_DRAW_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT,
+                                color_surface->height * color_surface->res_scale);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0,
+                               0);
+        state.image_shadow_buffer = color_surface->texture.handle;
+    } else {
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               color_surface != nullptr ? color_surface->texture.handle : 0, 0);
+        if (depth_surface != nullptr) {
+            if (has_stencil) {
+                // attach both depth and stencil
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                       GL_TEXTURE_2D, depth_surface->texture.handle, 0);
+            } else {
+                // attach depth
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
+                                       depth_surface->texture.handle, 0);
+                // clear stencil attachment
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0,
+                                       0);
+            }
+        } else {
+            // clear both depth and stencil attachment
+            glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+                                   0, 0);
+        }
+    }
+
+    // Sync the viewport
+    state.viewport.x =
+        static_cast<GLint>(surfaces_rect.left) + viewport_rect_unscaled.left * res_scale;
+    state.viewport.y =
+        static_cast<GLint>(surfaces_rect.bottom) + viewport_rect_unscaled.bottom * res_scale;
+    state.viewport.width = static_cast<GLsizei>(viewport_rect_unscaled.GetWidth() * res_scale);
+    state.viewport.height = static_cast<GLsizei>(viewport_rect_unscaled.GetHeight() * res_scale);
+
+    if (uniform_block_data.data.framebuffer_scale != res_scale) {
+        uniform_block_data.data.framebuffer_scale = res_scale;
+        uniform_block_data.dirty = true;
+    }
+
+    // Scissor checks are window-, not viewport-relative, which means that if the cached texture
+    // sub-rect changes, the scissor bounds also need to be updated.
+    GLint scissor_x1 =
+        static_cast<GLint>(surfaces_rect.left + regs.rasterizer.scissor_test.x1 * res_scale);
+    GLint scissor_y1 =
+        static_cast<GLint>(surfaces_rect.bottom + regs.rasterizer.scissor_test.y1 * res_scale);
+    // x2, y2 have +1 added to cover the entire pixel area, otherwise you might get cracks when
+    // scaling or doing multisampling.
+    GLint scissor_x2 =
+        static_cast<GLint>(surfaces_rect.left + (regs.rasterizer.scissor_test.x2 + 1) * res_scale);
+    GLint scissor_y2 = static_cast<GLint>(surfaces_rect.bottom +
+                                          (regs.rasterizer.scissor_test.y2 + 1) * res_scale);
+
+    if (uniform_block_data.data.scissor_x1 != scissor_x1 ||
+        uniform_block_data.data.scissor_x2 != scissor_x2 ||
+        uniform_block_data.data.scissor_y1 != scissor_y1 ||
+        uniform_block_data.data.scissor_y2 != scissor_y2) {
+
+        uniform_block_data.data.scissor_x1 = scissor_x1;
+        uniform_block_data.data.scissor_x2 = scissor_x2;
+        uniform_block_data.data.scissor_y1 = scissor_y1;
+        uniform_block_data.data.scissor_y2 = scissor_y2;
+        uniform_block_data.dirty = true;
+    }
+
+    // Sync and bind the texture surfaces
+    const auto pica_textures = regs.texturing.GetTextures();
+    for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
+        const auto& texture = pica_textures[texture_index];
+
+        if (texture.enabled) {
+            if (texture_index == 0) {
+                using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
+                switch (texture.config.type.Value()) {
+                case TextureType::Shadow2D: {
+                    if (!allow_shadow)
+                        continue;
+
+                    Surface surface = res_cache.GetTextureSurface(texture);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_px = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_px = 0;
+                    }
+                    continue;
+                }
+                case TextureType::ShadowCube: {
+                    if (!allow_shadow)
+                        continue;
+                    Pica::Texture::TextureInfo info = Pica::Texture::TextureInfo::FromPicaRegister(
+                        texture.config, texture.format);
+                    Surface surface;
+
+                    using CubeFace = Pica::TexturingRegs::CubeFace;
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_px = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_px = 0;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_nx = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_nx = 0;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_py = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_py = 0;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_ny = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_ny = 0;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_pz = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_pz = 0;
+                    }
+
+                    info.physical_address =
+                        regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ);
+                    surface = res_cache.GetTextureSurface(info);
+                    if (surface != nullptr) {
+                        state.image_shadow_texture_nz = surface->texture.handle;
+                    } else {
+                        state.image_shadow_texture_nz = 0;
+                    }
+
+                    continue;
+                }
+                case TextureType::TextureCube:
+                    using CubeFace = Pica::TexturingRegs::CubeFace;
+                    TextureCubeConfig config;
+                    config.px = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
+                    config.nx = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeX);
+                    config.py = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveY);
+                    config.ny = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeY);
+                    config.pz = regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveZ);
+                    config.nz = regs.texturing.GetCubePhysicalAddress(CubeFace::NegativeZ);
+                    config.width = texture.config.width;
+                    config.format = texture.format;
+                    state.texture_cube_unit.texture_cube =
+                        res_cache.GetTextureCube(config).texture.handle;
+
+                    texture_cube_sampler.SyncWithConfig(texture.config);
+                    state.texture_units[texture_index].texture_2d = 0;
+                    continue; // Texture unit 0 setup finished. Continue to next unit
+                }
+                state.texture_cube_unit.texture_cube = 0;
+            }
+
+            texture_samplers[texture_index].SyncWithConfig(texture.config);
+            Surface surface = res_cache.GetTextureSurface(texture);
+            if (surface != nullptr) {
+                state.texture_units[texture_index].texture_2d = surface->texture.handle;
+            } else {
+                // Can occur when texture addr is null or its memory is unmapped/invalid
+                state.texture_units[texture_index].texture_2d = 0;
+            }
+        } else {
+            state.texture_units[texture_index].texture_2d = 0;
+        }
+    }
+
+    // Sync and bind the shader
+    if (shader_dirty) {
+        SetShader();
+        shader_dirty = false;
+    }
+
+    // Sync the lighting luts
+    for (unsigned index = 0; index < uniform_block_data.lut_dirty.size(); index++) {
+        if (uniform_block_data.lut_dirty[index]) {
+            SyncLightingLUT(index);
+            uniform_block_data.lut_dirty[index] = false;
+        }
+    }
+
+    // Sync the fog lut
+    if (uniform_block_data.fog_lut_dirty) {
+        SyncFogLUT();
+        uniform_block_data.fog_lut_dirty = false;
+    }
+
+    // Sync the proctex noise lut
+    if (uniform_block_data.proctex_noise_lut_dirty) {
+        SyncProcTexNoiseLUT();
+        uniform_block_data.proctex_noise_lut_dirty = false;
+    }
+
+    // Sync the proctex color map
+    if (uniform_block_data.proctex_color_map_dirty) {
+        SyncProcTexColorMap();
+        uniform_block_data.proctex_color_map_dirty = false;
+    }
+
+    // Sync the proctex alpha map
+    if (uniform_block_data.proctex_alpha_map_dirty) {
+        SyncProcTexAlphaMap();
+        uniform_block_data.proctex_alpha_map_dirty = false;
+    }
+
+    // Sync the proctex lut
+    if (uniform_block_data.proctex_lut_dirty) {
+        SyncProcTexLUT();
+        uniform_block_data.proctex_lut_dirty = false;
+    }
+
+    // Sync the proctex difference lut
+    if (uniform_block_data.proctex_diff_lut_dirty) {
+        SyncProcTexDiffLUT();
+        uniform_block_data.proctex_diff_lut_dirty = false;
+    }
+
+    // Sync the uniform data
+    const bool use_gs = regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::Yes;
+    UploadUniforms(accelerate, use_gs);
+
+    // Viewport can have negative offsets or larger
+    // dimensions than our framebuffer sub-rect.
+    // Enable scissor test to prevent drawing
+    // outside of the framebuffer region
+    state.scissor.enabled = true;
+    state.scissor.x = draw_rect.left;
+    state.scissor.y = draw_rect.bottom;
+    state.scissor.width = draw_rect.GetWidth();
+    state.scissor.height = draw_rect.GetHeight();
+    state.Apply();
+
+    // Draw the vertex batch
+    bool succeeded = true;
+    if (accelerate) {
+        succeeded = AccelerateDrawBatchInternal(is_indexed, use_gs);
+    } else {
+        state.draw.vertex_array = sw_vao.handle;
+        state.draw.vertex_buffer = vertex_buffer.GetHandle();
+        shader_program_manager->UseTrivialVertexShader();
+        shader_program_manager->UseTrivialGeometryShader();
+        shader_program_manager->ApplyTo(state);
+        state.Apply();
+
+        std::size_t max_vertices = 3 * (VERTEX_BUFFER_SIZE / (3 * sizeof(HardwareVertex)));
+        for (std::size_t base_vertex = 0; base_vertex < vertex_batch.size();
+             base_vertex += max_vertices) {
+            std::size_t vertices = std::min(max_vertices, vertex_batch.size() - base_vertex);
+            std::size_t vertex_size = vertices * sizeof(HardwareVertex);
+            u8* vbo;
+            GLintptr offset;
+            std::tie(vbo, offset, std::ignore) =
+                vertex_buffer.Map(vertex_size, sizeof(HardwareVertex));
+            std::memcpy(vbo, vertex_batch.data() + base_vertex, vertex_size);
+            vertex_buffer.Unmap(vertex_size);
+            glDrawArrays(GL_TRIANGLES, offset / sizeof(HardwareVertex), (GLsizei)vertices);
+        }
+    }
+
+    vertex_batch.clear();
+
+    // Reset textures in rasterizer state context because the rasterizer cache might delete them
+    for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
+        state.texture_units[texture_index].texture_2d = 0;
+    }
+    state.texture_cube_unit.texture_cube = 0;
+    if (allow_shadow) {
+        state.image_shadow_texture_px = 0;
+        state.image_shadow_texture_nx = 0;
+        state.image_shadow_texture_py = 0;
+        state.image_shadow_texture_ny = 0;
+        state.image_shadow_texture_pz = 0;
+        state.image_shadow_texture_nz = 0;
+        state.image_shadow_buffer = 0;
+    }
+    state.Apply();
+
+    if (shadow_rendering) {
+        glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
+                        GL_TEXTURE_UPDATE_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT);
+    }
+
+    // Mark framebuffer surfaces as dirty
+    MathUtil::Rectangle<u32> draw_rect_unscaled{
+        draw_rect.left / res_scale, draw_rect.top / res_scale, draw_rect.right / res_scale,
+        draw_rect.bottom / res_scale};
+
+    if (color_surface != nullptr && write_color_fb) {
+        auto interval = color_surface->GetSubRectInterval(draw_rect_unscaled);
+        res_cache.InvalidateRegion(boost::icl::first(interval), boost::icl::length(interval),
+                                   color_surface);
+    }
+    if (depth_surface != nullptr && write_depth_fb) {
+        auto interval = depth_surface->GetSubRectInterval(draw_rect_unscaled);
+        res_cache.InvalidateRegion(boost::icl::first(interval), boost::icl::length(interval),
+                                   depth_surface);
+    }
+
+    return succeeded;
+}
+
+void RasterizerOpenGL::NotifyPicaRegisterChanged(u32 id) {
+    const auto& regs = Pica::g_state.regs;
+
+    switch (id) {
+    // Culling
+    case PICA_REG_INDEX(rasterizer.cull_mode):
+        SyncCullMode();
+        break;
+
+    // Clipping plane
+    case PICA_REG_INDEX(rasterizer.clip_enable):
+        SyncClipEnabled();
+        break;
+
+    case PICA_REG_INDEX_WORKAROUND(rasterizer.clip_coef[0], 0x48):
+    case PICA_REG_INDEX_WORKAROUND(rasterizer.clip_coef[1], 0x49):
+    case PICA_REG_INDEX_WORKAROUND(rasterizer.clip_coef[2], 0x4a):
+    case PICA_REG_INDEX_WORKAROUND(rasterizer.clip_coef[3], 0x4b):
+        SyncClipCoef();
+        break;
+
+    // Depth modifiers
+    case PICA_REG_INDEX(rasterizer.viewport_depth_range):
+        SyncDepthScale();
+        break;
+    case PICA_REG_INDEX(rasterizer.viewport_depth_near_plane):
+        SyncDepthOffset();
+        break;
+
+    // Depth buffering
+    case PICA_REG_INDEX(rasterizer.depthmap_enable):
+        shader_dirty = true;
+        break;
+
+    // Blending
+    case PICA_REG_INDEX(framebuffer.output_merger.alphablend_enable):
+        SyncBlendEnabled();
+        break;
+    case PICA_REG_INDEX(framebuffer.output_merger.alpha_blending):
+        SyncBlendFuncs();
+        break;
+    case PICA_REG_INDEX(framebuffer.output_merger.blend_const):
+        SyncBlendColor();
+        break;
+
+    // Fog state
+    case PICA_REG_INDEX(texturing.fog_color):
+        SyncFogColor();
+        break;
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[0], 0xe8):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[1], 0xe9):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[2], 0xea):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[3], 0xeb):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[4], 0xec):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[5], 0xed):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[6], 0xee):
+    case PICA_REG_INDEX_WORKAROUND(texturing.fog_lut_data[7], 0xef):
+        uniform_block_data.fog_lut_dirty = true;
+        break;
+
+    // ProcTex state
+    case PICA_REG_INDEX(texturing.proctex):
+    case PICA_REG_INDEX(texturing.proctex_lut):
+    case PICA_REG_INDEX(texturing.proctex_lut_offset):
+        shader_dirty = true;
+        break;
+
+    case PICA_REG_INDEX(texturing.proctex_noise_u):
+    case PICA_REG_INDEX(texturing.proctex_noise_v):
+    case PICA_REG_INDEX(texturing.proctex_noise_frequency):
+        SyncProcTexNoise();
+        break;
+
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[0], 0xb0):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[1], 0xb1):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[2], 0xb2):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[3], 0xb3):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[4], 0xb4):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[5], 0xb5):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[6], 0xb6):
+    case PICA_REG_INDEX_WORKAROUND(texturing.proctex_lut_data[7], 0xb7):
+        using Pica::TexturingRegs;
+        switch (regs.texturing.proctex_lut_config.ref_table.Value()) {
+        case TexturingRegs::ProcTexLutTable::Noise:
+            uniform_block_data.proctex_noise_lut_dirty = true;
+            break;
+        case TexturingRegs::ProcTexLutTable::ColorMap:
+            uniform_block_data.proctex_color_map_dirty = true;
+            break;
+        case TexturingRegs::ProcTexLutTable::AlphaMap:
+            uniform_block_data.proctex_alpha_map_dirty = true;
+            break;
+        case TexturingRegs::ProcTexLutTable::Color:
+            uniform_block_data.proctex_lut_dirty = true;
+            break;
+        case TexturingRegs::ProcTexLutTable::ColorDiff:
+            uniform_block_data.proctex_diff_lut_dirty = true;
             break;
         }
+        break;
 
-        std::string sampler_string = std::to_string(static_cast<unsigned>(sampler));
+    // Alpha test
+    case PICA_REG_INDEX(framebuffer.output_merger.alpha_test):
+        SyncAlphaTest();
+        shader_dirty = true;
+        break;
 
-        if (abs) {
-            // LUT index is in the range of (0.0, 1.0)
-            index = lighting.light[light_num].two_sided_diffuse ? "abs(" + index + ")"
-                                                                : "max(" + index + ", 0.0)";
-            return "LookupLightingLUTUnsigned(" + sampler_string + ", " + index + ")";
-        } else {
-            // LUT index is in the range of (-1.0, 1.0)
-            return "LookupLightingLUTSigned(" + sampler_string + ", " + index + ")";
-        }
-    };
+    // Sync GL stencil test + stencil write mask
+    // (Pica stencil test function register also contains a stencil write mask)
+    case PICA_REG_INDEX(framebuffer.output_merger.stencil_test.raw_func):
+        SyncStencilTest();
+        SyncStencilWriteMask();
+        break;
+    case PICA_REG_INDEX(framebuffer.output_merger.stencil_test.raw_op):
+    case PICA_REG_INDEX(framebuffer.framebuffer.depth_format):
+        SyncStencilTest();
+        break;
 
-    // Write the code to emulate each enabled light
-    for (unsigned light_index = 0; light_index < lighting.src_num; ++light_index) {
-        const auto& light_config = lighting.light[light_index];
-        std::string light_src = "light_src[" + std::to_string(light_config.num) + "]";
+    // Sync GL depth test + depth and color write mask
+    // (Pica depth test function register also contains a depth and color write mask)
+    case PICA_REG_INDEX(framebuffer.output_merger.depth_test_enable):
+        SyncDepthTest();
+        SyncDepthWriteMask();
+        SyncColorWriteMask();
+        break;
 
-        // Compute light vector (directional or positional)
-        if (light_config.directional)
-            out += "light_vector = normalize(" + light_src + ".position);\n";
-        else
-            out += "light_vector = normalize(" + light_src + ".position + view);\n";
+    // Sync GL depth and stencil write mask
+    // (This is a dedicated combined depth / stencil write-enable register)
+    case PICA_REG_INDEX(framebuffer.framebuffer.allow_depth_stencil_write):
+        SyncDepthWriteMask();
+        SyncStencilWriteMask();
+        break;
 
-        out += "spot_dir = " + light_src + ".spot_direction;\n";
-        out += "half_vector = normalize(view) + light_vector;\n";
+    // Sync GL color write mask
+    // (This is a dedicated color write-enable register)
+    case PICA_REG_INDEX(framebuffer.framebuffer.allow_color_write):
+        SyncColorWriteMask();
+        break;
 
-        // Compute dot product of light_vector and normal, adjust if lighting is one-sided or
-        // two-sided
-        out += std::string("dot_product = ") + (light_config.two_sided_diffuse
-                                                    ? "abs(dot(light_vector, normal));\n"
-                                                    : "max(dot(light_vector, normal), 0.0);\n");
+    case PICA_REG_INDEX(framebuffer.shadow):
+        SyncShadowBias();
+        break;
 
-        // If enabled, clamp specular component if lighting result is zero
-        if (lighting.clamp_highlights) {
-            out += "clamp_highlights = sign(dot_product);\n";
-        }
+    // Scissor test
+    case PICA_REG_INDEX(rasterizer.scissor_test.mode):
+        shader_dirty = true;
+        break;
 
-        // If enabled, compute spot light attenuation value
-        std::string spot_atten = "1.0";
-        if (light_config.spot_atten_enable &&
-            LightingRegs::IsLightingSamplerSupported(
-                lighting.config, LightingRegs::LightingSampler::SpotlightAttenuation)) {
-            std::string value =
-                GetLutValue(LightingRegs::SpotlightAttenuationSampler(light_config.num),
-                            light_config.num, lighting.lut_sp.type, lighting.lut_sp.abs_input);
-            spot_atten = "(" + std::to_string(lighting.lut_sp.scale) + " * " + value + ")";
-        }
+    // Logic op
+    case PICA_REG_INDEX(framebuffer.output_merger.logic_op):
+        SyncLogicOp();
+        break;
 
-        // If enabled, compute distance attenuation value
-        std::string dist_atten = "1.0";
-        if (light_config.dist_atten_enable) {
-            std::string index = "clamp(" + light_src + ".dist_atten_scale * length(-view - " +
-                                light_src + ".position) + " + light_src +
-                                ".dist_atten_bias, 0.0, 1.0)";
-            auto sampler = LightingRegs::DistanceAttenuationSampler(light_config.num);
-            dist_atten = "LookupLightingLUTUnsigned(" +
-                         std::to_string(static_cast<unsigned>(sampler)) + "," + index + ")";
-        }
+    case PICA_REG_INDEX(texturing.main_config):
+        shader_dirty = true;
+        break;
 
-        if (light_config.geometric_factor_0 || light_config.geometric_factor_1) {
-            out += "geo_factor = dot(half_vector, half_vector);\n"
-                   "geo_factor = geo_factor == 0.0 ? 0.0 : min("
-                   "dot_product / geo_factor, 1.0);\n";
-        }
+    // Texture 0 type
+    case PICA_REG_INDEX(texturing.texture0.type):
+        shader_dirty = true;
+        break;
 
-        // Specular 0 component
-        std::string d0_lut_value = "1.0";
-        if (lighting.lut_d0.enable &&
-            LightingRegs::IsLightingSamplerSupported(
-                lighting.config, LightingRegs::LightingSampler::Distribution0)) {
-            // Lookup specular "distribution 0" LUT value
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::Distribution0, light_config.num,
-                            lighting.lut_d0.type, lighting.lut_d0.abs_input);
-            d0_lut_value = "(" + std::to_string(lighting.lut_d0.scale) + " * " + value + ")";
-        }
-        std::string specular_0 = "(" + d0_lut_value + " * " + light_src + ".specular_0)";
-        if (light_config.geometric_factor_0) {
-            specular_0 = "(" + specular_0 + " * geo_factor)";
-        }
+    // TEV stages
+    // (This also syncs fog_mode and fog_flip which are part of tev_combiner_buffer_input)
+    case PICA_REG_INDEX(texturing.tev_stage0.color_source1):
+    case PICA_REG_INDEX(texturing.tev_stage0.color_modifier1):
+    case PICA_REG_INDEX(texturing.tev_stage0.color_op):
+    case PICA_REG_INDEX(texturing.tev_stage0.color_scale):
+    case PICA_REG_INDEX(texturing.tev_stage1.color_source1):
+    case PICA_REG_INDEX(texturing.tev_stage1.color_modifier1):
+    case PICA_REG_INDEX(texturing.tev_stage1.color_op):
+    case PICA_REG_INDEX(texturing.tev_stage1.color_scale):
+    case PICA_REG_INDEX(texturing.tev_stage2.color_source1):
+    case PICA_REG_INDEX(texturing.tev_stage2.color_modifier1):
+    case PICA_REG_INDEX(texturing.tev_stage2.color_op):
+    case PICA_REG_INDEX(texturing.tev_stage2.color_scale):
+    case PICA_REG_INDEX(texturing.tev_stage3.color_source1):
+    case PICA_REG_INDEX(texturing.tev_stage3.color_modifier1):
+    case PICA_REG_INDEX(texturing.tev_stage3.color_op):
+    case PICA_REG_INDEX(texturing.tev_stage3.color_scale):
+    case PICA_REG_INDEX(texturing.tev_stage4.color_source1):
+    case PICA_REG_INDEX(texturing.tev_stage4.color_modifier1):
+    case PICA_REG_INDEX(texturing.tev_stage4.color_op):
+    case PICA_REG_INDEX(texturing.tev_stage4.color_scale):
+    case PICA_REG_INDEX(texturing.tev_stage5.color_source1):
+    case PICA_REG_INDEX(texturing.tev_stage5.color_modifier1):
+    case PICA_REG_INDEX(texturing.tev_stage5.color_op):
+    case PICA_REG_INDEX(texturing.tev_stage5.color_scale):
+    case PICA_REG_INDEX(texturing.tev_combiner_buffer_input):
+        shader_dirty = true;
+        break;
+    case PICA_REG_INDEX(texturing.tev_stage0.const_r):
+        SyncTevConstColor(0, regs.texturing.tev_stage0);
+        break;
+    case PICA_REG_INDEX(texturing.tev_stage1.const_r):
+        SyncTevConstColor(1, regs.texturing.tev_stage1);
+        break;
+    case PICA_REG_INDEX(texturing.tev_stage2.const_r):
+        SyncTevConstColor(2, regs.texturing.tev_stage2);
+        break;
+    case PICA_REG_INDEX(texturing.tev_stage3.const_r):
+        SyncTevConstColor(3, regs.texturing.tev_stage3);
+        break;
+    case PICA_REG_INDEX(texturing.tev_stage4.const_r):
+        SyncTevConstColor(4, regs.texturing.tev_stage4);
+        break;
+    case PICA_REG_INDEX(texturing.tev_stage5.const_r):
+        SyncTevConstColor(5, regs.texturing.tev_stage5);
+        break;
 
-        // If enabled, lookup ReflectRed value, otherwise, 1.0 is used
-        if (lighting.lut_rr.enable &&
-            LightingRegs::IsLightingSamplerSupported(lighting.config,
-                                                     LightingRegs::LightingSampler::ReflectRed)) {
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::ReflectRed, light_config.num,
-                            lighting.lut_rr.type, lighting.lut_rr.abs_input);
-            value = "(" + std::to_string(lighting.lut_rr.scale) + " * " + value + ")";
-            out += "refl_value.r = " + value + ";\n";
-        } else {
-            out += "refl_value.r = 1.0;\n";
-        }
+    // TEV combiner buffer color
+    case PICA_REG_INDEX(texturing.tev_combiner_buffer_color):
+        SyncCombinerColor();
+        break;
 
-        // If enabled, lookup ReflectGreen value, otherwise, ReflectRed value is used
-        if (lighting.lut_rg.enable &&
-            LightingRegs::IsLightingSamplerSupported(lighting.config,
-                                                     LightingRegs::LightingSampler::ReflectGreen)) {
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::ReflectGreen, light_config.num,
-                            lighting.lut_rg.type, lighting.lut_rg.abs_input);
-            value = "(" + std::to_string(lighting.lut_rg.scale) + " * " + value + ")";
-            out += "refl_value.g = " + value + ";\n";
-        } else {
-            out += "refl_value.g = refl_value.r;\n";
-        }
+    // Fragment lighting switches
+    case PICA_REG_INDEX(lighting.disable):
+    case PICA_REG_INDEX(lighting.max_light_index):
+    case PICA_REG_INDEX(lighting.config0):
+    case PICA_REG_INDEX(lighting.config1):
+    case PICA_REG_INDEX(lighting.abs_lut_input):
+    case PICA_REG_INDEX(lighting.lut_input):
+    case PICA_REG_INDEX(lighting.lut_scale):
+    case PICA_REG_INDEX(lighting.light_enable):
+        break;
 
-        // If enabled, lookup ReflectBlue value, otherwise, ReflectRed value is used
-        if (lighting.lut_rb.enable &&
-            LightingRegs::IsLightingSamplerSupported(lighting.config,
-                                                     LightingRegs::LightingSampler::ReflectBlue)) {
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::ReflectBlue, light_config.num,
-                            lighting.lut_rb.type, lighting.lut_rb.abs_input);
-            value = "(" + std::to_string(lighting.lut_rb.scale) + " * " + value + ")";
-            out += "refl_value.b = " + value + ";\n";
-        } else {
-            out += "refl_value.b = refl_value.r;\n";
-        }
+    // Fragment lighting specular 0 color
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].specular_0, 0x140 + 0 * 0x10):
+        SyncLightSpecular0(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].specular_0, 0x140 + 1 * 0x10):
+        SyncLightSpecular0(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].specular_0, 0x140 + 2 * 0x10):
+        SyncLightSpecular0(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].specular_0, 0x140 + 3 * 0x10):
+        SyncLightSpecular0(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].specular_0, 0x140 + 4 * 0x10):
+        SyncLightSpecular0(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].specular_0, 0x140 + 5 * 0x10):
+        SyncLightSpecular0(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].specular_0, 0x140 + 6 * 0x10):
+        SyncLightSpecular0(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].specular_0, 0x140 + 7 * 0x10):
+        SyncLightSpecular0(7);
+        break;
 
-        // Specular 1 component
-        std::string d1_lut_value = "1.0";
-        if (lighting.lut_d1.enable &&
-            LightingRegs::IsLightingSamplerSupported(
-                lighting.config, LightingRegs::LightingSampler::Distribution1)) {
-            // Lookup specular "distribution 1" LUT value
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::Distribution1, light_config.num,
-                            lighting.lut_d1.type, lighting.lut_d1.abs_input);
-            d1_lut_value = "(" + std::to_string(lighting.lut_d1.scale) + " * " + value + ")";
-        }
-        std::string specular_1 =
-            "(" + d1_lut_value + " * refl_value * " + light_src + ".specular_1)";
-        if (light_config.geometric_factor_1) {
-            specular_1 = "(" + specular_1 + " * geo_factor)";
-        }
+    // Fragment lighting specular 1 color
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].specular_1, 0x141 + 0 * 0x10):
+        SyncLightSpecular1(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].specular_1, 0x141 + 1 * 0x10):
+        SyncLightSpecular1(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].specular_1, 0x141 + 2 * 0x10):
+        SyncLightSpecular1(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].specular_1, 0x141 + 3 * 0x10):
+        SyncLightSpecular1(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].specular_1, 0x141 + 4 * 0x10):
+        SyncLightSpecular1(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].specular_1, 0x141 + 5 * 0x10):
+        SyncLightSpecular1(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].specular_1, 0x141 + 6 * 0x10):
+        SyncLightSpecular1(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].specular_1, 0x141 + 7 * 0x10):
+        SyncLightSpecular1(7);
+        break;
 
-        // Fresnel
-        // Note: only the last entry in the light slots applies the Fresnel factor
-        if (light_index == lighting.src_num - 1 && lighting.lut_fr.enable &&
-            LightingRegs::IsLightingSamplerSupported(lighting.config,
-                                                     LightingRegs::LightingSampler::Fresnel)) {
-            // Lookup fresnel LUT value
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::Fresnel, light_config.num,
-                            lighting.lut_fr.type, lighting.lut_fr.abs_input);
-            value = "(" + std::to_string(lighting.lut_fr.scale) + " * " + value + ")";
+    // Fragment lighting diffuse color
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].diffuse, 0x142 + 0 * 0x10):
+        SyncLightDiffuse(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].diffuse, 0x142 + 1 * 0x10):
+        SyncLightDiffuse(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].diffuse, 0x142 + 2 * 0x10):
+        SyncLightDiffuse(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].diffuse, 0x142 + 3 * 0x10):
+        SyncLightDiffuse(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].diffuse, 0x142 + 4 * 0x10):
+        SyncLightDiffuse(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].diffuse, 0x142 + 5 * 0x10):
+        SyncLightDiffuse(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].diffuse, 0x142 + 6 * 0x10):
+        SyncLightDiffuse(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].diffuse, 0x142 + 7 * 0x10):
+        SyncLightDiffuse(7);
+        break;
 
-            // Enabled for diffuse lighting alpha component
-            if (lighting.enable_primary_alpha) {
-                out += "diffuse_sum.a = " + value + ";\n";
-            }
+    // Fragment lighting ambient color
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].ambient, 0x143 + 0 * 0x10):
+        SyncLightAmbient(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].ambient, 0x143 + 1 * 0x10):
+        SyncLightAmbient(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].ambient, 0x143 + 2 * 0x10):
+        SyncLightAmbient(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].ambient, 0x143 + 3 * 0x10):
+        SyncLightAmbient(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].ambient, 0x143 + 4 * 0x10):
+        SyncLightAmbient(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].ambient, 0x143 + 5 * 0x10):
+        SyncLightAmbient(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].ambient, 0x143 + 6 * 0x10):
+        SyncLightAmbient(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].ambient, 0x143 + 7 * 0x10):
+        SyncLightAmbient(7);
+        break;
 
-            // Enabled for the specular lighting alpha component
-            if (lighting.enable_secondary_alpha) {
-                out += "specular_sum.a = " + value + ";\n";
-            }
-        }
+    // Fragment lighting position
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].x, 0x144 + 0 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].z, 0x145 + 0 * 0x10):
+        SyncLightPosition(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].x, 0x144 + 1 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].z, 0x145 + 1 * 0x10):
+        SyncLightPosition(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].x, 0x144 + 2 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].z, 0x145 + 2 * 0x10):
+        SyncLightPosition(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].x, 0x144 + 3 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].z, 0x145 + 3 * 0x10):
+        SyncLightPosition(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].x, 0x144 + 4 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].z, 0x145 + 4 * 0x10):
+        SyncLightPosition(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].x, 0x144 + 5 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].z, 0x145 + 5 * 0x10):
+        SyncLightPosition(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].x, 0x144 + 6 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].z, 0x145 + 6 * 0x10):
+        SyncLightPosition(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].x, 0x144 + 7 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].z, 0x145 + 7 * 0x10):
+        SyncLightPosition(7);
+        break;
 
-        bool shadow_primary_enable = lighting.shadow_primary && light_config.shadow_enable;
-        bool shadow_secondary_enable = lighting.shadow_secondary && light_config.shadow_enable;
-        std::string shadow_primary = shadow_primary_enable ? " * shadow.rgb" : "";
-        std::string shadow_secondary = shadow_secondary_enable ? " * shadow.rgb" : "";
+    // Fragment spot lighting direction
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].spot_x, 0x146 + 0 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].spot_z, 0x147 + 0 * 0x10):
+        SyncLightSpotDirection(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].spot_x, 0x146 + 1 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].spot_z, 0x147 + 1 * 0x10):
+        SyncLightSpotDirection(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].spot_x, 0x146 + 2 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].spot_z, 0x147 + 2 * 0x10):
+        SyncLightSpotDirection(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].spot_x, 0x146 + 3 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].spot_z, 0x147 + 3 * 0x10):
+        SyncLightSpotDirection(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].spot_x, 0x146 + 4 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].spot_z, 0x147 + 4 * 0x10):
+        SyncLightSpotDirection(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].spot_x, 0x146 + 5 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].spot_z, 0x147 + 5 * 0x10):
+        SyncLightSpotDirection(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].spot_x, 0x146 + 6 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].spot_z, 0x147 + 6 * 0x10):
+        SyncLightSpotDirection(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].spot_x, 0x146 + 7 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].spot_z, 0x147 + 7 * 0x10):
+        SyncLightSpotDirection(7);
+        break;
 
-        // Compute primary fragment color (diffuse lighting) function
-        out += "diffuse_sum.rgb += ((" + light_src + ".diffuse * dot_product) + " + light_src +
-               ".ambient) * " + dist_atten + " * " + spot_atten + shadow_primary + ";\n";
+    // Fragment lighting light source config
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].config, 0x149 + 0 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].config, 0x149 + 1 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].config, 0x149 + 2 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].config, 0x149 + 3 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].config, 0x149 + 4 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].config, 0x149 + 5 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].config, 0x149 + 6 * 0x10):
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].config, 0x149 + 7 * 0x10):
+        shader_dirty = true;
+        break;
 
-        // Compute secondary fragment color (specular lighting) function
-        out += "specular_sum.rgb += (" + specular_0 + " + " + specular_1 +
-               ") * clamp_highlights * " + dist_atten + " * " + spot_atten + shadow_secondary +
-               ";\n";
+    // Fragment lighting distance attenuation bias
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].dist_atten_bias, 0x014A + 0 * 0x10):
+        SyncLightDistanceAttenuationBias(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].dist_atten_bias, 0x014A + 1 * 0x10):
+        SyncLightDistanceAttenuationBias(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].dist_atten_bias, 0x014A + 2 * 0x10):
+        SyncLightDistanceAttenuationBias(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].dist_atten_bias, 0x014A + 3 * 0x10):
+        SyncLightDistanceAttenuationBias(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].dist_atten_bias, 0x014A + 4 * 0x10):
+        SyncLightDistanceAttenuationBias(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].dist_atten_bias, 0x014A + 5 * 0x10):
+        SyncLightDistanceAttenuationBias(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].dist_atten_bias, 0x014A + 6 * 0x10):
+        SyncLightDistanceAttenuationBias(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].dist_atten_bias, 0x014A + 7 * 0x10):
+        SyncLightDistanceAttenuationBias(7);
+        break;
+
+    // Fragment lighting distance attenuation scale
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[0].dist_atten_scale, 0x014B + 0 * 0x10):
+        SyncLightDistanceAttenuationScale(0);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[1].dist_atten_scale, 0x014B + 1 * 0x10):
+        SyncLightDistanceAttenuationScale(1);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[2].dist_atten_scale, 0x014B + 2 * 0x10):
+        SyncLightDistanceAttenuationScale(2);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[3].dist_atten_scale, 0x014B + 3 * 0x10):
+        SyncLightDistanceAttenuationScale(3);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[4].dist_atten_scale, 0x014B + 4 * 0x10):
+        SyncLightDistanceAttenuationScale(4);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[5].dist_atten_scale, 0x014B + 5 * 0x10):
+        SyncLightDistanceAttenuationScale(5);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[6].dist_atten_scale, 0x014B + 6 * 0x10):
+        SyncLightDistanceAttenuationScale(6);
+        break;
+    case PICA_REG_INDEX_WORKAROUND(lighting.light[7].dist_atten_scale, 0x014B + 7 * 0x10):
+        SyncLightDistanceAttenuationScale(7);
+        break;
+
+    // Fragment lighting global ambient color (emission + ambient * ambient)
+    case PICA_REG_INDEX_WORKAROUND(lighting.global_ambient, 0x1c0):
+        SyncGlobalAmbient();
+        break;
+
+    // Fragment lighting lookup tables
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[0], 0x1c8):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[1], 0x1c9):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[2], 0x1ca):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[3], 0x1cb):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[4], 0x1cc):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[5], 0x1cd):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[6], 0x1ce):
+    case PICA_REG_INDEX_WORKAROUND(lighting.lut_data[7], 0x1cf): {
+        auto& lut_config = regs.lighting.lut_config;
+        uniform_block_data.lut_dirty[lut_config.type] = true;
+        break;
     }
-
-    // Apply shadow attenuation to alpha components if enabled
-    if (lighting.shadow_alpha) {
-        if (lighting.enable_primary_alpha) {
-            out += "diffuse_sum.a *= shadow.a;\n";
-        }
-        if (lighting.enable_secondary_alpha) {
-            out += "specular_sum.a *= shadow.a;\n";
-        }
     }
-
-    // Sum final lighting result
-    out += "diffuse_sum.rgb += lighting_global_ambient;\n";
-    out += "primary_fragment_color = clamp(diffuse_sum, vec4(0.0), vec4(1.0));\n";
-    out += "secondary_fragment_color = clamp(specular_sum, vec4(0.0), vec4(1.0));\n";
 }
 
-using ProcTexClamp = TexturingRegs::ProcTexClamp;
-using ProcTexShift = TexturingRegs::ProcTexShift;
-using ProcTexCombiner = TexturingRegs::ProcTexCombiner;
-using ProcTexFilter = TexturingRegs::ProcTexFilter;
+void RasterizerOpenGL::FlushAll() {
+    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
+    res_cache.FlushAll();
+}
 
-void AppendProcTexShiftOffset(std::string& out, const std::string& v, ProcTexShift mode,
-                              ProcTexClamp clamp_mode) {
-    std::string offset = (clamp_mode == ProcTexClamp::MirroredRepeat) ? "1.0" : "0.5";
-    switch (mode) {
-    case ProcTexShift::None:
-        out += "0";
+void RasterizerOpenGL::FlushRegion(PAddr addr, u32 size) {
+    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
+    res_cache.FlushRegion(addr, size);
+}
+
+void RasterizerOpenGL::InvalidateRegion(PAddr addr, u32 size) {
+    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
+    res_cache.InvalidateRegion(addr, size, nullptr);
+}
+
+void RasterizerOpenGL::FlushAndInvalidateRegion(PAddr addr, u32 size) {
+    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
+    res_cache.FlushRegion(addr, size);
+    res_cache.InvalidateRegion(addr, size, nullptr);
+}
+
+bool RasterizerOpenGL::AccelerateDisplayTransfer(const GPU::Regs::DisplayTransferConfig& config) {
+    MICROPROFILE_SCOPE(OpenGL_Blits);
+
+    SurfaceParams src_params;
+    src_params.addr = config.GetPhysicalInputAddress();
+    src_params.width = config.output_width;
+    src_params.stride = config.input_width;
+    src_params.height = config.output_height;
+    src_params.is_tiled = !config.input_linear;
+    src_params.pixel_format = SurfaceParams::PixelFormatFromGPUPixelFormat(config.input_format);
+    src_params.UpdateParams();
+
+    SurfaceParams dst_params;
+    dst_params.addr = config.GetPhysicalOutputAddress();
+    dst_params.width = config.scaling != config.NoScale ? config.output_width.Value() / 2
+                                                        : config.output_width.Value();
+    dst_params.height = config.scaling == config.ScaleXY ? config.output_height.Value() / 2
+                                                         : config.output_height.Value();
+    dst_params.is_tiled = config.input_linear != config.dont_swizzle;
+    dst_params.pixel_format = SurfaceParams::PixelFormatFromGPUPixelFormat(config.output_format);
+    dst_params.UpdateParams();
+
+    MathUtil::Rectangle<u32> src_rect;
+    Surface src_surface;
+    std::tie(src_surface, src_rect) =
+        res_cache.GetSurfaceSubRect(src_params, ScaleMatch::Ignore, true);
+    if (src_surface == nullptr)
+        return false;
+
+    dst_params.res_scale = src_surface->res_scale;
+
+    MathUtil::Rectangle<u32> dst_rect;
+    Surface dst_surface;
+    std::tie(dst_surface, dst_rect) =
+        res_cache.GetSurfaceSubRect(dst_params, ScaleMatch::Upscale, false);
+    if (dst_surface == nullptr)
+        return false;
+
+    if (src_surface->is_tiled != dst_surface->is_tiled)
+        std::swap(src_rect.top, src_rect.bottom);
+
+    if (config.flip_vertically)
+        std::swap(src_rect.top, src_rect.bottom);
+
+    if (!res_cache.BlitSurfaces(src_surface, src_rect, dst_surface, dst_rect))
+        return false;
+
+    res_cache.InvalidateRegion(dst_params.addr, dst_params.size, dst_surface);
+    return true;
+}
+
+bool RasterizerOpenGL::AccelerateTextureCopy(const GPU::Regs::DisplayTransferConfig& config) {
+    u32 copy_size = Common::AlignDown(config.texture_copy.size, 16);
+    if (copy_size == 0) {
+        return false;
+    }
+
+    u32 input_gap = config.texture_copy.input_gap * 16;
+    u32 input_width = config.texture_copy.input_width * 16;
+    if (input_width == 0 && input_gap != 0) {
+        return false;
+    }
+    if (input_gap == 0 || input_width >= copy_size) {
+        input_width = copy_size;
+        input_gap = 0;
+    }
+    if (copy_size % input_width != 0) {
+        return false;
+    }
+
+    u32 output_gap = config.texture_copy.output_gap * 16;
+    u32 output_width = config.texture_copy.output_width * 16;
+    if (output_width == 0 && output_gap != 0) {
+        return false;
+    }
+    if (output_gap == 0 || output_width >= copy_size) {
+        output_width = copy_size;
+        output_gap = 0;
+    }
+    if (copy_size % output_width != 0) {
+        return false;
+    }
+
+    SurfaceParams src_params;
+    src_params.addr = config.GetPhysicalInputAddress();
+    src_params.stride = input_width + input_gap; // stride in bytes
+    src_params.width = input_width;              // width in bytes
+    src_params.height = copy_size / input_width;
+    src_params.size = ((src_params.height - 1) * src_params.stride) + src_params.width;
+    src_params.end = src_params.addr + src_params.size;
+
+    MathUtil::Rectangle<u32> src_rect;
+    Surface src_surface;
+    std::tie(src_surface, src_rect) = res_cache.GetTexCopySurface(src_params);
+    if (src_surface == nullptr) {
+        return false;
+    }
+
+    if (output_gap != 0 &&
+        (output_width != src_surface->BytesInPixels(src_rect.GetWidth() / src_surface->res_scale) *
+                             (src_surface->is_tiled ? 8 : 1) ||
+         output_gap % src_surface->BytesInPixels(src_surface->is_tiled ? 64 : 1) != 0)) {
+        return false;
+    }
+
+    SurfaceParams dst_params = *src_surface;
+    dst_params.addr = config.GetPhysicalOutputAddress();
+    dst_params.width = src_rect.GetWidth() / src_surface->res_scale;
+    dst_params.stride = dst_params.width + src_surface->PixelsInBytes(
+                                               src_surface->is_tiled ? output_gap / 8 : output_gap);
+    dst_params.height = src_rect.GetHeight() / src_surface->res_scale;
+    dst_params.res_scale = src_surface->res_scale;
+    dst_params.UpdateParams();
+
+    // Since we are going to invalidate the gap if there is one, we will have to load it first
+    const bool load_gap = output_gap != 0;
+    MathUtil::Rectangle<u32> dst_rect;
+    Surface dst_surface;
+    std::tie(dst_surface, dst_rect) =
+        res_cache.GetSurfaceSubRect(dst_params, ScaleMatch::Upscale, load_gap);
+    if (dst_surface == nullptr) {
+        return false;
+    }
+
+    if (dst_surface->type == SurfaceType::Texture) {
+        return false;
+    }
+
+    if (!res_cache.BlitSurfaces(src_surface, src_rect, dst_surface, dst_rect)) {
+        return false;
+    }
+
+    res_cache.InvalidateRegion(dst_params.addr, dst_params.size, dst_surface);
+    return true;
+}
+
+bool RasterizerOpenGL::AccelerateFill(const GPU::Regs::MemoryFillConfig& config) {
+    Surface dst_surface = res_cache.GetFillSurface(config);
+    if (dst_surface == nullptr)
+        return false;
+
+    res_cache.InvalidateRegion(dst_surface->addr, dst_surface->size, dst_surface);
+    return true;
+}
+
+bool RasterizerOpenGL::AccelerateDisplay(const GPU::Regs::FramebufferConfig& config,
+                                         PAddr framebuffer_addr, u32 pixel_stride,
+                                         ScreenInfo& screen_info) {
+    if (framebuffer_addr == 0) {
+        return false;
+    }
+    MICROPROFILE_SCOPE(OpenGL_CacheManagement);
+
+    SurfaceParams src_params;
+    src_params.addr = framebuffer_addr;
+    src_params.width = std::min(config.width.Value(), pixel_stride);
+    src_params.height = config.height;
+    src_params.stride = pixel_stride;
+    src_params.is_tiled = false;
+    src_params.pixel_format = SurfaceParams::PixelFormatFromGPUPixelFormat(config.color_format);
+    src_params.UpdateParams();
+
+    MathUtil::Rectangle<u32> src_rect;
+    Surface src_surface;
+    std::tie(src_surface, src_rect) =
+        res_cache.GetSurfaceSubRect(src_params, ScaleMatch::Ignore, true);
+
+    if (src_surface == nullptr) {
+        return false;
+    }
+
+    u32 scaled_width = src_surface->GetScaledWidth();
+    u32 scaled_height = src_surface->GetScaledHeight();
+
+    screen_info.display_texcoords = MathUtil::Rectangle<float>(
+        (float)src_rect.bottom / (float)scaled_height, (float)src_rect.left / (float)scaled_width,
+        (float)src_rect.top / (float)scaled_height, (float)src_rect.right / (float)scaled_width);
+
+    screen_info.display_texture = src_surface->texture.handle;
+
+    return true;
+}
+
+void RasterizerOpenGL::SamplerInfo::Create() {
+    sampler.Create();
+    mag_filter = min_filter = TextureConfig::Linear;
+    wrap_s = wrap_t = TextureConfig::Repeat;
+    border_color = 0;
+
+    // default is GL_LINEAR_MIPMAP_LINEAR
+    glSamplerParameteri(sampler.handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // Other attributes have correct defaults
+}
+
+void RasterizerOpenGL::SamplerInfo::SyncWithConfig(
+    const Pica::TexturingRegs::TextureConfig& config) {
+
+    GLuint s = sampler.handle;
+
+    if (mag_filter != config.mag_filter) {
+        mag_filter = config.mag_filter;
+        glSamplerParameteri(s, GL_TEXTURE_MAG_FILTER, PicaToGL::TextureFilterMode(mag_filter));
+    }
+    if (min_filter != config.min_filter) {
+        min_filter = config.min_filter;
+        glSamplerParameteri(s, GL_TEXTURE_MIN_FILTER, PicaToGL::TextureFilterMode(min_filter));
+    }
+
+    if (wrap_s != config.wrap_s) {
+        wrap_s = config.wrap_s;
+        glSamplerParameteri(s, GL_TEXTURE_WRAP_S, PicaToGL::WrapMode(wrap_s));
+    }
+    if (wrap_t != config.wrap_t) {
+        wrap_t = config.wrap_t;
+        glSamplerParameteri(s, GL_TEXTURE_WRAP_T, PicaToGL::WrapMode(wrap_t));
+    }
+
+    if (wrap_s == TextureConfig::ClampToBorder || wrap_t == TextureConfig::ClampToBorder) {
+        if (border_color != config.border_color.raw) {
+            border_color = config.border_color.raw;
+            auto gl_color = PicaToGL::ColorRGBA8(border_color);
+            glSamplerParameterfv(s, GL_TEXTURE_BORDER_COLOR, gl_color.data());
+        }
+    }
+}
+
+void RasterizerOpenGL::SetShader() {
+    auto config = GLShader::PicaFSConfig::BuildFromRegs(Pica::g_state.regs);
+    shader_program_manager->UseFragmentShader(config);
+}
+
+void RasterizerOpenGL::SyncClipEnabled() {
+    state.clip_distance[1] = Pica::g_state.regs.rasterizer.clip_enable != 0;
+}
+
+void RasterizerOpenGL::SyncClipCoef() {
+    const auto raw_clip_coef = Pica::g_state.regs.rasterizer.GetClipCoef();
+    const GLvec4 new_clip_coef = {raw_clip_coef.x.ToFloat32(), raw_clip_coef.y.ToFloat32(),
+                                  raw_clip_coef.z.ToFloat32(), raw_clip_coef.w.ToFloat32()};
+    if (new_clip_coef != uniform_block_data.data.clip_coef) {
+        uniform_block_data.data.clip_coef = new_clip_coef;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncCullMode() {
+    const auto& regs = Pica::g_state.regs;
+
+    switch (regs.rasterizer.cull_mode) {
+    case Pica::RasterizerRegs::CullMode::KeepAll:
+        state.cull.enabled = false;
         break;
-    case ProcTexShift::Odd:
-        out += offset + " * ((int(" + v + ") / 2) % 2)";
+
+    case Pica::RasterizerRegs::CullMode::KeepClockWise:
+        state.cull.enabled = true;
+        state.cull.front_face = GL_CW;
         break;
-    case ProcTexShift::Even:
-        out += offset + " * (((int(" + v + ") + 1) / 2) % 2)";
+
+    case Pica::RasterizerRegs::CullMode::KeepCounterClockWise:
+        state.cull.enabled = true;
+        state.cull.front_face = GL_CCW;
         break;
+
     default:
-        LOG_CRITICAL(HW_GPU, "Unknown shift mode %u", static_cast<u32>(mode));
-        out += "0";
+        LOG_CRITICAL(Render_OpenGL, "Unknown cull mode %u",
+                     static_cast<u32>(regs.rasterizer.cull_mode.Value()));
+        UNIMPLEMENTED();
         break;
     }
 }
 
-void AppendProcTexClamp(std::string& out, const std::string& var, ProcTexClamp mode) {
-    switch (mode) {
-    case ProcTexClamp::ToZero:
-        out += var + " = " + var + " > 1.0 ? 0 : " + var + ";\n";
-        break;
-    case ProcTexClamp::ToEdge:
-        out += var + " = " + "min(" + var + ", 1.0);\n";
-        break;
-    case ProcTexClamp::SymmetricalRepeat:
-        out += var + " = " + "fract(" + var + ");\n";
-        break;
-    case ProcTexClamp::MirroredRepeat: {
-        out +=
-            var + " = int(" + var + ") % 2 == 0 ? fract(" + var + ") : 1.0 - fract(" + var + ");\n";
-        break;
-    }
-    case ProcTexClamp::Pulse:
-        out += var + " = " + var + " > 0.5 ? 1.0 : 0.0;\n";
-        break;
-    default:
-        LOG_CRITICAL(HW_GPU, "Unknown clamp mode %u", static_cast<u32>(mode));
-        out += var + " = " + "min(" + var + ", 1.0);\n";
-        break;
+void RasterizerOpenGL::SyncDepthScale() {
+    float depth_scale =
+        Pica::float24::FromRaw(Pica::g_state.regs.rasterizer.viewport_depth_range).ToFloat32();
+    if (depth_scale != uniform_block_data.data.depth_scale) {
+        uniform_block_data.data.depth_scale = depth_scale;
+        uniform_block_data.dirty = true;
     }
 }
 
-void AppendProcTexCombineAndMap(std::string& out, ProcTexCombiner combiner,
-                                const std::string& map_lut) {
-    std::string combined;
-    switch (combiner) {
-    case ProcTexCombiner::U:
-        combined = "u";
-        break;
-    case ProcTexCombiner::U2:
-        combined = "(u * u)";
-        break;
-    case TexturingRegs::ProcTexCombiner::V:
-        combined = "v";
-        break;
-    case TexturingRegs::ProcTexCombiner::V2:
-        combined = "(v * v)";
-        break;
-    case TexturingRegs::ProcTexCombiner::Add:
-        combined = "((u + v) * 0.5)";
-        break;
-    case TexturingRegs::ProcTexCombiner::Add2:
-        combined = "((u * u + v * v) * 0.5)";
-        break;
-    case TexturingRegs::ProcTexCombiner::SqrtAdd2:
-        combined = "min(sqrt(u * u + v * v), 1.0)";
-        break;
-    case TexturingRegs::ProcTexCombiner::Min:
-        combined = "min(u, v)";
-        break;
-    case TexturingRegs::ProcTexCombiner::Max:
-        combined = "max(u, v)";
-        break;
-    case TexturingRegs::ProcTexCombiner::RMax:
-        combined = "min(((u + v) * 0.5 + sqrt(u * u + v * v)) * 0.5, 1.0)";
-        break;
-    default:
-        LOG_CRITICAL(HW_GPU, "Unknown combiner %u", static_cast<u32>(combiner));
-        combined = "0.0";
-        break;
-    }
-    out += "ProcTexLookupLUT(" + map_lut + ", " + combined + ")";
-}
-
-void AppendProcTexSampler(std::string& out, const PicaFSConfig& config) {
-    // LUT sampling uitlity
-    // For NoiseLUT/ColorMap/AlphaMap, coord=0.0 is lut[0], coord=127.0/128.0 is lut[127] and
-    // coord=1.0 is lut[127]+lut_diff[127]. For other indices, the result is interpolated using
-    // value entries and difference entries.
-    out += R"(
-float ProcTexLookupLUT(samplerBuffer lut, float coord) {
-    coord *= 128;
-    float index_i = clamp(floor(coord), 0.0, 127.0);
-    float index_f = coord - index_i; // fract() cannot be used here because 128.0 needs to be
-                                     // extracted as index_i = 127.0 and index_f = 1.0
-    vec2 entry = texelFetch(lut, int(index_i)).rg;
-    return clamp(entry.r + entry.g * index_f, 0.0, 1.0);
-}
-    )";
-
-    // Noise utility
-    if (config.state.proctex.noise_enable) {
-        // See swrasterizer/proctex.cpp for more information about these functions
-        out += R"(
-int ProcTexNoiseRand1D(int v) {
-    const int table[] = int[](0,4,10,8,4,9,7,12,5,15,13,14,11,15,2,11);
-    return ((v % 9 + 2) * 3 & 0xF) ^ table[(v / 9) & 0xF];
-}
-
-float ProcTexNoiseRand2D(vec2 point) {
-    const int table[] = int[](10,2,15,8,0,7,4,5,5,13,2,6,13,9,3,14);
-    int u2 = ProcTexNoiseRand1D(int(point.x));
-    int v2 = ProcTexNoiseRand1D(int(point.y));
-    v2 += ((u2 & 3) == 1) ? 4 : 0;
-    v2 ^= (u2 & 1) * 6;
-    v2 += 10 + u2;
-    v2 &= 0xF;
-    v2 ^= table[u2];
-    return -1.0 + float(v2) * 2.0/ 15.0;
-}
-
-float ProcTexNoiseCoef(vec2 x) {
-    vec2 grid  = 9.0 * proctex_noise_f * abs(x + proctex_noise_p);
-    vec2 point = floor(grid);
-    vec2 frac  = grid - point;
-
-    float g0 = ProcTexNoiseRand2D(point) * (frac.x + frac.y);
-    float g1 = ProcTexNoiseRand2D(point + vec2(1.0, 0.0)) * (frac.x + frac.y - 1.0);
-    float g2 = ProcTexNoiseRand2D(point + vec2(0.0, 1.0)) * (frac.x + frac.y - 1.0);
-    float g3 = ProcTexNoiseRand2D(point + vec2(1.0, 1.0)) * (frac.x + frac.y - 2.0);
-
-    float x_noise = ProcTexLookupLUT(proctex_noise_lut, frac.x);
-    float y_noise = ProcTexLookupLUT(proctex_noise_lut, frac.y);
-    float x0 = mix(g0, g1, x_noise);
-    float x1 = mix(g2, g3, x_noise);
-    return mix(x0, x1, y_noise);
-}
-        )";
-    }
-
-    out += "vec4 ProcTex() {\n";
-    if (config.state.proctex.coord < 3) {
-        out += "vec2 uv = abs(texcoord" + std::to_string(config.state.proctex.coord) + ");\n";
-    } else {
-        NGLOG_CRITICAL(Render_OpenGL, "Unexpected proctex.coord >= 3");
-        out += "vec2 uv = abs(texcoord0);\n";
-    }
-
-    // Get shift offset before noise generation
-    out += "float u_shift = ";
-    AppendProcTexShiftOffset(out, "uv.y", config.state.proctex.u_shift,
-                             config.state.proctex.u_clamp);
-    out += ";\n";
-    out += "float v_shift = ";
-    AppendProcTexShiftOffset(out, "uv.x", config.state.proctex.v_shift,
-                             config.state.proctex.v_clamp);
-    out += ";\n";
-
-    // Generate noise
-    if (config.state.proctex.noise_enable) {
-        out += "uv += proctex_noise_a * ProcTexNoiseCoef(uv);\n";
-        out += "uv = abs(uv);\n";
-    }
-
-    // Shift
-    out += "float u = uv.x + u_shift;\n";
-    out += "float v = uv.y + v_shift;\n";
-
-    // Clamp
-    AppendProcTexClamp(out, "u", config.state.proctex.u_clamp);
-    AppendProcTexClamp(out, "v", config.state.proctex.v_clamp);
-
-    // Combine and map
-    out += "float lut_coord = ";
-    AppendProcTexCombineAndMap(out, config.state.proctex.color_combiner, "proctex_color_map");
-    out += ";\n";
-
-    // Look up color
-    // For the color lut, coord=0.0 is lut[offset] and coord=1.0 is lut[offset+width-1]
-    out += "lut_coord *= " + std::to_string(config.state.proctex.lut_width - 1) + ";\n";
-    // TODO(wwylele): implement mipmap
-    switch (config.state.proctex.lut_filter) {
-    case ProcTexFilter::Linear:
-    case ProcTexFilter::LinearMipmapLinear:
-    case ProcTexFilter::LinearMipmapNearest:
-        out += "int lut_index_i = int(lut_coord) + " +
-               std::to_string(config.state.proctex.lut_offset) + ";\n";
-        out += "float lut_index_f = fract(lut_coord);\n";
-        out += "vec4 final_color = texelFetch(proctex_lut, lut_index_i) + lut_index_f * "
-               "texelFetch(proctex_diff_lut, lut_index_i);\n";
-        break;
-    case ProcTexFilter::Nearest:
-    case ProcTexFilter::NearestMipmapLinear:
-    case ProcTexFilter::NearestMipmapNearest:
-        out += "lut_coord += " + std::to_string(config.state.proctex.lut_offset) + ";\n";
-        out += "vec4 final_color = texelFetch(proctex_lut, int(round(lut_coord)));\n";
-        break;
-    }
-
-    if (config.state.proctex.separate_alpha) {
-        // Note: in separate alpha mode, the alpha channel skips the color LUT look up stage. It
-        // uses the output of CombineAndMap directly instead.
-        out += "float final_alpha = ";
-        AppendProcTexCombineAndMap(out, config.state.proctex.alpha_combiner, "proctex_alpha_map");
-        out += ";\n";
-        out += "return vec4(final_color.xyz, final_alpha);\n}\n";
-    } else {
-        out += "return final_color;\n}\n";
+void RasterizerOpenGL::SyncDepthOffset() {
+    float depth_offset =
+        Pica::float24::FromRaw(Pica::g_state.regs.rasterizer.viewport_depth_near_plane).ToFloat32();
+    if (depth_offset != uniform_block_data.data.depth_offset) {
+        uniform_block_data.data.depth_offset = depth_offset;
+        uniform_block_data.dirty = true;
     }
 }
 
-std::string GenerateFragmentShader(const PicaFSConfig& config, bool separable_shader) {
-    const auto& state = config.state;
+void RasterizerOpenGL::SyncBlendEnabled() {
+    state.blend.enabled = (Pica::g_state.regs.framebuffer.output_merger.alphablend_enable == 1);
+}
 
-    std::string out = R"(
-#version 330 core
-#extension GL_ARB_shader_image_load_store : enable
-#extension GL_ARB_shader_image_size : enable
-#define ALLOW_SHADOW (defined(GL_ARB_shader_image_load_store) && defined(GL_ARB_shader_image_size))
-)";
+void RasterizerOpenGL::SyncBlendFuncs() {
+    const auto& regs = Pica::g_state.regs;
+    state.blend.rgb_equation =
+        PicaToGL::BlendEquation(regs.framebuffer.output_merger.alpha_blending.blend_equation_rgb);
+    state.blend.a_equation =
+        PicaToGL::BlendEquation(regs.framebuffer.output_merger.alpha_blending.blend_equation_a);
+    state.blend.src_rgb_func =
+        PicaToGL::BlendFunc(regs.framebuffer.output_merger.alpha_blending.factor_source_rgb);
+    state.blend.dst_rgb_func =
+        PicaToGL::BlendFunc(regs.framebuffer.output_merger.alpha_blending.factor_dest_rgb);
+    state.blend.src_a_func =
+        PicaToGL::BlendFunc(regs.framebuffer.output_merger.alpha_blending.factor_source_a);
+    state.blend.dst_a_func =
+        PicaToGL::BlendFunc(regs.framebuffer.output_merger.alpha_blending.factor_dest_a);
+}
 
-    if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n";
+void RasterizerOpenGL::SyncBlendColor() {
+    auto blend_color =
+        PicaToGL::ColorRGBA8(Pica::g_state.regs.framebuffer.output_merger.blend_const.raw);
+    state.blend.color.red = blend_color[0];
+    state.blend.color.green = blend_color[1];
+    state.blend.color.blue = blend_color[2];
+    state.blend.color.alpha = blend_color[3];
+}
+
+void RasterizerOpenGL::SyncFogColor() {
+    const auto& regs = Pica::g_state.regs;
+    uniform_block_data.data.fog_color = {
+        regs.texturing.fog_color.r.Value() / 255.0f,
+        regs.texturing.fog_color.g.Value() / 255.0f,
+        regs.texturing.fog_color.b.Value() / 255.0f,
+    };
+    uniform_block_data.dirty = true;
+}
+
+void RasterizerOpenGL::SyncFogLUT() {
+    std::array<GLvec2, 128> new_data;
+
+    std::transform(Pica::g_state.fog.lut.begin(), Pica::g_state.fog.lut.end(), new_data.begin(),
+                   [](const auto& entry) {
+                       return GLvec2{entry.ToFloat(), entry.DiffToFloat()};
+                   });
+
+    if (new_data != fog_lut_data) {
+        fog_lut_data = new_data;
+        glBindBuffer(GL_TEXTURE_BUFFER, fog_lut_buffer.handle);
+        glBufferSubData(GL_TEXTURE_BUFFER, 0, new_data.size() * sizeof(GLvec2), new_data.data());
     }
-
-    out += GetVertexInterfaceDeclaration(false, separable_shader);
-
-    out += R"(
-in vec4 gl_FragCoord;
-
-out vec4 color;
-
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler2D tex2;
-uniform samplerCube tex_cube;
-uniform samplerBuffer lighting_lut;
-uniform samplerBuffer fog_lut;
-uniform samplerBuffer proctex_noise_lut;
-uniform samplerBuffer proctex_color_map;
-uniform samplerBuffer proctex_alpha_map;
-uniform samplerBuffer proctex_lut;
-uniform samplerBuffer proctex_diff_lut;
-
-#if ALLOW_SHADOW
-layout(r32ui) uniform readonly uimage2D shadow_texture_px;
-layout(r32ui) uniform readonly uimage2D shadow_texture_nx;
-layout(r32ui) uniform readonly uimage2D shadow_texture_py;
-layout(r32ui) uniform readonly uimage2D shadow_texture_ny;
-layout(r32ui) uniform readonly uimage2D shadow_texture_pz;
-layout(r32ui) uniform readonly uimage2D shadow_texture_nz;
-layout(r32ui) uniform uimage2D shadow_buffer;
-#endif
-)";
-
-    out += UniformBlockDef;
-
-    out += R"(
-// Rotate the vector v by the quaternion q
-vec3 quaternion_rotate(vec4 q, vec3 v) {
-    return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
-float LookupLightingLUT(int lut_index, int index, float delta) {
-    vec2 entry = texelFetch(lighting_lut, lut_index * 256 + index).rg;
-    return entry.r + entry.g * delta;
-}
-
-float LookupLightingLUTUnsigned(int lut_index, float pos) {
-    int index = clamp(int(pos * 256.0), 0, 255);
-    float delta = pos * 256.0 - index;
-    return LookupLightingLUT(lut_index, index, delta);
-}
-
-float LookupLightingLUTSigned(int lut_index, float pos) {
-    int index = clamp(int(pos * 128.0), -128, 127);
-    float delta = pos * 128.0 - index;
-    if (index < 0) index += 256;
-    return LookupLightingLUT(lut_index, index, delta);
-}
-
-float byteround(float x) {
-    return round(x * 255.0) * (1.0 / 255.0);
-}
-
-vec2 byteround(vec2 x) {
-    return round(x * 255.0) * (1.0 / 255.0);
-}
-
-vec3 byteround(vec3 x) {
-    return round(x * 255.0) * (1.0 / 255.0);
-}
-
-vec4 byteround(vec4 x) {
-    return round(x * 255.0) * (1.0 / 255.0);
-}
-
-#if ALLOW_SHADOW
-
-uvec2 DecodeShadow(uint pixel) {
-    return uvec2(pixel >> 8, pixel & 0xFFu);
-}
-
-uint EncodeShadow(uvec2 pixel) {
-    return (pixel.x << 8) | pixel.y;
-}
-
-float CompareShadow(uint pixel, uint z) {
-    uvec2 p = DecodeShadow(pixel);
-    return mix(float(p.y) * (1.0 / 255.0), 0.0, p.x <= z);
-}
-
-float SampleShadow2D(ivec2 uv, uint z) {
-    if (any(bvec4( lessThan(uv, ivec2(0)), greaterThanEqual(uv, imageSize(shadow_texture_px)) )))
-        return 1.0;
-    return CompareShadow(imageLoad(shadow_texture_px, uv).x, z);
-}
-
-float mix2(vec4 s, vec2 a) {
-    vec2 t = mix(s.xy, s.zw, a.yy);
-    return mix(t.x, t.y, a.x);
-}
-
-vec4 shadowTexture(vec2 uv, float w) {
-)";
-    if (!config.state.shadow_texture_orthographic) {
-        out += "uv /= w;";
-    }
-    out += "uint z = uint(max(0, int(min(abs(w), 1.0) * 0xFFFFFF) - " +
-           std::to_string(state.shadow_texture_bias) + "));";
-    out += R"(
-    vec2 coord = vec2(imageSize(shadow_texture_px)) * uv - vec2(0.5);
-    vec2 coord_floor = floor(coord);
-    vec2 f = coord - coord_floor;
-    ivec2 i = ivec2(coord_floor);
-    vec4 s = vec4(
-        SampleShadow2D(i              , z),
-        SampleShadow2D(i + ivec2(1, 0), z),
-        SampleShadow2D(i + ivec2(0, 1), z),
-        SampleShadow2D(i + ivec2(1, 1), z));
-    return vec4(mix2(s, f));
-}
-
-vec4 shadowTextureCube(vec2 uv, float w) {
-    ivec2 size = imageSize(shadow_texture_px);
-    vec3 c = vec3(uv, w);
-    vec3 a = abs(c);
-    if (a.x > a.y && a.x > a.z) {
-        w = a.x;
-        uv = -c.zy;
-        if (c.x < 0.0) uv.x = -uv.x;
-    } else if (a.y > a.z) {
-        w = a.y;
-        uv = c.xz;
-        if (c.y < 0.0) uv.y = -uv.y;
-    } else {
-        w = a.z;
-        uv = -c.xy;
-        if (c.z > 0.0) uv.x = -uv.x;
-    }
-)";
-    out += "uint z = uint(max(0, int(min(w, 1.0) * 0xFFFFFF) - " +
-           std::to_string(state.shadow_texture_bias) + "));";
-    out += R"(
-    vec2 coord = vec2(size) * (uv / w * vec2(0.5) + vec2(0.5)) - vec2(0.5);
-    vec2 coord_floor = floor(coord);
-    vec2 f = coord - coord_floor;
-    ivec2 i00 = ivec2(coord_floor);
-    ivec2 i10 = i00 + ivec2(1, 0);
-    ivec2 i01 = i00 + ivec2(0, 1);
-    ivec2 i11 = i00 + ivec2(1, 1);
-    ivec2 cmin = ivec2(0), cmax = size - ivec2(1, 1);
-    i00 = clamp(i00, cmin, cmax);
-    i10 = clamp(i10, cmin, cmax);
-    i01 = clamp(i01, cmin, cmax);
-    i11 = clamp(i11, cmin, cmax);
-    uvec4 pixels;
-    // This part should have been refactored into functions,
-    // but many drivers don't like passing uimage2D as parameters
-    if (a.x > a.y && a.x > a.z) {
-        if (c.x > 0.0)
-            pixels = uvec4(
-                imageLoad(shadow_texture_px, i00).r,
-                imageLoad(shadow_texture_px, i10).r,
-                imageLoad(shadow_texture_px, i01).r,
-                imageLoad(shadow_texture_px, i11).r);
-        else
-            pixels = uvec4(
-                imageLoad(shadow_texture_nx, i00).r,
-                imageLoad(shadow_texture_nx, i10).r,
-                imageLoad(shadow_texture_nx, i01).r,
-                imageLoad(shadow_texture_nx, i11).r);
-    } else if (a.y > a.z) {
-        if (c.y > 0.0)
-            pixels = uvec4(
-                imageLoad(shadow_texture_py, i00).r,
-                imageLoad(shadow_texture_py, i10).r,
-                imageLoad(shadow_texture_py, i01).r,
-                imageLoad(shadow_texture_py, i11).r);
-        else
-            pixels = uvec4(
-                imageLoad(shadow_texture_ny, i00).r,
-                imageLoad(shadow_texture_ny, i10).r,
-                imageLoad(shadow_texture_ny, i01).r,
-                imageLoad(shadow_texture_ny, i11).r);
-    } else {
-        if (c.z > 0.0)
-            pixels = uvec4(
-                imageLoad(shadow_texture_pz, i00).r,
-                imageLoad(shadow_texture_pz, i10).r,
-                imageLoad(shadow_texture_pz, i01).r,
-                imageLoad(shadow_texture_pz, i11).r);
-        else
-            pixels = uvec4(
-                imageLoad(shadow_texture_nz, i00).r,
-                imageLoad(shadow_texture_nz, i10).r,
-                imageLoad(shadow_texture_nz, i01).r,
-                imageLoad(shadow_texture_nz, i11).r);
-    }
-    vec4 s = vec4(
-        CompareShadow(pixels.x, z),
-        CompareShadow(pixels.y, z),
-        CompareShadow(pixels.z, z),
-        CompareShadow(pixels.w, z));
-    return vec4(mix2(s, f));
-}
-
-#else
-
-vec4 shadowTexture(vec2 uv, float w) {
-    return vec4(1.0);
-}
-
-vec4 shadowTextureCube(vec2 uv, float w) {
-    return vec4(1.0);
-}
-
-#endif
-)";
-
-    if (config.state.proctex.enable)
-        AppendProcTexSampler(out, config);
-
-    // We round the interpolated primary color to the nearest 1/255th
-    // This maintains the PICA's 8 bits of precision
-    out += R"(
-void main() {
-vec4 rounded_primary_color = byteround(primary_color);
-vec4 primary_fragment_color = vec4(0.0);
-vec4 secondary_fragment_color = vec4(0.0);
-)";
-
-    // Do not do any sort of processing if it's obvious we're not going to pass the alpha test
-    if (state.alpha_test_func == FramebufferRegs::CompareFunc::Never) {
-        out += "discard; }";
-        return out;
-    }
-
-    // Append the scissor test
-    if (state.scissor_test_mode != RasterizerRegs::ScissorMode::Disabled) {
-        out += "if (";
-        // Negate the condition if we have to keep only the pixels outside the scissor box
-        if (state.scissor_test_mode == RasterizerRegs::ScissorMode::Include)
-            out += "!";
-        out += "(gl_FragCoord.x >= scissor_x1 && "
-               "gl_FragCoord.y >= scissor_y1 && "
-               "gl_FragCoord.x < scissor_x2 && "
-               "gl_FragCoord.y < scissor_y2)) discard;\n";
-    }
-
-    // After perspective divide, OpenGL transform z_over_w from [-1, 1] to [near, far]. Here we use
-    // default near = 0 and far = 1, and undo the transformation to get the original z_over_w, then
-    // do our own transformation according to PICA specification.
-    out += "float z_over_w = 2.0 * gl_FragCoord.z - 1.0;\n";
-    out += "float depth = z_over_w * depth_scale + depth_offset;\n";
-    if (state.depthmap_enable == RasterizerRegs::DepthBuffering::WBuffering) {
-        out += "depth /= gl_FragCoord.w;\n";
-    }
-
-    if (state.lighting.enable)
-        WriteLighting(out, config);
-
-    out += "vec4 combiner_buffer = vec4(0.0);\n";
-    out += "vec4 next_combiner_buffer = tev_combiner_buffer_color;\n";
-    out += "vec4 last_tex_env_out = vec4(0.0);\n";
-
-    for (size_t index = 0; index < state.tev_stages.size(); ++index)
-        WriteTevStage(out, config, (unsigned)index);
-
-    if (state.alpha_test_func != FramebufferRegs::CompareFunc::Always) {
-        out += "if (";
-        AppendAlphaTestCondition(out, state.alpha_test_func);
-        out += ") discard;\n";
-    }
-
-    // Append fog combiner
-    if (state.fog_mode == TexturingRegs::FogMode::Fog) {
-        // Get index into fog LUT
-        if (state.fog_flip) {
-            out += "float fog_index = (1.0 - depth) * 128.0;\n";
-        } else {
-            out += "float fog_index = depth * 128.0;\n";
-        }
-
-        // Generate clamped fog factor from LUT for given fog index
-        out += "float fog_i = clamp(floor(fog_index), 0.0, 127.0);\n";
-        out += "float fog_f = fog_index - fog_i;\n";
-        out += "vec2 fog_lut_entry = texelFetch(fog_lut, int(fog_i)).rg;\n";
-        out += "float fog_factor = fog_lut_entry.r + fog_lut_entry.g * fog_f;\n";
-        out += "fog_factor = clamp(fog_factor, 0.0, 1.0);\n";
-
-        // Blend the fog
-        out += "last_tex_env_out.rgb = mix(fog_color.rgb, last_tex_env_out.rgb, fog_factor);\n";
-    } else if (state.fog_mode == TexturingRegs::FogMode::Gas) {
-        LOG_CRITICAL(Render_OpenGL, "Unimplemented gas mode");
-        out += "discard; }";
-        return out;
-    }
-
-    if (state.shadow_rendering) {
-        out += R"(
-#if ALLOW_SHADOW
-uint d = uint(clamp(depth, 0.0, 1.0) * 0xFFFFFF);
-uint s = uint(last_tex_env_out.g * 0xFF);
-ivec2 image_coord = ivec2(gl_FragCoord.xy);
-
-uint old = imageLoad(shadow_buffer, image_coord).x;
-uint new;
-uint old2;
-do {
-    old2 = old;
-
-    uvec2 ref = DecodeShadow(old);
-    if (d < ref.x) {
-        if (s == 0u) {
-            ref.x = d;
-        } else {
-            s = uint(float(s) / (shadow_bias_constant + shadow_bias_linear * float(d) / float(ref.x)));
-            ref.y = min(s, ref.y);
-        }
-    }
-    new = EncodeShadow(ref);
-
-} while ((old = imageAtomicCompSwap(shadow_buffer, image_coord, old, new)) != old2);
-#endif // ALLOW_SHADOW
-)";
-    } else {
-        out += "gl_FragDepth = depth;\n";
-        // Round the final fragment color to maintain the PICA's 8 bits of precision
-        out += "color = byteround(last_tex_env_out);\n";
-    }
-
-    out += "}";
-
-    return out;
-}
-
-std::string GenerateTrivialVertexShader(bool separable_shader) {
-    std::string out = "#version 330 core\n";
-    if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n";
-    }
-
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_POSITION) +
-           ") in vec4 vert_position;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_COLOR) + ") in vec4 vert_color;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_TEXCOORD0) +
-           ") in vec2 vert_texcoord0;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_TEXCOORD1) +
-           ") in vec2 vert_texcoord1;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_TEXCOORD2) +
-           ") in vec2 vert_texcoord2;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_TEXCOORD0_W) +
-           ") in float vert_texcoord0_w;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_NORMQUAT) +
-           ") in vec4 vert_normquat;\n";
-    out += "layout(location = " + std::to_string((int)ATTRIBUTE_VIEW) + ") in vec3 vert_view;\n";
-
-    out += GetVertexInterfaceDeclaration(true, separable_shader);
-
-    out += UniformBlockDef;
-
-    out += R"(
-
-void main() {
-    primary_color = vert_color;
-    texcoord0 = vert_texcoord0;
-    texcoord1 = vert_texcoord1;
-    texcoord2 = vert_texcoord2;
-    texcoord0_w = vert_texcoord0_w;
-    normquat = vert_normquat;
-    view = vert_view;
-    gl_Position = vert_position;
-    gl_ClipDistance[0] = -vert_position.z; // fixed PICA clipping plane z <= 0
-    gl_ClipDistance[1] = dot(clip_coef, vert_position);
-}
-)";
-
-    return out;
-}
-
-boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetup& setup,
-                                                  const PicaVSConfig& config,
-                                                  bool separable_shader) {
-    std::string out = "#version 330 core\n";
-    if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n";
-    }
-
-    out += Pica::Shader::Decompiler::GetCommonDeclarations();
-
-    std::array<bool, 16> used_regs{};
-    auto get_input_reg = [&](u32 reg) -> std::string {
-        ASSERT(reg < 16);
-        used_regs[reg] = true;
-        return "vs_in_reg" + std::to_string(reg);
+void RasterizerOpenGL::SyncProcTexNoise() {
+    const auto& regs = Pica::g_state.regs.texturing;
+    uniform_block_data.data.proctex_noise_f = {
+        Pica::float16::FromRaw(regs.proctex_noise_frequency.u).ToFloat32(),
+        Pica::float16::FromRaw(regs.proctex_noise_frequency.v).ToFloat32(),
+    };
+    uniform_block_data.data.proctex_noise_a = {
+        regs.proctex_noise_u.amplitude / 4095.0f,
+        regs.proctex_noise_v.amplitude / 4095.0f,
+    };
+    uniform_block_data.data.proctex_noise_p = {
+        Pica::float16::FromRaw(regs.proctex_noise_u.phase).ToFloat32(),
+        Pica::float16::FromRaw(regs.proctex_noise_v.phase).ToFloat32(),
     };
 
-    auto get_output_reg = [&](u32 reg) -> std::string {
-        ASSERT(reg < 16);
-        if (config.state.output_map[reg] < config.state.num_outputs) {
-            return "vs_out_attr" + std::to_string(config.state.output_map[reg]);
-        }
-        return "";
+    uniform_block_data.dirty = true;
+}
+
+// helper function for SyncProcTexNoiseLUT/ColorMap/AlphaMap
+static void SyncProcTexValueLUT(const std::array<Pica::State::ProcTex::ValueEntry, 128>& lut,
+                                std::array<GLvec2, 128>& lut_data, GLuint buffer) {
+    std::array<GLvec2, 128> new_data;
+    std::transform(lut.begin(), lut.end(), new_data.begin(), [](const auto& entry) {
+        return GLvec2{entry.ToFloat(), entry.DiffToFloat()};
+    });
+
+    if (new_data != lut_data) {
+        lut_data = new_data;
+        glBindBuffer(GL_TEXTURE_BUFFER, buffer);
+        glBufferSubData(GL_TEXTURE_BUFFER, 0, new_data.size() * sizeof(GLvec2), new_data.data());
+    }
+}
+
+void RasterizerOpenGL::SyncProcTexNoiseLUT() {
+    SyncProcTexValueLUT(Pica::g_state.proctex.noise_table, proctex_noise_lut_data,
+                        proctex_noise_lut_buffer.handle);
+}
+
+void RasterizerOpenGL::SyncProcTexColorMap() {
+    SyncProcTexValueLUT(Pica::g_state.proctex.color_map_table, proctex_color_map_data,
+                        proctex_color_map_buffer.handle);
+}
+
+void RasterizerOpenGL::SyncProcTexAlphaMap() {
+    SyncProcTexValueLUT(Pica::g_state.proctex.alpha_map_table, proctex_alpha_map_data,
+                        proctex_alpha_map_buffer.handle);
+}
+
+void RasterizerOpenGL::SyncProcTexLUT() {
+    std::array<GLvec4, 256> new_data;
+
+    std::transform(Pica::g_state.proctex.color_table.begin(),
+                   Pica::g_state.proctex.color_table.end(), new_data.begin(),
+                   [](const auto& entry) {
+                       auto rgba = entry.ToVector() / 255.0f;
+                       return GLvec4{rgba.r(), rgba.g(), rgba.b(), rgba.a()};
+                   });
+
+    if (new_data != proctex_lut_data) {
+        proctex_lut_data = new_data;
+        glBindBuffer(GL_TEXTURE_BUFFER, proctex_lut_buffer.handle);
+        glBufferSubData(GL_TEXTURE_BUFFER, 0, new_data.size() * sizeof(GLvec4), new_data.data());
+    }
+}
+
+void RasterizerOpenGL::SyncProcTexDiffLUT() {
+    std::array<GLvec4, 256> new_data;
+
+    std::transform(Pica::g_state.proctex.color_diff_table.begin(),
+                   Pica::g_state.proctex.color_diff_table.end(), new_data.begin(),
+                   [](const auto& entry) {
+                       auto rgba = entry.ToVector() / 255.0f;
+                       return GLvec4{rgba.r(), rgba.g(), rgba.b(), rgba.a()};
+                   });
+
+    if (new_data != proctex_diff_lut_data) {
+        proctex_diff_lut_data = new_data;
+        glBindBuffer(GL_TEXTURE_BUFFER, proctex_diff_lut_buffer.handle);
+        glBufferSubData(GL_TEXTURE_BUFFER, 0, new_data.size() * sizeof(GLvec4), new_data.data());
+    }
+}
+
+void RasterizerOpenGL::SyncAlphaTest() {
+    const auto& regs = Pica::g_state.regs;
+    if (regs.framebuffer.output_merger.alpha_test.ref != uniform_block_data.data.alphatest_ref) {
+        uniform_block_data.data.alphatest_ref = regs.framebuffer.output_merger.alpha_test.ref;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLogicOp() {
+    state.logic_op = PicaToGL::LogicOp(Pica::g_state.regs.framebuffer.output_merger.logic_op);
+}
+
+void RasterizerOpenGL::SyncColorWriteMask() {
+    const auto& regs = Pica::g_state.regs;
+
+    auto IsColorWriteEnabled = [&](u32 value) {
+        return (regs.framebuffer.framebuffer.allow_color_write != 0 && value != 0) ? GL_TRUE
+                                                                                   : GL_FALSE;
     };
 
-    auto program_source_opt = Pica::Shader::Decompiler::DecompileProgram(
-        setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
-        get_output_reg, config.state.sanitize_mul, false);
-
-    if (!program_source_opt)
-        return boost::none;
-
-    std::string& program_source = program_source_opt.get();
-
-    out += R"(
-#define uniforms vs_uniforms
-layout (std140) uniform vs_config {
-    pica_uniforms uniforms;
-};
-
-)";
-    // input attributes declaration
-    for (std::size_t i = 0; i < used_regs.size(); ++i) {
-        if (used_regs[i]) {
-            out += "layout(location = " + std::to_string(i) + ") in vec4 vs_in_reg" +
-                   std::to_string(i) + ";\n";
-        }
-    }
-    out += "\n";
-
-    // output attributes declaration
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
-        out += (separable_shader ? "layout(location = " + std::to_string(i) + ")" : std::string{}) +
-               " out vec4 vs_out_attr" + std::to_string(i) + ";\n";
-    }
-
-    out += "\nvoid main() {\n";
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
-        out += "    vs_out_attr" + std::to_string(i) + " = vec4(0.0, 0.0, 0.0, 1.0);\n";
-    }
-    out += "\n    exec_shader();\n}\n\n";
-
-    out += program_source;
-
-    return out;
+    state.color_mask.red_enabled = IsColorWriteEnabled(regs.framebuffer.output_merger.red_enable);
+    state.color_mask.green_enabled =
+        IsColorWriteEnabled(regs.framebuffer.output_merger.green_enable);
+    state.color_mask.blue_enabled = IsColorWriteEnabled(regs.framebuffer.output_merger.blue_enable);
+    state.color_mask.alpha_enabled =
+        IsColorWriteEnabled(regs.framebuffer.output_merger.alpha_enable);
 }
 
-static std::string GetGSCommonSource(const PicaGSConfigCommonRaw& config, bool separable_shader) {
-    std::string out = GetVertexInterfaceDeclaration(true, separable_shader);
-    out += UniformBlockDef;
-    out += Pica::Shader::Decompiler::GetCommonDeclarations();
-
-    out += '\n';
-    for (u32 i = 0; i < config.vs_output_attributes; ++i) {
-        out += (separable_shader ? "layout(location = " + std::to_string(i) + ")" : std::string{}) +
-               " in vec4 vs_out_attr" + std::to_string(i) + "[];\n";
-    }
-
-    out += R"(
-#define uniforms gs_uniforms
-layout (std140) uniform gs_config {
-    pica_uniforms uniforms;
-};
-
-struct Vertex {
-)";
-    out += "    vec4 attributes[" + std::to_string(config.gs_output_attributes) + "];\n";
-    out += "};\n\n";
-
-    auto semantic = [&config](VSOutputAttributes::Semantic slot_semantic) -> std::string {
-        u32 slot = static_cast<u32>(slot_semantic);
-        u32 attrib = config.semantic_maps[slot].attribute_index;
-        u32 comp = config.semantic_maps[slot].component_index;
-        if (attrib < config.gs_output_attributes) {
-            return "vtx.attributes[" + std::to_string(attrib) + "]." + "xyzw"[comp];
-        }
-        return "0.0";
-    };
-
-    out += "vec4 GetVertexQuaternion(Vertex vtx) {\n";
-    out += "    return vec4(" + semantic(VSOutputAttributes::QUATERNION_X) + ", " +
-           semantic(VSOutputAttributes::QUATERNION_Y) + ", " +
-           semantic(VSOutputAttributes::QUATERNION_Z) + ", " +
-           semantic(VSOutputAttributes::QUATERNION_W) + ");\n";
-    out += "}\n\n";
-
-    out += "void EmitVtx(Vertex vtx, bool quats_opposite) {\n";
-    out += "    vec4 vtx_pos = vec4(" + semantic(VSOutputAttributes::POSITION_X) + ", " +
-           semantic(VSOutputAttributes::POSITION_Y) + ", " +
-           semantic(VSOutputAttributes::POSITION_Z) + ", " +
-           semantic(VSOutputAttributes::POSITION_W) + ");\n";
-    out += "    gl_Position = vtx_pos;\n";
-    out += "    gl_ClipDistance[0] = -vtx_pos.z;\n"; // fixed PICA clipping plane z <= 0
-    out += "    gl_ClipDistance[1] = dot(clip_coef, vtx_pos);\n\n";
-
-    out += "    vec4 vtx_quat = GetVertexQuaternion(vtx);\n";
-    out += "    normquat = mix(vtx_quat, -vtx_quat, bvec4(quats_opposite));\n\n";
-
-    out += "    vec4 vtx_color = vec4(" + semantic(VSOutputAttributes::COLOR_R) + ", " +
-           semantic(VSOutputAttributes::COLOR_G) + ", " + semantic(VSOutputAttributes::COLOR_B) +
-           ", " + semantic(VSOutputAttributes::COLOR_A) + ");\n";
-    out += "    primary_color = min(abs(vtx_color), vec4(1.0));\n\n";
-
-    out += "    texcoord0 = vec2(" + semantic(VSOutputAttributes::TEXCOORD0_U) + ", " +
-           semantic(VSOutputAttributes::TEXCOORD0_V) + ");\n";
-    out += "    texcoord1 = vec2(" + semantic(VSOutputAttributes::TEXCOORD1_U) + ", " +
-           semantic(VSOutputAttributes::TEXCOORD1_V) + ");\n\n";
-
-    out += "    texcoord0_w = " + semantic(VSOutputAttributes::TEXCOORD0_W) + ";\n";
-    out += "    view = vec3(" + semantic(VSOutputAttributes::VIEW_X) + ", " +
-           semantic(VSOutputAttributes::VIEW_Y) + ", " + semantic(VSOutputAttributes::VIEW_Z) +
-           ");\n\n";
-
-    out += "    texcoord2 = vec2(" + semantic(VSOutputAttributes::TEXCOORD2_U) + ", " +
-           semantic(VSOutputAttributes::TEXCOORD2_V) + ");\n\n";
-
-    out += "    EmitVertex();\n";
-    out += "}\n";
-
-    out += R"(
-bool AreQuaternionsOpposite(vec4 qa, vec4 qb) {
-    return (dot(qa, qb) < 0.0);
+void RasterizerOpenGL::SyncStencilWriteMask() {
+    const auto& regs = Pica::g_state.regs;
+    state.stencil.write_mask =
+        (regs.framebuffer.framebuffer.allow_depth_stencil_write != 0)
+            ? static_cast<GLuint>(regs.framebuffer.output_merger.stencil_test.write_mask)
+            : 0;
 }
 
-void EmitPrim(Vertex vtx0, Vertex vtx1, Vertex vtx2) {
-    EmitVtx(vtx0, false);
-    EmitVtx(vtx1, AreQuaternionsOpposite(GetVertexQuaternion(vtx0), GetVertexQuaternion(vtx1)));
-    EmitVtx(vtx2, AreQuaternionsOpposite(GetVertexQuaternion(vtx0), GetVertexQuaternion(vtx2)));
-    EndPrimitive();
-}
-)";
-
-    return out;
-};
-
-std::string GenerateFixedGeometryShader(const PicaFixedGSConfig& config, bool separable_shader) {
-    std::string out = "#version 330 core\n";
-    if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
-    }
-
-    out += R"(
-layout(triangles) in;
-layout(triangle_strip, max_vertices = 3) out;
-
-)";
-
-    out += GetGSCommonSource(config.state, separable_shader);
-
-    out += R"(
-void main() {
-    Vertex prim_buffer[3];
-)";
-    for (u32 vtx = 0; vtx < 3; ++vtx) {
-        out += "    prim_buffer[" + std::to_string(vtx) + "].attributes = vec4[" +
-               std::to_string(config.state.gs_output_attributes) + "](";
-        for (u32 i = 0; i < config.state.vs_output_attributes; ++i) {
-            out += std::string(i == 0 ? "" : ", ") + "vs_out_attr" + std::to_string(i) + "[" +
-                   std::to_string(vtx) + "]";
-        }
-        out += ");\n";
-    }
-    out += "    EmitPrim(prim_buffer[0], prim_buffer[1], prim_buffer[2]);\n";
-    out += "}\n";
-
-    return out;
+void RasterizerOpenGL::SyncDepthWriteMask() {
+    const auto& regs = Pica::g_state.regs;
+    state.depth.write_mask = (regs.framebuffer.framebuffer.allow_depth_stencil_write != 0 &&
+                              regs.framebuffer.output_merger.depth_write_enable)
+                                 ? GL_TRUE
+                                 : GL_FALSE;
 }
 
-boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
-                                                    const PicaGSConfig& config,
-                                                    bool separable_shader) {
-    std::string out = "#version 330 core\n";
-    if (separable_shader) {
-        out += "#extension GL_ARB_separate_shader_objects : enable\n";
-    }
-
-    if (config.state.num_inputs % config.state.attributes_per_vertex != 0)
-        return boost::none;
-
-    switch (config.state.num_inputs / config.state.attributes_per_vertex) {
-    case 1:
-        out += "layout(points) in;\n";
-        break;
-    case 2:
-        out += "layout(lines) in;\n";
-        break;
-    case 4:
-        out += "layout(lines_adjacency) in;\n";
-        break;
-    case 3:
-        out += "layout(triangles) in;\n";
-        break;
-    case 6:
-        out += "layout(triangles_adjacency) in;\n";
-        break;
-    default:
-        return boost::none;
-    }
-    out += "layout(triangle_strip, max_vertices = 30) out;\n\n";
-
-    out += GetGSCommonSource(config.state, separable_shader);
-
-    auto get_input_reg = [&](u32 reg) -> std::string {
-        ASSERT(reg < 16);
-        u32 attr = config.state.input_map[reg];
-        if (attr < config.state.num_inputs) {
-            return "vs_out_attr" + std::to_string(attr % config.state.attributes_per_vertex) + "[" +
-                   std::to_string(attr / config.state.attributes_per_vertex) + "]";
-        }
-        return "vec4(0.0, 0.0, 0.0, 1.0)";
-    };
-
-    auto get_output_reg = [&](u32 reg) -> std::string {
-        ASSERT(reg < 16);
-        if (config.state.output_map[reg] < config.state.num_outputs) {
-            return "output_buffer.attributes[" + std::to_string(config.state.output_map[reg]) + "]";
-        }
-        return "";
-    };
-
-    auto program_source_opt = Pica::Shader::Decompiler::DecompileProgram(
-        setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
-        get_output_reg, config.state.sanitize_mul, true);
-
-    if (!program_source_opt)
-        return boost::none;
-
-    std::string& program_source = program_source_opt.get();
-
-    out += R"(
-Vertex output_buffer;
-Vertex prim_buffer[3];
-uint vertex_id = 0u;
-bool prim_emit = false;
-bool winding = false;
-
-void setemit(uint vertex_id_, bool prim_emit_, bool winding_);
-void emit();
-
-void main() {
-)";
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
-        out +=
-            "    output_buffer.attributes[" + std::to_string(i) + "] = vec4(0.0, 0.0, 0.0, 1.0);\n";
-    }
-
-    // execute shader
-    out += "\n    exec_shader();\n\n";
-
-    out += "}\n\n";
-
-    // Put the definition of setemit and emit after main to avoid spurious warning about
-    // uninitialized output_buffer in some drivers
-    out += R"(
-void setemit(uint vertex_id_, bool prim_emit_, bool winding_) {
-    vertex_id = vertex_id_;
-    prim_emit = prim_emit_;
-    winding = winding_;
+void RasterizerOpenGL::SyncStencilTest() {
+    const auto& regs = Pica::g_state.regs;
+    state.stencil.test_enabled =
+        regs.framebuffer.output_merger.stencil_test.enable &&
+        regs.framebuffer.framebuffer.depth_format == Pica::FramebufferRegs::DepthFormat::D24S8;
+    state.stencil.test_func =
+        PicaToGL::CompareFunc(regs.framebuffer.output_merger.stencil_test.func);
+    state.stencil.test_ref = regs.framebuffer.output_merger.stencil_test.reference_value;
+    state.stencil.test_mask = regs.framebuffer.output_merger.stencil_test.input_mask;
+    state.stencil.action_stencil_fail =
+        PicaToGL::StencilOp(regs.framebuffer.output_merger.stencil_test.action_stencil_fail);
+    state.stencil.action_depth_fail =
+        PicaToGL::StencilOp(regs.framebuffer.output_merger.stencil_test.action_depth_fail);
+    state.stencil.action_depth_pass =
+        PicaToGL::StencilOp(regs.framebuffer.output_merger.stencil_test.action_depth_pass);
 }
 
-void emit() {
-    prim_buffer[vertex_id] = output_buffer;
+void RasterizerOpenGL::SyncDepthTest() {
+    const auto& regs = Pica::g_state.regs;
+    state.depth.test_enabled = regs.framebuffer.output_merger.depth_test_enable == 1 ||
+                               regs.framebuffer.output_merger.depth_write_enable == 1;
+    state.depth.test_func =
+        regs.framebuffer.output_merger.depth_test_enable == 1
+            ? PicaToGL::CompareFunc(regs.framebuffer.output_merger.depth_test_func)
+            : GL_ALWAYS;
+}
 
-    if (prim_emit) {
-        if (winding) {
-            EmitPrim(prim_buffer[1], prim_buffer[0], prim_buffer[2]);
-            winding = false;
-        } else {
-            EmitPrim(prim_buffer[0], prim_buffer[1], prim_buffer[2]);
-        }
+void RasterizerOpenGL::SyncCombinerColor() {
+    auto combiner_color =
+        PicaToGL::ColorRGBA8(Pica::g_state.regs.texturing.tev_combiner_buffer_color.raw);
+    if (combiner_color != uniform_block_data.data.tev_combiner_buffer_color) {
+        uniform_block_data.data.tev_combiner_buffer_color = combiner_color;
+        uniform_block_data.dirty = true;
     }
 }
-)";
 
-    out += program_source;
-
-    return out;
+void RasterizerOpenGL::SyncTevConstColor(int stage_index,
+                                         const Pica::TexturingRegs::TevStageConfig& tev_stage) {
+    auto const_color = PicaToGL::ColorRGBA8(tev_stage.const_color);
+    if (const_color != uniform_block_data.data.const_color[stage_index]) {
+        uniform_block_data.data.const_color[stage_index] = const_color;
+        uniform_block_data.dirty = true;
+    }
 }
 
-} // namespace GLShader
+void RasterizerOpenGL::SyncGlobalAmbient() {
+    auto color = PicaToGL::LightColor(Pica::g_state.regs.lighting.global_ambient);
+    if (color != uniform_block_data.data.lighting_global_ambient) {
+        uniform_block_data.data.lighting_global_ambient = color;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightingLUT(unsigned lut_index) {
+    std::array<GLvec2, 256> new_data;
+    const auto& source_lut = Pica::g_state.lighting.luts[lut_index];
+    std::transform(source_lut.begin(), source_lut.end(), new_data.begin(), [](const auto& entry) {
+        return GLvec2{entry.ToFloat(), entry.DiffToFloat()};
+    });
+
+    if (new_data != lighting_lut_data[lut_index]) {
+        lighting_lut_data[lut_index] = new_data;
+        glBindBuffer(GL_TEXTURE_BUFFER, lighting_lut_buffer.handle);
+        glBufferSubData(GL_TEXTURE_BUFFER, lut_index * new_data.size() * sizeof(GLvec2),
+                        new_data.size() * sizeof(GLvec2), new_data.data());
+    }
+}
+
+void RasterizerOpenGL::SyncLightSpecular0(int light_index) {
+    auto color = PicaToGL::LightColor(Pica::g_state.regs.lighting.light[light_index].specular_0);
+    if (color != uniform_block_data.data.light_src[light_index].specular_0) {
+        uniform_block_data.data.light_src[light_index].specular_0 = color;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightSpecular1(int light_index) {
+    auto color = PicaToGL::LightColor(Pica::g_state.regs.lighting.light[light_index].specular_1);
+    if (color != uniform_block_data.data.light_src[light_index].specular_1) {
+        uniform_block_data.data.light_src[light_index].specular_1 = color;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightDiffuse(int light_index) {
+    auto color = PicaToGL::LightColor(Pica::g_state.regs.lighting.light[light_index].diffuse);
+    if (color != uniform_block_data.data.light_src[light_index].diffuse) {
+        uniform_block_data.data.light_src[light_index].diffuse = color;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightAmbient(int light_index) {
+    auto color = PicaToGL::LightColor(Pica::g_state.regs.lighting.light[light_index].ambient);
+    if (color != uniform_block_data.data.light_src[light_index].ambient) {
+        uniform_block_data.data.light_src[light_index].ambient = color;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightPosition(int light_index) {
+    GLvec3 position = {
+        Pica::float16::FromRaw(Pica::g_state.regs.lighting.light[light_index].x).ToFloat32(),
+        Pica::float16::FromRaw(Pica::g_state.regs.lighting.light[light_index].y).ToFloat32(),
+        Pica::float16::FromRaw(Pica::g_state.regs.lighting.light[light_index].z).ToFloat32()};
+
+    if (position != uniform_block_data.data.light_src[light_index].position) {
+        uniform_block_data.data.light_src[light_index].position = position;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightSpotDirection(int light_index) {
+    const auto& light = Pica::g_state.regs.lighting.light[light_index];
+    GLvec3 spot_direction = {light.spot_x / 2047.0f, light.spot_y / 2047.0f,
+                             light.spot_z / 2047.0f};
+
+    if (spot_direction != uniform_block_data.data.light_src[light_index].spot_direction) {
+        uniform_block_data.data.light_src[light_index].spot_direction = spot_direction;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightDistanceAttenuationBias(int light_index) {
+    GLfloat dist_atten_bias =
+        Pica::float20::FromRaw(Pica::g_state.regs.lighting.light[light_index].dist_atten_bias)
+            .ToFloat32();
+
+    if (dist_atten_bias != uniform_block_data.data.light_src[light_index].dist_atten_bias) {
+        uniform_block_data.data.light_src[light_index].dist_atten_bias = dist_atten_bias;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncLightDistanceAttenuationScale(int light_index) {
+    GLfloat dist_atten_scale =
+        Pica::float20::FromRaw(Pica::g_state.regs.lighting.light[light_index].dist_atten_scale)
+            .ToFloat32();
+
+    if (dist_atten_scale != uniform_block_data.data.light_src[light_index].dist_atten_scale) {
+        uniform_block_data.data.light_src[light_index].dist_atten_scale = dist_atten_scale;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::SyncShadowBias() {
+    const auto& shadow = Pica::g_state.regs.framebuffer.shadow;
+    GLfloat constant = Pica::float16::FromRaw(shadow.constant).ToFloat32();
+    GLfloat linear = Pica::float16::FromRaw(shadow.linear).ToFloat32();
+
+    if (constant != uniform_block_data.data.shadow_bias_constant ||
+        linear != uniform_block_data.data.shadow_bias_linear) {
+        uniform_block_data.data.shadow_bias_constant = constant;
+        uniform_block_data.data.shadow_bias_linear = linear;
+        uniform_block_data.dirty = true;
+    }
+}
+
+void RasterizerOpenGL::UploadUniforms(bool accelerate_draw, bool use_gs) {
+    // glBindBufferRange below also changes the generic buffer binding point, so we sync the state
+    // first
+    state.draw.uniform_buffer = uniform_buffer.GetHandle();
+    state.Apply();
+
+    bool sync_vs = accelerate_draw;
+    bool sync_gs = accelerate_draw && use_gs;
+    bool sync_fs = uniform_block_data.dirty;
+
+    if (!sync_vs && !sync_gs && !sync_fs)
+        return;
+
+    size_t uniform_size =
+        uniform_size_aligned_vs + uniform_size_aligned_gs + uniform_size_aligned_fs;
+    size_t used_bytes = 0;
+    u8* uniforms;
+    GLintptr offset;
+    bool invalidate;
+    std::tie(uniforms, offset, invalidate) =
+        uniform_buffer.Map(uniform_size, uniform_buffer_alignment);
+
+    if (sync_vs) {
+        VSUniformData vs_uniforms;
+        vs_uniforms.uniforms.SetFromRegs(Pica::g_state.regs.vs, Pica::g_state.vs);
+        std::memcpy(uniforms + used_bytes, &vs_uniforms, sizeof(vs_uniforms));
+        glBindBufferRange(GL_UNIFORM_BUFFER, static_cast<GLuint>(UniformBindings::VS),
+                          uniform_buffer.GetHandle(), offset + used_bytes, sizeof(VSUniformData));
+        used_bytes += uniform_size_aligned_vs;
+    }
+
+    if (sync_gs) {
+        GSUniformData gs_uniforms;
+        gs_uniforms.uniforms.SetFromRegs(Pica::g_state.regs.gs, Pica::g_state.gs);
+        std::memcpy(uniforms + used_bytes, &gs_uniforms, sizeof(gs_uniforms));
+        glBindBufferRange(GL_UNIFORM_BUFFER, static_cast<GLuint>(UniformBindings::GS),
+                          uniform_buffer.GetHandle(), offset + used_bytes, sizeof(GSUniformData));
+        used_bytes += uniform_size_aligned_gs;
+    }
+
+    if (sync_fs || invalidate) {
+        std::memcpy(uniforms + used_bytes, &uniform_block_data.data, sizeof(UniformData));
+        glBindBufferRange(GL_UNIFORM_BUFFER, static_cast<GLuint>(UniformBindings::Common),
+                          uniform_buffer.GetHandle(), offset + used_bytes, sizeof(UniformData));
+        uniform_block_data.dirty = false;
+        used_bytes += uniform_size_aligned_fs;
+    }
+
+    uniform_buffer.Unmap(used_bytes);
+}
