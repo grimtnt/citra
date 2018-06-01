@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <utility>
 #include <vector>
+#include <boost/optional.hpp>
 #include <nihstro/shader_bytecode.h>
 #include <xbyak.h>
 #include "common/bit_set.h"
@@ -120,8 +121,9 @@ private:
     /// Mapping of Pica VS instructions to pointers in the emitted code
     std::array<Xbyak::Label, MAX_PROGRAM_CODE_LENGTH> instruction_labels;
 
-    /// label used for linking break command and outside the loop command
-    Xbyak::Label loop_break_label;
+    /// Label pointing to the end of the current LOOP block. Used by the BREAKC instruction to break
+    /// out of the loop.
+    boost::optional<Xbyak::Label> loop_break_label;
 
     /// Offsets in code where a return needs to be inserted
     std::vector<unsigned> return_offsets;
