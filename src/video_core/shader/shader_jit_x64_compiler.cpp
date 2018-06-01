@@ -600,7 +600,7 @@ void JitShader::Compile_BREAKC(Instruction instr) {
     Compile_Assert(looping, "BREAKC must be inside a LOOP");
     if (looping) {
         Compile_EvaluateCondition(instr);
-        jnz(loop_break_label);
+        jnz(*loop_break_label);
     }
 }
 
@@ -747,14 +747,14 @@ void JitShader::Compile_LOOP(Instruction instr) {
     Label l_loop_start;
     L(l_loop_start);
 
+    loop_break_label = Xbyak::Label();
     Compile_Block(instr.flow_control.dest_offset + 1);
 
     add(LOOPCOUNT_REG, LOOPINC); // Increment LOOPCOUNT_REG by Z-component
     sub(LOOPCOUNT, 1);           // Increment loop count by 1
     jnz(l_loop_start);           // Loop if not equal
-    L(loop_break_label);
-    loop_break_label.~Label();
-    new (&loop_break_label) Xbyak::Label();
+    L(*loop_break_label);
+    loop_break_label = boost::none;
 
     looping = false;
 }
