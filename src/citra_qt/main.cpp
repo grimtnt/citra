@@ -30,7 +30,6 @@
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
 #include "citra_qt/multiplayer/state.h"
-#include "citra_qt/stereoscopic_controller.h"
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/util/clickable_label.h"
 #include "citra_qt/util/console.h"
@@ -49,7 +48,6 @@
 #include "core/loader/loader.h"
 #include "core/movie.h"
 #include "core/settings.h"
-#include "video_core/video_core.h"
 
 #ifdef QT_STATICPLUGIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
@@ -115,7 +113,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     Network::Init();
 
     InitializeWidgets();
-    InitializeDebugWidgets();
     InitializeRecentFileMenuActions();
     InitializeHotkeys();
 
@@ -208,18 +205,6 @@ void GMainWindow::InitializeWidgets() {
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Medium_Screen);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Large_Screen);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Side_by_Side);
-}
-
-void GMainWindow::InitializeDebugWidgets() {
-    stereoscopicControllerWidget = new StereoscopicControllerWidget(this);
-    addDockWidget(Qt::LeftDockWidgetArea, stereoscopicControllerWidget);
-    stereoscopicControllerWidget->setFloating(true);
-    connect(this, &GMainWindow::EmulationStarting, stereoscopicControllerWidget,
-            &StereoscopicControllerWidget::OnEmulationStarting);
-    connect(this, &GMainWindow::EmulationStopping, stereoscopicControllerWidget,
-            &StereoscopicControllerWidget::OnEmulationStopping);
-
-    ui.menu_Emulation->addAction(stereoscopicControllerWidget->toggleViewAction());
 }
 
 void GMainWindow::InitializeRecentFileMenuActions() {
@@ -356,12 +341,6 @@ void GMainWindow::ConnectWidgetEvents() {
             &GMainWindow::OnGameListAddDirectory);
     connect(game_list, &GameList::ShowList, this, &GMainWindow::OnGameListShowList);
 
-    connect(stereoscopicControllerWidget, SIGNAL(DepthChanged(float)), this,
-            SLOT(OnDepthChanged(float)));
-    connect(stereoscopicControllerWidget,
-            SIGNAL(StereoscopeModeChanged(EmuWindow::StereoscopicMode)), this,
-            SLOT(OnStereoscopeModeChanged(EmuWindow::StereoscopicMode)));
-
     connect(this, &GMainWindow::EmulationStarting, render_window,
             &GRenderWindow::OnEmulationStarting);
     connect(this, &GMainWindow::EmulationStopping, render_window,
@@ -450,14 +429,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_FAQ, &QAction::triggered,
             []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
-}
-
-void GMainWindow::OnDepthChanged(float v) {
-    VideoCore::g_emu_window->DepthSliderChanged(v);
-}
-
-void GMainWindow::OnStereoscopeModeChanged(EmuWindow::StereoscopicMode mode) {
-    VideoCore::g_emu_window->StereoscopicModeChanged(mode);
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
