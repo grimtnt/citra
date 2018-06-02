@@ -89,10 +89,11 @@ void Init() {
     update_time_event =
         CoreTiming::RegisterEvent("SharedPage::UpdateTimeCallback", UpdateTimeCallback);
     CoreTiming::ScheduleEvent(0, update_time_event);
-
-    float sliderstate =
-        Settings::values.toggle_3d ? (float_le)Settings::values.factor_3d / 100 : 0.0f;
-    shared_page.sliderstate_3d = slidestate;
+    
+    float sliderstate = Settings::values.toggle_3d
+                            ? (float_le)Settings::values.factor_3d / 100
+                            : 0.0f;
+    shared_page.sliderstate_3d = sliderstate;
 }
 
 void SetMacAddress(const MacAddress& addr) {
