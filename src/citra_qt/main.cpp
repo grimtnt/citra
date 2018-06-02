@@ -469,6 +469,24 @@ bool GMainWindow::LoadROM(const QString& filename) {
     Core::System& system{Core::System::GetInstance()};
 
     const Core::System::ResultStatus result{system.Load(render_window, filename.toStdString())};
+    std::string title;
+    system.GetAppLoader().ReadTitle(title);
+    game_title = QString::fromStdString(title);
+    SetupUIStrings();
+#ifdef ENABLE_DISCORD_RPC
+    g_start_time = time(NULL);
+    DiscordEventHandlers handlers{};
+    handlers.disconnected = HandleDiscordDisconnected;
+    handlers.errored = HandleDiscordError;
+    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
+    DiscordRichPresence presence{};
+    presence.state = game_title.isEmpty() ? "Unknown game"
+                                          : game_title.toLocal8Bit().constData();
+    presence.details = "Playing";
+    presence.startTimestamp = g_start_time;
+    presence.largeImageKey = "icon";
+    Discord_UpdatePresence(&presence);
+#endif
 
     if (result != Core::System::ResultStatus::Success) {
         switch (result) {
@@ -578,33 +596,9 @@ void GMainWindow::BootGame(const QString& filename) {
             applet_cv.wait(lock, [&] { return !applet_open; });
             return ret;
         });
-
-#ifdef ENABLE_DISCORD_RPC
-    std::string title;
-    Core::System::GetInstance().GetAppLoader().ReadTitle(title);
-    g_start_time = time(NULL);
-    DiscordEventHandlers handlers{};
-    handlers.disconnected = HandleDiscordDisconnected;
-    handlers.errored = HandleDiscordError;
-    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
-    DiscordRichPresence presence{};
-    presence.state = title.empty() ? "Unknown game" : title.c_str();
-    presence.details = "Playing";
-    presence.startTimestamp = g_start_time;
-    presence.largeImageKey = "icon";
-    Discord_UpdatePresence(&presence);
-#endif
 }
 
 void GMainWindow::ShutdownGame() {
-#ifdef ENABLE_DISCORD_RPC
-    Discord_ClearPresence();
-    Discord_Shutdown();
-#endif
-
-    Core::Movie::GetInstance().SetPlayFile("");
-    Core::Movie::GetInstance().SetRecordFile("");
-
     emu_thread->RequestStop();
 
     emit EmulationStopping();
@@ -638,6 +632,9 @@ void GMainWindow::ShutdownGame() {
         game_list->show();
     game_list->setFilterFocus();
 
+    Core::Movie::GetInstance().SetPlayFile("");
+    Core::Movie::GetInstance().SetRecordFile("");
+
     // Disable status bar updates
     status_bar_update_timer.stop();
     message_label->setVisible(false);
@@ -647,7 +644,12 @@ void GMainWindow::ShutdownGame() {
 
     emulation_running = false;
 
+    game_title.clear();
     SetupUIStrings();
+#ifdef ENABLE_DISCORD_RPC
+    Discord_ClearPresence();
+    Discord_Shutdown();
+#endif
 }
 
 void GMainWindow::StoreRecentFile(const QString& filename) {
@@ -1045,8 +1047,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Play->setEnabled(true);
     ui.action_Record->setEnabled(true);
-
-    SetupUIStrings();
 }
 
 void GMainWindow::OnPauseGame() {
@@ -1494,14 +1494,11 @@ void GMainWindow::OnLanguageChanged(const QString& locale) {
 }
 
 void GMainWindow::SetupUIStrings() {
-    std::string game_title;
-    Core::System::GetInstance().GetAppLoader().ReadTitle(game_title);
-
-    if (game_title.empty()) {
+    if (game_title.isEmpty()) {
         setWindowTitle(tr("Citra %1").arg(Common::g_build_fullname));
     } else {
         setWindowTitle(
-            tr("Citra %1| %2").arg(Common::g_build_fullname, QString::fromStdString(game_title)));
+            tr("Citra %1| %2").arg(Common::g_build_fullname, game_title));
     }
 }
 
