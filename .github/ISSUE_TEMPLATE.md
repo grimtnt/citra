@@ -1,7 +1,6 @@
 <!---
 When submitting an issue, please check the following:
 
-- You have read the above.
 - You have provided the version (commit hash) of Citra you are using.
 - You have provided sufficient detail for the issue to be reproduced.
 - You have provided system specs (if relevant).
