@@ -45,8 +45,6 @@ EmuWindow::EmuWindow() {
     active_config = config;
     touch_state = std::make_shared<TouchState>();
     Input::RegisterFactory<Input::TouchDevice>("emu_window", touch_state);
-    depth_slider = 0.0f;
-    stereoscopic_mode = LeftOnly;
 }
 
 EmuWindow::~EmuWindow() {
@@ -134,12 +132,4 @@ void EmuWindow::UpdateCurrentFramebufferLayout(unsigned width, unsigned height) 
         }
     }
     NotifyFramebufferLayoutChanged(layout);
-}
-
-void EmuWindow::DepthSliderChanged(float value) {
-    depth_slider = value;
-}
-
-void EmuWindow::StereoscopicModeChanged(StereoscopicMode mode) {
-    stereoscopic_mode = mode;
 }
