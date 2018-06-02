@@ -38,8 +38,6 @@ public:
         std::pair<unsigned, unsigned> min_client_area_size;
     };
 
-    enum StereoscopicMode { LeftOnly, RightOnly, Anaglyph };
-
     /// Swap buffers to display the next frame
     virtual void SwapBuffers() = 0;
 
@@ -70,36 +68,12 @@ public:
     void TouchMoved(unsigned framebuffer_x, unsigned framebuffer_y);
 
     /**
-     * Signal that a 3d depth slider change has occurred
-     * @param value new value for 3d depth slider;
-     */
-    void DepthSliderChanged(float value);
-
-    void StereoscopicModeChanged(StereoscopicMode mode);
-
-    /**
      * Returns currently active configuration.
      * @note Accesses to the returned object need not be consistent because it may be modified in
      * another thread
      */
     const WindowConfig& GetActiveConfig() const {
         return active_config;
-    }
-
-    /**
-     * Gets the value of the 3D depth slider.
-     * @return float-type value
-     */
-    f32 GetDepthSliderValue() const {
-        return depth_slider;
-    }
-
-    /**
-     * Gets the stereoscopic mode.
-     * @return StereoscopicMode value
-     */
-    StereoscopicMode GetStereoscopicMode() const {
-        return stereoscopic_mode;
     }
 
     /**
@@ -186,10 +160,6 @@ private:
 
     class TouchState;
     std::shared_ptr<TouchState> touch_state;
-
-    f32 depth_slider; ///< 3D depth slider (0.0-1.0)
-
-    StereoscopicMode stereoscopic_mode; ///< stereoscopic mode
 
     /**
      * Clip the provided coordinates to be inside the touchscreen area.
