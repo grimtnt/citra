@@ -646,6 +646,8 @@ void GMainWindow::ShutdownGame() {
     emu_frametime_label->setVisible(false);
 
     emulation_running = false;
+
+    SetupUIStrings();
 }
 
 void GMainWindow::StoreRecentFile(const QString& filename) {
@@ -1043,6 +1045,8 @@ void GMainWindow::OnStartGame() {
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Play->setEnabled(true);
     ui.action_Record->setEnabled(true);
+
+    SetupUIStrings();
 }
 
 void GMainWindow::OnPauseGame() {
@@ -1490,8 +1494,15 @@ void GMainWindow::OnLanguageChanged(const QString& locale) {
 }
 
 void GMainWindow::SetupUIStrings() {
-    setWindowTitle(tr("Citra %1| %2-%3")
-                       .arg(Common::g_build_fullname, Common::g_scm_branch, Common::g_scm_desc));
+    std::string game_title;
+    Core::System::GetInstance().GetAppLoader().ReadTitle(game_title);
+
+    if (game_title.empty()) {
+        setWindowTitle(tr("Citra %1").arg(Common::g_build_fullname));
+    } else {
+        setWindowTitle(
+            tr("Citra %1| %2").arg(Common::g_build_fullname, QString::fromStdString(game_title)));
+    }
 }
 
 void GMainWindow::SyncMenuUISettings() {
