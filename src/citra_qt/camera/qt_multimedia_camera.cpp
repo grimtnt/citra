@@ -94,7 +94,7 @@ void QtMultimediaCamera::SetFrameRate(Service::CAM::FrameRate frame_rate) {
     auto framerate = FrameRateList[static_cast<int>(frame_rate)];
 
     handler->settings.setMinimumFrameRate(framerate.minimumFrameRate);
-    handler->settings.setMinimumFrameRate(framerate.maximumFrameRate);
+    handler->settings.setMaximumFrameRate(framerate.maximumFrameRate);
 }
 
 QImage QtMultimediaCamera::QtReceiveFrame() {
