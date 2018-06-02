@@ -480,8 +480,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
     handlers.errored = HandleDiscordError;
     Discord_Initialize("451776535058448385", &handlers, 0, NULL);
     DiscordRichPresence presence{};
-    presence.state = game_title.isEmpty() ? "Unknown game"
-                                          : game_title.toLocal8Bit().constData();
+    presence.state = game_title.isEmpty() ? "Unknown game" : game_title.toLocal8Bit().constData();
     presence.details = "Playing";
     presence.startTimestamp = g_start_time;
     presence.largeImageKey = "icon";
@@ -1497,8 +1496,7 @@ void GMainWindow::SetupUIStrings() {
     if (game_title.isEmpty()) {
         setWindowTitle(tr("Citra %1").arg(Common::g_build_fullname));
     } else {
-        setWindowTitle(
-            tr("Citra %1| %2").arg(Common::g_build_fullname, game_title));
+        setWindowTitle(tr("Citra %1| %2").arg(Common::g_build_fullname, game_title));
     }
 }
 
