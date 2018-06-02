@@ -65,8 +65,6 @@ add_executable(citra-qt
     game_list_p.h
     hotkeys.cpp
     hotkeys.h
-    stereoscopic_controller.cpp
-    stereoscopic_controller.h
     main.cpp
     main.h
     ui_settings.cpp
