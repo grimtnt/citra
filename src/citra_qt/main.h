@@ -13,7 +13,6 @@
 #include <QTranslator>
 #include "common/announce_multiplayer_room.h"
 #include "core/core.h"
-#include "core/frontend/emu_window.h"
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/service/am/am.h"
@@ -34,7 +33,6 @@ class MultiplayerState;
 template <typename>
 class QFutureWatcher;
 class QProgressBar;
-class StereoscopicControllerWidget;
 
 using namespace HLE::Applets;
 
@@ -174,8 +172,6 @@ private slots:
     void OnCoreError(Core::System::ResultStatus, std::string);
     /// Called whenever a user selects Help->About Citra
     void OnMenuAboutCitra();
-    void OnDepthChanged(float v);
-    void OnStereoscopeModeChanged(EmuWindow::StereoscopicMode);
     void OnLanguageChanged(const QString& locale);
 
 private:
@@ -205,8 +201,6 @@ private:
     // Whether emulation is currently running in Citra.
     bool emulation_running = false;
     std::unique_ptr<EmuThread> emu_thread;
-
-    StereoscopicControllerWidget* stereoscopicControllerWidget;
 
     bool applet_open = false;
     std::mutex applet_mutex;
