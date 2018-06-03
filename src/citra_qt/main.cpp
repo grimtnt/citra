@@ -1539,7 +1539,7 @@ int main(int argc, char* argv[]) {
     Camera::RegisterFactory("image", std::make_unique<Camera::StillImageCameraFactory>());
     Camera::RegisterFactory("qt", std::make_unique<Camera::QtMultimediaCameraFactory>());
     Camera::QtMultimediaCameraHandler::Init();
-    NGLOG_INFO(Frontend, "Citra Version: {}-{}", Common::g_scm_branch, Common::g_scm_desc);
+    NGLOG_INFO(Frontend, "Citra version: {}", Common::g_build_version);
     main_window.show();
     return app.exec();
 }
