@@ -123,10 +123,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     ConnectWidgetEvents();
 
     SetupUIStrings();
-    NGLOG_INFO(Frontend, "Citra Version: {} | {}-{}", Common::g_build_fullname,
-               Common::g_scm_branch, Common::g_scm_desc);
-
-    show();
 
     game_list->LoadCompatibilityList();
     game_list->PopulateAsync(UISettings::values.game_dirs);
@@ -1543,6 +1539,7 @@ int main(int argc, char* argv[]) {
     Camera::RegisterFactory("image", std::make_unique<Camera::StillImageCameraFactory>());
     Camera::RegisterFactory("qt", std::make_unique<Camera::QtMultimediaCameraFactory>());
     Camera::QtMultimediaCameraHandler::Init();
+    NGLOG_INFO(Frontend, "Citra Version: {}-{}", Common::g_scm_branch, Common::g_scm_desc);
     main_window.show();
     return app.exec();
 }
