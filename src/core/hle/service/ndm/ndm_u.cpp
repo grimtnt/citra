@@ -43,7 +43,7 @@ void NDM_U::LockState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED)  called");
+    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::UnlockState(Kernel::HLERequestContext& ctx) {
@@ -101,6 +101,12 @@ void NDM_U::ResumeScheduler(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
     NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+}
+
+void NDM_U::Stubbed_0x000C0000(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0xC, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
 }
 
 void NDM_U::QueryStatus(Kernel::HLERequestContext& ctx) {
@@ -221,7 +227,7 @@ NDM_U::NDM_U() : ServiceFramework("ndm:u", 6) {
         {0x00090000, &NDM_U::ResumeScheduler, "ResumeScheduler"},
         {0x000A0000, nullptr, "GetCurrentState"},
         {0x000B0000, nullptr, "GetTargetState"},
-        {0x000C0000, nullptr, "<Stubbed>"},
+        {0x000C0000, &NDM_U::Stubbed_0x000C0000, "Stubbed_0x000C0000"},
         {0x000D0040, &NDM_U::QueryStatus, "QueryStatus"},
         {0x000E0040, &NDM_U::GetDaemonDisableCount, "GetDaemonDisableCount"},
         {0x000F0000, &NDM_U::GetSchedulerDisableCount, "GetSchedulerDisableCount"},

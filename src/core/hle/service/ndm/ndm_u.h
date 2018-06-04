@@ -104,6 +104,15 @@ private:
     void ResumeScheduler(Kernel::HLERequestContext& ctx);
 
     /**
+     *  NDM::Stubbed_0x000C0000 service function
+     *  Inputs:
+     *      0 : Header code [0x000C0000]
+     *  Outputs:
+     *      1 : Result, 0 on success, otherwise error code
+     */
+    void Stubbed_0x000C0000(Kernel::HLERequestContext& ctx);
+
+    /**
      *  NDM::QueryStatus service function
      *  Inputs:
      *      0 : Header code [0x000D0040]
