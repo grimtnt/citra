@@ -25,6 +25,16 @@ static void Initialize(Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
 }
 
+static void SeedRNG(Interface* self) {
+    u32* cmd_buff = Kernel::GetCommandBuffer();
+
+    std::random_device rand_device;
+    rand_gen.seed(rand_device());
+
+    // Stub, return success
+    cmd_buff[1] = RESULT_SUCCESS.raw;
+}
+
 static void GenerateRandomData(Interface* self) {
     u32* cmd_buff = Kernel::GetCommandBuffer();
 
@@ -60,6 +70,7 @@ static void GenerateRandomData(Interface* self) {
 
 const Interface::FunctionInfo FunctionTable[] = {
     {0x00010002, Initialize, "Initialize"},
+    {0x00100000, SeedRNG, "SeedRNG"},
     {0x000200C2, nullptr, "CreateContext"},
     {0x00030000, nullptr, "CreateRootCertChain"},
     {0x00040040, nullptr, "DestroyRootCertChain"},
