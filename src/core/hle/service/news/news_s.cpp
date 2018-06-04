@@ -10,13 +10,22 @@ namespace NEWS {
 
 void NEWS_S::GetTotalNotifications(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x5, 0, 0);
-
-    LOG_WARNING(Service, "(STUBBED) called");
-
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
 
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
+
+    NGLOG_WARNING(Service, "(STUBBED) called");
+}
+
+void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0xE, 1, 0);
+    u32 array_index = rp.Pop<u32>();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    NGLOG_WARNING(Service, "LEDs are not implemented!");
 }
 
 NEWS_S::NEWS_S() : ServiceFramework("news:s", 2) {
@@ -31,7 +40,7 @@ NEWS_S::NEWS_S() : ServiceFramework("news:s", 2) {
         {0x000B0082, nullptr, "GetNotificationHeader"},
         {0x000C0082, nullptr, "GetNotificationMessage"},
         {0x000D0082, nullptr, "GetNotificationImage"},
-        {0x000E0040, nullptr, "SetInfoLEDPattern"},
+        {0x000E0040, &NEWS_S::SetInfoLEDPattern, "SetInfoLEDPattern"},
         {0x00120082, nullptr, "GetNotificationHeaderOther"},
         {0x00130000, nullptr, "WriteNewsDBSavedata"},
     };
