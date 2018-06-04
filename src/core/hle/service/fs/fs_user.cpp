@@ -55,7 +55,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
     ASSERT(filename.size() == filename_size);
     FileSys::Path file_path(filename_type, filename);
 
-    LOG_DEBUG(Service_FS, "path=%s, mode=%u attrs=%u", file_path.DebugStr().c_str(), mode.hex,
+    LOG_DEBUG(Service_FS, "path=%s, mode=%u, attrs=%u", file_path.DebugStr().c_str(), mode.hex,
               attributes);
 
     ResultVal<std::shared_ptr<File>> file_res =
@@ -96,7 +96,8 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
     FileSys::Path archive_path(archivename_type, archivename);
     FileSys::Path file_path(filename_type, filename);
 
-    LOG_DEBUG(Service_FS, "archive_id=0x%08X archive_path=%s file_path=%s, mode=%u attributes=%u",
+    LOG_DEBUG(Service_FS,
+              "archive_id=0x%08X, archive_path=%s, file_path=%s, mode=%u, attributes=%u",
               static_cast<u32>(archive_id), archive_path.DebugStr().c_str(),
               file_path.DebugStr().c_str(), mode.hex, attributes);
 
@@ -105,7 +106,7 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
     ResultVal<ArchiveHandle> archive_handle = Service::FS::OpenArchive(archive_id, archive_path);
     if (archive_handle.Failed()) {
         LOG_ERROR(Service_FS,
-                  "Failed to get a handle for archive archive_id=0x%08X archive_path=%s",
+                  "Failed to get a handle for archive archive_id=0x%08X, archive_path=%s",
                   static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
         rb.Push(archive_handle.Code());
         rb.PushMoveObjects<Kernel::Object>(nullptr);
@@ -137,8 +138,8 @@ void FS_USER::DeleteFile(Kernel::HLERequestContext& ctx) {
 
     FileSys::Path file_path(filename_type, filename);
 
-    LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(filename_type), filename_size,
-              file_path.DebugStr().c_str());
+    LOG_DEBUG(Service_FS, "type=%u, size=%u, data=%s", static_cast<u32>(filename_type),
+              filename_size, file_path.DebugStr().c_str());
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(DeleteFileFromArchive(archive_handle, file_path));
@@ -163,7 +164,7 @@ void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
     FileSys::Path dest_file_path(dest_filename_type, dest_filename);
 
     LOG_DEBUG(Service_FS,
-              "src_type=%u src_size=%u src_data=%s dest_type=%u dest_size=%u dest_data=%s",
+              "src_type=%u, src_size=%u, src_data=%s, dest_type=%u, dest_size=%u, dest_data=%s",
               static_cast<u32>(src_filename_type), src_filename_size,
               src_file_path.DebugStr().c_str(), static_cast<u32>(dest_filename_type),
               dest_filename_size, dest_file_path.DebugStr().c_str());
@@ -185,7 +186,7 @@ void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
 
     FileSys::Path dir_path(dirname_type, dirname);
 
-    LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(dirname_type), dirname_size,
+    LOG_DEBUG(Service_FS, "type=%u, size=%u, data=%s", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr().c_str());
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -243,7 +244,7 @@ void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
     ASSERT(dirname.size() == dirname_size);
     FileSys::Path dir_path(dirname_type, dirname);
 
-    LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(dirname_type), dirname_size,
+    LOG_DEBUG(Service_FS, "type=%u, size=%u, data=%s", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr().c_str());
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -267,10 +268,11 @@ void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
     FileSys::Path src_dir_path(src_dirname_type, src_dirname);
     FileSys::Path dest_dir_path(dest_dirname_type, dest_dirname);
 
-    LOG_DEBUG(
-        Service_FS, "src_type=%u src_size=%u src_data=%s dest_type=%u dest_size=%u dest_data=%s",
-        static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr().c_str(),
-        static_cast<u32>(dest_dirname_type), dest_dirname_size, dest_dir_path.DebugStr().c_str());
+    LOG_DEBUG(Service_FS,
+              "src_type=%u, src_size=%u, src_data=%s, dest_type=%u, dest_size=%u, dest_data=%s",
+              static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr().c_str(),
+              static_cast<u32>(dest_dirname_type), dest_dirname_size,
+              dest_dir_path.DebugStr().c_str());
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RenameDirectoryBetweenArchives(src_archive_handle, src_dir_path, dest_archive_handle,
@@ -287,7 +289,7 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
 
     FileSys::Path dir_path(dirname_type, dirname);
 
-    LOG_DEBUG(Service_FS, "type=%u size=%u data=%s", static_cast<u32>(dirname_type), dirname_size,
+    LOG_DEBUG(Service_FS, "type=%u, size=%u, data=%s", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr().c_str());
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
@@ -315,7 +317,7 @@ void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
     ASSERT(archivename.size() == archivename_size);
     FileSys::Path archive_path(archivename_type, archivename);
 
-    LOG_DEBUG(Service_FS, "archive_id=0x%08X archive_path=%s", static_cast<u32>(archive_id),
+    LOG_DEBUG(Service_FS, "archive_id=0x%08X, archive_path=%s", static_cast<u32>(archive_id),
               archive_path.DebugStr().c_str());
 
     IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
@@ -325,8 +327,7 @@ void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
         rb.PushRaw(*handle);
     } else {
         rb.Push<u64>(0);
-        LOG_ERROR(Service_FS,
-                  "failed to get a handle for archive archive_id=0x%08X archive_path=%s",
+        LOG_ERROR(Service_FS, "failed to get a handle for archive 0x%08X, archive_path=%s",
                   static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
     }
 }
@@ -336,7 +337,7 @@ void FS_USER::CloseArchive(Kernel::HLERequestContext& ctx) {
     auto archive_handle = rp.PopRaw<ArchiveHandle>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(Service::FS::CloseArchive(archive_handle));
+    rb.Push(FS::CloseArchive(archive_handle));
 }
 
 void FS_USER::IsSdmcDetected(Kernel::HLERequestContext& ctx) {
@@ -350,9 +351,9 @@ void FS_USER::IsSdmcWriteable(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x818, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    // If the SD isn't enabled, it can't be writeable...else, stubbed true
+    // If the SD isn't enabled, it can't be writeable
     rb.Push(Settings::values.use_virtual_sd);
-    LOG_DEBUG(Service_FS, " (STUBBED)");
+    LOG_DEBUG(Service_FS, "(STUBBED) called");
 }
 
 void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
@@ -447,8 +448,8 @@ void FS_USER::CreateExtSaveData(Kernel::HLERequestContext& ctx) {
     auto icon_buffer = rp.PopMappedBuffer();
 
     LOG_WARNING(Service_FS,
-                "(STUBBED) savedata_high=%08X savedata_low=%08X unknown=%08X "
-                "files=%08X directories=%08X size_limit=%016" PRIx64 " icon_size=%08X",
+                "(STUBBED) called, savedata_high=%08X, savedata_low=%08X, unknown=%08X "
+                "files=%08X, directories=%08X, size_limit=%016" PRIx64 ", icon_size=%08X",
                 save_high, save_low, unknown, directories, files, size_limit, icon_size);
 
     std::vector<u8> icon(icon_size);
@@ -472,11 +473,12 @@ void FS_USER::DeleteExtSaveData(Kernel::HLERequestContext& ctx) {
     u32 save_high = rp.Pop<u32>();
     u32 unknown = rp.Pop<u32>(); // TODO(Subv): Figure out what this is
 
-    LOG_WARNING(Service_FS, "(STUBBED) save_low=%08X save_high=%08X media_type=%08X unknown=%08X",
+    LOG_WARNING(Service_FS,
+                "(STUBBED) called, save_low=%08X, save_high=%08X, media_type=%08X, unknown=%08X",
                 save_low, save_high, static_cast<u32>(media_type), unknown);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(Service::FS::DeleteExtSaveData(media_type, save_high, save_low));
+    rb.Push(FS::DeleteExtSaveData(media_type, save_high, save_low));
 }
 
 void FS_USER::CardSlotIsInserted(Kernel::HLERequestContext& ctx) {
@@ -493,7 +495,7 @@ void FS_USER::DeleteSystemSaveData(Kernel::HLERequestContext& ctx) {
     u32 savedata_low = rp.Pop<u32>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(Service::FS::DeleteSystemSaveData(savedata_high, savedata_low));
+    rb.Push(FS::DeleteSystemSaveData(savedata_high, savedata_low));
 }
 
 void FS_USER::CreateSystemSaveData(Kernel::HLERequestContext& ctx) {
@@ -673,8 +675,8 @@ void FS_USER::SetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
     // TODO: Generate and Save the Secure Value
 
     LOG_WARNING(Service_FS,
-                "(STUBBED) called, value=0x%016" PRIx64 " secure_value_slot=0x%08X "
-                "unqiue_id=0x%08X title_variation=0x%02X",
+                "(STUBBED) called, value=0x%016" PRIx64 ", secure_value_slot=0x%08X "
+                "unique_id=0x%08X, title_variation=0x%02X",
                 value, secure_value_slot, unique_id, title_variation);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -689,9 +691,10 @@ void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
     u32 unique_id = rp.Pop<u32>();
     u8 title_variation = rp.Pop<u8>();
 
-    LOG_WARNING(Service_FS,
-                "(STUBBED) called secure_value_slot=0x%08X unqiue_id=0x%08X title_variation=0x%02X",
-                secure_value_slot, unique_id, title_variation);
+    LOG_WARNING(
+        Service_FS,
+        "(STUBBED) called, secure_value_slot=0x%08X, unique_id=0x%08X, title_variation=0x%02X",
+        secure_value_slot, unique_id, title_variation);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(4, 0);
 
