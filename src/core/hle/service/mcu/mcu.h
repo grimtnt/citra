@@ -48,7 +48,7 @@ public:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : Sound volume (0-0x3F)
          */
-        void GetSoundVolume(Kernel::HLERequestContext& ctx, u16 id);
+        void GetSoundVolume(Kernel::HLERequestContext& ctx);
 
         /// A helper function for dispatching service functions that have multiple IDs
         template <void (Interface::*function)(Kernel::HLERequestContext& ctx, u16 id), u16 id>

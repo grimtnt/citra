@@ -19,7 +19,7 @@ HWC::HWC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
         {0x00080040, nullptr, "SetCameraLEDPattern"},
         {0x00090040, &HWC::Set3DLEDState, "Set3DLEDState"},
         {0x000A0640, nullptr, "SetInfoLEDPattern"},
-        {0x000B0000, &HWC::D<&HWC::GetSoundVolume, 0x000B>, "GetSoundVolume"},
+        {0x000B0000, &HWC::GetSoundVolume, "GetSoundVolume"},
         {0x000C0040, nullptr, "SetTopScreenFlicker"},
         {0x000D0040, nullptr, "SetBottomScreenFlicker"},
         {0x000F00C0, nullptr, "GetRtcTime"},

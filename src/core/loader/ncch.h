@@ -72,7 +72,6 @@ private:
 
     FileSys::NCCHContainer base_ncch;
     FileSys::NCCHContainer update_ncch;
-    FileSys::NCCHContainer dlc_ncch;
     FileSys::NCCHContainer* overlay_ncch;
 
     std::string filepath;

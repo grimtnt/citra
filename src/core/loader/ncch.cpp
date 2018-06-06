@@ -31,7 +31,6 @@
 namespace Loader {
 
 static const u64 UPDATE_MASK = 0x0000000e00000000;
-static const u64 DLC_MASK = 0x0000008c00000000;
 
 FileType AppLoader_NCCH::IdentifyType(FileUtil::IOFile& file) {
     u32 magic;
@@ -164,12 +163,6 @@ ResultStatus AppLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& process) {
     result = update_ncch.Load();
     if (result == ResultStatus::Success) {
         overlay_ncch = &update_ncch;
-    }
-    dlc_ncch.OpenFile(
-        Service::AM::GetTitleContentPath(Service::FS::MediaType::SDMC, ncch_program_id | DLC_MASK));
-    result = dlc_ncch.Load();
-    if (result == ResultStatus::Success) {
-        overlay_ncch = &dlc_ncch;
     }
 
     if (auto room_member = Network::GetRoomMember().lock()) {

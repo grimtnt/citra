@@ -13,7 +13,7 @@ HID::HID(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
         {0x00070000, nullptr, "GetRaw3DSliderPosition"},
         {0x000C0000, nullptr, "GetMcuHidEventHandle"},
         {0x000D0000, nullptr, "GetMcuHidEventReason"},
-        {0x000E0000, &HID::D<&HID::GetSoundVolume, 0x000E>, "GetSoundVolume"},
+        {0x000E0000, &HID::GetSoundVolume, "GetSoundVolume"},
         {0x000F0040, nullptr, "EnableAccelerometerInterrupt"},
     };
     RegisterHandlers(functions);
