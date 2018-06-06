@@ -31,7 +31,7 @@
 namespace Loader {
 
 static const u64 UPDATE_MASK = 0x0000000e00000000;
-static const u64 DLC_MASK = 0x0000000c00000000;
+static const u64 DLC_MASK = 0x0000008c00000000;
 
 FileType AppLoader_NCCH::IdentifyType(FileUtil::IOFile& file) {
     u32 magic;
