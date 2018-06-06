@@ -350,14 +350,9 @@ void Module::Interface::GetGyroscopeLowCalibrateParam(Kernel::HLERequestContext&
 
 void Module::Interface::GetSoundVolume(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x17, 0, 0};
-
-    const u8 volume = 0x3F; // TODO(purpasmart): Find out if this is the max value for the volume
-
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(volume);
-
-    LOG_WARNING(Service_HID, "(STUBBED) called");
+    rb.Push<u8>(static_cast<u8>(Settings::values.sound_volume * 0.01 * 0x3F));
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> hid, const char* name, u32 max_session)

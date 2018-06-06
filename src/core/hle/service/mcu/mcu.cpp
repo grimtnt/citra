@@ -22,8 +22,8 @@
 namespace Service {
 namespace MCU {
 
-void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0005, 0, 0);
+void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx, u16 id) {
+    IPC::RequestParser rp(ctx, id, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0x64);
@@ -31,31 +31,31 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
     NGLOG_WARNING(Service_MCU, "(STUBBED) called");
 }
 
+void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x2C, 0, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+
+    rb.Push(RESULT_SUCCESS);
+    rb.Push(Settings::values.p_battery_charging);
+}
+
 void Module::Interface::Set3DLEDState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x0009, 1, 0);
+
     u8 state = rp.Pop<u8>();
+
     SharedPage::shared_page.ledstate_3d = state;
     Settings::values.sp_enable_3d = state == 0 ? false : true;
+
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 }
 
-void Module::Interface::GetSoundVolume(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x000B, 0, 0);
+void Module::Interface::GetSoundVolume(Kernel::HLERequestContext& ctx, u16 id) {
+    IPC::RequestParser rp(ctx, id, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u8>(0x3F);
-
-    NGLOG_WARNING(Service_MCU, "(STUBBED) called");
-}
-
-void Module::Interface::GetSoundVolume2(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x000E, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
-    rb.Push(RESULT_SUCCESS);
-    rb.Push<u8>(0x3F);
-
-    NGLOG_WARNING(Service_MCU, "(STUBBED) called");
+    rb.Push<u8>(static_cast<u8>(Settings::values.sound_volume * 0.01 * 0x3F));
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> mcu, const char* name, u32 max_session)
