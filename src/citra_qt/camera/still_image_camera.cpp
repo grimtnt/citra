@@ -13,6 +13,10 @@ namespace Camera {
 StillImageCamera::StillImageCamera(QImage image_, const Service::CAM::Flip& flip)
     : QtCameraInterface(flip), image(std::move(image_)) {}
 
+StillImageCamera::~StillImageCamera() {
+    StillImageCameraFactory::last_path.clear();
+}
+
 void StillImageCamera::StartCapture() {}
 
 void StillImageCamera::StopCapture() {}
@@ -25,7 +29,12 @@ bool StillImageCamera::IsPreviewAvailable() {
     return !image.isNull();
 }
 
+std::string StillImageCameraFactory::last_path;
+
 const std::string StillImageCameraFactory::GetFilePath() const {
+    if (!last_path.empty()) {
+        return last_path;
+    }
     QList<QByteArray> types = QImageReader::supportedImageFormats();
     QList<QString> temp_filters;
     for (QByteArray type : types) {
@@ -33,20 +42,22 @@ const std::string StillImageCameraFactory::GetFilePath() const {
     }
 
     QString filter = QObject::tr("Supported image files (%1)").arg(temp_filters.join(" "));
-    return QFileDialog::getOpenFileName(nullptr, QObject::tr("Open File"), ".", filter)
-        .toStdString();
+    last_path =
+        QFileDialog::getOpenFileName(nullptr, QObject::tr("Open File"), ".", filter).toStdString();
+    return last_path;
 }
 
-std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(
-    const std::string& config, const Service::CAM::Flip& flip) {
+std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::string& config,
+                                                                 const Service::CAM::Flip& flip) {
     std::string real_config = config;
     if (config.empty()) {
-        // call GetFilePath() in UI thread (note: StillImageCameraFactory itself is initialized in UI thread,
-        // so we can just pass in "this" here)
+        // call GetFilePath() in UI thread (note: StillImageCameraFactory itself is initialized in
+        // UI thread, so we can just pass in "this" here)
         if (thread() == QThread::currentThread()) {
             real_config = GetFilePath();
         } else {
-            QMetaObject::invokeMethod(this, "GetFilePath", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, real_config));
+            QMetaObject::invokeMethod(this, "GetFilePath", Qt::BlockingQueuedConnection,
+                                      Q_RETURN_ARG(std::string, real_config));
         }
     }
     QImage image(QString::fromStdString(real_config));
