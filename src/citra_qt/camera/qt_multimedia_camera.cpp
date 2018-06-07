@@ -93,8 +93,10 @@ void QtMultimediaCamera::SetFrameRate(Service::CAM::FrameRate frame_rate) {
 
     auto framerate = FrameRateList[static_cast<int>(frame_rate)];
 
-    handler->settings.setMinimumFrameRate(framerate.minimumFrameRate);
-    handler->settings.setMaximumFrameRate(framerate.maximumFrameRate);
+    if (handler->camera->supportedViewfinderFrameRateRanges().contains(framerate)) {
+        handler->settings.setMinimumFrameRate(framerate.minimumFrameRate);
+        handler->settings.setMaximumFrameRate(framerate.maximumFrameRate);
+    }
 }
 
 QImage QtMultimediaCamera::QtReceiveFrame() {
@@ -106,8 +108,8 @@ bool QtMultimediaCamera::IsPreviewAvailable() {
     return handler->CameraAvailable();
 }
 
-std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(
-    const std::string& config, const Service::CAM::Flip& flip) {
+std::unique_ptr<CameraInterface> QtMultimediaCameraFactory::Create(const std::string& config,
+                                                                   const Service::CAM::Flip& flip) {
     return std::make_unique<QtMultimediaCamera>(config, flip);
 }
 
@@ -171,6 +173,7 @@ void QtMultimediaCameraHandler::CreateCamera(const std::string& camera_name) {
     settings.setMinimumFrameRate(30);
     settings.setMaximumFrameRate(30);
     camera->setViewfinder(&camera_surface);
+    camera->load();
 }
 
 void QtMultimediaCameraHandler::StopCamera() {
