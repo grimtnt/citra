@@ -59,7 +59,6 @@ public:
     }
 
 protected:
-    u32 total_entries_in_directory = 0;
     FileUtil::FSTEntry directory{};
 
     // We need to remember the last entry we returned, so a subsequent call to Read will continue
