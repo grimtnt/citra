@@ -422,8 +422,6 @@ void GMainWindow::ConnectMenuEvents() {
             &MultiplayerState::OnOpenNetworkRoom);
 
     // Help
-    connect(ui.action_FAQ, &QAction::triggered,
-            []() { QDesktopServices::openUrl(QUrl("https://citra-emu.org/wiki/faq/")); });
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
 }
 
@@ -504,9 +502,13 @@ bool GMainWindow::LoadROM(const QString& filename) {
                    "Citra. A real 3DS is required.<br/><br/>"
                    "For more information on dumping and decrypting games, please see the following "
                    "wiki pages: <ul>"
-                   "<li><a href='https://citra-emu.org/wiki/dumping-game-cartridges/'>Dumping Game "
+                   "<li><a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Game-Cartridges'>Dumping Game "
                    "Cartridges</a></li>"
-                   "<li><a href='https://citra-emu.org/wiki/dumping-installed-titles/'>Dumping "
+                   "<li><a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Installed-Titles'>Dumping "
                    "Installed Titles</a></li>"
                    "</ul>"));
             break;
@@ -521,12 +523,9 @@ bool GMainWindow::LoadROM(const QString& filename) {
                 this, tr("An error occured in the video core."),
                 tr("Citra has encountered an error while running the video core, please see the "
                    "log for more details."
-                   "For more information on accessing the log, please see the following page: "
-                   "<a href='https://community.citra-emu.org/t/how-to-upload-the-log-file/296'>How "
-                   "to "
-                   "Upload the Log File</a>."
+                   "To access the log, Click Open Log Location in the general tab of the "
+                   "configuration window.<br/><br/>"
                    "Ensure that you have the latest graphics drivers for your GPU."));
-
             break;
 
         default:
@@ -1288,9 +1287,9 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
         tr("The game you are trying to load requires additional files from your 3DS to be dumped "
            "before playing.<br/><br/>For more information on dumping these files, please see the "
            "following wiki page: <a "
-           "href='https://citra-emu.org/wiki/"
-           "dumping-system-archives-and-the-shared-fonts-from-a-3ds-console/'>Dumping System "
-           "Archives and the Shared Fonts from a 3DS Console</a>.<br/><br/>Would you like to quit "
+           "href='https://github.com/valentinvanelslande/citra/wiki/"
+           "Dumping-System-Archives-from-a-3DS-Console'>Dumping System "
+           "Archives from a 3DS Console</a>.<br/><br/>Would you like to quit "
            "back to the game list? Continuing emulation may result in crashes, corrupted save "
            "data, or other bugs.");
     switch (result) {
@@ -1321,10 +1320,10 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
     default:
         answer = QMessageBox::question(
             this, tr("Fatal Error"),
-            tr("Citra has encountered a fatal error, please see the log for more details. "
-               "For more information on accessing the log, please see the following page: "
-               "<a href='https://community.citra-emu.org/t/how-to-upload-the-log-file/296'>How to "
-               "Upload the Log File</a>.<br/><br/>Would you like to quit back to the game list? "
+            tr("Citra has encountered a fatal error, please see the log for more details.<br/>"
+               "To access the log, Click Open Log Location in the general tab of the configuration "
+               "window.<br/><br/>Would you like "
+               "to quit back to the game list? "
                "Continuing emulation may result in crashes, corrupted save data, or other bugs."),
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         status_message = tr("Fatal Error encountered");

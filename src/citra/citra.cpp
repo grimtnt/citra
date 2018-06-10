@@ -277,10 +277,11 @@ int main(int argc, char** argv) {
         NGLOG_CRITICAL(Frontend, "Failed to load ROM!");
         return -1;
     case Core::System::ResultStatus::ErrorLoader_ErrorEncrypted:
-        NGLOG_CRITICAL(Frontend, "The game that you are trying to load must be decrypted before "
-                                 "being used with Citra. \n\n For more information on dumping and "
-                                 "decrypting games, please refer to: "
-                                 "https://citra-emu.org/wiki/dumping-game-cartridges/");
+        NGLOG_CRITICAL(Frontend,
+                       "The game that you are trying to load must be decrypted before "
+                       "being used with Citra. \n\n For more information on dumping and "
+                       "decrypting games, please refer to: "
+                       "https://github.com/valentinvanelslande/citra/wiki/Dumping-Game-Cartridges");
         return -1;
     case Core::System::ResultStatus::ErrorLoader_ErrorInvalidFormat:
         NGLOG_CRITICAL(Frontend, "Error while loading ROM: The ROM format is not supported.");

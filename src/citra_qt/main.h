@@ -91,7 +91,6 @@ private:
 
     void SetDefaultUIGeometry();
     Q_INVOKABLE void ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* out);
-    // Error fix
     using SwkbdFrontendCallbackResult = std::pair<std::string, SwkbdResult>;
     Q_INVOKABLE void SwkbdCallback(const SoftwareKeyboardConfig& config,
                                    SwkbdFrontendCallbackResult* out);
