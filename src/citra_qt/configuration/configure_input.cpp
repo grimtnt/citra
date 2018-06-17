@@ -97,6 +97,7 @@ ConfigureInput::ConfigureInput(QWidget* parent)
       timeout_timer(std::make_unique<QTimer>()), poll_timer(std::make_unique<QTimer>()) {
 
     ui->setupUi(this);
+
     setFocusPolicy(Qt::ClickFocus);
 
     button_map = {
@@ -175,7 +176,7 @@ ConfigureInput::ConfigureInput(QWidget* parent)
         }
     });
 
-    this->loadConfiguration();
+    loadConfiguration();
 
     // TODO(wwylele): enable this when we actually emulate it
     ui->buttonHome->setEnabled(false);

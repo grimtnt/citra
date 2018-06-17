@@ -11,7 +11,8 @@ ConfigureHacks::ConfigureHacks(QWidget* parent)
     : QWidget(parent), ui(std::make_unique<Ui::ConfigureHacks>()) {
     ui->setupUi(this);
 
-    this->setConfiguration();
+    setConfiguration();
+
     ui->toggle_priority_boost->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_cpu_jit_hacks->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 }

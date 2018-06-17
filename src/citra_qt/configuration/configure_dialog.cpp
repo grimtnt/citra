@@ -9,14 +9,11 @@
 
 ConfigureDialog::ConfigureDialog(QWidget* parent) : QDialog(parent), ui(new Ui::ConfigureDialog) {
     ui->setupUi(this);
-    this->setConfiguration();
     connect(ui->generalTab, &ConfigureGeneral::languageChanged, this,
             &ConfigureDialog::onLanguageChanged);
 }
 
 ConfigureDialog::~ConfigureDialog() {}
-
-void ConfigureDialog::setConfiguration() {}
 
 void ConfigureDialog::applyConfiguration() {
     ui->generalTab->applyConfiguration();

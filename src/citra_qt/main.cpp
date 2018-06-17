@@ -710,8 +710,7 @@ void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
     std::u16string hint(reinterpret_cast<const char16_t*>(config.hint_text));
     std::u16string cancel_text(reinterpret_cast<const char16_t*>(config.button_text[0]));
     std::u16string ok_text(reinterpret_cast<const char16_t*>(
-        config.num_buttons_m1 == SwkbdButtonConfig::DualButton ? config.button_text[1]
-                                                               : config.button_text[2]));
+        config.button_text[static_cast<u32>(config.num_buttons_m1)]));
 
     QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
     dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
@@ -741,15 +740,15 @@ void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
                 QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain any digits"));
             else if (((config.filter_flags & SwkbdFilter_At) == SwkbdFilter_At) &&
-                     (text.find("@") != std::string::npos))
+                     (text.find('@') != std::string::npos))
                 QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain the @ symbol"));
             else if (((config.filter_flags & SwkbdFilter_Percent) == SwkbdFilter_Percent) &&
-                     (text.find("%") != std::string::npos))
+                     (text.find('%') != std::string::npos))
                 QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain the % symbol"));
             else if (((config.filter_flags & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) &&
-                     (text.find("\\") != std::string::npos))
+                     (text.find('\\') != std::string::npos))
                 QMessageBox::critical(this, tr("Invalid Input"),
                                       tr("Input must not contain the \\ symbol"));
             else if ((config.valid_input == SwkbdValidInput::FixedLen) &&

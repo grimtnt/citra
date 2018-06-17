@@ -59,7 +59,11 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
         ui->theme_combobox->addItem(theme.first, theme.second);
     }
 
-    this->setConfiguration();
+    setConfiguration();
+
+#ifndef _WIN32
+    ui->toggle_console->setVisible(false);
+#endif
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());

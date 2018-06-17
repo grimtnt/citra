@@ -12,7 +12,8 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     : QWidget(parent), ui(new Ui::ConfigureGraphics) {
 
     ui->setupUi(this);
-    this->setConfiguration();
+
+    setConfiguration();
 
     ui->toggle_vsync->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->frame_limit->setEnabled(Settings::values.use_frame_limit);

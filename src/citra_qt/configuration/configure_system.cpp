@@ -27,13 +27,14 @@ static const std::array<int, 12> days_in_month = {{
 
 ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureSystem) {
     ui->setupUi(this);
+
     connect(ui->combo_birthmonth,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ConfigureSystem::updateBirthdayComboBox);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
 
-    this->setConfiguration();
+    setConfiguration();
 }
 
 ConfigureSystem::~ConfigureSystem() {}

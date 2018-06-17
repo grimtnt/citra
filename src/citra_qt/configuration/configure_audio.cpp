@@ -19,7 +19,8 @@ ConfigureAudio::ConfigureAudio(QWidget* parent)
         ui->output_sink_combo_box->addItem(sink_detail.id);
     }
 
-    this->setConfiguration();
+    setConfiguration();
+
     connect(ui->output_sink_combo_box,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ConfigureAudio::updateAudioDevices);

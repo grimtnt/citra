@@ -12,10 +12,11 @@
 ConfigureWeb::ConfigureWeb(QWidget* parent)
     : QWidget(parent), ui(std::make_unique<Ui::ConfigureWeb>()) {
     ui->setupUi(this);
+
     connect(ui->button_verify_login, &QPushButton::clicked, this, &ConfigureWeb::VerifyLogin);
     connect(this, &ConfigureWeb::LoginVerified, this, &ConfigureWeb::OnLoginVerified);
 
-    this->setConfiguration();
+    setConfiguration();
 }
 
 ConfigureWeb::~ConfigureWeb() {}

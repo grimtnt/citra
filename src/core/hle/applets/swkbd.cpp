@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cstring>
 #include <iostream>
@@ -24,9 +25,9 @@
 namespace HLE {
 namespace Applets {
 
-const static std::array<std::string, 1> swkbd_default_1_button = {"Ok"};
-const static std::array<std::string, 2> swkbd_default_2_button = {"Cancel", "Ok"};
-const static std::array<std::string, 3> swkbd_default_3_button = {"Cancel", "I Forgot", "Ok"};
+const std::array<std::string, 1> swkbd_default_1_button = {"Ok"};
+const std::array<std::string, 2> swkbd_default_2_button = {"Cancel", "Ok"};
+const std::array<std::string, 3> swkbd_default_3_button = {"Cancel", "I Forgot", "Ok"};
 
 ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter const& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
@@ -83,26 +84,25 @@ static bool ValidateFilters(const u32 filters, const std::string& input) {
     bool valid = true;
     bool local_filter = true;
     if ((filters & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
-        valid &= local_filter =
-            std::all_of(input.begin(), input.end(), [](const char c) { return !std::isdigit(c); });
+        valid &= local_filter = !Common::ContainsDigits(input);
         if (!local_filter) {
             std::cout << "Input must not contain any digits" << std::endl;
         }
     }
     if ((filters & SwkbdFilter_At) == SwkbdFilter_At) {
-        valid &= local_filter = input.find("@") == std::string::npos;
+        valid &= local_filter = input.find('@') == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the @ symbol" << std::endl;
         }
     }
     if ((filters & SwkbdFilter_Percent) == SwkbdFilter_Percent) {
-        valid &= local_filter = input.find("%") == std::string::npos;
+        valid &= local_filter = input.find('%') == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the % symbol" << std::endl;
         }
     }
     if ((filters & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) {
-        valid &= local_filter = input.find("\\") == std::string::npos;
+        valid &= local_filter = input.find('\\') == std::string::npos;
         if (!local_filter) {
             std::cout << "Input must not contain the \\ symbol" << std::endl;
         }
@@ -198,11 +198,9 @@ static bool ValidateButton(u32 num_buttons, const std::string& input) {
                                                   num_buttons)
                       << std::endl;
         }
-    } catch (const std::invalid_argument& e) {
-        (void)e;
+    } catch (const std::invalid_argument&) {
         std::cout << "Unable to parse input as a number." << std::endl;
-    } catch (const std::out_of_range& e) {
-        (void)e;
+    } catch (const std::out_of_range&) {
         std::cout << "Input number is not valid." << std::endl;
     }
     return valid;

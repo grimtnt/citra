@@ -30,24 +30,24 @@ namespace Applets {
 
 /// Keyboard types
 enum class SwkbdType : u32 {
-    Normal = 0, ///< Normal keyboard with several pages (QWERTY/accents/symbol/mobile)
-    QWERTY,     ///< QWERTY keyboard only.
-    Numpad,     ///< Number pad.
-    Western,    ///< On JPN systems, a text keyboard without Japanese input capabilities,
-                /// otherwise same as SWKBD_TYPE_NORMAL.
+    Normal,  ///< Normal keyboard with several pages (QWERTY/accents/symbol/mobile)
+    QWERTY,  ///< QWERTY keyboard only.
+    Numpad,  ///< Number pad.
+    Western, ///< On JPN systems, a text keyboard without Japanese input capabilities,
+             /// otherwise same as SWKBD_TYPE_NORMAL.
 };
 
 /// Keyboard dialog buttons.
 enum class SwkbdButtonConfig : u32 {
-    SingleButton = 0, ///< Ok button
-    DualButton,       ///< Cancel | Ok buttons
-    TripleButton,     ///< Cancel | I Forgot | Ok buttons
-    NoButton,         ///< No button (returned by swkbdInputText in special cases)
+    SingleButton, ///< Ok button
+    DualButton,   ///< Cancel | Ok buttons
+    TripleButton, ///< Cancel | I Forgot | Ok buttons
+    NoButton,     ///< No button (returned by swkbdInputText in special cases)
 };
 
 /// Accepted input types.
 enum class SwkbdValidInput : u32 {
-    Anything = 0,     ///< All inputs are accepted.
+    Anything,         ///< All inputs are accepted.
     NotEmpty,         ///< Empty inputs are not accepted.
     NotEmptyNotBlank, ///< Empty or blank inputs (consisting solely of whitespace) are not
                       /// accepted.
@@ -91,7 +91,7 @@ enum class SwkbdFeatures {
 
 /// Keyboard filter callback return values.
 enum class SwkbdCallbackResult : u32 {
-    Ok = 0,   ///< Specifies that the input is valid.
+    Ok,       ///< Specifies that the input is valid.
     Close,    ///< Displays an error message, then closes the keyboard.
     Continue, ///< Displays an error message and continues displaying the keyboard.
 };
