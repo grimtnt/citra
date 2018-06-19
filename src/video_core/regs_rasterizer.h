@@ -19,7 +19,6 @@ struct RasterizerRegs {
         KeepClockWise = 1,
         KeepCounterClockWise = 2,
         KeepClockWiseFront = 3,
-        // TODO: What does the third value imply?
     };
 
     union {
