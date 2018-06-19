@@ -105,8 +105,6 @@ FramebufferLayout MediumFrameLayout(unsigned width, unsigned height, bool swappe
     ASSERT(height > 0);
 
     FramebufferLayout res{width, height, true, true, {}, {}};
-    // Split the window into two parts. Give 4x width to the main screen and 1x width to the small
-    // To do that, find the total emulation box and maximize that based on window size
     float window_aspect_ratio = static_cast<float>(height) / width;
     float emulation_aspect_ratio =
         swapped ? Core::kScreenBottomHeight * 4 /
