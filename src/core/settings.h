@@ -126,7 +126,6 @@ struct Values {
     u16 resolution_factor;
     bool use_vsync;
     bool use_bos;
-    bool skip_flush_region;
     bool use_frame_limit;
     u16 frame_limit;
 
