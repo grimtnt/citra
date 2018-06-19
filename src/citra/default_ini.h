@@ -156,7 +156,7 @@ factor_3d =
 
 [Layout]
 # Layout for the screen inside the render window.
-# 0 (default): Default Top Bottom Screen, 1: Single Screen Only, 2: Medium Screens, 3: Large Screen Small Screen, 4: Side by Side
+# 0 (default): Default Top Bottom Screen, 1: Single Screen Only, 2: Large Screen Medium Screen, 3: Large Screen Small Screen, 4: Side by Side
 layout_option =
 
 # Toggle custom layout (using the settings below) on or off.
