@@ -161,7 +161,7 @@ static const u8 NO_SRC_REG_SWIZZLE = 0x1b;
 static const u8 NO_DEST_REG_MASK = 0xf;
 
 static void LogCritical(const char* msg) {
-    NGLOG_CRITICAL(HW_GPU, "%s", msg);
+    NGLOG_CRITICAL(HW_GPU, "{}", msg);
 }
 
 void JitShader::Compile_Assert(bool condition, const char* msg) {

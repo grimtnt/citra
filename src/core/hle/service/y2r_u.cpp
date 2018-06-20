@@ -373,7 +373,7 @@ void Y2R_U::SetInputLineWidth(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(conversion.SetInputLineWidth(input_line_width));
 
-    NGLOG_DEBUG(Service_Y2R, "called input_line_width=%u", input_line_width);
+    NGLOG_DEBUG(Service_Y2R, "called input_line_width={}", input_line_width);
 }
 
 void Y2R_U::GetInputLineWidth(Kernel::HLERequestContext& ctx) {
@@ -437,7 +437,7 @@ void Y2R_U::SetStandardCoefficient(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(conversion.SetStandardCoefficient(static_cast<StandardCoefficient>(index)));
 
-    NGLOG_DEBUG(Service_Y2R, "called standard_coefficient=%u", index);
+    NGLOG_DEBUG(Service_Y2R, "called standard_coefficient={}", index);
 }
 
 void Y2R_U::GetStandardCoefficient(Kernel::HLERequestContext& ctx) {

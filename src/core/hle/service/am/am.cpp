@@ -281,7 +281,7 @@ InstallStatus InstallCIA(const std::string& path,
     NGLOG_INFO(Service_AM, "Installing {}...", path);
 
     if (!FileUtil::Exists(path)) {
-        NGLOG_ERROR(Service_AM, "File %s does not exist!", path);
+        NGLOG_ERROR(Service_AM, "File {} does not exist!", path);
         return InstallStatus::ErrorFileNotFound;
     }
 
@@ -324,7 +324,7 @@ InstallStatus InstallCIA(const std::string& path,
         return InstallStatus::Success;
     }
 
-    NGLOG_ERROR(Service_AM, "CIA file %s is invalid!", path);
+    NGLOG_ERROR(Service_AM, "CIA file {} is invalid!", path);
     return InstallStatus::ErrorInvalid;
 }
 

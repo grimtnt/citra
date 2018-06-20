@@ -122,7 +122,7 @@ ResultCode SharedMemory::Map(Process* target_process, VAddr address, MemoryPermi
     if (other_permissions != MemoryPermission::DontCare &&
         static_cast<u32>(this->permissions) & ~static_cast<u32>(other_permissions)) {
         NGLOG_ERROR(Kernel, "cannot map id={}, address=0x{:08X}, name={}, permissions don't match",
-                    GetObjectId(), address, name.c_str());
+                    GetObjectId(), address, name);
         return ERR_WRONG_PERMISSION;
     }
 
@@ -138,7 +138,7 @@ ResultCode SharedMemory::Map(Process* target_process, VAddr address, MemoryPermi
     if (address != 0) {
         if (address < Memory::HEAP_VADDR || address + size >= Memory::SHARED_MEMORY_VADDR_END) {
             NGLOG_ERROR(Kernel, "cannot map id={}, address=0x{:08X}, name={}, invalid address",
-                        GetObjectId(), address, name.c_str());
+                        GetObjectId(), address, name);
             return ERR_INVALID_ADDRESS;
         }
     }
@@ -157,7 +157,7 @@ ResultCode SharedMemory::Map(Process* target_process, VAddr address, MemoryPermi
         NGLOG_ERROR(
             Kernel,
             "cannot map id={}, target_address=0x{:08X} name={}, error mapping to virtual memory",
-            GetObjectId(), target_address, name.c_str());
+            GetObjectId(), target_address, name);
         return result.Code();
     }
 

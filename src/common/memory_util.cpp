@@ -134,7 +134,7 @@ void WriteProtectMemory(void* ptr, size_t size, bool allowExecute) {
 #ifdef _WIN32
     DWORD oldValue;
     if (!VirtualProtect(ptr, size, allowExecute ? PAGE_EXECUTE_READ : PAGE_READONLY, &oldValue))
-        NGLOG_ERROR(Common_Memory, "WriteProtectMemory failed!\n%s", GetLastErrorMsg());
+        NGLOG_ERROR(Common_Memory, "WriteProtectMemory failed: {}", GetLastErrorMsg());
 #else
     mprotect(ptr, size, allowExecute ? (PROT_READ | PROT_EXEC) : PROT_READ);
 #endif
@@ -145,7 +145,7 @@ void UnWriteProtectMemory(void* ptr, size_t size, bool allowExecute) {
     DWORD oldValue;
     if (!VirtualProtect(ptr, size, allowExecute ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE,
                         &oldValue))
-        NGLOG_ERROR(Common_Memory, "UnWriteProtectMemory failed!\n%s", GetLastErrorMsg());
+        NGLOG_ERROR(Common_Memory, "UnWriteProtectMemory failed: {}", GetLastErrorMsg());
 #else
     mprotect(ptr, size,
              allowExecute ? (PROT_READ | PROT_WRITE | PROT_EXEC) : PROT_WRITE | PROT_READ);

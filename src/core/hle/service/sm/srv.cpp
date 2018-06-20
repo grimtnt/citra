@@ -153,7 +153,7 @@ void SRV::Subscribe(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_SRV, "(STUBBED) called, notification_id=0x%X", notification_id);
+    NGLOG_WARNING(Service_SRV, "(STUBBED) called, notification_id=0x{:X}", notification_id);
 }
 
 /**
@@ -172,7 +172,7 @@ void SRV::Unsubscribe(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_SRV, "(STUBBED) called, notification_id=0x%X", notification_id);
+    NGLOG_WARNING(Service_SRV, "(STUBBED) called, notification_id=0x{:X}", notification_id);
 }
 
 /**

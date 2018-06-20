@@ -986,7 +986,7 @@ ResultCode CROHelper::ApplyModuleExport(CROHelper target) {
             ResultCode result =
                 target.ApplyRelocationBatch(im.relocation_batch_offset, symbol_address);
             if (result.IsError()) {
-                NGLOG_ERROR(Service_LDR, "Error applying relocation batch %08X", result.raw);
+                NGLOG_ERROR(Service_LDR, "Error applying relocation batch {:08X}", result.raw);
                 return result;
             }
         }

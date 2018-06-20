@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
 
     switch (load_result) {
     case Core::System::ResultStatus::ErrorGetLoader:
-        NGLOG_CRITICAL(Frontend, "Failed to obtain loader for {}!", filepath.c_str());
+        NGLOG_CRITICAL(Frontend, "Failed to obtain loader for {}!", filepath);
         return -1;
     case Core::System::ResultStatus::ErrorLoader:
         NGLOG_CRITICAL(Frontend, "Failed to load ROM!");
@@ -303,8 +303,8 @@ int main(int argc, char** argv) {
         if (auto member = Network::GetRoomMember().lock()) {
             member->BindOnChatMessageRecieved(OnMessageReceived);
             member->BindOnStateChanged(OnStateChanged);
-            NGLOG_DEBUG(Network, "Start connection to {}:{} with nickname %s", address, port,
-                        nickname.c_str());
+            NGLOG_DEBUG(Network, "Start connection to {}:{} with nickname {}", address, port,
+                        nickname);
             member->Join(nickname, address.c_str(), port, 0, Network::NoPreferredMac, password);
         } else {
             NGLOG_ERROR(Network, "Could not access RoomMember");

@@ -233,7 +233,7 @@ void GSP_GPU::ReadHWRegs(Kernel::HLERequestContext& ctx) {
     if ((reg_addr % 4) != 0 || reg_addr >= 0x420000) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERR_REGS_OUTOFRANGE_OR_MISALIGNED);
-        NGLOG_ERROR(Service_GSP, "Invalid address 0x%08x", reg_addr);
+        NGLOG_ERROR(Service_GSP, "Invalid address 0x{:08x}", reg_addr);
         return;
     }
 
@@ -241,7 +241,7 @@ void GSP_GPU::ReadHWRegs(Kernel::HLERequestContext& ctx) {
     if ((size % 4) != 0) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERR_REGS_MISALIGNED);
-        NGLOG_ERROR(Service_GSP, "Invalid size 0x%08x", size);
+        NGLOG_ERROR(Service_GSP, "Invalid size 0x{:08x}", size);
         return;
     }
 

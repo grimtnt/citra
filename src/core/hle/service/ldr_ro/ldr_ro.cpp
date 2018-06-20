@@ -114,7 +114,7 @@ void RO::Initialize(Kernel::HLERequestContext& ctx) {
                      .MapMemoryBlock(crs_address, crs_mem, 0, crs_size, Kernel::MemoryState::Code)
                      .Code();
         if (result.IsError()) {
-            NGLOG_ERROR(Service_LDR, "Error mapping memory block %08X", result.raw);
+            NGLOG_ERROR(Service_LDR, "Error mapping memory block {:08X}", result.raw);
             rb.Push(result);
             return;
         }
@@ -166,7 +166,7 @@ void RO::LoadCRR(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_LDR, "(STUBBED) called, crr_buffer_ptr=0x%08X, crr_size=0x%08X",
+    NGLOG_WARNING(Service_LDR, "(STUBBED) called, crr_buffer_ptr=0x{:08X}, crr_size=0x{:08X}",
                   crr_buffer_ptr, crr_size);
 }
 
@@ -362,7 +362,7 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
         result = process->vm_manager.ReprotectRange(exe_begin, exe_size,
                                                     Kernel::VMAPermission::ReadExecute);
         if (result.IsError()) {
-            NGLOG_ERROR(Service_LDR, "Error reprotecting memory block %08X", result.raw);
+            NGLOG_ERROR(Service_LDR, "Error reprotecting memory block {:08X}", result.raw);
             process->vm_manager.UnmapRange(cro_address, fix_size);
             rb.Push(result);
             rb.Push<u32>(0);

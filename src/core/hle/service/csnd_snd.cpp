@@ -103,7 +103,7 @@ static void ExecuteCommands(Interface* self) {
 
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_CSND, "(STUBBED) called, addr=0x%08X", addr);
+    NGLOG_WARNING(Service_CSND, "(STUBBED) called, addr=0x{:08X}", addr);
 }
 
 /**

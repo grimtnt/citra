@@ -41,7 +41,7 @@ struct MIC_U::Impl {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(RESULT_SUCCESS);
 
-        NGLOG_WARNING(Service_MIC, "called, size=0x%X", size);
+        NGLOG_WARNING(Service_MIC, "called, size=0x{:X}", size);
     }
 
     void UnmapSharedMem(Kernel::HLERequestContext& ctx) {
@@ -116,7 +116,7 @@ struct MIC_U::Impl {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(RESULT_SUCCESS);
 
-        NGLOG_WARNING(Service_MIC, "(STUBBED) called, mic_gain=%u", mic_gain);
+        NGLOG_WARNING(Service_MIC, "(STUBBED) called, mic_gain={}", mic_gain);
     }
 
     void GetGain(Kernel::HLERequestContext& ctx) {
@@ -136,7 +136,7 @@ struct MIC_U::Impl {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(RESULT_SUCCESS);
 
-        NGLOG_WARNING(Service_MIC, "(STUBBED) called, mic_power=%u", mic_power);
+        NGLOG_WARNING(Service_MIC, "(STUBBED) called, mic_power={}", mic_power);
     }
 
     void GetPower(Kernel::HLERequestContext& ctx) {

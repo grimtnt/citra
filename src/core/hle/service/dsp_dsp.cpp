@@ -154,9 +154,10 @@ static void LoadComponent(Service::Interface* self) {
                    Common::ComputeHash64(component_data.data() + 0x340, 60));
     }
 
-    NGLOG_WARNING(Service_DSP,
-                  "(STUBBED) called size=0x%X, prog_mask=0x%08X, data_mask=0x%08X, buffer=0x%08X",
-                  size, prog_mask, data_mask, buffer);
+    NGLOG_WARNING(
+        Service_DSP,
+        "(STUBBED) called size=0x{:X}, prog_mask=0x{:08X}, data_mask=0x{:08X}, buffer=0x{:08X}",
+        size, prog_mask, data_mask, buffer);
 }
 
 /**
