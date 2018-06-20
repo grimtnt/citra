@@ -95,16 +95,15 @@ void Interface::HandleSyncRequest(SharedPtr<ServerSession> server_session) {
         std::string function_name = (itr == m_functions.end())
                                         ? Common::StringFromFormat("0x%08X", cmd_buff[0])
                                         : itr->second.name;
-        LOG_ERROR(
-            Service, "unknown / unimplemented %s",
-            MakeFunctionString(function_name.c_str(), GetPortName().c_str(), cmd_buff).c_str());
+        NGLOG_ERROR(Service, "unknown / unimplemented {}",
+                    MakeFunctionString(function_name.c_str(), GetPortName().c_str(), cmd_buff));
 
         // TODO(bunnei): Hack - ignore error
         cmd_buff[1] = 0;
         return;
     }
-    LOG_TRACE(Service, "%s",
-              MakeFunctionString(itr->second.name, GetPortName().c_str(), cmd_buff).c_str());
+    NGLOG_TRACE(Service, "{}",
+                MakeFunctionString(itr->second.name, GetPortName().c_str(), cmd_buff));
 
     itr->second.func(this);
 }
@@ -161,7 +160,7 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
     }
     buf.push_back('}');
 
-    LOG_ERROR(Service, "unknown / unimplemented %s", fmt::to_string(buf).c_str());
+    NGLOG_ERROR(Service, "unknown / unimplemented {}", fmt::to_string(buf));
     // TODO(bunnei): Hack - ignore error
     cmd_buf[1] = 0;
 }
@@ -182,15 +181,14 @@ void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_ses
     context.PopulateFromIncomingCommandBuffer(cmd_buf, *Kernel::g_current_process,
                                               Kernel::g_handle_table);
 
-    LOG_TRACE(Service, "%s",
-              MakeFunctionString(info->name, GetServiceName().c_str(), cmd_buf).c_str());
+    NGLOG_TRACE(Service, "{}", MakeFunctionString(info->name, GetServiceName().c_str(), cmd_buf));
     handler_invoker(this, info->handler_callback, context);
 
     auto thread = Kernel::GetCurrentThread();
     ASSERT(thread->status == THREADSTATUS_RUNNING || thread->status == THREADSTATUS_WAIT_HLE_EVENT);
-    // Only write the response immediately if the thread is still running. If the HLE handler put
-    // the thread to sleep then the writing of the command buffer will be deferred to the wakeup
-    // callback.
+    // Only write the response immediately if the thread is still running. If the HLE
+    // handler put the thread to sleep then the writing of the command buffer will be
+    // deferred to the wakeup callback.
     if (thread->status == THREADSTATUS_RUNNING) {
         context.WriteToOutgoingCommandBuffer(cmd_buf, *Kernel::g_current_process,
                                              Kernel::g_handle_table);
@@ -269,7 +267,7 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     AddService(new SSL::SSL_C);
     Y2R::InstallInterfaces(*sm);
 
-    LOG_DEBUG(Service, "initialized OK");
+    NGLOG_DEBUG(Service, "initialized OK");
 }
 
 /// Shutdown ServiceManager
@@ -280,6 +278,6 @@ void Shutdown() {
     FS::ArchiveShutdown();
 
     g_kernel_named_ports.clear();
-    LOG_DEBUG(Service, "shutdown OK");
+    NGLOG_DEBUG(Service, "shutdown OK");
 }
 } // namespace Service

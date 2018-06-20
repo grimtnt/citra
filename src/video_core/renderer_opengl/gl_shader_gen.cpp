@@ -312,8 +312,8 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         case TexturingRegs::TextureConfig::ShadowCube:
             return "shadowTextureCube(texcoord0, texcoord0_w)";
         default:
-            LOG_CRITICAL(HW_GPU, "Unhandled texture type %x",
-                         static_cast<int>(state.texture0_type));
+            NGLOG_CRITICAL(HW_GPU, "Unhandled texture type {:x}",
+                           static_cast<int>(state.texture0_type));
             UNIMPLEMENTED();
             return "texture(tex0, texcoord0)";
         }
@@ -328,7 +328,7 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         if (state.proctex.enable) {
             return "ProcTex()";
         } else {
-            LOG_ERROR(Render_OpenGL, "Using Texture3 without enabling it");
+            NGLOG_DEBUG(Render_OpenGL, "Using Texture3 without enabling it");
             return "vec4(0.0)";
         }
     default:
@@ -375,7 +375,7 @@ static void AppendSource(std::string& out, const PicaFSConfig& config,
         break;
     default:
         out += "vec4(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown source op %u", static_cast<u32>(source));
+        NGLOG_CRITICAL(Render_OpenGL, "Unknown source op {}", static_cast<u32>(source));
         break;
     }
 }
@@ -433,7 +433,7 @@ static void AppendColorModifier(std::string& out, const PicaFSConfig& config,
         break;
     default:
         out += "vec3(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown color modifier op %u", static_cast<u32>(modifier));
+        NGLOG_CRITICAL(Render_OpenGL, "Unknown color modifier op {}", static_cast<u32>(modifier));
         break;
     }
 }
@@ -482,7 +482,7 @@ static void AppendAlphaModifier(std::string& out, const PicaFSConfig& config,
         break;
     default:
         out += "0.0";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha modifier op %u", static_cast<u32>(modifier));
+        NGLOG_CRITICAL(Render_OpenGL, "Unknown alpha modifier op {}", static_cast<u32>(modifier));
         break;
     }
 }
@@ -526,8 +526,8 @@ static void AppendColorCombiner(std::string& out, TevStageConfig::Operation oper
         break;
     default:
         out += "vec3(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown color combiner operation: %u",
-                     static_cast<u32>(operation));
+        NGLOG_CRITICAL(Render_OpenGL, "Unknown color combiner operation: {}",
+                       static_cast<u32>(operation));
         break;
     }
     out += ", vec3(0.0), vec3(1.0))"; // Clamp result to 0.0, 1.0
@@ -567,8 +567,8 @@ static void AppendAlphaCombiner(std::string& out, TevStageConfig::Operation oper
         break;
     default:
         out += "0.0";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha combiner operation: %u",
-                     static_cast<u32>(operation));
+        NGLOG_CRITICAL(Render_OpenGL, "Unknown alpha combiner operation: {}",
+                       static_cast<u32>(operation));
         break;
     }
     out += ", 0.0, 1.0)";
@@ -598,7 +598,7 @@ static void AppendAlphaTestCondition(std::string& out, FramebufferRegs::CompareF
 
     default:
         out += "false";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha test condition %u", static_cast<u32>(func));
+        NGLOG_CRITICAL(Render_OpenGL, "Unknown alpha test condition {}", static_cast<u32>(func));
         break;
     }
 }
@@ -768,7 +768,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             break;
 
         default:
-            LOG_CRITICAL(HW_GPU, "Unknown lighting LUT input %d\n", (int)input);
+            NGLOG_CRITICAL(HW_GPU, "Unknown lighting LUT input {}", (int)input);
             UNIMPLEMENTED();
             index = "0.0";
             break;
@@ -984,7 +984,7 @@ void AppendProcTexShiftOffset(std::string& out, const std::string& v, ProcTexShi
         out += offset + " * (((int(" + v + ") + 1) / 2) % 2)";
         break;
     default:
-        LOG_CRITICAL(HW_GPU, "Unknown shift mode %u", static_cast<u32>(mode));
+        NGLOG_CRITICAL(HW_GPU, "Unknown shift mode {}", static_cast<u32>(mode));
         out += "0";
         break;
     }
@@ -1010,7 +1010,7 @@ void AppendProcTexClamp(std::string& out, const std::string& var, ProcTexClamp m
         out += var + " = " + var + " > 0.5 ? 1.0 : 0.0;\n";
         break;
     default:
-        LOG_CRITICAL(HW_GPU, "Unknown clamp mode %u", static_cast<u32>(mode));
+        NGLOG_CRITICAL(HW_GPU, "Unknown clamp mode {}", static_cast<u32>(mode));
         out += var + " = " + "min(" + var + ", 1.0);\n";
         break;
     }
@@ -1051,7 +1051,7 @@ void AppendProcTexCombineAndMap(std::string& out, ProcTexCombiner combiner,
         combined = "min(((u + v) * 0.5 + sqrt(u * u + v * v)) * 0.5, 1.0)";
         break;
     default:
-        LOG_CRITICAL(HW_GPU, "Unknown combiner %u", static_cast<u32>(combiner));
+        NGLOG_CRITICAL(HW_GPU, "Unknown combiner {}", static_cast<u32>(combiner));
         combined = "0.0";
         break;
     }

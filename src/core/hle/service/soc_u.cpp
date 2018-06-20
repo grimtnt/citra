@@ -311,19 +311,10 @@ union CTRSockAddr {
     static CTRSockAddr FromPlatform(sockaddr const& addr) {
         CTRSockAddr result;
         result.raw.sa_family = static_cast<u8>(addr.sa_family);
-        // We can not guarantee ABI compatibility between platforms so we copy the fields manually
-        switch (result.raw.sa_family) {
-        case AF_INET: {
-            sockaddr_in const* addr_in = reinterpret_cast<sockaddr_in const*>(&addr);
-            result.raw.len = sizeof(CTRSockAddrIn);
-            result.in.sin_port = addr_in->sin_port;
-            result.in.sin_addr = addr_in->sin_addr.s_addr;
-            break;
-        }
-        default:
-            ASSERT_MSG(false, "Unhandled address family (sa_family) in CTRSockAddr::ToPlatform");
-            break;
-        }
+        sockaddr_in const* addr_in = reinterpret_cast<sockaddr_in const*>(&addr);
+        result.raw.len = sizeof(CTRSockAddrIn);
+        result.in.sin_port = addr_in->sin_port;
+        result.in.sin_addr = addr_in->sin_addr.s_addr;
         return result;
     }
 };
@@ -463,7 +454,7 @@ static void Fcntl(Interface* self) {
         }
 #endif
     } else {
-        LOG_ERROR(Service_SOC, "Unsupported command (%d) in fcntl call", ctr_cmd);
+        NGLOG_ERROR(Service_SOC, "Unsupported command ({}) in fcntl call", ctr_cmd);
         posix_ret = TranslateError(EINVAL); // TODO: Find the correct error
         return;
     }

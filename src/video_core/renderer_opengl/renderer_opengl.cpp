@@ -165,9 +165,9 @@ void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& fram
             ? (!right_eye ? framebuffer.address_left1 : framebuffer.address_right1)
             : (!right_eye ? framebuffer.address_left2 : framebuffer.address_right2);
 
-    LOG_TRACE(Render_OpenGL, "0x%08x bytes from 0x%08x(%dx%d), fmt %x",
-              framebuffer.stride * framebuffer.height, framebuffer_addr, (int)framebuffer.width,
-              (int)framebuffer.height, (int)framebuffer.format);
+    NGLOG_TRACE(Render_OpenGL, "0x{:08x} bytes from 0x{:08x}({:x}{}), fmt {}",
+                framebuffer.stride * framebuffer.height, framebuffer_addr, (int)framebuffer.width,
+                (int)framebuffer.height, (int)framebuffer.format);
 
     int bpp = GPU::Regs::BytesPerPixel(framebuffer.color_format);
     size_t pixel_stride = framebuffer.stride / bpp;
@@ -487,8 +487,8 @@ static void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum 
         level = Log::Level::Debug;
         break;
     }
-    LOG_GENERIC(Log::Class::Render_OpenGL, level, "%s %s %d: %s", GetSource(source), GetType(type),
-                id, message);
+    NGLOG_GENERIC(Render_OpenGL, level, "{} {} {}: {}", GetSource(source), GetType(type), id,
+                  message);
 }
 
 /// Initialize the renderer
