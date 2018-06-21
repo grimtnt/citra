@@ -158,11 +158,10 @@ struct SoftwareKeyboardConfig {
     bool allow_home;
     bool allow_reset;
     bool allow_power;
-    bool unknown; // XX: what is this supposed to do? "communicateWithOtherRegions"
+    bool unknown;
     bool default_qwerty;
     bool button_submits_text[4];
-    u16 language; // XX: not working? supposedly 0 = use system language, CFG_Language+1 = pick
-                  // language
+    u16 language;
 
     u32 initial_text_offset; ///< Offset of the default text in the output SharedMemory
     u32 dict_offset;
@@ -190,6 +189,36 @@ struct SoftwareKeyboardConfig {
  * that use the software keyboard.
  */
 static_assert(sizeof(SoftwareKeyboardConfig) == 0x400, "SoftwareKeyboardConfig size is wrong");
+
+const std::string default_button_text[][3]{
+    {
+        "OK",
+    },
+    {
+        "Cancel",
+        "OK",
+    },
+    {
+        "Cancel",
+        "OK",
+        "I Forgot",
+    },
+};
+
+const SwkbdResult results[][3]{
+    {
+        SwkbdResult::D0Click,
+    },
+    {
+        SwkbdResult::D1Click0,
+        SwkbdResult::D1Click1,
+    },
+    {
+        SwkbdResult::D2Click0,
+        SwkbdResult::D2Click1,
+        SwkbdResult::D2Click2,
+    },
+};
 
 ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input);
 

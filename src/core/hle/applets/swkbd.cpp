@@ -25,10 +25,6 @@
 namespace HLE {
 namespace Applets {
 
-const std::array<std::string, 1> swkbd_default_1_button = {"Ok"};
-const std::array<std::string, 2> swkbd_default_2_button = {"Cancel", "Ok"};
-const std::array<std::string, 3> swkbd_default_3_button = {"Cancel", "I Forgot", "Ok"};
-
 ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input) {
     if ((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
         if (std::any_of(input.begin(), input.end(),
@@ -277,22 +273,16 @@ void SoftwareKeyboard::Update() {
         // num_buttons is in the range of 0-2 so use <= instead of <
         u32 num_buttons = static_cast<u32>(config.num_buttons_m1);
         for (u32 i = 0; i <= num_buttons; ++i) {
-            std::string final_text;
+            std::string button_text;
             // apps are allowed to set custom text to display on the button
             std::u16string custom_button_text(reinterpret_cast<char16_t*>(config.button_text[i]));
             if (custom_button_text.empty()) {
                 // Use the system default text for that button
-                if (num_buttons == 0) {
-                    final_text = swkbd_default_1_button[i];
-                } else if (num_buttons == 1) {
-                    final_text = swkbd_default_2_button[i];
-                } else {
-                    final_text = swkbd_default_3_button[i];
-                }
+                button_text = default_button_text[num_buttons][i];
             } else {
-                final_text = Common::UTF16ToUTF8(custom_button_text);
+                button_text = Common::UTF16ToUTF8(custom_button_text);
             }
-            option_text += "\t(" + std::to_string(i) + ") " + final_text + "\t";
+            option_text += "\t(" + std::to_string(i) + ") " + button_text + "\t";
         }
         std::string option;
         error = ValidationError::ButtonOutOfRange;
