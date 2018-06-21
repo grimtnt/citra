@@ -18,8 +18,9 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     std::u16string button1_text(reinterpret_cast<char16_t*>(config.button_text[1]));
     std::u16string button2_text(reinterpret_cast<char16_t*>(config.button_text[2]));
     std::u16string hint_text(reinterpret_cast<char16_t*>(config.hint_text));
+    ((config.num_buttons_m1 == SwkbdButtonConfig::SingleButton) ? ui->button0 : ui->button1)
+        ->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
     ui->text->setPlaceholderText(QString::fromStdU16String(hint_text));
-    ui->button1->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
     ui->button1->setVisible(config.num_buttons_m1 >= SwkbdButtonConfig::DualButton);
     ui->button2->setVisible(config.num_buttons_m1 == SwkbdButtonConfig::TripleButton);
     ui->button0->setText(button0_text.empty()
