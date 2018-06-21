@@ -30,6 +30,7 @@
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
 #include "citra_qt/multiplayer/state.h"
+#include "citra_qt/swkbd.h"
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/util/clickable_label.h"
 #include "citra_qt/util/console.h"
@@ -572,23 +573,19 @@ void GMainWindow::BootGame(const QString& filename) {
     OnStartGame();
 
     Core::System::GetInstance().GetAppletFactories().erreula.Register(
-        "qt", [this](const ErrEulaConfig& config) -> ErrEulaResult {
+        "qt", [this](ErrEulaConfig& config) {
             applet_open = true;
-            ErrEulaResult ret;
-            ErrEulaCallback(config, &ret);
+            ErrEulaCallback(config);
             std::unique_lock<std::mutex> lock(applet_mutex);
             applet_cv.wait(lock, [&] { return !applet_open; });
-            return ret;
         });
 
     Core::System::GetInstance().GetAppletFactories().swkbd.Register(
-        "qt", [this](const SoftwareKeyboardConfig& config) -> std::pair<std::string, SwkbdResult> {
+        "qt", [this](SoftwareKeyboardConfig& config, std::u16string& text) {
             applet_open = true;
-            std::pair<std::string, SwkbdResult> ret;
-            SwkbdCallback(config, &ret);
+            SwkbdCallback(config, text);
             std::unique_lock<std::mutex> lock(applet_mutex);
             applet_cv.wait(lock, [&] { return !applet_open; });
-            return ret;
         });
 }
 
@@ -656,10 +653,10 @@ void GMainWindow::StoreRecentFile(const QString& filename) {
     UpdateRecentFiles();
 }
 
-void GMainWindow::ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* out) {
+void GMainWindow::ErrEulaCallback(ErrEulaConfig& config) {
     if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, "ErrEulaCallback", Qt::BlockingQueuedConnection,
-                                  Q_ARG(const ErrEulaConfig&, config), Q_ARG(ErrEulaResult*, out));
+                                  Q_ARG(ErrEulaConfig&, config));
         return;
     }
 
@@ -692,120 +689,21 @@ void GMainWindow::ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* ou
     }
     }
 
-    *out = ErrEulaResult::Success;
+    config.return_code = ErrEulaResult::Success;
     applet_open = false;
 }
 
-void GMainWindow::SwkbdCallback(const SoftwareKeyboardConfig& config,
-                                SwkbdFrontendCallbackResult* out) {
+void GMainWindow::SwkbdCallback(SoftwareKeyboardConfig& config, std::u16string& text) {
     if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, "SwkbdCallback", Qt::BlockingQueuedConnection,
-                                  Q_ARG(const SoftwareKeyboardConfig&, config),
-                                  Q_ARG(SwkbdFrontendCallbackResult*, out));
+                                  Q_ARG(SoftwareKeyboardConfig&, config),
+                                  Q_ARG(std::u16string&, text));
         return;
     }
 
     std::unique_lock<std::mutex> lock(applet_mutex);
-    u16 max_length = config.max_text_length;
-    std::u16string hint(reinterpret_cast<const char16_t*>(config.hint_text));
-    std::u16string cancel_text(reinterpret_cast<const char16_t*>(config.button_text[0]));
-    std::u16string ok_text(reinterpret_cast<const char16_t*>(
-        config.button_text[static_cast<u32>(config.num_buttons_m1)]));
-
-    QInputDialog dialog(this, Qt::WindowSystemMenuHint | Qt::WindowTitleHint);
-    dialog.setCancelButtonText(cancel_text.empty() ? tr("Cancel")
-                                                   : QString::fromStdU16String(cancel_text));
-    dialog.setOkButtonText(ok_text.empty() ? tr("Ok") : QString::fromStdU16String(ok_text));
-
-    while (true) {
-        bool ok;
-        std::string text =
-            config.multiline
-                ? dialog
-                      .getMultiLineText(this, tr("Software Keyboard"),
-                                        QString::fromStdU16String(hint), QString(), &ok,
-                                        dialog.windowFlags())
-                      .toStdString()
-                : dialog
-                      .getText(this, tr("Software Keyboard"), QString::fromStdU16String(hint),
-                               QLineEdit::Normal, QString(), &ok, dialog.windowFlags())
-                      .toStdString();
-        if (ok) {
-            if (text.length() > max_length)
-                QMessageBox::critical(
-                    this, tr("Invalid Input"),
-                    tr("Input is longer than the maximum length. Max: %1").arg(max_length));
-            else if (((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) &&
-                     Common::ContainsDigits(text))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("Input must not contain any digits"));
-            else if (((config.filter_flags & SwkbdFilter_At) == SwkbdFilter_At) &&
-                     (text.find('@') != std::string::npos))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("Input must not contain the @ symbol"));
-            else if (((config.filter_flags & SwkbdFilter_Percent) == SwkbdFilter_Percent) &&
-                     (text.find('%') != std::string::npos))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("Input must not contain the % symbol"));
-            else if (((config.filter_flags & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) &&
-                     (text.find('\\') != std::string::npos))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("Input must not contain the \\ symbol"));
-            else if ((config.valid_input == SwkbdValidInput::FixedLen) &&
-                     (text.length() != config.max_text_length))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("Input must be exactly %1 characters.").arg(max_length));
-            else if ((config.valid_input == SwkbdValidInput::NotEmptyNotBlank) && text.empty() ||
-                     (std::all_of(text.begin(), text.end(),
-                                  [](const char c) { return std::isspace(c); })))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("Input must not be empty or blank."));
-            else if ((config.valid_input == SwkbdValidInput::NotBlank) &&
-                     (std::all_of(text.begin(), text.end(),
-                                  [](const char c) { return std::isspace(c); })))
-                QMessageBox::critical(this, tr("Invalid Input"), tr("Input must not be blank."));
-            else if ((config.valid_input == SwkbdValidInput::NotEmpty) && text.empty())
-                QMessageBox::critical(this, tr("Invalid Input"), tr("Input must not be empty."));
-            else if ((config.type == SwkbdType::Numpad) &&
-                     (std::all_of(text.begin(), text.end(),
-                                  [](const char c) { return !std::isdigit(c); })))
-                QMessageBox::critical(this, tr("Invalid Input"),
-                                      tr("All characters must be numbers."));
-            else {
-                switch (config.num_buttons_m1) {
-                case SwkbdButtonConfig::NoButton:
-                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::None);
-                    break;
-                case SwkbdButtonConfig::SingleButton:
-                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::D0Click);
-                    break;
-                case SwkbdButtonConfig::DualButton:
-                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::D1Click1);
-                    break;
-                case SwkbdButtonConfig::TripleButton:
-                    *out = std::make_pair(text.substr(0, max_length), SwkbdResult::D2Click2);
-                    break;
-                }
-                break;
-            }
-        } else {
-            switch (config.num_buttons_m1) {
-            case SwkbdButtonConfig::NoButton:
-                *out = std::make_pair("", SwkbdResult::None);
-                break;
-            case SwkbdButtonConfig::SingleButton:
-                *out = std::make_pair("", SwkbdResult::D0Click);
-                break;
-            case SwkbdButtonConfig::DualButton:
-                *out = std::make_pair("", SwkbdResult::D1Click0);
-                break;
-            case SwkbdButtonConfig::TripleButton:
-                *out = std::make_pair("", SwkbdResult::D2Click0);
-                break;
-            }
-            break;
-        }
-    }
+    SoftwareKeyboardDialog dialog(this, config, text);
+    dialog.exec();
 
     applet_open = false;
 }

@@ -29,9 +29,133 @@ const std::array<std::string, 1> swkbd_default_1_button = {"Ok"};
 const std::array<std::string, 2> swkbd_default_2_button = {"Cancel", "Ok"};
 const std::array<std::string, 3> swkbd_default_3_button = {"Cancel", "I Forgot", "Ok"};
 
+ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input) {
+    if ((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
+        if (std::any_of(input.begin(), input.end(),
+                        [](unsigned char c) { return std::isdigit(c); })) {
+            return ValidationError::DigitNotAllowed;
+        }
+    }
+    if ((config.filter_flags & SwkbdFilter_At) == SwkbdFilter_At) {
+        if (input.find('@') != std::string::npos) {
+            return ValidationError::AtSignNotAllowed;
+        }
+    }
+    if ((config.filter_flags & SwkbdFilter_Percent) == SwkbdFilter_Percent) {
+        if (input.find('%') != std::string::npos) {
+            return ValidationError::PercentNotAllowed;
+        }
+    }
+    if ((config.filter_flags & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) {
+        if (input.find('\\') != std::string::npos) {
+            return ValidationError::BackslashNotAllowed;
+        }
+    }
+    if ((config.filter_flags & SwkbdFilter_Profanity) == SwkbdFilter_Profanity) {
+        // TODO: check the profanity filter
+        NGLOG_INFO(Applet_Swkbd, "App requested swkbd profanity filter, but its not implemented.");
+    }
+    if ((config.filter_flags & SwkbdFilter_Callback) == SwkbdFilter_Callback) {
+        // TODO: check the callback
+        NGLOG_INFO(Applet_Swkbd, "App requested a swkbd callback, but its not implemented.");
+    }
+    return ValidationError::None;
+}
+
+ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::string& input) {
+    ValidationError error;
+    if ((error = ValidateFilters(config, input)) != ValidationError::None) {
+        return error;
+    }
+
+    // TODO(jroweboy): Is max_text_length inclusive or exclusive?
+    if (input.size() > config.max_text_length) {
+        return ValidationError::MaxLengthExceeded;
+    }
+
+    if (!config.multiline && (input.find('\n') != std::string::npos)) {
+        return ValidationError::NewLineNotAllowed;
+    }
+    auto is_blank = [&] {
+        return std::all_of(input.begin(), input.end(),
+                           [](unsigned char c) { return std::isspace(c); });
+    };
+    auto is_empty = [&] { return input.empty(); };
+    switch (config.valid_input) {
+    case SwkbdValidInput::FixedLen:
+        if (input.size() != config.max_text_length) {
+            return ValidationError::FixedLengthRequired;
+        }
+        break;
+    case SwkbdValidInput::NotEmptyNotBlank:
+        if (is_blank()) {
+            return ValidationError::BlankInputNotAllowed;
+        }
+        if (is_empty()) {
+            return ValidationError::EmptyInputNotAllowed;
+        }
+        break;
+    case SwkbdValidInput::NotBlank:
+        if (is_blank()) {
+            return ValidationError::BlankInputNotAllowed;
+        }
+        break;
+    case SwkbdValidInput::NotEmpty:
+        if (is_empty()) {
+            return ValidationError::EmptyInputNotAllowed;
+        }
+        break;
+    case SwkbdValidInput::Anything:
+        break;
+    default:
+        // TODO(jroweboy): What does hardware do in this case?
+        NGLOG_CRITICAL(Frontend, "Application requested unknown validation method. Method: {}",
+                       static_cast<u32>(config.valid_input));
+        UNREACHABLE();
+    }
+
+    switch (config.type) {
+    case SwkbdType::QWERTY:
+    case SwkbdType::Western:
+    case SwkbdType::Normal:
+        return ValidationError::None;
+    case SwkbdType::Numpad:
+        return std::all_of(input.begin(), input.end(), [](const char c) { return std::isdigit(c); })
+                   ? ValidationError::None
+                   : ValidationError::InputNotNumber;
+    default:
+        return ValidationError::None;
+    }
+}
+
+ValidationError ValidateButton(const SoftwareKeyboardConfig& config, u8 button) {
+    switch (config.num_buttons_m1) {
+    case SwkbdButtonConfig::NoButton:
+        return ValidationError::None;
+    case SwkbdButtonConfig::SingleButton:
+        if (button != 0) {
+            return ValidationError::ButtonOutOfRange;
+        }
+        break;
+    case SwkbdButtonConfig::DualButton:
+        if (button > 1) {
+            return ValidationError::ButtonOutOfRange;
+        }
+        break;
+    case SwkbdButtonConfig::TripleButton:
+        if (button > 2) {
+            return ValidationError::ButtonOutOfRange;
+        }
+        break;
+    default:
+        UNREACHABLE();
+    }
+    return ValidationError::None;
+}
+
 ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter const& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
-        NGLOG_ERROR(Service_APT, "unsupported signal {}", static_cast<u32>(parameter.signal));
+        NGLOG_ERROR(Applet_Swkbd, "unsupported signal {}", static_cast<u32>(parameter.signal));
         UNIMPLEMENTED();
         // TODO(Subv): Find the right error code
         return ResultCode(-1);
@@ -80,143 +204,13 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
     return RESULT_SUCCESS;
 }
 
-static bool ValidateFilters(const u32 filters, const std::string& input) {
-    bool valid = true;
-    bool local_filter = true;
-    if ((filters & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
-        valid &= local_filter = !Common::ContainsDigits(input);
-        if (!local_filter) {
-            std::cout << "Input must not contain any digits" << std::endl;
-        }
-    }
-    if ((filters & SwkbdFilter_At) == SwkbdFilter_At) {
-        valid &= local_filter = input.find('@') == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the @ symbol" << std::endl;
-        }
-    }
-    if ((filters & SwkbdFilter_Percent) == SwkbdFilter_Percent) {
-        valid &= local_filter = input.find('%') == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the % symbol" << std::endl;
-        }
-    }
-    if ((filters & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) {
-        valid &= local_filter = input.find('\\') == std::string::npos;
-        if (!local_filter) {
-            std::cout << "Input must not contain the \\ symbol" << std::endl;
-        }
-    }
-    if ((filters & SwkbdFilter_Profanity) == SwkbdFilter_Profanity) {
-        // TODO: check the profanity filter
-        NGLOG_WARNING(Service_APT, "App requested profanity filter, but its not implemented.");
-    }
-    if ((filters & SwkbdFilter_Callback) == SwkbdFilter_Callback) {
-        // TODO: check the callback
-        NGLOG_WARNING(Service_APT, "App requested a callback check, but its not implemented.");
-    }
-    return valid;
-}
-
-static bool ValidateInput(const SoftwareKeyboardConfig& config, const std::string input) {
-    // TODO(jroweboy): Is max_text_length inclusive or exclusive?
-    if (input.size() > config.max_text_length) {
-        std::cout << Common::StringFromFormat("Input is longer than the maximum length. Max: %u",
-                                              config.max_text_length)
-                  << std::endl;
-        return false;
-    }
-    // return early if the text is filtered
-    if (config.filter_flags && !ValidateFilters(config.filter_flags, input)) {
-        return false;
-    }
-
-    bool valid;
-
-    switch (config.valid_input) {
-    case SwkbdValidInput::FixedLen:
-        valid = input.size() == config.max_text_length;
-        if (!valid) {
-            std::cout << Common::StringFromFormat("Input must be exactly %u characters.",
-                                                  config.max_text_length)
-                      << std::endl;
-        }
-        break;
-    case SwkbdValidInput::NotEmptyNotBlank:
-    case SwkbdValidInput::NotBlank:
-        valid =
-            std::any_of(input.begin(), input.end(), [](const char c) { return !std::isspace(c); });
-        if (!valid) {
-            std::cout << "Input must not be blank." << std::endl;
-        }
-        break;
-    case SwkbdValidInput::NotEmpty:
-        valid = input.empty();
-        if (!valid) {
-            std::cout << "Input must not be empty." << std::endl;
-        }
-        break;
-    case SwkbdValidInput::Anything:
-        valid = true;
-        break;
-    default:
-        // TODO(jroweboy): What does hardware do in this case?
-        NGLOG_CRITICAL(Service_APT, "Application requested unknown validation method. Method: {}",
-                       static_cast<u32>(config.valid_input));
-        UNREACHABLE();
-        break;
-    }
-
-    bool local = true;
-
-    switch (config.type) {
-    case SwkbdType::QWERTY:
-    case SwkbdType::Western:
-    case SwkbdType::Normal:
-        valid &= true;
-        break;
-    case SwkbdType::Numpad:
-        valid &= local =
-            std::all_of(input.begin(), input.end(), [](const char c) { return std::isdigit(c); });
-        if (!local) {
-            std::cout << "All characters must be numbers." << std::endl;
-        }
-        break;
-    }
-
-    return valid;
-}
-
-static bool ValidateButton(u32 num_buttons, const std::string& input) {
-    // check that the input is a valid number
-    bool valid = false;
-    try {
-        u32 num = std::stoul(input);
-        valid = num <= num_buttons;
-        if (!valid) {
-            std::cout << Common::StringFromFormat("Please choose a number between 0 and %u",
-                                                  num_buttons)
-                      << std::endl;
-        }
-    } catch (const std::invalid_argument&) {
-        std::cout << "Unable to parse input as a number." << std::endl;
-    } catch (const std::out_of_range&) {
-        std::cout << "Input number is not valid." << std::endl;
-    }
-    return valid;
-}
-
 void SoftwareKeyboard::Update() {
     if (Settings::values.swkbd_implementation == Settings::SwkbdImplementation::Qt &&
         Core::System::GetInstance().GetAppletFactories().swkbd.IsRegistered("qt")) {
+        std::u16string text;
         // Call the function registered by the frontend
-        auto res = Core::System::GetInstance().GetAppletFactories().swkbd.Launch("qt", config);
-        std::u16string utf16_input = Common::UTF8ToUTF16(res.first);
-        memcpy(text_memory->GetPointer(), utf16_input.c_str(),
-               utf16_input.length() * sizeof(char16_t));
-        config.return_code = res.second;
-        config.text_length = static_cast<u16>(utf16_input.size());
-        config.text_offset = 0;
+        Core::System::GetInstance().GetAppletFactories().swkbd.Launch("qt", config, text);
+        memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
         Finalize();
     } else {
         // Read from stdin
@@ -227,10 +221,56 @@ void SoftwareKeyboard::Update() {
         if (!hint.empty()) {
             std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
         }
+        ValidationError error = ValidationError::ButtonOutOfRange;
+        auto ValidateInputString = [&]() -> bool {
+            ValidationError error = ValidateInput(config, input);
+            if (error != ValidationError::None) {
+                switch (error) {
+                case ValidationError::AtSignNotAllowed:
+                    std::cout << "Input must not contain the @ symbol" << std::endl;
+                    break;
+                case ValidationError::BackslashNotAllowed:
+                    std::cout << "Input must not contain the \\ symbol" << std::endl;
+                    break;
+                case ValidationError::BlankInputNotAllowed:
+                    std::cout << "Input must not be blank." << std::endl;
+                    break;
+                case ValidationError::CallbackFailed:
+                    std::cout << "Callbak failed." << std::endl;
+                    break;
+                case ValidationError::DigitNotAllowed:
+                    std::cout << "Input must not contain any digits" << std::endl;
+                    break;
+                case ValidationError::EmptyInputNotAllowed:
+                    std::cout << "Input must not be empty." << std::endl;
+                    break;
+                case ValidationError::FixedLengthRequired:
+                    std::cout << Common::StringFromFormat("Input must be exactly %u characters.",
+                                                          config.max_text_length)
+                              << std::endl;
+                    break;
+                case ValidationError::InputNotNumber:
+                    std::cout << "All characters must be numbers." << std::endl;
+                    break;
+                case ValidationError::MaxLengthExceeded:
+                    std::cout << Common::StringFromFormat(
+                                     "Input is longer than the maximum length. Max: %u",
+                                     config.max_text_length)
+                              << std::endl;
+                    break;
+                case ValidationError::PercentNotAllowed:
+                    std::cout << "Input must not contain the % symbol" << std::endl;
+                    break;
+                default:
+                    UNREACHABLE();
+                }
+            }
+            return error == ValidationError::None;
+        };
         do {
             std::cout << "Enter the text you will send to the application:" << std::endl;
             std::getline(std::cin, input);
-        } while (!ValidateInput(config, input));
+        } while (!ValidateInputString());
 
         std::string option_text;
         // convert all of the button texts into something we can output
@@ -255,11 +295,29 @@ void SoftwareKeyboard::Update() {
             option_text += "\t(" + std::to_string(i) + ") " + final_text + "\t";
         }
         std::string option;
+        error = ValidationError::ButtonOutOfRange;
+        auto ValidateButtonString = [&]() -> bool {
+            bool valid = false;
+            try {
+                u32 num = std::stoul(option);
+                valid = ValidateButton(config, static_cast<u8>(num)) == ValidationError::None;
+                if (!valid) {
+                    std::cout << Common::StringFromFormat("Please choose a number between 0 and %u",
+                                                          static_cast<u32>(config.num_buttons_m1))
+                              << std::endl;
+                }
+            } catch (const std::invalid_argument&) {
+                std::cout << "Unable to parse input as a number." << std::endl;
+            } catch (const std::out_of_range&) {
+                std::cout << "Input number is not valid." << std::endl;
+            }
+            return valid;
+        };
         do {
             std::cout << "\nPlease type the number of the button you will press: \n"
                       << option_text << std::endl;
             std::getline(std::cin, option);
-        } while (!ValidateButton(static_cast<u32>(config.num_buttons_m1), option));
+        } while (!ValidateButtonString());
 
         s32 button = std::stol(option);
         switch (config.num_buttons_m1) {
@@ -284,7 +342,7 @@ void SoftwareKeyboard::Update() {
             break;
         default:
             // TODO: what does the hardware do
-            NGLOG_WARNING(Service_APT, "Unknown option for num_buttons_m1: {}",
+            NGLOG_WARNING(Applet_Swkbd, "Unknown option for num_buttons_m1: {}",
                           static_cast<u32>(config.num_buttons_m1));
             config.return_code = SwkbdResult::None;
             break;

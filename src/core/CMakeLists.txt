@@ -85,7 +85,6 @@ add_library(core STATIC
     hle/applets/applet.h
     hle/applets/erreula.cpp
     hle/applets/erreula.h
-    hle/applets/factory.h
     hle/applets/mii_selector.cpp
     hle/applets/mii_selector.h
     hle/applets/mint.cpp

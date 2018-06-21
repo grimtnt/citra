@@ -11,7 +11,7 @@ namespace Applets {
 
 ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
-        NGLOG_ERROR(Service_APT, "unsupported signal {}", static_cast<u32>(parameter.signal));
+        NGLOG_ERROR(Applet_ErrEula, "unsupported signal {}", static_cast<u32>(parameter.signal));
         UNIMPLEMENTED();
         // TODO(Subv): Find the right error code
         return ResultCode(-1);
@@ -59,28 +59,27 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 
 void ErrEula::Update() {
     if (Core::System::GetInstance().GetAppletFactories().erreula.IsRegistered("qt")) {
-        auto res = Core::System::GetInstance().GetAppletFactories().erreula.Launch("qt", config);
-        config.return_code = res;
+        Core::System::GetInstance().GetAppletFactories().erreula.Launch("qt", config);
         Finalize();
         return;
     }
 
     switch (config.error_type) {
     case ErrEulaErrorType::ErrorCode: {
-        NGLOG_INFO(Service_APT, "Error Code: {:#010X}", config.error_code);
+        NGLOG_INFO(Applet_ErrEula, "Error Code: {:#010X}", config.error_code);
         break;
     }
     case ErrEulaErrorType::LocalizedErrorText:
     case ErrEulaErrorType::ErrorText: {
-        NGLOG_INFO(Service_APT, "Error Code: {:#x}", config.error_code);
-        NGLOG_INFO(Service_APT, "Error Text: {}", Common::UTF16ToUTF8(config.error_text));
+        NGLOG_INFO(Applet_ErrEula, "Error Code: {:#x}", config.error_code);
+        NGLOG_INFO(Applet_ErrEula, "Error Text: {}", Common::UTF16ToUTF8(config.error_text));
         break;
     }
     case ErrEulaErrorType::Agree:
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:
     case ErrEulaErrorType::EulaFirstBoot: {
-        NGLOG_INFO(Service_APT, "EULA accepted");
+        NGLOG_INFO(Applet_ErrEula, "EULA accepted");
         break;
     }
     }

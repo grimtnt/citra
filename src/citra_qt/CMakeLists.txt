@@ -77,6 +77,8 @@ add_executable(citra-qt
     util/spinbox.h
     util/util.cpp
     util/util.h
+    swkbd.cpp
+    swkbd.h
     control_panel.cpp
     control_panel.h
 )
@@ -91,6 +93,7 @@ set(UIS
     configuration/configure_system.ui
     configuration/configure_web.ui
     configuration/configure_hacks.ui
+    swkbd.ui
     aboutdialog.ui
     hotkeys.ui
     cheat_gui.ui

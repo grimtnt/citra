@@ -42,14 +42,6 @@ class GMainWindow : public QMainWindow {
     /// Max number of recently loaded items to keep track of
     static const int max_recent_files_item = 10;
 
-    // TODO: Make use of this!
-    enum {
-        UI_IDLE,
-        UI_EMU_BOOTING,
-        UI_EMU_RUNNING,
-        UI_EMU_STOPPING,
-    };
-
 public:
     void filterBarSetChecked(bool state);
     void UpdateUITheme();
@@ -85,15 +77,12 @@ signals:
 
 private:
     void InitializeWidgets();
-    void InitializeDebugWidgets();
     void InitializeRecentFileMenuActions();
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
-    Q_INVOKABLE void ErrEulaCallback(const ErrEulaConfig& config, ErrEulaResult* out);
-    using SwkbdFrontendCallbackResult = std::pair<std::string, SwkbdResult>;
-    Q_INVOKABLE void SwkbdCallback(const SoftwareKeyboardConfig& config,
-                                   SwkbdFrontendCallbackResult* out);
+    Q_INVOKABLE void ErrEulaCallback(ErrEulaConfig& config);
+    Q_INVOKABLE void SwkbdCallback(SoftwareKeyboardConfig& config, std::u16string& text);
     void SyncMenuUISettings();
     void RestoreUIState();
 

@@ -6,11 +6,9 @@
 
 #include <functional>
 #include <string>
-#include <utility>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "core/hle/applets/applet.h"
-#include "core/hle/applets/factory.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/result.h"
@@ -119,6 +117,26 @@ enum class SwkbdResult : s32 {
     BannedInput = 30, ///< The filter callback returned SWKBD_CALLBACK_CLOSE.
 };
 
+enum class ValidationError {
+    None,
+    // Button Selection
+    ButtonOutOfRange,
+    // Configured Filters
+    DigitNotAllowed,
+    AtSignNotAllowed,
+    PercentNotAllowed,
+    BackslashNotAllowed,
+    ProfanityNotAllowed,
+    CallbackFailed,
+    // Allowed Input Type
+    FixedLengthRequired,
+    MaxLengthExceeded,
+    BlankInputNotAllowed,
+    EmptyInputNotAllowed,
+    NewLineNotAllowed,
+    InputNotNumber,
+};
+
 struct SoftwareKeyboardConfig {
     SwkbdType type;
     SwkbdButtonConfig num_buttons_m1;
@@ -173,6 +191,12 @@ struct SoftwareKeyboardConfig {
  */
 static_assert(sizeof(SoftwareKeyboardConfig) == 0x400, "SoftwareKeyboardConfig size is wrong");
 
+ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input);
+
+ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::string& input);
+
+ValidationError ValidateButton(const SoftwareKeyboardConfig& config, u8 button);
+
 class SoftwareKeyboard final : public Applet {
 public:
     SoftwareKeyboard(Service::APT::AppletId id, std::weak_ptr<Service::APT::AppletManager> manager)
@@ -201,16 +225,26 @@ private:
     SoftwareKeyboardConfig config;
 };
 
-using SwkbdCallback =
-    std::function<std::pair<std::string, SwkbdResult>(const SoftwareKeyboardConfig&)>;
-
-// Factory class for swkbd applet
-class SwkbdFactory : public AppletFactory<SwkbdCallback, std::pair<std::string, SwkbdResult>,
-                                          SoftwareKeyboardConfig> {
+class SwkbdFactory {
 public:
-    SwkbdFactory() {
-        default_result = std::make_pair<std::string, SwkbdResult>("", SwkbdResult::None);
+    bool IsRegistered(const std::string& name) const {
+        auto it = callbacks.find(name);
+        return it != callbacks.end();
     }
+
+    void Register(std::string name,
+                  std::function<void(SoftwareKeyboardConfig&, std::u16string&)> callback) {
+        callbacks.emplace(std::move(name), std::move(callback));
+    }
+
+    void Launch(const std::string& name, SoftwareKeyboardConfig& config, std::u16string& text) {
+        auto it = callbacks.find(name);
+        if (it != callbacks.end())
+            it->second(config, text);
+    }
+
+private:
+    std::map<std::string, std::function<void(SoftwareKeyboardConfig&, std::u16string&)>> callbacks;
 };
 } // namespace Applets
 } // namespace HLE

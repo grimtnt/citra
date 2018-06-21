@@ -158,6 +158,11 @@ void FileBackend::Write(const Entry& entry) {
     SUB(Debug, Breakpoint)                                                                         \
     CLS(Kernel)                                                                                    \
     SUB(Kernel, SVC)                                                                               \
+    CLS(Applet)                                                                                    \
+    SUB(Applet, Mint)                                                                              \
+    SUB(Applet, Swkbd)                                                                             \
+    SUB(Applet, ErrEula)                                                                           \
+    SUB(Applet, MiiSelector)                                                                       \
     CLS(Service)                                                                                   \
     SUB(Service, SRV)                                                                              \
     SUB(Service, FRD)                                                                              \

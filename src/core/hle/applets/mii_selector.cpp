@@ -19,7 +19,8 @@ namespace Applets {
 
 ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
-        NGLOG_ERROR(Service_APT, "unsupported signal {}", static_cast<u32>(parameter.signal));
+        NGLOG_ERROR(Applet_MiiSelector, "unsupported signal {}",
+                    static_cast<u32>(parameter.signal));
         UNIMPLEMENTED();
         // TODO(Subv): Find the right error code
         return ResultCode(-1);

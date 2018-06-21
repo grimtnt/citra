@@ -7,7 +7,6 @@
 #include <functional>
 #include "common/common_types.h"
 #include "core/hle/applets/applet.h"
-#include "core/hle/applets/factory.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/apt/apt.h"
 
@@ -66,17 +65,30 @@ private:
     /// It holds the framebuffer info retrieved by the application with
     /// GSPGPU::ImportDisplayCaptureInfo
     Kernel::SharedPtr<Kernel::SharedMemory> framebuffer_memory;
+
     ErrEulaConfig config;
 };
 
-using ErrEulaCallback = std::function<ErrEulaResult(const ErrEulaConfig&)>;
-
 // Factory class for ErrEula applet
-class ErrEulaFactory : public AppletFactory<ErrEulaCallback, ErrEulaResult, ErrEulaConfig> {
+class ErrEulaFactory {
 public:
-    ErrEulaFactory() {
-        default_result = ErrEulaResult::None;
+    bool IsRegistered(const std::string& name) const {
+        auto it = callbacks.find(name);
+        return it != callbacks.end();
     }
+
+    void Register(std::string name, std::function<void(ErrEulaConfig&)> callback) {
+        callbacks.emplace(std::move(name), std::move(callback));
+    }
+
+    void Launch(const std::string& name, ErrEulaConfig& config) {
+        auto it = callbacks.find(name);
+        if (it != callbacks.end())
+            it->second(config);
+    }
+
+private:
+    std::map<std::string, std::function<void(ErrEulaConfig&)>> callbacks;
 };
 } // namespace Applets
 } // namespace HLE
