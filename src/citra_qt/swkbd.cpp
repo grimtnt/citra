@@ -47,6 +47,8 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     std::u16string button0_text(reinterpret_cast<char16_t*>(config.button_text[0]));
     std::u16string button1_text(reinterpret_cast<char16_t*>(config.button_text[1]));
     std::u16string button2_text(reinterpret_cast<char16_t*>(config.button_text[2]));
+    std::u16string hint_text(reinterpret_cast<char16_t*>(config.hint_text));
+    ui->text->setPlaceholderText(QString::fromStdU16String(hint_text));
     ui->button1->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
     ui->button1->setVisible(static_cast<u32>(config.num_buttons_m1) >=
                             static_cast<u32>(SwkbdButtonConfig::DualButton));
