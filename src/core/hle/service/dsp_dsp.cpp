@@ -146,11 +146,11 @@ static void LoadComponent(Service::Interface* self) {
     std::vector<u8> component_data(size);
     Memory::ReadBlock(buffer, component_data.data(), component_data.size());
 
-    NGLOG_INFO(Service_DSP, "Firmware hash: 0x{:08X}",
+    NGLOG_INFO(Service_DSP, "Firmware hash: {:#016x}",
                Common::ComputeHash64(component_data.data(), component_data.size()));
     // Some versions of the firmware have the location of DSP structures listed here.
     if (size > 0x37C) {
-        NGLOG_INFO(Service_DSP, "Structures hash: 0x{:08X}",
+        NGLOG_INFO(Service_DSP, "Structures hash: {:#016x}",
                    Common::ComputeHash64(component_data.data() + 0x340, 60));
     }
 
