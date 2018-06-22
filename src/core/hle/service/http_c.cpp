@@ -45,16 +45,12 @@ struct Context {
             return std::make_unique<hl::Client>(parsedUrl.m_Host.c_str(), port,
                                                 (timeout == 0) ? 300
                                                                : (timeout * std::pow(10, -9)));
-        } else if (parsedUrl.m_Scheme == "https") {
-            if (!parsedUrl.GetPort(&port)) {
-                port = 443;
-            }
-            return std::make_unique<hl::SSLClient>(parsedUrl.m_Host.c_str(), port,
-                                                   (timeout == 0) ? 300
-                                                                  : (timeout * std::pow(10, -9)));
         }
-        NGLOG_ERROR(Service_HTTP, "Bad URL scheme {}", parsedUrl.m_Scheme);
-        return nullptr;
+        if (!parsedUrl.GetPort(&port)) {
+            port = 443;
+        }
+        return std::make_unique<hl::SSLClient>(parsedUrl.m_Host.c_str(), port,
+                                               (timeout == 0) ? 300 : (timeout * std::pow(10, -9)));
     }
 
     void SetUrl(std::string url) {
@@ -526,8 +522,7 @@ void HTTP_C::Impl::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     const u32 context_id = rp.Pop<u32>();
     const u32 length = rp.Pop<u32>();
     auto buffer = rp.PopMappedBuffer();
-    std::string data;
-    data.resize(length);
+    std::string data(length, '\0');
     buffer.Read(&data[0], 0, length);
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
