@@ -776,7 +776,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             break;
 
         default:
-            NGLOG_CRITICAL(HW_GPU, "Unknown lighting LUT input {}", static_cast<int>(input));
+            NGLOG_CRITICAL(HW_GPU, "Unknown lighting LUT input {}", (int)input);
             UNIMPLEMENTED();
             index = "0.0";
             break;
