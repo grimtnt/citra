@@ -49,54 +49,62 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     u8 unk = rp.Pop<u8>();
     u32 size = rp.Pop<u32>();
     BlkID id = rp.PopEnum<BlkID>();
-    ASSERT(rp.Pop<u32>() == ((size << 4) | 0xC));
-    VAddr addr = (VAddr)Kernel::GetCommandBuffer()[5];
+    auto buffer = rp.PopMappedBuffer();
     switch (id) {
     case BlkID::NNID: {
-        std::string nnid = Common::UTF16ToUTF8(Service::CFG::GetCurrentModule()->GetUsername());
+        std::string nnid = Common::UTF16ToUTF8(CFG::GetCurrentModule()->GetUsername());
         nnid.resize(0x11);
         boost::algorithm::replace_all(nnid, " ", "_");
-        Memory::WriteBlock(addr, nnid.c_str(), nnid.length());
+        buffer.Write(nnid.c_str(), 0, size);
         break;
     }
     case BlkID::Unknown6: {
-        u32 a = 1;
-        Memory::WriteBlock(addr, &a, sizeof(a));
+        u32 value = 1;
+        buffer.Write(&value, 0, size);
         break;
     }
     case BlkID::U16MiiName: {
-        std::u16string username = Service::CFG::GetCurrentModule()->GetUsername();
-        Memory::WriteBlock(addr, username.c_str(), username.length());
+        std::u16string username = CFG::GetCurrentModule()->GetUsername();
+        buffer.Write(username.c_str(), 0, size);
         break;
     }
     case BlkID::PrincipalID: {
         u32 principal_id = 0xDEADBEEF;
-        Memory::WriteBlock(addr, &principal_id, sizeof(principal_id));
+        buffer.Write(&principal_id, 0, size);
         break;
     }
     case BlkID::CountryName: {
-        u8 country_code = std::get<1>(Service::CFG::GetCurrentModule()->GetCountryInfo());
-        Memory::Write16(addr, Service::CFG::country_codes[country_code]);
-        break;
-    }
-    case BlkID::MiiImageURL: {
-        const char* url = "https://avatars0.githubusercontent.com/u/22228082";
-        Memory::WriteBlock(addr, url, std::strlen(url));
+        u8 country_code = std::get<1>(CFG::GetCurrentModule()->GetCountryInfo());
+        u16 country_name = CFG::country_codes[country_code];
+        buffer.Write(&country_name, 0, size);
         break;
     }
     case BlkID::Age: {
-        u16 age = unk == 0xFE ? 0x00 : 0x0C;
-        Memory::WriteBlock(addr, &age, sizeof(age));
+        u16 age = 0;
+        buffer.Write(&age, 0, size);
+        break;
+    }
+    case BlkID::Birthday: {
+        Birthday birthday = {};
+        buffer.Write(&birthday, 0, size);
+        break;
+    }
+    case BlkID::InfoStruct: {
+        InfoBlock info = {};
+        std::u16string username = CFG::GetCurrentModule()->GetUsername();
+        username.copy(info.MachinUserName, username.length());
+        buffer.Write(&info, 0, size);
+        break;
     }
     default: {
-        NGLOG_ERROR(Service_ACT, "Unimplemented block ID");
         UNIMPLEMENTED();
         break;
     }
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
+    rb.PushMappedBuffer(buffer);
 
     NGLOG_WARNING(Service_ACT, "(STUBBED) called, unk=0x{:02X}, size=0x{:X}, id=0x{:X}", unk, size,
                   static_cast<u32>(id));

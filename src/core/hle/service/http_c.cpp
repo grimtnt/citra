@@ -562,10 +562,10 @@ void HTTP_C::Impl::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x14, 2, 2);
     const u32 context_id = rp.Pop<u32>();
     const u32 length = rp.Pop<u32>();
-    const VAddr addr = (VAddr)Kernel::GetCommandBuffer()[4];
+    auto buffer = rp.PopMappedBuffer();
     std::string data;
     data.resize(length);
-    Memory::ReadBlock(addr, &data[0], length);
+    buffer.Read(&data[0], 0, length);
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);

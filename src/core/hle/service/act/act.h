@@ -47,6 +47,12 @@ enum class BlkID : u32 {
     CountryInfo = 0x2F
 };
 
+struct Birthday {
+    u16 year;
+    u8 month;
+    u8 day;
+};
+
 struct InfoBlock {
     u32 PersistentID;
     u32 padding;
@@ -55,11 +61,7 @@ struct InfoBlock {
     char16_t MachinUserName[0xB];
     char AccountID[0x11];
     u8 padding2;
-    struct {
-        u16 year;
-        u8 month;
-        u8 day;
-    } Birthday;
+    Birthday birthday;
     u32 PrincipalID;
 };
 
