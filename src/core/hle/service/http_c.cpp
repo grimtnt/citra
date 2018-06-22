@@ -15,10 +15,10 @@
 namespace Service {
 namespace HTTP {
 
-static const ResultCode ERROR_CONTEXT_ERROR = // 0xD8A0A066
+const ResultCode ERROR_CONTEXT_ERROR = // 0xD8A0A066
     ResultCode(static_cast<ErrorDescription>(102), ErrorModule::HTTP, ErrorSummary::InvalidState,
                ErrorLevel::Permanent);
-static const ResultCode RESULT_DOWNLOADPENDING = // 0xD840A02B
+const ResultCode RESULT_DOWNLOADPENDING = // 0xD840A02B
     ResultCode(static_cast<ErrorDescription>(43), ErrorModule::HTTP, ErrorSummary::WouldBlock,
                ErrorLevel::Permanent);
 
@@ -38,8 +38,6 @@ struct Context {
 
         int port;
 
-        std::unique_ptr<hl::Client> cli;
-
         if (parsedUrl.m_Scheme == "http") {
             if (!parsedUrl.GetPort(&port)) {
                 port = 80;
@@ -54,14 +52,13 @@ struct Context {
             return std::make_unique<hl::SSLClient>(parsedUrl.m_Host.c_str(), port,
                                                    (timeout == 0) ? 300
                                                                   : (timeout * std::pow(10, -9)));
-        } else {
-            NGLOG_ERROR(Service_HTTP, "Bad URL scheme {}", parsedUrl.m_Scheme);
-            return nullptr;
         }
+        NGLOG_ERROR(Service_HTTP, "Bad URL scheme {}", parsedUrl.m_Scheme);
+        return nullptr;
     }
 
-    void SetUrl(const std::string& url) {
-        this->url = url;
+    void SetUrl(std::string url) {
+        this->url = std::move(url);
     }
 
     void SetMethod(RequestMethod method) {
@@ -93,7 +90,7 @@ struct Context {
 
         hl::Request request;
         request.method = "DELETE";
-        request.path = "/" + parsedUrl.m_Path;
+        request.path = '/' + parsedUrl.m_Path;
         request.headers = request_header;
 
         cli->send(request, response);
@@ -107,7 +104,7 @@ struct Context {
 
         hl::Request request;
         request.method = "GET";
-        request.path = "/" + parsedUrl.m_Path;
+        request.path = '/' + parsedUrl.m_Path;
         request.headers = request_header;
 
         cli->send(request, response);
@@ -121,7 +118,7 @@ struct Context {
 
         hl::Request request;
         request.method = "HEAD";
-        request.path = "/" + parsedUrl.m_Path;
+        request.path = '/' + parsedUrl.m_Path;
         request.headers = request_header;
 
         cli->send(request, response);
@@ -135,7 +132,7 @@ struct Context {
 
         hl::Request request;
         request.method = "POST";
-        request.path = "/" + parsedUrl.m_Path;
+        request.path = '/' + parsedUrl.m_Path;
         request.headers = request_header;
         request.body = body;
 
@@ -150,7 +147,7 @@ struct Context {
 
         hl::Request request;
         request.method = "PUT";
-        request.path = "/" + parsedUrl.m_Path;
+        request.path = '/' + parsedUrl.m_Path;
         request.headers = request_header;
         request.body = body;
 
@@ -210,6 +207,45 @@ public:
     void SetKeepAlive(Kernel::HLERequestContext& ctx);
 
 private:
+    void MakeRequest(Context& context) {
+        switch (context.method) {
+        case RequestMethod::Get: {
+            context.Get();
+            break;
+        }
+        case RequestMethod::Post: {
+            context.Post(context.body);
+            break;
+        }
+        case RequestMethod::PostEmpty: {
+            const std::string body;
+            context.Post(body);
+            break;
+        }
+        case RequestMethod::Delete: {
+            context.Delete();
+            break;
+        }
+        case RequestMethod::Head: {
+            context.Head();
+            break;
+        }
+        case RequestMethod::Put: {
+            context.Put(context.body);
+        }
+        case RequestMethod::PutEmpty: {
+            const std::string body;
+            context.Put(body);
+            break;
+        }
+
+        default: {
+            UNIMPLEMENTED();
+            break;
+        }
+        }
+    }
+
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory = nullptr;
     std::unordered_map<u32, Context> contexts;
     u32 context_counter{0};
@@ -238,8 +274,7 @@ void HTTP_C::Impl::Initialize(Kernel::HLERequestContext& ctx) {
 void HTTP_C::Impl::CreateContext(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x2, 2, 2);
     const u32 url_size = rp.Pop<u32>();
-    std::string url;
-    url.resize(url_size);
+    std::string url(url_size, '\0');
     RequestMethod method = rp.PopEnum<RequestMethod>();
 
     Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
@@ -349,44 +384,7 @@ void HTTP_C::Impl::BeginRequest(Kernel::HLERequestContext& ctx) {
     }
 
     context->second.state = Context::State::InProgress;
-
-    switch (context->second.method) {
-    case RequestMethod::Get: {
-        context->second.Get();
-        break;
-    }
-    case RequestMethod::Post: {
-        context->second.Post(context->second.body);
-        break;
-    }
-    case RequestMethod::PostEmpty: {
-        const std::string body;
-        context->second.Post(body);
-        break;
-    }
-    case RequestMethod::Delete: {
-        context->second.Delete();
-        break;
-    }
-    case RequestMethod::Head: {
-        context->second.Head();
-        break;
-    }
-    case RequestMethod::Put: {
-        context->second.Put(context->second.body);
-    }
-    case RequestMethod::PutEmpty: {
-        const std::string body;
-        context->second.Put(body);
-        break;
-    }
-
-    default: {
-        UNIMPLEMENTED();
-        break;
-    }
-    }
-
+    MakeRequest(context->second);
     context->second.state = Context::State::ReadyToDownloadContent;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
@@ -410,42 +408,7 @@ void HTTP_C::Impl::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
     context->second.state = Context::State::InProgress;
 
     std::async(std::launch::async, [&] {
-        switch (context->second.method) {
-        case RequestMethod::Get: {
-            context->second.Get();
-            break;
-        }
-        case RequestMethod::Post: {
-            context->second.Post(context->second.body);
-            break;
-        }
-        case RequestMethod::PostEmpty: {
-            const std::string body;
-            context->second.Post(body);
-            break;
-        }
-        case RequestMethod::Delete: {
-            context->second.Delete();
-            break;
-        }
-        case RequestMethod::Head: {
-            context->second.Head();
-            break;
-        }
-        case RequestMethod::Put: {
-            context->second.Put(context->second.body);
-        }
-        case RequestMethod::PutEmpty: {
-            const std::string body;
-            context->second.Put(body);
-            break;
-        }
-
-        default: {
-            UNIMPLEMENTED();
-            break;
-        }
-        }
+        MakeRequest(context->second);
 
         context->second.state = Context::State::ReadyToDownloadContent;
     });

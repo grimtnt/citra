@@ -420,12 +420,9 @@ add_library(core STATIC
 
 create_target_directory_groups(core)
 
-get_directory_property(OPENSSL_LIBS
-        DIRECTORY ${CMAKE_SOURCE_DIR}/externals/libressl
-        DEFINITION OPENSSL_LIBS)
-add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
+target_compile_options(core PRIVATE -DCPPHTTPLIB_OPENSSL_SUPPORT)
 
-target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core ${OPENSSL_LIBS} httplib lurlparser)
+target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core ssl httplib lurlparser)
 target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt)
 if (ENABLE_WEB_SERVICE)
     target_link_libraries(core PUBLIC json-headers web_service)
