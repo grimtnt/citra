@@ -265,7 +265,7 @@ void HTTP_C::Impl::CloseContext(Kernel::HLERequestContext& ctx) {
     if (contexts.find(context_id) == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     contexts.erase(context_id);
@@ -284,7 +284,7 @@ void HTTP_C::Impl::GetRequestState(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
 
@@ -303,7 +303,7 @@ void HTTP_C::Impl::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
 
@@ -325,7 +325,7 @@ void HTTP_C::Impl::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.Initialize();
@@ -344,7 +344,7 @@ void HTTP_C::Impl::BeginRequest(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
 
@@ -403,7 +403,7 @@ void HTTP_C::Impl::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
 
@@ -466,7 +466,7 @@ void HTTP_C::Impl::ReceiveData(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     const u32 size = std::min(buffer_size, context->second.GetResponseContentLength() -
@@ -494,7 +494,7 @@ void HTTP_C::Impl::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.timeout = timeout;
@@ -519,7 +519,7 @@ void HTTP_C::Impl::SetProxyDefault(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.proxy_default = true;
@@ -545,7 +545,7 @@ void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.request_header.emplace(name, value);
@@ -570,13 +570,14 @@ void HTTP_C::Impl::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.body = data;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
+    rb.PushMappedBuffer(buffer);
 
     NGLOG_WARNING(Service_HTTP, "called, context_id={}, data={}", context_id, data);
 }
@@ -594,7 +595,7 @@ void HTTP_C::Impl::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     const std::string value = context->second.response.headers.find(name)->second + '\0';
@@ -620,7 +621,7 @@ void HTTP_C::Impl::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     const u32 status_code = context->second.GetResponseStatusCode();
@@ -641,7 +642,7 @@ void HTTP_C::Impl::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) 
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.timeout = timeout;
@@ -661,7 +662,7 @@ void HTTP_C::Impl::SetSSLOpt(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.ssl_options = ssl_options;
@@ -682,7 +683,7 @@ void HTTP_C::Impl::SetKeepAlive(Kernel::HLERequestContext& ctx) {
     if (context == contexts.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ERROR_CONTEXT_ERROR);
-        NGLOG_ERROR(Service_HTTP, "called, context_id={} not found", context_id);
+        NGLOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.keep_alive = keep_alive;
