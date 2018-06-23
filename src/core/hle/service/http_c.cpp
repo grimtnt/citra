@@ -234,7 +234,6 @@ private:
             context.Put(body);
             break;
         }
-
         default: {
             UNIMPLEMENTED();
             break;
