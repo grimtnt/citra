@@ -464,23 +464,6 @@ bool GMainWindow::LoadROM(const QString& filename) {
     Core::System& system{Core::System::GetInstance()};
 
     const Core::System::ResultStatus result{system.Load(render_window, filename.toStdString())};
-    std::string title;
-    system.GetAppLoader().ReadTitle(title);
-    game_title = QString::fromStdString(title);
-    SetupUIStrings();
-#ifdef ENABLE_DISCORD_RPC
-    g_start_time = time(NULL);
-    DiscordEventHandlers handlers{};
-    handlers.disconnected = HandleDiscordDisconnected;
-    handlers.errored = HandleDiscordError;
-    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
-    DiscordRichPresence presence{};
-    presence.state = game_title.isEmpty() ? "Unknown game" : game_title.toLocal8Bit().constData();
-    presence.details = "Playing";
-    presence.startTimestamp = g_start_time;
-    presence.largeImageKey = "icon";
-    Discord_UpdatePresence(&presence);
-#endif
 
     if (result != Core::System::ResultStatus::Success) {
         switch (result) {
@@ -537,6 +520,24 @@ bool GMainWindow::LoadROM(const QString& filename) {
         }
         return false;
     }
+
+    std::string title;
+    system.GetAppLoader().ReadTitle(title);
+    game_title = QString::fromStdString(title);
+    SetupUIStrings();
+#ifdef ENABLE_DISCORD_RPC
+    g_start_time = time(NULL);
+    DiscordEventHandlers handlers{};
+    handlers.disconnected = HandleDiscordDisconnected;
+    handlers.errored = HandleDiscordError;
+    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
+    DiscordRichPresence presence{};
+    presence.state = game_title.isEmpty() ? "Unknown game" : game_title.toLocal8Bit().constData();
+    presence.details = "Playing";
+    presence.startTimestamp = g_start_time;
+    presence.largeImageKey = "icon";
+    Discord_UpdatePresence(&presence);
+#endif
 
     return true;
 }
