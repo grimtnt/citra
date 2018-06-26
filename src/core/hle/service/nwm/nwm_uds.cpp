@@ -479,6 +479,7 @@ void HandleAuthenticationFrame(const Network::WifiPacket& packet) {
 
 /// Handles the deauthentication frames sent from clients to hosts, when they leave a session
 void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
+    NGLOG_DEBUG(Service_NWM, "called");
     std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
     std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
     std::lock(hle_lock, lock);
@@ -503,8 +504,6 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
 
     network_info.total_nodes--;
     connection_status_event->Signal();
-
-    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 static void HandleDataFrame(const Network::WifiPacket& packet) {
@@ -553,13 +552,12 @@ void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
     }
 
     node_map.clear();
-    channel_data.clear();
+    bind_node_data.clear();
 
     recv_buffer_memory.reset();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-
     NGLOG_DEBUG(Service_NWM, "called");
 }
 
@@ -716,7 +714,6 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
         rb.Push(RESULT_SUCCESS);
         rb.PushRaw<NodeInfo>(*itr);
     }
-
     NGLOG_DEBUG(Service_NWM, "called");
 }
 
@@ -808,6 +805,8 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
 
     // TODO(Subv): Store the passphrase and verify it when attempting a connection.
 
+    NGLOG_DEBUG(Service_NWM, "called");
+
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
         std::memcpy(&network_info, network_info_buffer.data(), sizeof(NetworkInfo));
@@ -866,19 +865,18 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
     CoreTiming::ScheduleEvent(msToCycles(DefaultBeaconInterval * MillisecondsPerTU),
                               beacon_broadcast_event, 0);
 
+    NGLOG_DEBUG(Service_NWM, "An UDS network has been created.");
+
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-
-    NGLOG_DEBUG(Service_NWM, "An UDS network has been created.");
 }
 
 void NWM_UDS::UpdateNetworkAttribute(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x07, 2, 0);
     rp.Skip(2, false);
+    NGLOG_WARNING(Service_NWM, "stubbed");
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-
-    NGLOG_WARNING(Service_NWM, "(STUBBED) called");
 }
 
 void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
@@ -1172,6 +1170,8 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
     const std::vector<u8> application_data = rp.PopStaticBuffer();
     ASSERT(application_data.size() == size);
 
+    NGLOG_DEBUG(Service_NWM, "called");
+
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
 
     if (size > ApplicationDataSize) {
@@ -1184,8 +1184,6 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
     std::memcpy(network_info.application_data.data(), application_data.data(), size);
 
     rb.Push(RESULT_SUCCESS);
-
-    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
@@ -1196,6 +1194,8 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
 
     const std::vector<u8> encrypted_data0_buffer = rp.PopStaticBuffer();
     const std::vector<u8> encrypted_data1_buffer = rp.PopStaticBuffer();
+
+    NGLOG_DEBUG(Service_NWM, "called");
 
     NetworkInfo net_info;
     std::memcpy(&net_info, network_struct_buffer.data(), sizeof(net_info));
@@ -1250,8 +1250,6 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
     std::vector<u8> output_buffer(sizeof(NodeInfo) * UDSMaxNodes, 0);
     std::memcpy(output_buffer.data(), nodes.data(), sizeof(NodeInfo) * nodes.size());
     rb.PushStaticBuffer(output_buffer, 0);
-
-    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 // Sends a 802.11 beacon frame with information about the current network.
@@ -1320,6 +1318,7 @@ NWM_UDS::NWM_UDS() : ServiceFramework("nwm::UDS") {
     auto mac = SharedPage::DefaultMac;
     // Keep the Nintendo 3DS MAC header and randomly generate the last 3 bytes
     rng.GenerateBlock(static_cast<CryptoPP::byte*>(mac.data() + 3), 3);
+
     if (auto room_member = Network::GetRoomMember().lock()) {
         if (room_member->IsConnected()) {
             mac = room_member->GetMacAddress();
