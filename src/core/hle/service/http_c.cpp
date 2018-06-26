@@ -495,7 +495,7 @@ void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     const u32 value_size = rp.Pop<u32>();
     const std::vector<u8> name_buffer = rp.PopStaticBuffer();
     Kernel::MappedBuffer& value_buffer = rp.PopMappedBuffer();
-    const std::string name(reinterpret_cast<const char*>(name_buffer.data()), name_size - 1);
+    const std::string name(name_buffer.begin(), name_buffer.end());
     std::string value(value_size - 1, '\0');
     value_buffer.Read(&value[0], 0, value_size - 1);
 
@@ -546,7 +546,7 @@ void HTTP_C::Impl::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     const u32 value_size = rp.Pop<u32>();
     const std::vector<u8> name_buffer = rp.PopStaticBuffer();
     Kernel::MappedBuffer& value_buffer = rp.PopMappedBuffer();
-    const std::string name(reinterpret_cast<const char*>(name_buffer.data()), name_size - 1);
+    const std::string name(name_buffer.begin(), name_buffer.end());
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
