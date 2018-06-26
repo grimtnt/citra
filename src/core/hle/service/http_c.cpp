@@ -253,8 +253,7 @@ HTTP_C::Impl::~Impl() {
 void HTTP_C::Impl::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x1, 1, 4);
     const u32 shmem_size = rp.Pop<u32>();
-    const u32 process_header = rp.Pop<u32>();
-    rp.Pop<u32>(); // unused
+    rp.PopPID();
     shared_memory = rp.PopObject<Kernel::SharedMemory>();
     if (shared_memory) {
         shared_memory->name = "HTTP_C:shared_memory";
@@ -348,8 +347,7 @@ void HTTP_C::Impl::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
 void HTTP_C::Impl::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x8, 1, 2);
     const u32 context_id = rp.Pop<u32>();
-    rp.Pop<u32>(); // process_id = 0x20
-    rp.Pop<u32>();
+    rp.PopPID();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -461,10 +459,11 @@ void HTTP_C::Impl::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     buffer.Write(&context->second.response.body[context->second.current_offset], 0, size);
     context->second.current_offset += size;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(context->second.current_offset < context->second.GetResponseContentLength()
                 ? RESULT_DOWNLOADPENDING
                 : RESULT_SUCCESS);
+    rb.PushMappedBuffer(buffer);
 
     NGLOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
@@ -495,7 +494,7 @@ void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     const u32 value_size = rp.Pop<u32>();
     const std::vector<u8> name_buffer = rp.PopStaticBuffer();
     Kernel::MappedBuffer& value_buffer = rp.PopMappedBuffer();
-    const std::string name(name_buffer.begin(), name_buffer.end());
+    const std::string name(name_buffer.begin(), name_buffer.end() - 1);
     std::string value(value_size - 1, '\0');
     value_buffer.Read(&value[0], 0, value_size - 1);
 
@@ -546,7 +545,7 @@ void HTTP_C::Impl::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     const u32 value_size = rp.Pop<u32>();
     const std::vector<u8> name_buffer = rp.PopStaticBuffer();
     Kernel::MappedBuffer& value_buffer = rp.PopMappedBuffer();
-    const std::string name(name_buffer.begin(), name_buffer.end());
+    const std::string name(name_buffer.begin(), name_buffer.end() - 1);
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
