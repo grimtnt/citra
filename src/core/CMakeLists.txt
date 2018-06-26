@@ -423,7 +423,7 @@ create_target_directory_groups(core)
 target_compile_options(core PRIVATE -DCPPHTTPLIB_OPENSSL_SUPPORT)
 
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core ssl httplib lurlparser)
-target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt)
+target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt open_source_archives)
 if (ENABLE_WEB_SERVICE)
     target_link_libraries(core PUBLIC json-headers web_service)
 endif()
