@@ -69,8 +69,8 @@ struct BindNodeData {
     std::deque<std::vector<u8>> received_packets; ///< List of packets received on this channel.
 };
 
-// Mapping of bind_node_ids to their internal data.
-static std::unordered_map<u32, BindNodeData> bind_node_data;
+// Mapping of data channels to their internal data.
+static std::unordered_map<u32, BindNodeData> channel_data;
 
 // The WiFi network channel that the network is currently on.
 // Since we're not actually interacting with physical radio waves, this is just a dummy value.
@@ -379,21 +379,21 @@ static void HandleSecureDataPacket(const Network::WifiPacket& packet) {
     // TODO(B3N30): We don't currently send nor handle management frames.
     ASSERT(!secure_data.is_management);
 
-    for (auto bind_node : bind_node_data) {
-        // Ignore packets from channels we're not interested in.
-        if (bind_node.second.channel != secure_data.data_channel)
-            continue;
+    // TODO(B3N30): Allow more than one bind node per channel.
+    auto channel_info = channel_data.find(secure_data.data_channel);
+    // Ignore packets from channels we're not interested in.
+    if (channel_info == channel_data.end())
+        return;
 
-        if (bind_node.second.network_node_id != BroadcastNetworkNodeId &&
-            bind_node.second.network_node_id != secure_data.src_node_id)
-            continue;
+    if (channel_info->second.network_node_id != BroadcastNetworkNodeId &&
+        channel_info->second.network_node_id != secure_data.src_node_id)
+        return;
 
-        // Add the received packet to the data queue.
-        bind_node.second.received_packets.emplace_back(packet.data);
+    // Add the received packet to the data queue.
+    channel_info->second.received_packets.emplace_back(packet.data);
 
-        // Signal the data event. We can do this directly because we locked g_hle_lock
-        bind_node.second.event->Signal();
-    }
+    // Signal the data event. We can do this directly because we locked g_hle_lock
+    channel_info->second.event->Signal();
 }
 
 /*
@@ -479,7 +479,6 @@ void HandleAuthenticationFrame(const Network::WifiPacket& packet) {
 
 /// Handles the deauthentication frames sent from clients to hosts, when they leave a session
 void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
-    NGLOG_DEBUG(Service_NWM, "called");
     std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
     std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
     std::lock(hle_lock, lock);
@@ -504,6 +503,8 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
 
     network_info.total_nodes--;
     connection_status_event->Signal();
+
+    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 static void HandleDataFrame(const Network::WifiPacket& packet) {
@@ -547,17 +548,17 @@ void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
     if (auto room_member = Network::GetRoomMember().lock())
         room_member->Unbind(wifi_packet_received);
 
-    for (auto bind_node : bind_node_data) {
+    for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
     }
-
+    channel_data.clear();
     node_map.clear();
-    bind_node_data.clear();
 
     recv_buffer_memory.reset();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
+
     NGLOG_DEBUG(Service_NWM, "called");
 }
 
@@ -714,6 +715,7 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
         rb.Push(RESULT_SUCCESS);
         rb.PushRaw<NodeInfo>(*itr);
     }
+
     NGLOG_DEBUG(Service_NWM, "called");
 }
 
@@ -725,8 +727,6 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     u8 data_channel = rp.Pop<u8>();
     u16 network_node_id = rp.Pop<u16>();
 
-    NGLOG_DEBUG(Service_NWM, "called");
-
     if (data_channel == 0 || bind_node_id == 0) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
@@ -737,7 +737,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     }
 
     constexpr size_t MaxBindNodes = 16;
-    if (bind_node_data.size() >= MaxBindNodes) {
+    if (channel_data.size() >= MaxBindNodes) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
                            ErrorSummary::OutOfResource, ErrorLevel::Status));
@@ -759,14 +759,15 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
                                        "NWM::BindNodeEvent" + std::to_string(bind_node_id));
     std::lock_guard<std::mutex> lock(connection_status_mutex);
 
-    // A 3DS segfaults if you try to bind with an already used bind_node_id
-    ASSERT(bind_node_data.find(bind_node_id) == bind_node_data.end());
-
-    bind_node_data[bind_node_id] = {bind_node_id, data_channel, network_node_id, event};
+    ASSERT(channel_data.find(data_channel) == channel_data.end());
+    // TODO(B3N30): Support more than one bind node per channel.
+    channel_data[data_channel] = {bind_node_id, data_channel, network_node_id, event};
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(event);
+
+    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
@@ -782,7 +783,14 @@ void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
 
-    bind_node_data.erase(bind_node_id);
+    auto itr =
+        std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
+            return data.second.bind_node_id == bind_node_id;
+        });
+
+    if (itr != channel_data.end()) {
+        channel_data.erase(itr);
+    }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
     rb.Push(RESULT_SUCCESS);
@@ -804,8 +812,6 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
     ASSERT(passphrase.size() == passphrase_size);
 
     // TODO(Subv): Store the passphrase and verify it when attempting a connection.
-
-    NGLOG_DEBUG(Service_NWM, "called");
 
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
@@ -865,18 +871,19 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
     CoreTiming::ScheduleEvent(msToCycles(DefaultBeaconInterval * MillisecondsPerTU),
                               beacon_broadcast_event, 0);
 
-    NGLOG_DEBUG(Service_NWM, "An UDS network has been created.");
-
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
+
+    NGLOG_DEBUG(Service_NWM, "An UDS network has been created.");
 }
 
 void NWM_UDS::UpdateNetworkAttribute(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x07, 2, 0);
     rp.Skip(2, false);
-    NGLOG_WARNING(Service_NWM, "stubbed");
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
+
+    NGLOG_WARNING(Service_NWM, "(STUBBED) called");
 }
 
 void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
@@ -906,10 +913,10 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
 
-    for (auto bind_node : bind_node_data) {
+    for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
     }
-    bind_node_data.clear();
+    channel_data.clear();
 
     rb.Push(RESULT_SUCCESS);
 
@@ -952,10 +959,10 @@ void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
 
     SendPacket(deauth);
 
-    for (auto bind_node : bind_node_data) {
+    for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
     }
-    bind_node_data.clear();
+    channel_data.clear();
 
     rb.Push(RESULT_SUCCESS);
     NGLOG_DEBUG(Service_NWM, "called");
@@ -1069,15 +1076,19 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    auto bind_node = bind_node_data.find(bind_node_id);
-    if (bind_node == bind_node_data.end()) {
+    auto channel =
+        std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
+            return data.second.bind_node_id == bind_node_id;
+        });
+
+    if (channel == channel_data.end()) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
     }
 
-    if (bind_node->second.received_packets.empty()) {
+    if (channel->second.received_packets.empty()) {
         std::vector<u8> output_buffer(buff_size, 0);
         IPC::RequestBuilder rb = rp.MakeBuilder(3, 2);
         rb.Push(RESULT_SUCCESS);
@@ -1087,7 +1098,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    const auto& next_packet = bind_node->second.received_packets.front();
+    const auto& next_packet = channel->second.received_packets.front();
 
     auto secure_data = ParseSecureDataHeader(next_packet);
     auto data_size = secure_data.GetActualDataSize();
@@ -1111,7 +1122,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     rb.Push<u16>(secure_data.src_node_id);
     rb.PushStaticBuffer(output_buffer, 0);
 
-    bind_node->second.received_packets.pop_front();
+    channel->second.received_packets.pop_front();
 }
 
 void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
@@ -1170,8 +1181,6 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
     const std::vector<u8> application_data = rp.PopStaticBuffer();
     ASSERT(application_data.size() == size);
 
-    NGLOG_DEBUG(Service_NWM, "called");
-
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
 
     if (size > ApplicationDataSize) {
@@ -1184,6 +1193,8 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
     std::memcpy(network_info.application_data.data(), application_data.data(), size);
 
     rb.Push(RESULT_SUCCESS);
+
+    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
@@ -1194,8 +1205,6 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
 
     const std::vector<u8> encrypted_data0_buffer = rp.PopStaticBuffer();
     const std::vector<u8> encrypted_data1_buffer = rp.PopStaticBuffer();
-
-    NGLOG_DEBUG(Service_NWM, "called");
 
     NetworkInfo net_info;
     std::memcpy(&net_info, network_struct_buffer.data(), sizeof(net_info));
@@ -1250,6 +1259,8 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
     std::vector<u8> output_buffer(sizeof(NodeInfo) * UDSMaxNodes, 0);
     std::memcpy(output_buffer.data(), nodes.data(), sizeof(NodeInfo) * nodes.size());
     rb.PushStaticBuffer(output_buffer, 0);
+
+    NGLOG_DEBUG(Service_NWM, "called");
 }
 
 // Sends a 802.11 beacon frame with information about the current network.
@@ -1318,7 +1329,6 @@ NWM_UDS::NWM_UDS() : ServiceFramework("nwm::UDS") {
     auto mac = SharedPage::DefaultMac;
     // Keep the Nintendo 3DS MAC header and randomly generate the last 3 bytes
     rng.GenerateBlock(static_cast<CryptoPP::byte*>(mac.data() + 3), 3);
-
     if (auto room_member = Network::GetRoomMember().lock()) {
         if (room_member->IsConnected()) {
             mac = room_member->GetMacAddress();
@@ -1329,7 +1339,7 @@ NWM_UDS::NWM_UDS() : ServiceFramework("nwm::UDS") {
 
 NWM_UDS::~NWM_UDS() {
     network_info = {};
-    bind_node_data.clear();
+    channel_data.clear();
     connection_status_event = nullptr;
     recv_buffer_memory = nullptr;
     initialized = false;
