@@ -260,7 +260,6 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
 
     AddService(new CSND::CSND_SND);
     AddService(new DSP_DSP::Interface);
-    AddService(new GSP::GSP_LCD);
     AddService(new PM::PM_APP);
     AddService(new SOC::SOC_U);
     SSL::InstallInterfaces(*sm);

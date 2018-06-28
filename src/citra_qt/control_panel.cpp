@@ -71,34 +71,34 @@ ControlPanel::ControlPanel(QWidget* parent)
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ControlPanel::OnNetworkStateChanged);
 
-    setWindowTitle("Control Panel");
+    setWindowTitle(tr("Control Panel"));
     setFixedSize(size());
 }
 
 ControlPanel::~ControlPanel() {}
 
 void ControlPanel::On3DEnabledChanged() {
-    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
     Settings::values.sp_enable_3d = ui->shared_page_enable_3d->isChecked();
+    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
 }
 
 void ControlPanel::OnAdapterConnectedChanged() {
+    Settings::values.p_adapter_connected = ui->power_adapter_connected->isChecked();
     SharedPage::shared_page.battery_state.is_adapter_connected.Assign(
         static_cast<u8>(Settings::values.p_adapter_connected));
-    Settings::values.p_adapter_connected = ui->power_adapter_connected->isChecked();
 }
 
 void ControlPanel::OnBatteryChargingChanged() {
+    Settings::values.p_battery_charging = ui->power_battery_charging->isChecked();
     SharedPage::shared_page.battery_state.is_charging.Assign(
         static_cast<u8>(Settings::values.p_battery_charging));
-    Settings::values.p_battery_charging = ui->power_battery_charging->isChecked();
 }
 
 void ControlPanel::OnBatteryLevelChanged() {
-    SharedPage::shared_page.battery_state.charge_level.Assign(
-        static_cast<u8>(Settings::values.p_battery_level));
     Settings::values.p_battery_level =
         static_cast<u32>(ui->power_battery_level->currentIndex() + 1);
+    SharedPage::shared_page.battery_state.charge_level.Assign(
+        static_cast<u8>(Settings::values.p_battery_level));
 }
 
 void ControlPanel::OnWifiStatusChanged() {
@@ -106,12 +106,12 @@ void ControlPanel::OnWifiStatusChanged() {
 }
 
 void ControlPanel::OnWifiLinkLevelChanged() {
-    SharedPage::SetWifiLinkLevel(
-        static_cast<SharedPage::WifiLinkLevel>(ui->network_link_level->currentIndex()));
     Settings::values.n_wifi_link_level = static_cast<u8>(ui->network_link_level->currentIndex());
+    SharedPage::SetWifiLinkLevel(
+        static_cast<SharedPage::WifiLinkLevel>(Settings::values.n_wifi_link_level));
 }
 
 void ControlPanel::OnNetworkStateChanged() {
-    SharedPage::shared_page.network_state = SharedPageUtil::itns(ui->network_state->currentIndex());
     Settings::values.n_state = SharedPageUtil::itns(ui->network_state->currentIndex());
+    SharedPage::shared_page.network_state = Settings::values.n_state;
 }
