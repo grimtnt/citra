@@ -315,13 +315,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="link_country_codes">
-       <property name="text">
-        <string>Country Codes</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
         <enum>Qt::Vertical</enum>
