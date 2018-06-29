@@ -250,7 +250,7 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     HID::InstallInterfaces(*sm);
     HTTP::InstallInterfaces(*sm);
     IR::InstallInterfaces(*sm);
-    MVD::Init();
+    MVD::InstallInterfaces(*sm);
     NDM::InstallInterfaces(*sm);
     NEWS::InstallInterfaces(*sm);
     NFC::InstallInterfaces(*sm);
