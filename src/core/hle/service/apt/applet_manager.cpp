@@ -172,7 +172,7 @@ void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
     auto* const slot_data = GetAppletSlotData(static_cast<AppletId>(parameter.destination_id));
     if (slot_data == nullptr) {
         LOG_DEBUG(Service_APT, "No applet was registered with the id {:03X}",
-                    static_cast<u32>(parameter.destination_id));
+                  static_cast<u32>(parameter.destination_id));
         return;
     }
 
@@ -331,7 +331,7 @@ ResultCode AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
     auto applet = HLE::Applets::Applet::Get(applet_id);
     if (applet) {
         LOG_WARNING(Service_APT, "applet has already been started id={:08X}",
-                      static_cast<u32>(applet_id));
+                    static_cast<u32>(applet_id));
         return RESULT_SUCCESS;
     } else {
         return HLE::Applets::Applet::Create(applet_id, shared_from_this());
@@ -355,7 +355,7 @@ ResultCode AppletManager::PreloadLibraryApplet(AppletId applet_id) {
     auto applet = HLE::Applets::Applet::Get(applet_id);
     if (applet) {
         LOG_WARNING(Service_APT, "applet has already been started id={:08X}",
-                      static_cast<u32>(applet_id));
+                    static_cast<u32>(applet_id));
         return RESULT_SUCCESS;
     } else {
         return HLE::Applets::Applet::Create(applet_id, shared_from_this());
@@ -402,7 +402,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
                               ErrorSummary::NotFound, ErrorLevel::Status);
         }
         LOG_WARNING(Service_APT, "Using HLE applet info for applet {:03X}",
-                      static_cast<u32>(app_id));
+                    static_cast<u32>(app_id));
         // TODO(Subv): Get the title id for the current applet and write it in the response[2-3]
         return MakeResult<AppletInfo>({0, Service::FS::MediaType::NAND, true, true, 0});
     }
@@ -421,7 +421,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
 ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiting,
                                                       bool jump_to_home) {
     LOG_DEBUG(Service_APT, "called not_pause={}, exiting={}, jump_to_home={}", not_pause, exiting,
-                jump_to_home);
+              jump_to_home);
 
     if (next_parameter) {
         return ResultCode(ErrCodes::ParameterPresent, ErrorModule::Applet,

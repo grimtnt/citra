@@ -97,7 +97,7 @@ void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
     rb.PushMappedBuffer(buffer);
 
     LOG_WARNING(Service_PTM, "(STUBBED) called, from time(raw): 0x{:X}, for {} hours", start_time,
-                  hours);
+                hours);
 }
 
 void Module::Interface::GetTotalStepCount(Kernel::HLERequestContext& ctx) {
@@ -123,14 +123,14 @@ void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
 void CheckNew3DS(IPC::RequestBuilder& rb) {
     if (Settings::values.enable_new_mode) {
         LOG_WARNING(Service_PTM, "The New Mode is enabled. Citra "
-                                   "does not fully support New 3DS/2DS emulation yet!");
+                                 "does not fully support New 3DS/2DS emulation yet!");
     }
 
     rb.Push(RESULT_SUCCESS);
     rb.Push(Settings::values.enable_new_mode);
 
     LOG_WARNING(Service_PTM, "(STUBBED) called, enable_new_mode={}",
-                  Settings::values.enable_new_mode);
+                Settings::values.enable_new_mode);
 }
 
 void Module::Interface::ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx) {

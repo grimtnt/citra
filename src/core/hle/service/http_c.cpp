@@ -511,8 +511,7 @@ void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(value_buffer);
 
-    LOG_WARNING(Service_HTTP, "called, name={}, value={}, context_id={}", name, value,
-                  context_id);
+    LOG_WARNING(Service_HTTP, "called, name={}, value={}, context_id={}", name, value, context_id);
 }
 
 void HTTP_C::Impl::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
@@ -565,8 +564,8 @@ void HTTP_C::Impl::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     rb.PushMappedBuffer(value_buffer);
 
     LOG_WARNING(Service_HTTP,
-                  "called, name={}, name_size={}, value={}, value_size={}, context_id={}", name,
-                  name_size, value, value_size, context_id);
+                "called, name={}, name_size={}, value={}, value_size={}, context_id={}", name,
+                name_size, value, value_size, context_id);
 }
 
 void HTTP_C::Impl::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
@@ -626,8 +625,7 @@ void HTTP_C::Impl::SetSSLOpt(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}, ssl_options=0x{:X}", context_id,
-                  ssl_options);
+    LOG_WARNING(Service_HTTP, "called, context_id={}, ssl_options=0x{:X}", context_id, ssl_options);
 }
 
 void HTTP_C::Impl::SetKeepAlive(Kernel::HLERequestContext& ctx) {

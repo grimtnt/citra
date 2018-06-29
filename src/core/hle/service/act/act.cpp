@@ -107,7 +107,7 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     rb.PushMappedBuffer(buffer);
 
     LOG_WARNING(Service_ACT, "(STUBBED) called, unk=0x{:02X}, size=0x{:X}, id=0x{:X}", unk, size,
-                  static_cast<u32>(id));
+                static_cast<u32>(id));
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> act, const char* name, u32 max_session)

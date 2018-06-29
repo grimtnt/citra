@@ -392,8 +392,8 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
 
             default:
                 LOG_ERROR(HW_GPU, "Unhandled arithmetic instruction: 0x{:02x} ({}): 0x{:08x}",
-                            (int)instr.opcode.Value().EffectiveOpCode(),
-                            instr.opcode.Value().GetInfo().name, instr.hex);
+                          (int)instr.opcode.Value().EffectiveOpCode(),
+                          instr.opcode.Value().GetInfo().name, instr.hex);
                 DEBUG_ASSERT(false);
                 break;
             }
@@ -476,8 +476,8 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                 }
             } else {
                 LOG_ERROR(HW_GPU, "Unhandled multiply-add instruction: 0x{:02x} ({}): 0x{:08x}",
-                            (int)instr.opcode.Value().EffectiveOpCode(),
-                            instr.opcode.Value().GetInfo().name, instr.hex);
+                          (int)instr.opcode.Value().EffectiveOpCode(),
+                          instr.opcode.Value().GetInfo().name, instr.hex);
             }
             break;
         }
@@ -571,8 +571,8 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
 
             default:
                 LOG_ERROR(HW_GPU, "Unhandled instruction: 0x{:02x} ({}): 0x{:08x}",
-                            (int)instr.opcode.Value().EffectiveOpCode(),
-                            instr.opcode.Value().GetInfo().name, instr.hex);
+                          (int)instr.opcode.Value().EffectiveOpCode(),
+                          instr.opcode.Value().GetInfo().name, instr.hex);
                 break;
             }
 

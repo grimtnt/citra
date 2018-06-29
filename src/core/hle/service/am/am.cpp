@@ -145,7 +145,7 @@ ResultVal<size_t> CIAFile::WriteContentData(u64 offset, size_t length, const u8*
             // values can be calculated.
             content_written[i] += available_to_write;
             LOG_DEBUG(Service_AM, "Wrote {:X} to content {}, total {:X}", available_to_write, i,
-                        content_written[i]);
+                      content_written[i]);
         }
     }
 
@@ -313,7 +313,7 @@ InstallStatus InstallCIA(const std::string& path,
                 update_callback(total_bytes_read, file.GetSize());
             if (result.Failed()) {
                 LOG_ERROR(Service_AM, "CIA file installation aborted with error code {:08x}",
-                            result.Code().raw);
+                          result.Code().raw);
                 return InstallStatus::ErrorAborted;
             }
             total_bytes_read += bytes_read;
@@ -387,7 +387,7 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
     if (media_type == Service::FS::MediaType::GameCard) {
         // TODO(shinyquagsire23): get current app file if TID matches?
         LOG_ERROR(Service_AM, "Request for gamecard partition {} content path unimplemented!",
-                    static_cast<u32>(index));
+                  static_cast<u32>(index));
         return "";
     }
 
@@ -608,9 +608,8 @@ void Module::Interface::DeleteContents(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(content_ids_in);
-    LOG_WARNING(Service_AM,
-                  "(STUBBED) called, media_type={}, title_id=0x{:016X}, content_count={}",
-                  media_type, title_id, content_count);
+    LOG_WARNING(Service_AM, "(STUBBED) called, media_type={}, title_id=0x{:016X}, content_count={}",
+                media_type, title_id, content_count);
 }
 
 void Module::Interface::GetProgramList(Kernel::HLERequestContext& ctx) {
@@ -831,10 +830,9 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
     rb.Push(ticket_count);
     rb.PushMappedBuffer(ticket_info_out);
 
-    LOG_WARNING(
-        Service_AM,
-        "(STUBBED) called, ticket_count=0x{:08X}, title_id=0x{:016X}, start_index=0x{:08X}",
-        ticket_count, title_id, start_index);
+    LOG_WARNING(Service_AM,
+                "(STUBBED) called, ticket_count=0x{:08X}, title_id=0x{:016X}, start_index=0x{:08X}",
+                ticket_count, title_id, start_index);
 }
 
 void Module::Interface::GetDLCContentInfoCount(Kernel::HLERequestContext& ctx) {
@@ -863,7 +861,7 @@ void Module::Interface::GetDLCContentInfoCount(Kernel::HLERequestContext& ctx) {
     } else {
         rb.Push<u32>(1); // Number of content infos plus one
         LOG_WARNING(Service_AM, "(STUBBED) called, media_type={}, title_id=0x{:016X}",
-                      static_cast<u32>(media_type), title_id);
+                    static_cast<u32>(media_type), title_id);
     }
 }
 
@@ -897,7 +895,7 @@ void Module::Interface::GetTicketList(Kernel::HLERequestContext& ctx) {
     rb.Push(ticket_list_count);
     rb.PushMappedBuffer(ticket_tids_out);
     LOG_WARNING(Service_AM, "(STUBBED) called, ticket_list_count=0x{:08x}, ticket_index=0x{:08x}",
-                  ticket_list_count, ticket_index);
+                ticket_list_count, ticket_index);
 }
 
 void Module::Interface::QueryAvailableTitleDatabase(Kernel::HLERequestContext& ctx) {
@@ -925,7 +923,7 @@ void Module::Interface::CheckContentRights(Kernel::HLERequestContext& ctx) {
     rb.Push(has_rights);
 
     LOG_WARNING(Service_AM, "(STUBBED) called, tid=0x{:016X}, content_index={}", tid,
-                  content_index);
+                content_index);
 }
 
 void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestContext& ctx) {
@@ -941,8 +939,7 @@ void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestConte
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push(has_rights);
 
-    LOG_WARNING(Service_AM, "(STUBBED) called, tid=0x{:08X}, content_index={}", tid,
-                  content_index);
+    LOG_WARNING(Service_AM, "(STUBBED) called, tid=0x{:08X}, content_index={}", tid, content_index);
 }
 
 void Module::Interface::BeginImportProgram(Kernel::HLERequestContext& ctx) {

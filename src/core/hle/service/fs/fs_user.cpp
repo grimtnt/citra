@@ -55,8 +55,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
     ASSERT(filename.size() == filename_size);
     FileSys::Path file_path(filename_type, filename);
 
-    LOG_DEBUG(Service_FS, "path={}, mode={}, attrs={}", file_path.DebugStr(), mode.hex,
-                attributes);
+    LOG_DEBUG(Service_FS, "path={}, mode={}, attrs={}", file_path.DebugStr(), mode.hex, attributes);
 
     ResultVal<std::shared_ptr<File>> file_res =
         OpenFileFromArchive(archive_handle, file_path, mode);
@@ -97,17 +96,17 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
     FileSys::Path file_path(filename_type, filename);
 
     LOG_DEBUG(Service_FS,
-                "archive_id=0x{:08X}, archive_path={}, file_path={}, mode={}, attributes={}",
-                static_cast<u32>(archive_id), archive_path.DebugStr().c_str(),
-                file_path.DebugStr().c_str(), mode.hex, attributes);
+              "archive_id=0x{:08X}, archive_path={}, file_path={}, mode={}, attributes={}",
+              static_cast<u32>(archive_id), archive_path.DebugStr().c_str(),
+              file_path.DebugStr().c_str(), mode.hex, attributes);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
 
     ResultVal<ArchiveHandle> archive_handle = Service::FS::OpenArchive(archive_id, archive_path);
     if (archive_handle.Failed()) {
         LOG_ERROR(Service_FS,
-                    "Failed to get a handle for archive archive_id=0x{:08X}, archive_path={}",
-                    static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
+                  "Failed to get a handle for archive archive_id=0x{:08X}, archive_path={}",
+                  static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
         rb.Push(archive_handle.Code());
         rb.PushMoveObjects<Kernel::Object>(nullptr);
         return;
@@ -123,7 +122,7 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
     } else {
         rb.PushMoveObjects<Kernel::Object>(nullptr);
         LOG_ERROR(Service_FS, "failed to get a handle for file {} mode={} attributes={}",
-                    file_path.DebugStr(), mode.hex, attributes);
+                  file_path.DebugStr(), mode.hex, attributes);
     }
 }
 
@@ -142,7 +141,7 @@ void FS_USER::DeleteFile(Kernel::HLERequestContext& ctx) {
     rb.Push(DeleteFileFromArchive(archive_handle, file_path));
 
     LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(filename_type),
-                filename_size, file_path.DebugStr());
+              filename_size, file_path.DebugStr());
 }
 
 void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
@@ -168,10 +167,10 @@ void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
                                       dest_file_path));
 
     LOG_DEBUG(Service_FS,
-                "src_type={}, src_size={}, src_data={}, dest_type={}, dest_size={}, dest_data={}",
-                static_cast<u32>(src_filename_type), src_filename_size,
-                src_file_path.DebugStr().c_str(), static_cast<u32>(dest_filename_type),
-                dest_filename_size, dest_file_path.DebugStr().c_str());
+              "src_type={}, src_size={}, src_data={}, dest_type={}, dest_size={}, dest_data={}",
+              static_cast<u32>(src_filename_type), src_filename_size,
+              src_file_path.DebugStr().c_str(), static_cast<u32>(dest_filename_type),
+              dest_filename_size, dest_file_path.DebugStr().c_str());
 }
 
 void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
@@ -189,8 +188,8 @@ void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(DeleteDirectoryFromArchive(archive_handle, dir_path));
 
-    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type),
-                dirname_size, dir_path.DebugStr());
+    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type), dirname_size,
+              dir_path.DebugStr());
 }
 
 void FS_USER::DeleteDirectoryRecursively(Kernel::HLERequestContext& ctx) {
@@ -208,8 +207,8 @@ void FS_USER::DeleteDirectoryRecursively(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(DeleteDirectoryRecursivelyFromArchive(archive_handle, dir_path));
 
-    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type),
-                dirname_size, dir_path.DebugStr());
+    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type), dirname_size,
+              dir_path.DebugStr());
 }
 
 void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
@@ -230,7 +229,7 @@ void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
     rb.Push(CreateFileInArchive(archive_handle, file_path, file_size));
 
     LOG_DEBUG(Service_FS, "type={}, attributes={}, size={:X}, data={}",
-                static_cast<u32>(filename_type), attributes, file_size, file_path.DebugStr());
+              static_cast<u32>(filename_type), attributes, file_size, file_path.DebugStr());
 }
 
 void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
@@ -247,8 +246,8 @@ void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(CreateDirectoryFromArchive(archive_handle, dir_path));
 
-    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type),
-                dirname_size, dir_path.DebugStr());
+    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type), dirname_size,
+              dir_path.DebugStr());
 }
 
 void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
@@ -273,9 +272,9 @@ void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
                                            dest_dir_path));
 
     LOG_DEBUG(Service_FS,
-                "src_type={}, src_size={}, src_data={}, dest_type={}, dest_size={}, dest_data={}",
-                static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr(),
-                static_cast<u32>(dest_dirname_type), dest_dirname_size, dest_dir_path.DebugStr());
+              "src_type={}, src_size={}, src_data={}, dest_type={}, dest_size={}, dest_data={}",
+              static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr(),
+              static_cast<u32>(dest_dirname_type), dest_dirname_size, dest_dir_path.DebugStr());
 }
 
 void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
@@ -299,12 +298,12 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
         rb.PushMoveObjects(std::get<SharedPtr<ClientSession>>(sessions));
     } else {
         LOG_ERROR(Service_FS, "failed to get a handle for directory type={}, size={}, data={}",
-                    static_cast<u32>(dirname_type), dirname_size, dir_path.DebugStr());
+                  static_cast<u32>(dirname_type), dirname_size, dir_path.DebugStr());
         rb.PushMoveObjects<Kernel::Object>(nullptr);
     }
 
-    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type),
-                dirname_size, dir_path.DebugStr());
+    LOG_DEBUG(Service_FS, "type={}, size={}, data={}", static_cast<u32>(dirname_type), dirname_size,
+              dir_path.DebugStr());
 }
 
 void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
@@ -324,11 +323,11 @@ void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
     } else {
         rb.Push<u64>(0);
         LOG_ERROR(Service_FS, "failed to get a handle for archive 0x{:08X}, archive_path={}",
-                    static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
+                  static_cast<u32>(archive_id), archive_path.DebugStr().c_str());
     }
 
     LOG_DEBUG(Service_FS, "archive_id=0x{:08X}, archive_path={}", static_cast<u32>(archive_id),
-                archive_path.DebugStr());
+              archive_path.DebugStr());
 }
 
 void FS_USER::CloseArchive(Kernel::HLERequestContext& ctx) {
@@ -373,7 +372,7 @@ void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     if (archive_id != FS::ArchiveIdCode::SaveData) {
         LOG_ERROR(Service_FS, "tried to format an archive different than SaveData, {}",
-                    static_cast<u32>(archive_id));
+                  static_cast<u32>(archive_id));
         rb.Push(FileSys::ERROR_INVALID_PATH);
         return;
     }
@@ -459,9 +458,9 @@ void FS_USER::CreateExtSaveData(Kernel::HLERequestContext& ctx) {
     rb.PushMappedBuffer(icon_buffer);
 
     LOG_WARNING(Service_FS,
-                  "(STUBBED) called, savedata_high={:08X}, savedata_low={:08X}, unknown={:08X} "
-                  "files={:08X}, directories={:08X}, size_limit={:016X}, icon_size={:08X}",
-                  save_high, save_low, unknown, directories, files, size_limit, icon_size);
+                "(STUBBED) called, savedata_high={:08X}, savedata_low={:08X}, unknown={:08X} "
+                "files={:08X}, directories={:08X}, size_limit={:016X}, icon_size={:08X}",
+                save_high, save_low, unknown, directories, files, size_limit, icon_size);
 }
 
 void FS_USER::DeleteExtSaveData(Kernel::HLERequestContext& ctx) {
@@ -513,11 +512,11 @@ void FS_USER::CreateSystemSaveData(Kernel::HLERequestContext& ctx) {
     rb.Push(Service::FS::CreateSystemSaveData(savedata_high, savedata_low));
 
     LOG_WARNING(Service_FS,
-                  "(STUBBED) called, savedata_high={:08X} savedata_low={:08X} total_size={:08X} "
-                  "block_size={:08X} "
-                  "directories={} files={} directory_buckets={} file_buckets={} duplicate={}",
-                  savedata_high, savedata_low, total_size, block_size, directories, files,
-                  directory_buckets, file_buckets, duplicate);
+                "(STUBBED) called, savedata_high={:08X} savedata_low={:08X} total_size={:08X} "
+                "block_size={:08X} "
+                "directories={} files={} directory_buckets={} file_buckets={} duplicate={}",
+                savedata_high, savedata_low, total_size, block_size, directories, files,
+                directory_buckets, file_buckets, duplicate);
 }
 
 void FS_USER::CreateLegacySystemSaveData(Kernel::HLERequestContext& ctx) {
@@ -536,10 +535,10 @@ void FS_USER::CreateLegacySystemSaveData(Kernel::HLERequestContext& ctx) {
     rb.Push(Service::FS::CreateSystemSaveData(0, savedata_id));
 
     LOG_WARNING(Service_FS,
-                  "(STUBBED) called, savedata_id={:08X}, total_size={:08X}, block_size={:08X}, "
-                  "directories={}, files=%u, directory_buckets={}, file_buckets={}, duplicate={}",
-                  savedata_id, total_size, block_size, directories, files, directory_buckets,
-                  file_buckets, duplicate);
+                "(STUBBED) called, savedata_id={:08X}, total_size={:08X}, block_size={:08X}, "
+                "directories={}, files=%u, directory_buckets={}, file_buckets={}, duplicate={}",
+                savedata_id, total_size, block_size, directories, files, directory_buckets,
+                file_buckets, duplicate);
 }
 
 void FS_USER::InitializeWithSdkVersion(Kernel::HLERequestContext& ctx) {
@@ -677,9 +676,9 @@ void FS_USER::SetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_FS,
-                  "(STUBBED) called, value=0x{:016X}, secure_value_slot=0x{:08X}, "
-                  "unique_id=0x{:08X}, title_variation=0x{:02X}",
-                  value, secure_value_slot, unique_id, title_variation);
+                "(STUBBED) called, value=0x{:016X}, secure_value_slot=0x{:08X}, "
+                "unique_id=0x{:08X}, title_variation=0x{:02X}",
+                value, secure_value_slot, unique_id, title_variation);
 }
 
 void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
@@ -699,9 +698,9 @@ void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
     rb.Push<u64>(0);      // the secure value
 
     LOG_WARNING(Service_FS,
-                  "(STUBBED) called, secure_value_slot=0x{:08X}, unique_id=0x{:08X}, "
-                  "title_variation=0x{:02X}",
-                  secure_value_slot, unique_id, title_variation);
+                "(STUBBED) called, secure_value_slot=0x{:08X}, unique_id=0x{:08X}, "
+                "title_variation=0x{:02X}",
+                secure_value_slot, unique_id, title_variation);
 }
 
 FS_USER::FS_USER() : ServiceFramework("fs:USER", 30) {

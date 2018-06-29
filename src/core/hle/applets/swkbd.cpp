@@ -106,7 +106,7 @@ ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::s
     default:
         // TODO(jroweboy): What does hardware do in this case?
         LOG_CRITICAL(Frontend, "Application requested unknown validation method. Method: {}",
-                       static_cast<u32>(config.valid_input));
+                     static_cast<u32>(config.valid_input));
         UNREACHABLE();
     }
 
@@ -333,7 +333,7 @@ void SoftwareKeyboard::Update() {
         default:
             // TODO: what does the hardware do
             LOG_WARNING(Applet_Swkbd, "Unknown option for num_buttons_m1: {}",
-                          static_cast<u32>(config.num_buttons_m1));
+                        static_cast<u32>(config.num_buttons_m1));
             config.return_code = SwkbdResult::None;
             break;
         }

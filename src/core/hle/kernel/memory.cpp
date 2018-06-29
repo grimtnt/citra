@@ -128,7 +128,7 @@ void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mappin
     VAddr mapping_limit = mapping.address + mapping.size;
     if (mapping_limit < mapping.address) {
         LOG_CRITICAL(Loader, "Mapping size overflowed: address=0x{:08X}, size=0x{:08X}",
-                       mapping.address, mapping.size);
+                     mapping.address, mapping.size);
         return;
     }
 
@@ -148,7 +148,7 @@ void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mappin
     u32 offset_into_region = mapping.address - area->vaddr_base;
     if (area->paddr_base == IO_AREA_PADDR) {
         LOG_ERROR(Loader, "MMIO mappings are not supported yet. phys_addr=0x{:08X}",
-                    area->paddr_base + offset_into_region);
+                  area->paddr_base + offset_into_region);
         return;
     }
 

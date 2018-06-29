@@ -128,7 +128,7 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
     case DspPipe::Audio: {
         if (buffer.size() != 4) {
             LOG_ERROR(Audio_DSP, "DspPipe::Audio: Unexpected buffer length {} was written",
-                        buffer.size());
+                      buffer.size());
             return;
         }
 
@@ -169,8 +169,8 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
             break;
         default:
             LOG_ERROR(Audio_DSP,
-                        "Application has requested unknown state transition of DSP hardware {}",
-                        buffer[0]);
+                      "Application has requested unknown state transition of DSP hardware {}",
+                      buffer[0]);
             dsp_state = DspState::Off;
             break;
         }
@@ -183,8 +183,7 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
                   std::back_inserter(pipe_data[static_cast<size_t>(DspPipe::Binary)]));
         return;
     default:
-        LOG_CRITICAL(Audio_DSP, "pipe_number = {} unimplemented",
-                       static_cast<size_t>(pipe_number));
+        LOG_CRITICAL(Audio_DSP, "pipe_number = {} unimplemented", static_cast<size_t>(pipe_number));
         UNIMPLEMENTED();
         return;
     }
