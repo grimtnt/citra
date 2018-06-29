@@ -121,7 +121,7 @@ static u64 GetTicksRemaining() {
 
 static u32 ReadCode(u32 vaddr) {
     if (!IsCodeMemory(vaddr)) {
-        NGLOG_CRITICAL(Core_ARM11, "Tried to execute PC=0x{:08X}", vaddr);
+        LOG_CRITICAL(Core_ARM11, "Tried to execute PC=0x{:08X}", vaddr);
         return 0xEAFFFFFE; // b +#0 ; infinite loop
     }
     return Memory::Read32(vaddr);

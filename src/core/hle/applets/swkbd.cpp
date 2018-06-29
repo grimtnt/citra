@@ -49,11 +49,11 @@ ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std:
     }
     if ((config.filter_flags & SwkbdFilter_Profanity) == SwkbdFilter_Profanity) {
         // TODO: check the profanity filter
-        NGLOG_INFO(Applet_Swkbd, "App requested swkbd profanity filter, but its not implemented.");
+        LOG_INFO(Applet_Swkbd, "App requested swkbd profanity filter, but its not implemented.");
     }
     if ((config.filter_flags & SwkbdFilter_Callback) == SwkbdFilter_Callback) {
         // TODO: check the callback
-        NGLOG_INFO(Applet_Swkbd, "App requested a swkbd callback, but its not implemented.");
+        LOG_INFO(Applet_Swkbd, "App requested a swkbd callback, but its not implemented.");
     }
     return ValidationError::None;
 }
@@ -105,7 +105,7 @@ ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::s
         break;
     default:
         // TODO(jroweboy): What does hardware do in this case?
-        NGLOG_CRITICAL(Frontend, "Application requested unknown validation method. Method: {}",
+        LOG_CRITICAL(Frontend, "Application requested unknown validation method. Method: {}",
                        static_cast<u32>(config.valid_input));
         UNREACHABLE();
     }
@@ -151,7 +151,7 @@ ValidationError ValidateButton(const SoftwareKeyboardConfig& config, u8 button) 
 
 ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter const& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
-        NGLOG_ERROR(Applet_Swkbd, "unsupported signal {}", static_cast<u32>(parameter.signal));
+        LOG_ERROR(Applet_Swkbd, "unsupported signal {}", static_cast<u32>(parameter.signal));
         UNIMPLEMENTED();
         // TODO(Subv): Find the right error code
         return ResultCode(-1);
@@ -332,7 +332,7 @@ void SoftwareKeyboard::Update() {
             break;
         default:
             // TODO: what does the hardware do
-            NGLOG_WARNING(Applet_Swkbd, "Unknown option for num_buttons_m1: {}",
+            LOG_WARNING(Applet_Swkbd, "Unknown option for num_buttons_m1: {}",
                           static_cast<u32>(config.num_buttons_m1));
             config.return_code = SwkbdResult::None;
             break;

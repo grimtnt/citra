@@ -72,11 +72,11 @@ enum class CalloutFlag : uint32_t {};
 s64 g_start_time = 0;
 
 static void HandleDiscordDisconnected(int errorCode, const char* message) {
-    NGLOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
+    LOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
 }
 
 static void HandleDiscordError(int errorCode, const char* message) {
-    NGLOG_ERROR(Frontend, "Error: {} ({})", message, errorCode);
+    LOG_ERROR(Frontend, "Error: {} ({})", message, errorCode);
 }
 #endif
 
@@ -468,13 +468,13 @@ bool GMainWindow::LoadROM(const QString& filename) {
     if (result != Core::System::ResultStatus::Success) {
         switch (result) {
         case Core::System::ResultStatus::ErrorGetLoader:
-            NGLOG_CRITICAL(Frontend, "Failed to obtain loader for {}!", filename.toStdString());
+            LOG_CRITICAL(Frontend, "Failed to obtain loader for {}!", filename.toStdString());
             QMessageBox::critical(this, tr("Error while loading ROM!"),
                                   tr("The ROM format is not supported."));
             break;
 
         case Core::System::ResultStatus::ErrorSystemMode:
-            NGLOG_CRITICAL(Frontend, "Failed to load ROM!");
+            LOG_CRITICAL(Frontend, "Failed to load ROM!");
             QMessageBox::critical(this, tr("Error while loading ROM!"),
                                   tr("Could not determine the system mode."));
             break;
@@ -543,7 +543,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
 }
 
 void GMainWindow::BootGame(const QString& filename) {
-    NGLOG_INFO(Frontend, "Citra starting...");
+    LOG_INFO(Frontend, "Citra starting...");
     StoreRecentFile(filename); // Put the filename on top of the list
 
     if (!LoadROM(filename))
@@ -761,7 +761,7 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
                "content/";
         break;
     default:
-        NGLOG_ERROR(Frontend, "Unexpected target {}", static_cast<int>(target));
+        LOG_ERROR(Frontend, "Unexpected target {}", static_cast<int>(target));
         return;
     }
 
@@ -775,7 +775,7 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
         return;
     }
 
-    NGLOG_INFO(Frontend, "Opening {} path for program_id={:016x}", open_target, program_id);
+    LOG_INFO(Frontend, "Opening {} path for program_id={:016x}", open_target, program_id);
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(qpath));
 }
@@ -812,7 +812,7 @@ void GMainWindow::OnGameListAddDirectory() {
         UISettings::values.game_dirs.append(game_dir);
         game_list->PopulateAsync(UISettings::values.game_dirs);
     } else {
-        NGLOG_WARNING(Frontend, "Selected directory is already in the game list");
+        LOG_WARNING(Frontend, "Selected directory is already in the game list");
     }
 }
 
@@ -1333,7 +1333,7 @@ void GMainWindow::UpdateUITheme() {
         QString theme_uri(":" + UISettings::values.theme + "/style.qss");
         QFile f(theme_uri);
         if (!f.exists()) {
-            NGLOG_ERROR(Frontend, "Unable to set style, stylesheet file not found");
+            LOG_ERROR(Frontend, "Unable to set style, stylesheet file not found");
         } else {
             f.open(QFile::ReadOnly | QFile::Text);
             QTextStream ts(&f);
@@ -1436,7 +1436,7 @@ int main(int argc, char* argv[]) {
     Camera::RegisterFactory("image", std::make_unique<Camera::StillImageCameraFactory>());
     Camera::RegisterFactory("qt", std::make_unique<Camera::QtMultimediaCameraFactory>());
     Camera::QtMultimediaCameraHandler::Init();
-    NGLOG_INFO(Frontend, "Citra version: {}", Common::g_build_version);
+    LOG_INFO(Frontend, "Citra version: {}", Common::g_build_version);
     main_window.show();
     return app.exec();
 }

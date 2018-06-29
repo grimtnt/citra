@@ -28,7 +28,7 @@ void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(
+    LOG_WARNING(
         Service_ACT,
         "(STUBBED) called, version=0x{:08X}, shared_memory_size=0x{:X}, shared_memory=0x{:08X}",
         version, shared_memory_size, shared_memory);
@@ -41,7 +41,7 @@ void Module::Interface::GetErrorCode(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(error_code); // TODO(valentinvanelslande): convert
 
-    NGLOG_WARNING(Service_ACT, "(STUBBED) called");
+    LOG_WARNING(Service_ACT, "(STUBBED) called");
 }
 
 void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
@@ -106,7 +106,7 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    NGLOG_WARNING(Service_ACT, "(STUBBED) called, unk=0x{:02X}, size=0x{:X}, id=0x{:X}", unk, size,
+    LOG_WARNING(Service_ACT, "(STUBBED) called, unk=0x{:02X}, size=0x{:X}, id=0x{:X}", unk, size,
                   static_cast<u32>(id));
 }
 

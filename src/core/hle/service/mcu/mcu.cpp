@@ -28,7 +28,7 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx, u16 id) 
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0x64);
 
-    NGLOG_WARNING(Service_MCU, "(STUBBED) called");
+    LOG_WARNING(Service_MCU, "(STUBBED) called");
 }
 
 void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {

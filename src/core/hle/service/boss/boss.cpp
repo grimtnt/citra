@@ -28,14 +28,14 @@ void InitializeSession(Service::Interface* self) {
     if (translation != IPC::CallingPidDesc()) {
         cmd_buff[0] = IPC::MakeHeader(0, 0x1, 0); // 0x40
         cmd_buff[1] = IPC::ERR_INVALID_BUFFER_DESCRIPTOR.raw;
-        NGLOG_ERROR(Service_BOSS, "The translation was invalid, translation={:#010X}", translation);
+        LOG_ERROR(Service_BOSS, "The translation was invalid, translation={:#010X}", translation);
         return;
     }
 
     cmd_buff[0] = IPC::MakeHeader(0x1, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param={:#018X}, translation={:#010X}, unk_param4={:#010X}",
                   unk_param, translation, unk_param4);
 }
@@ -51,7 +51,7 @@ void RegisterStorage(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x2, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(
+    LOG_WARNING(
         Service_BOSS,
         "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
         "unk_flag={:#010X}",
@@ -64,7 +64,7 @@ void UnregisterStorage(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x3, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called");
+    LOG_WARNING(Service_BOSS, "(STUBBED) called");
 }
 
 void GetStorageInfo(Service::Interface* self) {
@@ -74,7 +74,7 @@ void GetStorageInfo(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = 0; // stub 0
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called");
+    LOG_WARNING(Service_BOSS, "(STUBBED) called");
 }
 
 void RegisterPrivateRootCa(Service::Interface* self) {
@@ -89,7 +89,7 @@ void RegisterPrivateRootCa(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) translation={:#010X}, buff_addr{:#010X}, buff_size={:#010X}",
                   translation, buff_addr, buff_size);
 }
@@ -113,7 +113,7 @@ void RegisterPrivateClientCert(Service::Interface* self) {
     cmd_buff[2] = (buff2_size << 4 | 0xA);
     cmd_buff[3] = buff2_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, "
                   "translation1={:#010X}, buff1_addr={:#010X}, buff1_size={:#010X}, "
                   "translation2={:#010X}, buff2_addr={:#010X}, buff2_size={:#010X}",
@@ -128,7 +128,7 @@ void GetNewArrivalFlag(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = new_arrival_flag;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) new_arrival_flag={}", new_arrival_flag);
+    LOG_WARNING(Service_BOSS, "(STUBBED) new_arrival_flag={}", new_arrival_flag);
 }
 
 void RegisterNewArrivalEvent(Service::Interface* self) {
@@ -140,7 +140,7 @@ void RegisterNewArrivalEvent(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x8, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}", unk_param1,
+    LOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}", unk_param1,
                   unk_param2);
 }
 
@@ -152,7 +152,7 @@ void SetOptoutFlag(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x9, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "output_flag={}", output_flag);
+    LOG_WARNING(Service_BOSS, "output_flag={}", output_flag);
 }
 
 void GetOptoutFlag(Service::Interface* self) {
@@ -162,7 +162,7 @@ void GetOptoutFlag(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = output_flag;
 
-    NGLOG_WARNING(Service_BOSS, "output_flag={}", output_flag);
+    LOG_WARNING(Service_BOSS, "output_flag={}", output_flag);
 }
 
 void RegisterTask(Service::Interface* self) {
@@ -180,7 +180,7 @@ void RegisterTask(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, unk_param3, translation, buff_addr, buff_size);
@@ -200,7 +200,7 @@ void UnregisterTask(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, translation, buff_addr, buff_size);
@@ -220,7 +220,7 @@ void ReconfigureTask(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, translation, buff_addr, buff_size);
@@ -232,7 +232,7 @@ void GetTaskIdList(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0xE, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called");
+    LOG_WARNING(Service_BOSS, "(STUBBED) called");
 }
 
 void GetStepIdList(Service::Interface* self) {
@@ -247,7 +247,7 @@ void GetStepIdList(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
                   translation, buff_addr, buff_size);
 }
@@ -270,7 +270,7 @@ void GetNsDataIdList(Service::Interface* self) {
     cmd_buff[4] = (buff_size << 4 | 0xC);
     cmd_buff[5] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "unk_param4={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
@@ -296,7 +296,7 @@ void GetOwnNsDataIdList(Service::Interface* self) {
     cmd_buff[4] = (buff_size << 4 | 0xC);
     cmd_buff[5] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "unk_param4={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
@@ -322,7 +322,7 @@ void GetNewDataNsDataIdList(Service::Interface* self) {
     cmd_buff[4] = (buff_size << 4 | 0xC);
     cmd_buff[5] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "unk_param4={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
@@ -348,7 +348,7 @@ void GetOwnNewDataNsDataIdList(Service::Interface* self) {
     cmd_buff[4] = (buff_size << 4 | 0xC);
     cmd_buff[5] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "unk_param4={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
@@ -370,7 +370,7 @@ void SendProperty(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, translation, buff_addr, buff_size);
@@ -389,7 +389,7 @@ void SendPropertyHandle(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -409,7 +409,7 @@ void ReceiveProperty(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xC);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, buff_size={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   unk_param1, buff_size, translation, buff_addr);
@@ -429,7 +429,7 @@ void UpdateTaskInterval(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, translation, buff_addr, buff_size);
@@ -448,7 +448,7 @@ void UpdateTaskCount(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) buff_size={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   buff_size, unk_param2, translation, buff_addr);
@@ -468,7 +468,7 @@ void GetTaskInterval(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -488,7 +488,7 @@ void GetTaskCount(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -508,7 +508,7 @@ void GetTaskServiceStatus(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -527,7 +527,7 @@ void StartTask(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -546,7 +546,7 @@ void StartTaskImmediate(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -565,7 +565,7 @@ void CancelTask(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -579,7 +579,7 @@ void GetTaskFinishHandle(Service::Interface* self) {
     cmd_buff[2] = 0;
     cmd_buff[3] = 0; // stub 0(This should be a handle of task_finish ?)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called");
+    LOG_WARNING(Service_BOSS, "(STUBBED) called");
 }
 
 void GetTaskState(Service::Interface* self) {
@@ -598,7 +598,7 @@ void GetTaskState(Service::Interface* self) {
     cmd_buff[5] = (buff_size << 4 | 0xA);
     cmd_buff[6] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) buff_size={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   buff_size, unk_param2, translation, buff_addr);
@@ -620,7 +620,7 @@ void GetTaskResult(Service::Interface* self) {
     cmd_buff[5] = (buff_size << 4 | 0xA);
     cmd_buff[6] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -642,7 +642,7 @@ void GetTaskCommErrorCode(Service::Interface* self) {
     cmd_buff[5] = (buff_size << 4 | 0xA);
     cmd_buff[6] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -664,7 +664,7 @@ void GetTaskStatus(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, unk_param3, translation, buff_addr, buff_size);
@@ -685,7 +685,7 @@ void GetTaskError(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, translation, buff_addr, buff_size);
@@ -705,7 +705,7 @@ void GetTaskInfo(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, translation, buff_addr, buff_size);
@@ -719,7 +719,7 @@ void DeleteNsData(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x26, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}", unk_param1);
+    LOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}", unk_param1);
 }
 
 void GetNsDataHeaderInfo(Service::Interface* self) {
@@ -737,7 +737,7 @@ void GetNsDataHeaderInfo(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xC);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
                   unk_param1, unk_param2, unk_param3, translation, buff_addr, buff_size);
@@ -761,7 +761,7 @@ void ReadNsData(Service::Interface* self) {
     cmd_buff[4] = (buff_size << 4 | 0xC);
     cmd_buff[5] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
                   "unk_param4={:#010X}, translation={:#010X}, "
                   "buff_addr={:#010X}, buff_size={:#010X}",
@@ -778,7 +778,7 @@ void SetNsDataAdditionalInfo(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x29, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}", unk_param1,
+    LOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}, unk_param2={:#010X}", unk_param1,
                   unk_param2);
 }
 
@@ -791,7 +791,7 @@ void GetNsDataAdditionalInfo(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = 0; // stub 0 (32bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}", unk_param1);
+    LOG_WARNING(Service_BOSS, "(STUBBED) unk_param1={:#010X}", unk_param1);
 }
 
 void SetNsDataNewFlag(Service::Interface* self) {
@@ -803,7 +803,7 @@ void SetNsDataNewFlag(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x2B, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#010X}",
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#010X}",
                   unk_param1, ns_data_new_flag);
 }
 
@@ -816,7 +816,7 @@ void GetNsDataNewFlag(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = ns_data_new_flag;
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#010X}",
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#010X}",
                   unk_param1, ns_data_new_flag);
 }
 
@@ -830,7 +830,7 @@ void GetNsDataLastUpdate(Service::Interface* self) {
     cmd_buff[2] = 0; // stub 0 (32bit value)
     cmd_buff[3] = 0; // stub 0 (32bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}", unk_param1);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}", unk_param1);
 }
 
 void GetErrorCode(Service::Interface* self) {
@@ -842,7 +842,7 @@ void GetErrorCode(Service::Interface* self) {
     cmd_buff[1] = RESULT_SUCCESS.raw;
     cmd_buff[2] = 0; // stub 0 (32bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}", unk_param1);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}", unk_param1);
 }
 
 void RegisterStorageEntry(Service::Interface* self) {
@@ -857,7 +857,7 @@ void RegisterStorageEntry(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x2F, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(
+    LOG_WARNING(
         Service_BOSS,
         "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
         "unk_param4={:#010X}, unk_param5={:#010X}",
@@ -872,7 +872,7 @@ void GetStorageEntryInfo(Service::Interface* self) {
     cmd_buff[2] = 0; // stub 0 (32bit value)
     cmd_buff[3] = 0; // stub 0 (16bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called");
+    LOG_WARNING(Service_BOSS, "(STUBBED) called");
 }
 
 void SetStorageOption(Service::Interface* self) {
@@ -886,7 +886,7 @@ void SetStorageOption(Service::Interface* self) {
     cmd_buff[0] = IPC::MakeHeader(0x31, 0x1, 0);
     cmd_buff[1] = RESULT_SUCCESS.raw;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, "
                   "unk_param3={:#010X}, unk_param4={:#010X}",
                   unk_param1, unk_param2, unk_param3, unk_param4);
@@ -902,7 +902,7 @@ void GetStorageOption(Service::Interface* self) {
     cmd_buff[4] = 0; // stub 0 (16bit value)
     cmd_buff[5] = 0; // stub 0 (16bit value)
 
-    NGLOG_WARNING(Service_BOSS, "(STUBBED) called");
+    LOG_WARNING(Service_BOSS, "(STUBBED) called");
 }
 
 void StartBgImmediate(Service::Interface* self) {
@@ -918,7 +918,7 @@ void StartBgImmediate(Service::Interface* self) {
     cmd_buff[2] = (buff_size << 4 | 0xA);
     cmd_buff[3] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) called, buff_size={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -938,7 +938,7 @@ void GetTaskActivePriority(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) called, buff_size={:#010X}, unk_param2={:#010X}, "
                   "translation={:#010X}, buff_addr={:#010X}",
                   unk_param1, translation, buff_addr, buff_size);
@@ -959,7 +959,7 @@ void RegisterImmediateTask(Service::Interface* self) {
     cmd_buff[3] = (buff_size << 4 | 0xA);
     cmd_buff[4] = buff_addr;
 
-    NGLOG_WARNING(
+    LOG_WARNING(
         Service_BOSS,
         "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, unk_param3={:#010X}, "
         "translation={:#010X}, buff_addr={:#010X}, buff_size={:#010X}",
@@ -985,7 +985,7 @@ void SetTaskQuery(Service::Interface* self) {
     cmd_buff[2] = (buff2_size << 4 | 0xA);
     cmd_buff[3] = buff2_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, "
                   "translation1={:#010X}, buff1_addr={:#010X}, buff1_size={:#010X}, "
                   "translation2={:#010X}, buff2_addr={:#010X}, buff2_size={:#010X}",
@@ -1012,7 +1012,7 @@ void GetTaskQuery(Service::Interface* self) {
     cmd_buff[2] = (buff2_size << 4 | 0xC);
     cmd_buff[3] = buff2_addr;
 
-    NGLOG_WARNING(Service_BOSS,
+    LOG_WARNING(Service_BOSS,
                   "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}, "
                   "translation1={:#010X}, buff1_addr={:#010X}, buff1_size={:#010X}, "
                   "translation2={:#010X}, buff2_addr={:#010X}, buff2_size={:#010X}",

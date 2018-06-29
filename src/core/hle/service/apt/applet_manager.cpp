@@ -171,7 +171,7 @@ void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
     // Signal the event to let the receiver know that a new parameter is ready to be read
     auto* const slot_data = GetAppletSlotData(static_cast<AppletId>(parameter.destination_id));
     if (slot_data == nullptr) {
-        NGLOG_DEBUG(Service_APT, "No applet was registered with the id {:03X}",
+        LOG_DEBUG(Service_APT, "No applet was registered with the id {:03X}",
                     static_cast<u32>(parameter.destination_id));
         return;
     }
@@ -330,7 +330,7 @@ ResultCode AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
     // If we weren't able to load the native applet title, try to fallback to an HLE implementation.
     auto applet = HLE::Applets::Applet::Get(applet_id);
     if (applet) {
-        NGLOG_WARNING(Service_APT, "applet has already been started id={:08X}",
+        LOG_WARNING(Service_APT, "applet has already been started id={:08X}",
                       static_cast<u32>(applet_id));
         return RESULT_SUCCESS;
     } else {
@@ -354,7 +354,7 @@ ResultCode AppletManager::PreloadLibraryApplet(AppletId applet_id) {
     // If we weren't able to load the native applet title, try to fallback to an HLE implementation.
     auto applet = HLE::Applets::Applet::Get(applet_id);
     if (applet) {
-        NGLOG_WARNING(Service_APT, "applet has already been started id={:08X}",
+        LOG_WARNING(Service_APT, "applet has already been started id={:08X}",
                       static_cast<u32>(applet_id));
         return RESULT_SUCCESS;
     } else {
@@ -401,7 +401,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
             return ResultCode(ErrorDescription::NotFound, ErrorModule::Applet,
                               ErrorSummary::NotFound, ErrorLevel::Status);
         }
-        NGLOG_WARNING(Service_APT, "Using HLE applet info for applet {:03X}",
+        LOG_WARNING(Service_APT, "Using HLE applet info for applet {:03X}",
                       static_cast<u32>(app_id));
         // TODO(Subv): Get the title id for the current applet and write it in the response[2-3]
         return MakeResult<AppletInfo>({0, Service::FS::MediaType::NAND, true, true, 0});
@@ -409,7 +409,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
 
     if (app_id == AppletId::Application) {
         // TODO(Subv): Implement this once Application launching is implemented
-        NGLOG_ERROR(Service_APT, "Unimplemented GetAppletInfo(Application)");
+        LOG_ERROR(Service_APT, "Unimplemented GetAppletInfo(Application)");
         return ResultCode(ErrorDescription::NotFound, ErrorModule::Applet, ErrorSummary::NotFound,
                           ErrorLevel::Status);
     }
@@ -420,7 +420,7 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
 
 ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiting,
                                                       bool jump_to_home) {
-    NGLOG_DEBUG(Service_APT, "called not_pause={}, exiting={}, jump_to_home={}", not_pause, exiting,
+    LOG_DEBUG(Service_APT, "called not_pause={}, exiting={}, jump_to_home={}", not_pause, exiting,
                 jump_to_home);
 
     if (next_parameter) {
@@ -441,7 +441,7 @@ ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiti
 }
 
 ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, u32 handle, VAddr parameter_addr) {
-    NGLOG_DEBUG(Service_APT, "called, size={}, handle={}", parameter_size, handle);
+    LOG_DEBUG(Service_APT, "called, size={}, handle={}", parameter_size, handle);
 
     auto& slot = applet_slots[static_cast<size_t>(AppletSlot::LibraryApplet)];
 

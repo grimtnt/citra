@@ -240,7 +240,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
     if (GetEAPoLFrameType(packet.data) == EAPoLStartMagic) {
         if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
-            NGLOG_DEBUG(Service_NWM, "Connection sequence aborted, because connection status is {}",
+            LOG_DEBUG(Service_NWM, "Connection sequence aborted, because connection status is {}",
                         connection_status.status);
             return;
         }
@@ -249,7 +249,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         if (connection_status.max_nodes == connection_status.total_nodes) {
             // Reject connection attempt
-            NGLOG_ERROR(Service_NWM, "Reached maximum nodes, but reject packet wasn't sent.");
+            LOG_ERROR(Service_NWM, "Reached maximum nodes, but reject packet wasn't sent.");
             // TODO(B3N30): Figure out what packet is sent here
             return;
         }
@@ -427,7 +427,7 @@ void SendAssociationResponseFrame(const MacAddress& address) {
     {
         std::lock_guard<std::mutex> lock(connection_status_mutex);
         if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
-            NGLOG_ERROR(Service_NWM, "Connection sequence aborted, because connection status is {}",
+            LOG_ERROR(Service_NWM, "Connection sequence aborted, because connection status is {}",
                         connection_status.status);
             return;
         }
@@ -459,7 +459,7 @@ void HandleAuthenticationFrame(const Network::WifiPacket& packet) {
         {
             std::lock_guard<std::mutex> lock(connection_status_mutex);
             if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
-                NGLOG_ERROR(Service_NWM,
+                LOG_ERROR(Service_NWM,
                             "Connection sequence aborted, because connection status is {}",
                             connection_status.status);
                 return;
@@ -483,11 +483,11 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
     std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
     std::lock(hle_lock, lock);
     if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
-        NGLOG_ERROR(Service_NWM, "Got deauthentication frame but we are not the host");
+        LOG_ERROR(Service_NWM, "Got deauthentication frame but we are not the host");
         return;
     }
     if (node_map.find(packet.transmitter_address) == node_map.end()) {
-        NGLOG_ERROR(Service_NWM, "Got deauthentication frame from unknown node");
+        LOG_ERROR(Service_NWM, "Got deauthentication frame from unknown node");
         return;
     }
 
@@ -504,7 +504,7 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
     network_info.total_nodes--;
     connection_status_event->Signal();
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 static void HandleDataFrame(const Network::WifiPacket& packet) {
@@ -559,7 +559,7 @@ void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
@@ -621,7 +621,7 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(out_buffer);
 
-    NGLOG_DEBUG(Service_NWM,
+    LOG_DEBUG(Service_NWM,
                 "called, out_buffer_size=0x{:08X}, wlan_comm_id=0x{:08X}, id=0x{:08X},"
                 "unk1=0x{:08X}, unk2=0x{:08X}, offset={}",
                 out_buffer_size, wlan_comm_id, id, unk1, unk2, cur_buffer_size);
@@ -646,7 +646,7 @@ void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
     if (auto room_member = Network::GetRoomMember().lock()) {
         wifi_packet_received = room_member->BindOnWifiPacketReceived(OnWifiPacketReceived);
     } else {
-        NGLOG_ERROR(Service_NWM, "Network isn't initalized");
+        LOG_ERROR(Service_NWM, "Network isn't initalized");
     }
 
     {
@@ -664,7 +664,7 @@ void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(connection_status_event);
 
-    NGLOG_DEBUG(Service_NWM, "called sharedmem_size=0x{:08X}, version=0x{:08X}", sharedmem_size,
+    LOG_DEBUG(Service_NWM, "called sharedmem_size=0x{:08X}, version=0x{:08X}", sharedmem_size,
                 version);
 }
 
@@ -684,7 +684,7 @@ void NWM_UDS::GetConnectionStatus(Kernel::HLERequestContext& ctx) {
         connection_status.changed_nodes = 0;
     }
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
@@ -716,7 +716,7 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
         rb.PushRaw<NodeInfo>(*itr);
     }
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
@@ -731,7 +731,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
-        NGLOG_WARNING(Service_NWM, "data_channel = {}, bind_node_id = {}", data_channel,
+        LOG_WARNING(Service_NWM, "data_channel = {}, bind_node_id = {}", data_channel,
                       bind_node_id);
         return;
     }
@@ -741,7 +741,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
                            ErrorSummary::OutOfResource, ErrorLevel::Status));
-        NGLOG_WARNING(Service_NWM, "max bind nodes");
+        LOG_WARNING(Service_NWM, "max bind nodes");
         return;
     }
 
@@ -750,7 +750,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
-        NGLOG_WARNING(Service_NWM, "MinRecvBufferSize");
+        LOG_WARNING(Service_NWM, "MinRecvBufferSize");
         return;
     }
 
@@ -767,7 +767,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(event);
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
@@ -874,7 +874,7 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_DEBUG(Service_NWM, "An UDS network has been created.");
+    LOG_DEBUG(Service_NWM, "An UDS network has been created.");
 }
 
 void NWM_UDS::UpdateNetworkAttribute(Kernel::HLERequestContext& ctx) {
@@ -883,7 +883,7 @@ void NWM_UDS::UpdateNetworkAttribute(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_NWM, "(STUBBED) called");
+    LOG_WARNING(Service_NWM, "(STUBBED) called");
 }
 
 void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
@@ -898,7 +898,7 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
         rb.Push(ResultCode(ErrCodes::WrongStatus, ErrorModule::UDS, ErrorSummary::InvalidState,
                            ErrorLevel::Status));
-        NGLOG_WARNING(Service_NWM, "called with status {}", connection_status.status);
+        LOG_WARNING(Service_NWM, "called with status {}", connection_status.status);
         return;
     }
 
@@ -920,7 +920,7 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
 
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
@@ -938,7 +938,7 @@ void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
             connection_status.status = static_cast<u32>(NetworkStatus::ConnectedAsHost);
             connection_status.network_node_id = tmp_node_id;
             node_map.clear();
-            NGLOG_DEBUG(Service_NWM, "called as a host");
+            LOG_DEBUG(Service_NWM, "called as a host");
             rb.Push(ResultCode(ErrCodes::WrongStatus, ErrorModule::UDS, ErrorSummary::InvalidState,
                                ErrorLevel::Status));
             return;
@@ -965,7 +965,7 @@ void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
     channel_data.clear();
 
     rb.Push(RESULT_SUCCESS);
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
@@ -996,7 +996,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     }
 
     if (dest_node_id == connection_status.network_node_id) {
-        NGLOG_ERROR(Service_NWM, "tried to send packet to itself");
+        LOG_ERROR(Service_NWM, "tried to send packet to itself");
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Status));
         return;
@@ -1005,7 +1005,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     Network::MacAddress dest_address;
 
     if (flags >> 2) {
-        NGLOG_ERROR(Service_NWM, "Unexpected flags 0x{:02X}", flags);
+        LOG_ERROR(Service_NWM, "Unexpected flags 0x{:02X}", flags);
     }
 
     if ((flags & (0x1 << 1)) || dest_node_id == 0xFFFF) {
@@ -1017,7 +1017,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
             std::find_if(node_map.begin(), node_map.end(),
                          [dest_node_id](const auto& node) { return node.second == dest_node_id; });
         if (destination == node_map.end()) {
-            NGLOG_ERROR(Service_NWM, "tried to send packet to unknown dest id {}", dest_node_id);
+            LOG_ERROR(Service_NWM, "tried to send packet to unknown dest id {}", dest_node_id);
             rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
                                ErrorSummary::WrongArgument, ErrorLevel::Status));
             return;
@@ -1137,7 +1137,7 @@ void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(channel);
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
@@ -1167,10 +1167,10 @@ void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
             // TODO(B3N30): Add error handling for host full and timeout
             IPC::RequestBuilder rb(ctx, 0x1E, 1, 0);
             rb.Push(RESULT_SUCCESS);
-            NGLOG_DEBUG(Service_NWM, "connection sequence finished");
+            LOG_DEBUG(Service_NWM, "connection sequence finished");
         });
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
@@ -1194,7 +1194,7 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
 
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
@@ -1260,7 +1260,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
     std::memcpy(output_buffer.data(), nodes.data(), sizeof(NodeInfo) * nodes.size());
     rb.PushStaticBuffer(output_buffer, 0);
 
-    NGLOG_DEBUG(Service_NWM, "called");
+    LOG_DEBUG(Service_NWM, "called");
 }
 
 // Sends a 802.11 beacon frame with information about the current network.

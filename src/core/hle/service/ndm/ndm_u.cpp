@@ -15,7 +15,7 @@ void NDM_U::EnterExclusiveState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, exclusive_state=0x{:08X}",
+    LOG_WARNING(Service_NDM, "(STUBBED) called, exclusive_state=0x{:08X}",
                   static_cast<u32>(exclusive_state));
 }
 
@@ -25,7 +25,7 @@ void NDM_U::LeaveExclusiveState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::QueryExclusiveMode(Kernel::HLERequestContext& ctx) {
@@ -33,7 +33,7 @@ void NDM_U::QueryExclusiveMode(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum(exclusive_state);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::LockState(Kernel::HLERequestContext& ctx) {
@@ -43,7 +43,7 @@ void NDM_U::LockState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::UnlockState(Kernel::HLERequestContext& ctx) {
@@ -53,7 +53,7 @@ void NDM_U::UnlockState(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::SuspendDaemons(Kernel::HLERequestContext& ctx) {
@@ -69,7 +69,7 @@ void NDM_U::SuspendDaemons(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, bit_mask=0x{:08X}", bit_mask);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, bit_mask=0x{:08X}", bit_mask);
 }
 
 void NDM_U::ResumeDaemons(Kernel::HLERequestContext& ctx) {
@@ -84,7 +84,7 @@ void NDM_U::ResumeDaemons(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, bit_mask=0x{:08X}", bit_mask);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, bit_mask=0x{:08X}", bit_mask);
 }
 
 void NDM_U::SuspendScheduler(Kernel::HLERequestContext& ctx) {
@@ -93,14 +93,14 @@ void NDM_U::SuspendScheduler(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, perform_in_background={}", perform_in_background);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, perform_in_background={}", perform_in_background);
 }
 
 void NDM_U::ResumeScheduler(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x09, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::Stubbed_0x000C0000(Kernel::HLERequestContext& ctx) {
@@ -116,7 +116,7 @@ void NDM_U::QueryStatus(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum(daemon_status.at(daemon));
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, daemon=0x{:02X}", daemon);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, daemon=0x{:02X}", daemon);
 }
 
 void NDM_U::GetDaemonDisableCount(Kernel::HLERequestContext& ctx) {
@@ -127,7 +127,7 @@ void NDM_U::GetDaemonDisableCount(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0); // current process disable count
     rb.Push<u32>(0); // total disable count
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, daemon=0x{:02X}", daemon);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, daemon=0x{:02X}", daemon);
 }
 
 void NDM_U::GetSchedulerDisableCount(Kernel::HLERequestContext& ctx) {
@@ -137,7 +137,7 @@ void NDM_U::GetSchedulerDisableCount(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0); // current process disable count
     rb.Push<u32>(0); // total disable count
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::SetScanInterval(Kernel::HLERequestContext& ctx) {
@@ -146,7 +146,7 @@ void NDM_U::SetScanInterval(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, scan_interval=0x{:08X}", scan_interval);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, scan_interval=0x{:08X}", scan_interval);
 }
 
 void NDM_U::GetScanInterval(Kernel::HLERequestContext& ctx) {
@@ -154,7 +154,7 @@ void NDM_U::GetScanInterval(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push(scan_interval);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::SetRetryInterval(Kernel::HLERequestContext& ctx) {
@@ -163,7 +163,7 @@ void NDM_U::SetRetryInterval(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, retry_interval=0x{:08X}", retry_interval);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, retry_interval=0x{:08X}", retry_interval);
 }
 
 void NDM_U::GetRetryInterval(Kernel::HLERequestContext& ctx) {
@@ -171,7 +171,7 @@ void NDM_U::GetRetryInterval(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push(retry_interval);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::OverrideDefaultDaemons(Kernel::HLERequestContext& ctx) {
@@ -187,7 +187,7 @@ void NDM_U::OverrideDefaultDaemons(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called, bit_mask=0x{:08X}", bit_mask);
+    LOG_WARNING(Service_NDM, "(STUBBED) called, bit_mask=0x{:08X}", bit_mask);
 }
 
 void NDM_U::ResetDefaultDaemons(Kernel::HLERequestContext& ctx) {
@@ -196,7 +196,7 @@ void NDM_U::ResetDefaultDaemons(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::GetDefaultDaemons(Kernel::HLERequestContext& ctx) {
@@ -204,14 +204,14 @@ void NDM_U::GetDefaultDaemons(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum(default_daemon_bit_mask);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 void NDM_U::ClearHalfAwakeMacFilter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x17, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
-    NGLOG_WARNING(Service_NDM, "(STUBBED) called");
+    LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
 NDM_U::NDM_U() : ServiceFramework("ndm:u", 6) {

@@ -94,7 +94,7 @@ void SetKeySlot(const AESKey& key, size_t slot_id, char key_type) {
         }
         break;
     default:
-        NGLOG_ERROR(HW_AES, "Invalid key type {}", key_type);
+        LOG_ERROR(HW_AES, "Invalid key type {}", key_type);
         break;
     }
 }
@@ -114,7 +114,7 @@ void LoadKeysFromText() {
         std::vector<std::string> parts;
         Common::SplitString(line, '=', parts);
         if (parts.size() != 2) {
-            NGLOG_ERROR(HW_AES, "Failed to parse {}", line);
+            LOG_ERROR(HW_AES, "Failed to parse {}", line);
             continue;
         }
 
@@ -123,7 +123,7 @@ void LoadKeysFromText() {
         try {
             key = HexToKey(parts[1]);
         } catch (const std::logic_error& e) {
-            NGLOG_ERROR(HW_AES, "Invalid key {}: {}", parts[1], e.what());
+            LOG_ERROR(HW_AES, "Invalid key {}: {}", parts[1], e.what());
             continue;
         }
 
@@ -135,12 +135,12 @@ void LoadKeysFromText() {
         size_t slot_id;
         char key_type;
         if (std::sscanf(name.c_str(), "slot0x%zXKey%c", &slot_id, &key_type) != 2) {
-            NGLOG_ERROR(HW_AES, "Invalid key name {}", name);
+            LOG_ERROR(HW_AES, "Invalid key name {}", name);
             continue;
         }
 
         if (slot_id >= MaxKeySlotID) {
-            NGLOG_ERROR(HW_AES, "Out of range slot ID {:#X}", slot_id);
+            LOG_ERROR(HW_AES, "Out of range slot ID {:#X}", slot_id);
             continue;
         }
 
@@ -179,15 +179,15 @@ void LoadKeysFromDB() {
         file.ReadArray(&key_info, 1);
 
         if (key_info.slot >= MaxKeySlotID) {
-            NGLOG_ERROR(HW_AES, "Out of range slot ID {:#X}", key_info.slot);
+            LOG_ERROR(HW_AES, "Out of range slot ID {:#X}", key_info.slot);
             continue;
         }
         if (key_info.is_encrypted) {
-            NGLOG_ERROR(HW_AES, "Key with slot ID {:#X} is encrypted", key_info.slot);
+            LOG_ERROR(HW_AES, "Key with slot ID {:#X} is encrypted", key_info.slot);
             continue;
         }
         if (key_info.id[0] != 0x00) {
-            NGLOG_WARNING(HW_AES, "Key with slot ID {:#X} is a special key, ignoring",
+            LOG_WARNING(HW_AES, "Key with slot ID {:#X} is a special key, ignoring",
                           key_info.slot);
             continue;
         }

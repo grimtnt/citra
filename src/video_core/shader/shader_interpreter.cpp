@@ -358,7 +358,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                         break;
 
                     default:
-                        NGLOG_ERROR(HW_GPU, "Unknown compare mode {:x}", static_cast<int>(op));
+                        LOG_ERROR(HW_GPU, "Unknown compare mode {:x}", static_cast<int>(op));
                         break;
                     }
                 }
@@ -391,7 +391,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             }
 
             default:
-                NGLOG_ERROR(HW_GPU, "Unhandled arithmetic instruction: 0x{:02x} ({}): 0x{:08x}",
+                LOG_ERROR(HW_GPU, "Unhandled arithmetic instruction: 0x{:02x} ({}): 0x{:08x}",
                             (int)instr.opcode.Value().EffectiveOpCode(),
                             instr.opcode.Value().GetInfo().name, instr.hex);
                 DEBUG_ASSERT(false);
@@ -475,7 +475,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                     dest[i] = src1[i] * src2[i] + src3[i];
                 }
             } else {
-                NGLOG_ERROR(HW_GPU, "Unhandled multiply-add instruction: 0x{:02x} ({}): 0x{:08x}",
+                LOG_ERROR(HW_GPU, "Unhandled multiply-add instruction: 0x{:02x} ({}): 0x{:08x}",
                             (int)instr.opcode.Value().EffectiveOpCode(),
                             instr.opcode.Value().GetInfo().name, instr.hex);
             }
@@ -570,7 +570,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             }
 
             default:
-                NGLOG_ERROR(HW_GPU, "Unhandled instruction: 0x{:02x} ({}): 0x{:08x}",
+                LOG_ERROR(HW_GPU, "Unhandled instruction: 0x{:02x} ({}): 0x{:08x}",
                             (int)instr.opcode.Value().EffectiveOpCode(),
                             instr.opcode.Value().GetInfo().name, instr.hex);
                 break;

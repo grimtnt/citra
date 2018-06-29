@@ -57,7 +57,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     }
 
     default: {
-        NGLOG_ERROR(Service_NWM, "Invalid enabled value {}", static_cast<u32>(enabled));
+        LOG_ERROR(Service_NWM, "Invalid enabled value {}", static_cast<u32>(enabled));
         break;
     }
     }

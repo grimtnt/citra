@@ -6,7 +6,6 @@
 #include <array>
 #include <chrono>
 #include <condition_variable>
-#include <cstdio>
 #include <memory>
 #include <thread>
 #ifdef _WIN32

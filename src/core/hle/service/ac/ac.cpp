@@ -29,7 +29,7 @@ void Module::Interface::CreateDefaultConfig(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(std::move(buffer), 0);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called");
+    LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
 void Module::Interface::ConnectAsync(Kernel::HLERequestContext& ctx) {
@@ -47,7 +47,7 @@ void Module::Interface::ConnectAsync(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called");
+    LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
 void Module::Interface::GetConnectResult(Kernel::HLERequestContext& ctx) {
@@ -86,7 +86,7 @@ void Module::Interface::GetCloseResult(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called");
+    LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
 void Module::Interface::GetWifiStatus(Kernel::HLERequestContext& ctx) {
@@ -108,7 +108,7 @@ void Module::Interface::GetInfraPriority(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0); // Infra Priority, default 0
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called");
+    LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
 void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
@@ -125,7 +125,7 @@ void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(std::move(ac_config), 0);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called, major={}, minor={}", major, minor);
+    LOG_WARNING(Service_AC, "(STUBBED) called, major={}, minor={}", major, minor);
 }
 
 void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) {
@@ -140,7 +140,7 @@ void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called");
+    LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
 void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
@@ -153,7 +153,7 @@ void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(ac->ac_connected);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called, unk=0x{:08X} descriptor=0x{:08X} param=0x{:08X}",
+    LOG_WARNING(Service_AC, "(STUBBED) called, unk=0x{:08X} descriptor=0x{:08X} param=0x{:08X}",
                   unk, unk_descriptor, unk_param);
 }
 
@@ -166,7 +166,7 @@ void Module::Interface::SetClientVersion(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service_AC, "(STUBBED) called, version: 0x{:08X}", version);
+    LOG_WARNING(Service_AC, "(STUBBED) called, version: 0x{:08X}", version);
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> ac, const char* name, u32 max_session)

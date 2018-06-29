@@ -73,7 +73,7 @@ void Module::Interface::GetPedometerState(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(ptm->pedometer_is_counting);
 
-    NGLOG_WARNING(Service_PTM, "(STUBBED) called");
+    LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 
 void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
@@ -96,7 +96,7 @@ void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    NGLOG_WARNING(Service_PTM, "(STUBBED) called, from time(raw): 0x{:X}, for {} hours", start_time,
+    LOG_WARNING(Service_PTM, "(STUBBED) called, from time(raw): 0x{:X}, for {} hours", start_time,
                   hours);
 }
 
@@ -107,7 +107,7 @@ void Module::Interface::GetTotalStepCount(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
 
-    NGLOG_WARNING(Service_PTM, "(STUBBED) called");
+    LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 
 void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
@@ -117,19 +117,19 @@ void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(false);
 
-    NGLOG_WARNING(Service_PTM, "(STUBBED) called");
+    LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 
 void CheckNew3DS(IPC::RequestBuilder& rb) {
     if (Settings::values.enable_new_mode) {
-        NGLOG_WARNING(Service_PTM, "The New Mode is enabled. Citra "
+        LOG_WARNING(Service_PTM, "The New Mode is enabled. Citra "
                                    "does not fully support New 3DS/2DS emulation yet!");
     }
 
     rb.Push(RESULT_SUCCESS);
     rb.Push(Settings::values.enable_new_mode);
 
-    NGLOG_WARNING(Service_PTM, "(STUBBED) called, enable_new_mode={}",
+    LOG_WARNING(Service_PTM, "(STUBBED) called, enable_new_mode={}",
                   Settings::values.enable_new_mode);
 }
 
@@ -139,7 +139,7 @@ void Module::Interface::ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(Kernel::KernelSetState(static_cast<u32>(Kernel::KernelSetStateType::ConfigureNew3DSCPU),
                                    value, 0, 0));
-    NGLOG_WARNING(Service_PTM, "(STUBBED) called");
+    LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 
 void Module::Interface::CheckNew3DS(Kernel::HLERequestContext& ctx) {

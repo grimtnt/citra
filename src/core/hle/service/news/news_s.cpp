@@ -15,7 +15,7 @@ void NEWS_S::GetTotalNotifications(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
 
-    NGLOG_WARNING(Service, "(STUBBED) called");
+    LOG_WARNING(Service, "(STUBBED) called");
 }
 
 void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
@@ -25,7 +25,7 @@ void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    NGLOG_WARNING(Service, "LEDs are not implemented!");
+    LOG_WARNING(Service, "LEDs are not implemented!");
 }
 
 NEWS_S::NEWS_S() : ServiceFramework("news:s", 2) {
