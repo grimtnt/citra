@@ -1,4 +1,4 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
@@ -7,13 +7,13 @@
 #include "core/hle/service/service.h"
 
 namespace Service {
-namespace DLP {
+namespace PM {
 
-class DLP_CLNT final : public ServiceFramework<DLP_CLNT> {
+class PM_DBG final : public ServiceFramework<PM_DBG> {
 public:
-    DLP_CLNT();
-    ~DLP_CLNT() = default;
+    PM_DBG();
+    ~PM_DBG() = default;
 };
 
-} // namespace DLP
+} // namespace PM
 } // namespace Service

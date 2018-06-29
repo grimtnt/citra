@@ -9,13 +9,10 @@
 namespace Service {
 namespace PM {
 
-class PM_APP final : public Interface {
+class PM_APP final : public ServiceFramework<PM_APP> {
 public:
     PM_APP();
-
-    std::string GetPortName() const override {
-        return "pm:app";
-    }
+    ~PM_APP() = default;
 };
 
 } // namespace PM

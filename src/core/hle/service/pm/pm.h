@@ -1,4 +1,4 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
@@ -7,13 +7,10 @@
 #include "core/hle/service/service.h"
 
 namespace Service {
-namespace QTM {
+namespace PM {
 
-class QTM_U final : public ServiceFramework<QTM_U> {
-public:
-    QTM_U();
-    ~QTM_U() = default;
-};
+/// Initializes the PM services.
+void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace QTM
+} // namespace PM
 } // namespace Service

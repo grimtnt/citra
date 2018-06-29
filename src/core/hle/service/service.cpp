@@ -44,7 +44,7 @@
 #include "core/hle/service/nim/nim.h"
 #include "core/hle/service/ns/ns.h"
 #include "core/hle/service/nwm/nwm.h"
-#include "core/hle/service/pm_app.h"
+#include "core/hle/service/pm/pm.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/pxi/pxi.h"
 #include "core/hle/service/qtm/qtm.h"
@@ -243,7 +243,7 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     CAM::InstallInterfaces(*sm);
     CECD::Init();
     CFG::InstallInterfaces(*sm);
-    DLP::Init();
+    DLP::InstallInterfaces(*sm);
     FRD::InstallInterfaces(*sm);
     GSP::InstallInterfaces(*sm);
     HID::InstallInterfaces(*sm);
@@ -255,11 +255,11 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     NFC::InstallInterfaces(*sm);
     NIM::InstallInterfaces(*sm);
     PTM::InstallInterfaces(*sm);
-    QTM::Init();
+    QTM::InstallInterfaces(*sm);
 
     AddService(new CSND::CSND_SND);
     AddService(new DSP_DSP::Interface);
-    AddService(new PM::PM_APP);
+    PM::InstallInterfaces(*sm);
     AddService(new SOC::SOC_U);
     SSL::InstallInterfaces(*sm);
     Y2R::InstallInterfaces(*sm);
@@ -269,7 +269,6 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
 
 /// Shutdown ServiceManager
 void Shutdown() {
-    DLP::Shutdown();
     CECD::Shutdown();
     BOSS::Shutdown();
     FS::ArchiveShutdown();

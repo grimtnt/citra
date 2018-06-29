@@ -7,13 +7,13 @@
 #include "core/hle/service/service.h"
 
 namespace Service {
-namespace DLP {
+namespace QTM {
 
-class DLP_CLNT final : public ServiceFramework<DLP_CLNT> {
+class QTM_C final : public ServiceFramework<QTM_C> {
 public:
-    DLP_CLNT();
-    ~DLP_CLNT() = default;
+    QTM_C();
+    ~QTM_C() = default;
 };
 
-} // namespace DLP
+} // namespace QTM
 } // namespace Service

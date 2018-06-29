@@ -1,24 +1,24 @@
-// Copyright 2016 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
 #include "core/hle/ipc_helpers.h"
-#include "core/hle/service/qtm/qtm_u.h"
+#include "core/hle/service/pm/pm_dbg.h"
 
 namespace Service {
-namespace QTM {
+namespace PM {
 
-QTM_U::QTM_U() : ServiceFramework("qtm:u", 2) {
+PM_DBG::PM_DBG() : ServiceFramework("pm:dbg", 3) {
     static const FunctionInfo functions[] = {
         // clang-format off
-        // qtm common commands
-        {0x00010080, nullptr, "GetHeadtrackingInfoRaw"},
-        {0x00020080, nullptr, "GetHeadtrackingInfo"},
+        {0x00010140, nullptr, "LaunchAppDebug"},
+        {0x00020140, nullptr, "LaunchApp"},
+        {0x00030000, nullptr, "RunQueuedProcess"},
         // clang-format on
     };
 
     RegisterHandlers(functions);
 }
 
-} // namespace QTM
+} // namespace PM
 } // namespace Service
