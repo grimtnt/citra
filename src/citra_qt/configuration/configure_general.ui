@@ -39,6 +39,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="toggle_console">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this is disabled and the software keyboard implementation is StdIn, Citra will freeze when a title starts software keyboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Show Console</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="layout_sd_card_root">
             <item>
              <widget class="QLabel" name="label_sd_card_root">
@@ -254,13 +264,6 @@
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_9">
-          <item>
-           <widget class="QCheckBox" name="toggle_console">
-            <property name="text">
-             <string>Show Console</string>
-            </property>
-           </widget>
-          </item>
           <item>
            <widget class="QPushButton" name="open_log_button">
             <property name="text">

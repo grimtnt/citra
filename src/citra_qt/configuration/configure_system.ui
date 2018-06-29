@@ -293,6 +293,9 @@
         </item>
         <item row="5" column="1">
          <widget class="QSpinBox" name="spinbox_country">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://www.3dbrew.org/wiki/Country_Code_List&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Country Code List&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="minimum">
            <number>1</number>
           </property>
@@ -311,13 +314,6 @@
        </property>
        <property name="wordWrap">
         <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="link_country_codes">
-       <property name="text">
-        <string>Country Codes</string>
        </property>
       </widget>
      </item>

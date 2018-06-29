@@ -151,6 +151,7 @@ static Dynarmic::UserCallbacks GetUserCallbacks(
         case 0x000400000008C400:
         case 0x000400000008C500:
         case 0x0004000000126A00:
+        case 0x0004000000126B00:
         case 0x0004000200120C01:
             user_callbacks.AddTicks = &AddTicksCustom<570>;
             break;

@@ -50,7 +50,7 @@
         <item>
          <widget class="QLabel" name="label_sound_volume">
           <property name="text">
-           <string>Sound volume:</string>
+           <string>Volume:</string>
           </property>
          </widget>
         </item>
@@ -67,7 +67,7 @@
         <item>
          <widget class="QLabel" name="label_sound_volume_value">
           <property name="text">
-           <string>100</string>
+           <string>0</string>
           </property>
          </widget>
         </item>

@@ -3,7 +3,6 @@
 #include <QKeyEvent>
 #include <QScreen>
 #include <QWindow>
-
 #include "citra_qt/bootmanager.h"
 #include "common/scm_rev.h"
 #include "common/string_util.h"
