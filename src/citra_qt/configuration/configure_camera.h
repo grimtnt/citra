@@ -9,7 +9,7 @@
 
 namespace Ui {
 class ConfigureCamera;
-}
+} // namespace Ui
 
 class ConfigureCamera : public QWidget {
     Q_OBJECT

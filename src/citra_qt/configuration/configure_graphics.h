@@ -9,7 +9,7 @@
 
 namespace Ui {
 class ConfigureGraphics;
-}
+} // namespace Ui
 
 class ConfigureGraphics : public QWidget {
     Q_OBJECT

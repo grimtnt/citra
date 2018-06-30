@@ -9,7 +9,7 @@
 
 namespace Ui {
 class ConfigureHacks;
-}
+} // namespace Ui
 
 class ConfigureHacks : public QWidget {
     Q_OBJECT

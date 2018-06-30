@@ -9,7 +9,7 @@
 
 namespace Ui {
 class ConfigureAudio;
-}
+} // namespace Ui
 
 class ConfigureAudio : public QWidget {
     Q_OBJECT

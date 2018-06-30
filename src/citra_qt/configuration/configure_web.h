@@ -10,7 +10,7 @@
 
 namespace Ui {
 class ConfigureWeb;
-}
+} // namespace Ui
 
 class ConfigureWeb : public QWidget {
     Q_OBJECT

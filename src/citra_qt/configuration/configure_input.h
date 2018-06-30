@@ -23,7 +23,7 @@ class QTimer;
 
 namespace Ui {
 class ConfigureInput;
-}
+} // namespace Ui
 
 class ConfigureInput : public QWidget {
     Q_OBJECT

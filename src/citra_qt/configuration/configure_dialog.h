@@ -9,7 +9,7 @@
 
 namespace Ui {
 class ConfigureDialog;
-}
+} // namespace Ui
 
 class ConfigureDialog : public QDialog {
     Q_OBJECT

@@ -8,7 +8,7 @@
 
 namespace Ui {
 class ClientRoom;
-}
+} // namespace Ui
 
 class ClientRoomWindow : public QDialog {
     Q_OBJECT

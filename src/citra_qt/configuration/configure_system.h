@@ -16,7 +16,7 @@ class Module;
 
 namespace Ui {
 class ConfigureSystem;
-}
+} // namespace Ui
 
 class ConfigureSystem : public QWidget {
     Q_OBJECT

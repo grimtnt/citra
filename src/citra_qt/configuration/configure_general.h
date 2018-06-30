@@ -9,7 +9,7 @@
 
 namespace Ui {
 class ConfigureGeneral;
-}
+} // namespace Ui
 
 class ConfigureGeneral : public QWidget {
     Q_OBJECT

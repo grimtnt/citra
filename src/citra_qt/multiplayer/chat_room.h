@@ -13,7 +13,7 @@
 
 namespace Ui {
 class ChatRoom;
-}
+} // namespace Ui
 
 namespace Core {
 class AnnounceMultiplayerSession;

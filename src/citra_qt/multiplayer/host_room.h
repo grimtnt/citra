@@ -15,7 +15,7 @@
 
 namespace Ui {
 class HostRoom;
-}
+} // namespace Ui
 
 namespace Core {
 class AnnounceMultiplayerSession;
