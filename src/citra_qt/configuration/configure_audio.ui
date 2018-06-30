@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>188</width>
-    <height>170</height>
+    <height>246</height>
    </rect>
   </property>
   <layout class="QVBoxLayout">
@@ -32,9 +32,19 @@
        </layout>
       </item>
       <item>
+       <widget class="QCheckBox" name="toggle_audio_stretching">
+        <property name="toolTip">
+         <string>This post-processing effect adjusts audio speed to match emulation speed and helps prevent audio stutter. This however increases audio latency.</string>
+        </property>
+        <property name="text">
+         <string>Enable audio stretching</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout">
         <item>
-         <widget class="QLabel" name="label_2">
+         <widget class="QLabel" name="label">
           <property name="text">
            <string>Audio Device:</string>
           </property>
@@ -46,18 +56,43 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="layout_sound_volume">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QLabel" name="label_sound_volume">
+         <widget class="QLabel" name="label">
           <property name="text">
            <string>Volume:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QSlider" name="sound_volume">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QSlider" name="volume_slider">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="maximum">
            <number>100</number>
+          </property>
+          <property name="pageStep">
+           <number>10</number>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -65,23 +100,13 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_sound_volume_value">
+         <widget class="QLabel" name="volume_indicator">
           <property name="text">
-           <string>0</string>
+           <string>0 %</string>
           </property>
          </widget>
         </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="toggle_audio_stretching">
-        <property name="toolTip">
-         <string>This post-processing effect adjusts audio speed to match emulation speed and helps prevent audio stutter. This however increases audio latency.</string>
-        </property>
-        <property name="text">
-         <string>Enable audio stretching</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -93,8 +118,8 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>20</width>
-       <height>40</height>
+       <width>167</width>
+       <height>55</height>
       </size>
      </property>
     </spacer>
