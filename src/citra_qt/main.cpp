@@ -937,8 +937,10 @@ void GMainWindow::OnStartGame() {
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
-    ui.action_Play->setEnabled(true);
-    ui.action_Record->setEnabled(true);
+    ui.action_Play->setDisabled(emulation_running ? Core::Movie::GetInstance().IsRecordingInput()
+                                                  : false);
+    ui.action_Record->setDisabled(emulation_running ? Core::Movie::GetInstance().IsPlayingInput()
+                                                    : false);
 }
 
 void GMainWindow::OnPauseGame() {
