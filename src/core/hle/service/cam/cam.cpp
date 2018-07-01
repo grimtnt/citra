@@ -475,7 +475,7 @@ void Module::Interface::GetTransferBytes(Kernel::HLERequestContext& ctx) {
         rb.Skip(1, false);
     }
 
-    LOG_WARNING(Service_CAM, "(STUBBED)called, port_select={}", port_select.m_val);
+    LOG_WARNING(Service_CAM, "(STUBBED) called, port_select={}", port_select.m_val);
 }
 
 void Module::Interface::GetMaxBytes(Kernel::HLERequestContext& ctx) {

@@ -4,10 +4,10 @@
 
 #pragma once
 
+#include "core/hle/kernel/event.h"
+#include "core/hle/service/service.h"
+
 namespace Service {
-
-class Interface;
-
 namespace CECD {
 
 enum class CecStateAbbreviated {
@@ -20,61 +20,78 @@ enum class CecStateAbbreviated {
                                 /// OVER_BOSS and those listed here
 };
 
-/**
- * GetCecStateAbbreviated service function
- *  Inputs:
- *      0: 0x000E0000
- *  Outputs:
- *      1: Result code
- *      2: CecStateAbbreviated
- */
-void GetCecStateAbbreviated(Service::Interface* self);
+class Module final {
+public:
+    Module();
+    ~Module() = default;
 
-/**
- * GetCecInfoEventHandle service function
- *  Inputs:
- *      0: 0x000F0000
- *  Outputs:
- *      1: Result code
- *      3: Event Handle
- */
-void GetCecInfoEventHandle(Service::Interface* self);
+    class Interface : public ServiceFramework<Interface> {
+    public:
+        Interface(std::shared_ptr<Module> cecd, const char* name, u32 max_session);
+        ~Interface() = default;
 
-/**
- * GetChangeStateEventHandle service function
- *  Inputs:
- *      0: 0x00100000
- *  Outputs:
- *      1: Result code
- *      3: Event Handle
- */
-void GetChangeStateEventHandle(Service::Interface* self);
+    protected:
+        /**
+         * GetCecStateAbbreviated service function
+         *  Inputs:
+         *      0: 0x000E0000
+         *  Outputs:
+         *      1: ResultCode
+         *      2: CecStateAbbreviated
+         */
+        void GetCecStateAbbreviated(Kernel::HLERequestContext& ctx);
 
-/**
- * OpenAndRead service function
- *  Inputs:
- *      0: 0x00120104
- *      1: Buffer size
- *      2: NCCH Program ID
- *      3: Path type
- *      4: File open flag
- *      5: Descriptor for process ID
- *      6: Placeholder for process ID
- *      7: Descriptor for mapping a write-only buffer in the target process
- *      8: Buffer address
- *  Outputs:
- *      1: Result code
- *      2: Total bytes read
- *      3: Descriptor for mapping a write-only buffer in the target process
- *      4: Buffer address
- */
-void OpenAndRead(Service::Interface* self);
+        /**
+         * GetCecInfoEventHandle service function
+         *  Inputs:
+         *      0: 0x000F0000
+         *  Outputs:
+         *      1: ResultCode
+         *      3: Event Handle
+         */
+        void GetCecInfoEventHandle(Kernel::HLERequestContext& ctx);
+
+        /**
+         * GetChangeStateEventHandle service function
+         *  Inputs:
+         *      0: 0x00100000
+         *  Outputs:
+         *      1: ResultCode
+         *      3: Event Handle
+         */
+        void GetChangeStateEventHandle(Kernel::HLERequestContext& ctx);
+
+        /**
+         * OpenAndRead service function
+         *  Inputs:
+         *      0: 0x00120104
+         *      1: Buffer size
+         *      2: NCCH Program ID
+         *      3: Path type
+         *      4: File open flag
+         *      5: Descriptor for process ID
+         *      6: Placeholder for process ID
+         *      7: Descriptor for mapping a write-only buffer in the target process
+         *      8: Buffer address
+         *  Outputs:
+         *      1: Result code
+         *      2: Total bytes read
+         *      3: Descriptor for mapping a write-only buffer in the target process
+         *      4: Buffer address
+         */
+        void OpenAndRead(Kernel::HLERequestContext& ctx);
+
+    private:
+        std::shared_ptr<Module> cecd;
+    };
+
+private:
+    Kernel::SharedPtr<Kernel::Event> cecinfo_event;
+    Kernel::SharedPtr<Kernel::Event> change_state_event;
+};
 
 /// Initialize CECD service(s)
-void Init();
-
-/// Shutdown CECD service(s)
-void Shutdown();
+void InstallInterfaces(SM::ServiceManager& service_manager);
 
 } // namespace CECD
 } // namespace Service
