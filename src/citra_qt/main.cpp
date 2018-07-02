@@ -169,7 +169,6 @@ void GMainWindow::InitializeWidgets() {
     statusBar()->addPermanentWidget(message_label, 1);
 
     progress_bar = new QProgressBar();
-    progress_bar->setMaximum(100);
     progress_bar->hide();
     statusBar()->addPermanentWidget(progress_bar);
 
@@ -865,7 +864,8 @@ void GMainWindow::OnMenuInstallCIA() {
 }
 
 void GMainWindow::OnUpdateProgress(size_t written, size_t total) {
-    progress_bar->setValue(static_cast<int>(written * 100 / total));
+    progress_bar->setMaximum(total);
+    progress_bar->setValue(written);
 }
 
 void GMainWindow::OnCIAInstallReport(Service::AM::InstallStatus status, QString filepath) {
