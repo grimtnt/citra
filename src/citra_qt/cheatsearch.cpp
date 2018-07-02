@@ -122,7 +122,7 @@ void CheatSearch::OnScan(bool isNextScan) {
         searchvalue = ui->txtSearch->text();
         convertHex = ui->chkHex->isChecked();
     } catch (const std::exception&) {
-        ui->txtSearch->setText("");
+        ui->txtSearch->clear();
         return;
     }
 
@@ -192,8 +192,8 @@ void CheatSearch::OnScan(bool isNextScan) {
 }
 
 void CheatSearch::OnValueTypeChanged(int index) {
-    ui->txtSearch->setText("");
-    ui->txtSearchTo->setText("");
+    ui->txtSearch->clear();
+    ui->txtSearchTo->clear();
     if (index >= 0 && index <= 2) {
         ui->chkHex->setVisible(true);
     } else {
@@ -209,7 +209,7 @@ void CheatSearch::OnScanTypeChanged(int index) {
     } else {
         ui->lblTo->setVisible(false);
         ui->txtSearchTo->setVisible(false);
-        ui->txtSearchTo->setText("");
+        ui->txtSearchTo->clear();
     }
 
     if (index == 0) { // Equals
@@ -245,13 +245,13 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
             }
         }
     } catch (const std::exception&) {
-        ui->txtSearch->setText("");
-        ui->txtSearchTo->setText("");
+        ui->txtSearch->clear();
+        ui->txtSearchTo->clear();
     }
 }
 
 void CheatSearch::LoadTable(const std::vector<FoundItem>& items) {
-    ui->tableFound->setRowCount(items.size());
+    ui->tableFound->setRowCount(static_cast<int>(items.size()));
 
     for (int i = 0; i < items.size(); i++) {
         ui->tableFound->setItem(
@@ -278,7 +278,7 @@ std::vector<FoundItem> CheatSearch::FirstSearch(const T value,
     }
 
     for (auto& range : address_in_use) {
-        for (u32 i = range; i < range + 4096; i++) {
+        for (int i = range; i < (range + 4096); i++) {
             T result = Read<T>(i);
             if (comparer(result, value, searchToValue)) {
                 FoundItem item;

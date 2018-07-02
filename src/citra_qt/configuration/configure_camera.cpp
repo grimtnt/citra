@@ -84,7 +84,7 @@ void ConfigureCamera::connectEvents() {
         ui->camera_file->setDisabled(state == Qt::Checked);
         ui->toolButton->setDisabled(state == Qt::Checked);
         if (state == Qt::Checked) {
-            ui->camera_file->setText("");
+            ui->camera_file->clear();
         }
     });
     connect(ui->camera_file, &QLineEdit::textChanged, this, [=] { stopPreviewing(); });
@@ -120,7 +120,7 @@ void ConfigureCamera::updateImageSourceUI() {
         ui->prompt_before_load->setChecked(false);
         ui->camera_file_label->setHidden(true);
         ui->camera_file->setHidden(true);
-        ui->camera_file->setText("");
+        ui->camera_file->clear();
         ui->toolButton->setHidden(true);
         break;
     case 1: /* still image */
@@ -132,7 +132,7 @@ void ConfigureCamera::updateImageSourceUI() {
             ui->prompt_before_load->setChecked(true);
             ui->camera_file->setDisabled(true);
             ui->toolButton->setDisabled(true);
-            ui->camera_file->setText("");
+            ui->camera_file->clear();
         } else {
             ui->camera_file->setDisabled(false);
             ui->toolButton->setDisabled(false);
@@ -250,7 +250,7 @@ void ConfigureCamera::setConfiguration() {
         ui->camera_file->setDisabled(camera_config[index].empty());
         ui->toolButton->setDisabled(camera_config[index].empty());
         if (camera_config[index].empty()) {
-            ui->camera_file->setText("");
+            ui->camera_file->clear();
         }
     }
     if (camera_name[index] == "qt") {

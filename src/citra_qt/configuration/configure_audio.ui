@@ -20,7 +20,7 @@
       <item>
        <layout class="QHBoxLayout">
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="output_sink_label">
           <property name="text">
            <string>Output Engine:</string>
           </property>
@@ -44,7 +44,7 @@
       <item>
        <layout class="QHBoxLayout">
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="audio_device_label">
           <property name="text">
            <string>Audio Device:</string>
           </property>
@@ -61,7 +61,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="volume_label">
           <property name="text">
            <string>Volume:</string>
           </property>

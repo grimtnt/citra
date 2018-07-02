@@ -69,7 +69,7 @@ bool GameList::SearchField::KeyReleaseEater::eventFilter(QObject* obj, QEvent* e
 
                 // To avoid loading error dialog loops while confirming them using enter
                 // Also users usually want to run a diffrent game after closing one
-                gamelist->search_field->edit_filter->setText("");
+                gamelist->search_field->edit_filter->clear();
                 edit_filter_text = "";
                 emit gamelist->GameChosen(file_path);
             } else {
@@ -120,7 +120,7 @@ QString GameList::getLastFilterResultItem() {
 }
 
 void GameList::SearchField::clear() {
-    edit_filter->setText("");
+    edit_filter->clear();
 }
 
 void GameList::SearchField::setFocus() {
@@ -136,7 +136,7 @@ GameList::SearchField::SearchField(GameList* parent) : QWidget{parent} {
     label_filter = new QLabel;
     label_filter->setText(tr("Filter:"));
     edit_filter = new QLineEdit;
-    edit_filter->setText("");
+    edit_filter->clear();
     edit_filter->setPlaceholderText(tr("Enter pattern to filter"));
     edit_filter->installEventFilter(keyReleaseEater);
     edit_filter->setClearButtonEnabled(true);
