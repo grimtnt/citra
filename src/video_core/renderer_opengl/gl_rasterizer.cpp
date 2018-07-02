@@ -1506,8 +1506,11 @@ void RasterizerOpenGL::SamplerInfo::Create() {
     border_color = 0;
     lod_min = lod_max = 0;
     lod_bias = 0;
-    glSamplerParameteri(sampler.handle, GL_TEXTURE_MAX_LOD, 0);
-    glSamplerParameteri(sampler.handle, GL_TEXTURE_MIN_LOD, 0);
+
+    // default is 1000 and -1000
+    // Other attributes have correct defaults
+    glSamplerParameterf(sampler.handle, GL_TEXTURE_MAX_LOD, lod_max);
+    glSamplerParameterf(sampler.handle, GL_TEXTURE_MIN_LOD, lod_min);
 }
 
 void RasterizerOpenGL::SamplerInfo::SyncWithConfig(
