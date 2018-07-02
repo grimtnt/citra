@@ -62,7 +62,7 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     setConfiguration();
 
 #ifndef _WIN32
-    ui->toggle_console->setVisible(false);
+    ui->toggle_console->hide();
 #endif
 
     ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
@@ -109,7 +109,6 @@ void ConfigureGeneral::applyConfiguration() {
     Log::Filter filter;
     filter.ParseFilterString(Settings::values.log_filter);
     Log::SetGlobalFilter(filter);
-    Settings::Apply();
 }
 
 void ConfigureGeneral::onLanguageChanged(int index) {

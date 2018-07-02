@@ -72,7 +72,6 @@ void ConfigureAudio::applyConfiguration() {
             .toStdString();
     Settings::values.volume =
         static_cast<float>(ui->volume_slider->sliderPosition()) / ui->volume_slider->maximum();
-    Settings::Apply();
 }
 
 void ConfigureAudio::updateAudioDevices(int sink_index) {

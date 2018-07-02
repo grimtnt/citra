@@ -1068,34 +1068,37 @@ void GMainWindow::OnConfigure() {
     ConfigureDialog configureDialog(this);
     connect(&configureDialog, &ConfigureDialog::languageChanged, this,
             &GMainWindow::OnLanguageChanged);
+    auto old_theme = UISettings::values.theme;
     auto result = configureDialog.exec();
     if (result == QDialog::Accepted) {
         configureDialog.applyConfiguration();
+        if (UISettings::values.theme != old_theme) {
+            UpdateUITheme();
+            emit UpdateThemedIcons();
+        }
         if (configureDialog.sd_card_root_changed) {
             game_list->PopulateAsync(UISettings::values.game_dirs);
         }
-        UpdateUITheme();
-        emit UpdateThemedIcons();
         SyncMenuUISettings();
         config->Save();
     }
 }
 
 void GMainWindow::OnCheats() {
-    CheatDialog d;
-    d.exec();
+    CheatDialog dialog;
+    dialog.exec();
 }
 
 void GMainWindow::OnCheatSearch() {
-    if (cheatSearchWindow == nullptr)
-        cheatSearchWindow = std::make_shared<CheatSearch>(this);
-    cheatSearchWindow->show();
+    if (cheat_search_window == nullptr)
+        cheat_search_window = std::make_shared<CheatSearch>(this);
+    cheat_search_window->show();
 }
 
 void GMainWindow::OnControlPanel() {
-    if (controlPanel == nullptr)
-        controlPanel = std::make_shared<ControlPanel>(this);
-    controlPanel->show();
+    if (control_panel == nullptr)
+        control_panel = std::make_shared<ControlPanel>(this);
+    control_panel->show();
 }
 
 void GMainWindow::OnSetPlayCoins() {

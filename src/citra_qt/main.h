@@ -196,8 +196,8 @@ private:
     std::mutex applet_mutex;
     std::condition_variable applet_cv;
 
-    std::shared_ptr<ControlPanel> controlPanel;
-    std::shared_ptr<CheatSearch> cheatSearchWindow;
+    std::shared_ptr<ControlPanel> control_panel;
+    std::shared_ptr<CheatSearch> cheat_search_window;
 
     QAction* actions_recent_files[max_recent_files_item];
 

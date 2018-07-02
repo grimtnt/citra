@@ -27,7 +27,6 @@ void ConfigureHacks::setConfiguration() {
 void ConfigureHacks::applyConfiguration() {
     Settings::values.priority_boost = ui->toggle_priority_boost->isChecked();
     Settings::values.cpu_jit_hacks = ui->toggle_cpu_jit_hacks->isChecked();
-    Settings::Apply();
 }
 
 void ConfigureHacks::retranslateUi() {
