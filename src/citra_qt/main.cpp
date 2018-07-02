@@ -852,7 +852,6 @@ void GMainWindow::OnMenuInstallCIA() {
     progress_bar->show();
 
     QtConcurrent::run([&, filepaths] {
-        QString current_path;
         Service::AM::InstallStatus status;
         const auto cia_progress = [&](size_t written, size_t total) {
             emit UpdateProgress(written, total);
