@@ -81,8 +81,6 @@ struct SurfaceParams {
         D24 = 16,
         D24S8 = 17,
 
-        Shadow = 18,
-
         Invalid = 255,
     };
 
@@ -91,13 +89,12 @@ struct SurfaceParams {
         Texture = 1,
         Depth = 2,
         DepthStencil = 3,
-        Shadow = 4,
-        Fill = 5,
-        Invalid = 6
+        Fill = 4,
+        Invalid = 5
     };
 
     static constexpr unsigned int GetFormatBpp(PixelFormat format) {
-        constexpr std::array<unsigned int, 19> bpp_table = {
+        constexpr std::array<unsigned int, 18> bpp_table = {
             32, // RGBA8
             24, // RGB8
             16, // RGB5A1
@@ -116,7 +113,6 @@ struct SurfaceParams {
             0,
             24, // D24
             32, // D24S8
-            32, // Shadow
         };
 
         assert(static_cast<size_t>(format) < bpp_table.size());
@@ -168,10 +164,6 @@ struct SurfaceParams {
             return true;
         }
 
-        if (a_type == SurfaceType::Shadow && b_type == SurfaceType::Shadow) {
-            return true;
-        }
-
         return false;
     }
 
@@ -190,10 +182,6 @@ struct SurfaceParams {
 
         if (pixel_format == PixelFormat::D24S8) {
             return SurfaceType::DepthStencil;
-        }
-
-        if (pixel_format == PixelFormat::Shadow) {
-            return SurfaceType::Shadow;
         }
 
         return SurfaceType::Invalid;
@@ -323,6 +311,11 @@ struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface
 
     OGLTexture texture;
 
+    /// max mipmap level that has been attached to the texture
+    u32 max_level = 0;
+    /// level_watchers[i] watches the (i+1)-th level mipmap source surface
+    std::array<std::shared_ptr<SurfaceWatcher>, 7> level_watchers;
+
     static constexpr unsigned int GetGLBytesPerPixel(PixelFormat format) {
         // OpenGL needs 4 bpp alignment for D24 since using GL_UNSIGNED_INT as type
         return format == PixelFormat::Invalid
@@ -424,12 +417,6 @@ public:
     void ConvertD24S8toABGR(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
                             GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect);
 
-    void ConvertShadowtoABGR(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
-                             GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect);
-
-    void ConvertABGRtoShadow(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
-                             GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect);
-
     /// Copy one surface's region to another
     void CopySurface(const Surface& src_surface, const Surface& dst_surface,
                      SurfaceInterval copy_interval);
@@ -445,7 +432,7 @@ public:
 
     /// Get a surface based on the texture configuration
     Surface GetTextureSurface(const Pica::TexturingRegs::FullTextureConfig& config);
-    Surface GetTextureSurface(const Pica::Texture::TextureInfo& info);
+    Surface GetTextureSurface(const Pica::Texture::TextureInfo& info, u32 max_level = 0);
 
     /// Get a texture cube based on the texture configuration
     const CachedTextureCube& GetTextureCube(const TextureCubeConfig& config);
