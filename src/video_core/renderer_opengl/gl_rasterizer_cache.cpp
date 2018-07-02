@@ -1225,15 +1225,28 @@ Surface RasterizerCacheOpenGL::GetTextureSurface(const Pica::Texture::TextureInf
 
     u32 min_width = info.width >> max_level;
     u32 min_height = info.height >> max_level;
-    ASSERT(min_width % 8 == 0 && min_height % 8 == 0);
-    ASSERT(info.width == (min_width << max_level) && info.height == (min_height << max_level));
+    if (min_width % 8 != 0 || min_height % 8 != 0) {
+        LOG_CRITICAL(Render_OpenGL, "Texture size ({}x{}) is not multiple of 8", min_width,
+                     min_height);
+        return nullptr;
+    }
+    if (info.width != (min_width << max_level) || info.height != (min_height << max_level)) {
+        LOG_CRITICAL(Render_OpenGL,
+                     "Texture size ({}x{}) does not support required mipmap level ({})",
+                     params.width, params.height, max_level);
+        return nullptr;
+    }
 
     auto surface = GetSurface(params, ScaleMatch::Ignore, true);
 
     // Update mipmap if necessary
     if (max_level != 0) {
-        ASSERT(max_level < 8); // since PICA only supports texture size between 8 and 1024, there
-                               // are at most eight possible mipmap levels including the base
+        if (max_level >= 8) {
+            // since PICA only supports texture size between 8 and 1024, there are at most eight
+            // possible mipmap levels including the base.
+            LOG_CRITICAL(Render_OpenGL, "Unsupported mipmap level {}", max_level);
+            return nullptr;
+        }
         OpenGLState prev_state = OpenGLState::GetCurState();
         OpenGLState state;
         SCOPE_EXIT({ prev_state.Apply(); });
