@@ -77,7 +77,7 @@ void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
         rb.Push<u32>(0xFFFFFF00);
     }
 
-    LOG_WARNING(Service_CSND, "(STUBBED) called, addr=0x{:08X}", addr);
+    LOG_WARNING(Service_CSND, "(STUBBED) called, offset=0x{:08X}", offset);
 }
 
 void CSND_SND::AcquireSoundChannels(Kernel::HLERequestContext& ctx) {
