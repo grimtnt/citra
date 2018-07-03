@@ -60,10 +60,9 @@ void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x03, 1, 0);
     u32 offset = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     if (!shared_memory) {
         rb.Push<u32>(1);
-        rb.Skip(1, false);
         LOG_ERROR(Service_CSND, "called, shared memory not allocated");
     } else {
         u8* ptr = shared_memory->GetPointer(offset);
@@ -74,7 +73,6 @@ void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
         std::memcpy(ptr, &command, sizeof(Type0Command));
 
         rb.Push(RESULT_SUCCESS);
-        rb.Push<u32>(0xFFFFFF00);
     }
 
     LOG_WARNING(Service_CSND, "(STUBBED) called, offset=0x{:08X}", offset);
