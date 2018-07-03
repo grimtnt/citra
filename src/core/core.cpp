@@ -153,7 +153,7 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     applet_factories = std::make_unique<AppletFactories>();
 
     dsp_core = std::make_unique<AudioCore::DspHle>();
-    dsp_core->SetSink(Settings::values.sink_id);
+    dsp_core->SetSink(Settings::values.sink_id, Settings::values.audio_device_id);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
     service_manager = std::make_shared<Service::SM::ServiceManager>();
