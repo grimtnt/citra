@@ -58,7 +58,7 @@ void CSND_SND::Shutdown(Kernel::HLERequestContext& ctx) {
 
 void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x03, 1, 0);
-    VAddr addr = rp.Pop<u32>();
+    u32 offset = rp.Pop<u32>();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     if (!shared_memory) {
@@ -66,7 +66,7 @@ void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
         rb.Skip(1, false);
         LOG_ERROR(Service_CSND, "called, shared memory not allocated");
     } else {
-        u8* ptr = shared_memory->GetPointer(addr);
+        u8* ptr = shared_memory->GetPointer(offset);
         Type0Command command;
 
         std::memcpy(&command, ptr, sizeof(Type0Command));
