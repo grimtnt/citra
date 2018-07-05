@@ -29,40 +29,33 @@ using GLivec4 = std::array<GLint, 4>;
 
 namespace PicaToGL {
 
-using TextureFilter = Pica::TexturingRegs::TextureConfig::TextureFilter;
+inline GLenum TextureFilterMode(Pica::TexturingRegs::TextureConfig::TextureFilter mode) {
+    static constexpr std::array<GLenum, 2> filter_mode_table{{
+        GL_NEAREST, // TextureFilter::Nearest
+        GL_LINEAR,  // TextureFilter::Linear
+    }};
 
-inline GLenum TextureMagFilterMode(TextureFilter mode) {
-    if (mode == TextureFilter::Linear) {
+    const auto index = static_cast<size_t>(mode);
+
+    // Range check table for input
+    if (index >= filter_mode_table.size()) {
+        LOG_CRITICAL(Render_OpenGL, "Unknown texture filtering mode {}", index);
+        UNREACHABLE();
+
         return GL_LINEAR;
     }
-    if (mode == TextureFilter::Nearest) {
-        return GL_NEAREST;
-    }
-    LOG_CRITICAL(Render_OpenGL, "Unknown texture filtering mode {}", static_cast<u32>(mode));
-    UNIMPLEMENTED();
-    return GL_LINEAR;
-}
 
-inline GLenum TextureMinFilterMode(TextureFilter min, TextureFilter mip) {
-    if (min == TextureFilter::Linear) {
-        if (mip == TextureFilter::Linear) {
-            return GL_LINEAR_MIPMAP_LINEAR;
-        }
-        if (mip == TextureFilter::Nearest) {
-            return GL_LINEAR_MIPMAP_NEAREST;
-        }
-    } else if (min == TextureFilter::Nearest) {
-        if (mip == TextureFilter::Linear) {
-            return GL_NEAREST_MIPMAP_LINEAR;
-        }
-        if (mip == TextureFilter::Nearest) {
-            return GL_NEAREST_MIPMAP_NEAREST;
-        }
+    GLenum gl_mode = filter_mode_table[index];
+
+    // Check for dummy values indicating an unknown mode
+    if (gl_mode == 0) {
+        LOG_CRITICAL(Render_OpenGL, "Unknown texture filtering mode {}", index);
+        UNIMPLEMENTED();
+
+        return GL_LINEAR;
     }
-    LOG_CRITICAL(Render_OpenGL, "Unknown texture filtering mode {} and {}", static_cast<u32>(min),
-                 static_cast<u32>(mip));
-    UNIMPLEMENTED();
-    return GL_LINEAR_MIPMAP_LINEAR;
+
+    return gl_mode;
 }
 
 inline GLenum WrapMode(Pica::TexturingRegs::TextureConfig::WrapMode mode) {
