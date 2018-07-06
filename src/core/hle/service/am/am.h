@@ -52,7 +52,10 @@ enum class InstallStatus : u32 {
     ErrorEncrypted,
 };
 
-// Progress callback for InstallCIA, recieves bytes written and total bytes
+// Title ID valid length
+constexpr size_t TITLE_ID_VALID_LENGTH = 16;
+
+// Progress callback for InstallCIA, receives bytes written and total bytes
 using ProgressCallback = void(size_t, size_t);
 
 // A file handled returned for CIAs to be written into and subsequently installed.
@@ -121,7 +124,7 @@ std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid, boo
  * @returns string path to the .app file
  */
 std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 index = 0,
-                                bool update = false);
+                                bool update = false, bool contentIndex = false);
 
 /**
  * Get the folder for a title's installed content.
