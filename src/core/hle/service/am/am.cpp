@@ -834,11 +834,13 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
     auto& ticket_info_out = rp.PopMappedBuffer();
 
     std::size_t write_offset = 0;
-    for (u32 i = 0; i < ticket_count; i++) {
+    FileSys::TitleMetadata tmd;
+    tmd.Load(GetTitleMetadataPath(FS::MediaType::SDMC, title_id));
+    for (u32 i = start_index; i < ticket_count; i++) {
         TicketInfo ticket_info = {};
         ticket_info.title_id = title_id;
-        ticket_info.version = 0; // TODO
-        ticket_info.size = 0;    // TODO
+        ticket_info.version = tmd.GetTitleVersion();
+        ticket_info.size = tmd.GetContentSizeByIndex(i);
 
         ticket_info_out.Write(&ticket_info, write_offset, sizeof(TicketInfo));
         write_offset += sizeof(TicketInfo);
