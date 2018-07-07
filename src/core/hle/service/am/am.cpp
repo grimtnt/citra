@@ -385,7 +385,7 @@ std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid, boo
 }
 
 std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 index,
-                                bool update, bool contentIndex) {
+                                bool update) {
     std::string content_path = GetTitlePath(media_type, tid) + "content/";
 
     if (media_type == Service::FS::MediaType::GameCard) {
@@ -400,15 +400,11 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
     u32 content_id = 0;
     FileSys::TitleMetadata tmd;
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
-        if (contentIndex) {
-            if (tmd.ContentIndexExists(index)) {
-                index = tmd.ContentIndexToIndex(index);
-            } else {
-                LOG_ERROR(Service_AM, "Attempted to get path for non-existent content index {:04x}.", index);
-            }
+        if (index < tmd.GetContentCount()) {
+            content_id = tmd.GetContentIDByIndex(index);
+        } else {
+            LOG_ERROR(Service_AM, "Attempted to get path for non-existent content index {:04x}.", index);
         }
-
-        content_id = tmd.GetContentIDByIndex(index);
 
         // TODO(shinyquagsire23): how does DLC actually get this folder on hardware?
         // For now, check if the second (index 1) content has the optional flag set, for most
@@ -537,7 +533,7 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
             std::shared_ptr<FileUtil::IOFile> romfs_file;
             u64 romfs_offset = 0;
 
-            if (!tmd.ContentIndexExists(content_requested[i])) {
+            if (content_requested[i] >= tmd.GetContentCount()) {
                 LOG_ERROR(Service_AM, "Attempted to get info for non-existent content index {:04x}.", content_requested[i]);
 
                 IPC::RequestBuilder rb = rp.MakeBuilder(1, 4);
@@ -547,16 +543,14 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
                 return;
             }
 
-            u16 index = tmd.ContentIndexToIndex(content_requested[i]);
-
             ContentInfo content_info = {};
             content_info.index = content_requested[i];
-            content_info.type = tmd.GetContentTypeByIndex(index);
-            content_info.content_id = tmd.GetContentIDByIndex(index);
-            content_info.size = tmd.GetContentSizeByIndex(index);
+            content_info.type = tmd.GetContentTypeByIndex(content_requested[i]);
+            content_info.content_id = tmd.GetContentIDByIndex(content_requested[i]);
+            content_info.size = tmd.GetContentSizeByIndex(content_requested[i]);
             content_info.ownership = OWNERSHIP_OWNED; // TODO: Pull this from the ticket.
 
-            if (FileUtil::Exists(GetTitleContentPath(media_type, title_id, index))) {
+            if (FileUtil::Exists(GetTitleContentPath(media_type, title_id, content_requested[i]))) {
                 content_info.ownership |= OWNERSHIP_DOWNLOADED;
             }
 
@@ -599,12 +593,12 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
         copied = std::min(content_count, static_cast<u32>(tmd.GetContentCount()));
         std::size_t write_offset = 0;
-        for (u32 i = start_index; i < start_index + copied; i++) { 
+        for (u32 i = start_index; i < start_index + copied; i++) {
             std::shared_ptr<FileUtil::IOFile> romfs_file;
             u64 romfs_offset = 0;
 
             ContentInfo content_info = {};
-            content_info.index = tmd.GetContentIndexByIndex(i);
+            content_info.index = static_cast<u16>(i);
             content_info.type = tmd.GetContentTypeByIndex(i);
             content_info.content_id = tmd.GetContentIDByIndex(i);
             content_info.size = tmd.GetContentSizeByIndex(i);
@@ -840,13 +834,11 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
     auto& ticket_info_out = rp.PopMappedBuffer();
 
     std::size_t write_offset = 0;
-    FileSys::TitleMetadata tmd;
-    tmd.Load(GetTitleMetadataPath(FS::MediaType::SDMC, title_id));
-    for (u32 i = start_index; i < ticket_count; i++) {
+    for (u32 i = 0; i < ticket_count; i++) {
         TicketInfo ticket_info = {};
         ticket_info.title_id = title_id;
-        ticket_info.version = tmd.GetTitleVersion();
-        ticket_info.size = tmd.GetContentSizeByIndex(i);
+        ticket_info.version = 0; // TODO
+        ticket_info.size = 0;    // TODO
 
         ticket_info_out.Write(&ticket_info, write_offset, sizeof(TicketInfo));
         write_offset += sizeof(TicketInfo);
@@ -943,7 +935,7 @@ void Module::Interface::CheckContentRights(Kernel::HLERequestContext& ctx) {
 
     // TODO(shinyquagsire23): Read tickets for this instead?
     bool has_rights =
-        FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index, false, true));
+        FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index));
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS); // No error
@@ -959,7 +951,7 @@ void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestConte
 
     // TODO(shinyquagsire23): Read tickets for this instead?
     bool has_rights =
-        FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index, false, true));
+        FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index));
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS); // No error
