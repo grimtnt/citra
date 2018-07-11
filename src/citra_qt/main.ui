@@ -126,8 +126,9 @@
     <property name="title">
      <string>Movie</string>
     </property>
-    <addaction name="action_Play"/>
-    <addaction name="action_Record"/>
+    <addaction name="action_Record_Movie"/>
+    <addaction name="action_Play_Movie"/>
+    <addaction name="action_Stop_Recording_Playback"/>
    </widget>
    <widget class="QMenu" name="menu_Misc">
     <property name="title">
@@ -327,14 +328,22 @@
     <string>Control Panel</string>
    </property>
   </action>
-  <action name="action_Record">
+  <action name="action_Record_Movie">
    <property name="text">
-    <string>Record</string>
+    <string>Record Movie</string>
    </property>
   </action>
-  <action name="action_Play">
+  <action name="action_Play_Movie">
    <property name="text">
-    <string>Play</string>
+    <string>Play Movie</string>
+   </property>
+  </action>
+  <action name="action_Stop_Recording_Playback">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Stop Recording / Playback</string>
    </property>
   </action>
   <action name="action_Cheat_Search">
