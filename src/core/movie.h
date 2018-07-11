@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include <string>
-#include <tuple>
+#include <functional>
 #include "common/common_types.h"
 
 namespace Service {
@@ -28,6 +27,12 @@ enum class PlayMode;
 
 class Movie {
 public:
+    enum class ValidationResult {
+        OK,
+        RevisionDismatch,
+        GameDismatch,
+        Invalid,
+    };
     /**
      * Gets the instance of the Movie singleton class.
      * @returns Reference to the instance of the Movie singleton class.
@@ -36,47 +41,12 @@ public:
         return s_instance;
     }
 
-    /**
-     * Sets the file to play and restarts the movie system if initialized
-     * @param path the path of the file
-     */
-    void SetPlayFile(const std::string& path) {
-        play_file = path;
-
-        if (IsInitialized()) {
-            Shutdown();
-            Init();
-        }
-    }
-
-    /**
-     * Sets the file to record and restarts the movie system if initialized
-     * @param path the path of the file
-     */
-    void SetRecordFile(const std::string& path) {
-        record_file = path;
-
-        if (IsInitialized()) {
-            Shutdown();
-            Init();
-        }
-    }
-
-    /**
-     * Gets a tuple of play and record file
-     * @returns Tuple of play file and record file
-     */
-    std::tuple<std::string, std::string> GetFiles() {
-        return std::make_tuple(play_file, record_file);
-    }
-
-    void Init();
+    void StartPlayback(const std::string& movie_file,
+                       std::function<void()> completion_callback = {});
+    void StartRecording(const std::string& movie_file);
+    ValidationResult ValidateMovie(const std::string& movie_file) const;
 
     void Shutdown();
-
-    bool IsInitialized() {
-        return initialized;
-    }
 
     /**
      * When recording: Takes a copy of the given input states so they can be used for playback
@@ -114,10 +84,8 @@ public:
      * When playing: Replaces the given input states with the ones stored in the playback file
      */
     void HandleExtraHidResponse(Service::IR::ExtraHIDResponse& extra_hid_response);
-
-    bool IsPlayingInput();
-
-    bool IsRecordingInput();
+    bool IsPlayingInput() const;
+    bool IsRecordingInput() const;
 
 private:
     static Movie s_instance;
@@ -143,16 +111,14 @@ private:
     void Record(const Service::IR::PadState& pad_state, const s16& c_stick_x, const s16& c_stick_y);
     void Record(const Service::IR::ExtraHIDResponse& extra_hid_response);
 
-    bool ValidateHeader(const CTMHeader& header);
+    ValidationResult ValidateHeader(const CTMHeader& header) const;
 
     void SaveMovie();
 
-    bool initialized = false;
-
     PlayMode play_mode;
+    std::string record_movie_file;
     std::vector<u8> recorded_input;
+    std::function<void()> playback_completion_callback;
     size_t current_byte = 0;
-    std::string play_file;
-    std::string record_file;
 };
 } // namespace Core
