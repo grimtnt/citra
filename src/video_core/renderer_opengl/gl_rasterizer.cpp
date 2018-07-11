@@ -649,7 +649,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
                     using CubeFace = Pica::TexturingRegs::CubeFace;
                     info.physical_address =
                         regs.texturing.GetCubePhysicalAddress(CubeFace::PositiveX);
-                    sCheckBarrier(urface = res_cache.GetTextureSurface(info);
+                    surface = res_cache.GetTextureSurface(info);
                     if (surface != nullptr) {
                         CheckBarrier(state.image_shadow_texture_px = surface->texture.handle);
                     } else {
