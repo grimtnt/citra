@@ -256,11 +256,6 @@ int main(int argc, char** argv) {
     Log::AddBackend(
         std::make_unique<Log::FileBackend>(FileUtil::GetUserPath(D_LOGS_IDX) + LOG_FILE));
 
-    // Apply the command line arguments
-    Core::Movie::GetInstance().SetPlayFile(std::move(movie_play));
-    Core::Movie::GetInstance().SetRecordFile(std::move(movie_record));
-    Settings::Apply();
-
     std::unique_ptr<EmuWindow_SDL2> emu_window{std::make_unique<EmuWindow_SDL2>(fullscreen)};
 
     Core::System& system{Core::System::GetInstance()};
@@ -328,9 +323,18 @@ int main(int argc, char** argv) {
     Discord_UpdatePresence(&presence);
 #endif
 
+    if (!movie_play.empty()) {
+        Core::Movie::GetInstance().StartPlayback(movie_play);
+    }
+    if (!movie_record.empty()) {
+        Core::Movie::GetInstance().StartRecording(movie_record);
+    }
+
     while (emu_window->IsOpen()) {
         system.RunLoop();
     }
+
+    Core::Movie::GetInstance().Shutdown();
 
 #ifdef ENABLE_DISCORD_RPC
     Discord_ClearPresence();
