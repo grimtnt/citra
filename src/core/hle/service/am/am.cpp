@@ -403,7 +403,8 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
         if (index < tmd.GetContentCount()) {
             content_id = tmd.GetContentIDByIndex(index);
         } else {
-            LOG_ERROR(Service_AM, "Attempted to get path for non-existent content index {:04x}.", index);
+            LOG_ERROR(Service_AM, "Attempted to get path for non-existent content index {:04x}.",
+                      index);
         }
 
         // TODO(shinyquagsire23): how does DLC actually get this folder on hardware?
@@ -534,10 +535,12 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
             u64 romfs_offset = 0;
 
             if (content_requested[i] >= tmd.GetContentCount()) {
-                LOG_ERROR(Service_AM, "Attempted to get info for non-existent content index {:04x}.", content_requested[i]);
+                LOG_ERROR(Service_AM,
+                          "Attempted to get info for non-existent content index {:04x}.",
+                          content_requested[i]);
 
                 IPC::RequestBuilder rb = rp.MakeBuilder(1, 4);
-                rb.Push<u32>(-1); // TODO: Find the right error code
+                rb.Push<u32>(-1); // TODO(Steveice10): Find the right error code
                 rb.PushMappedBuffer(content_requested_in);
                 rb.PushMappedBuffer(content_info_out);
                 return;
@@ -548,7 +551,8 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
             content_info.type = tmd.GetContentTypeByIndex(content_requested[i]);
             content_info.content_id = tmd.GetContentIDByIndex(content_requested[i]);
             content_info.size = tmd.GetContentSizeByIndex(content_requested[i]);
-            content_info.ownership = OWNERSHIP_OWNED; // TODO: Pull this from the ticket.
+            content_info.ownership =
+                OWNERSHIP_OWNED; // TODO(Steveice10): Pull this from the ticket.
 
             if (FileUtil::Exists(GetTitleContentPath(media_type, title_id, content_requested[i]))) {
                 content_info.ownership |= OWNERSHIP_DOWNLOADED;
@@ -602,7 +606,8 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
             content_info.type = tmd.GetContentTypeByIndex(i);
             content_info.content_id = tmd.GetContentIDByIndex(i);
             content_info.size = tmd.GetContentSizeByIndex(i);
-            content_info.ownership = OWNERSHIP_OWNED; // TODO: Pull this from the ticket.
+            content_info.ownership =
+                OWNERSHIP_OWNED; // TODO(Steveice10): Pull this from the ticket.
 
             if (FileUtil::Exists(GetTitleContentPath(media_type, title_id, i))) {
                 content_info.ownership |= OWNERSHIP_DOWNLOADED;
@@ -1274,6 +1279,7 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
+
         IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
         rb.Push(file_res.Code());
         rb.PushMappedBuffer(output_buffer);
