@@ -620,9 +620,6 @@ void GMainWindow::ShutdownGame() {
         game_list->show();
     game_list->setFilterFocus();
 
-    Core::Movie::GetInstance().SetPlayFile("");
-    Core::Movie::GetInstance().SetRecordFile("");
-
     // Disable status bar updates
     status_bar_update_timer.stop();
     message_label->setVisible(false);
