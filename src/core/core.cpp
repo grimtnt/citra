@@ -162,7 +162,6 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     Kernel::Init(system_mode);
     Service::Init(service_manager);
     CheatCore::Init();
-    Movie::GetInstance().Init();
 
     if (!VideoCore::Init(emu_window)) {
         return ResultStatus::ErrorVideoCore;
@@ -187,7 +186,6 @@ const Service::SM::ServiceManager& System::ServiceManager() const {
 
 void System::Shutdown() {
     // Shutdown emulation session
-    Movie::GetInstance().Shutdown();
     CheatCore::Shutdown();
     VideoCore::Shutdown();
     Service::Shutdown();
