@@ -922,13 +922,15 @@ void GMainWindow::OnStartGame() {
 
     ui.action_Start->setEnabled(false);
     ui.action_Start->setText(tr("Continue"));
-    ui.action_Record_Movie->setEnabled(true);
-    ui.action_Play_Movie->setEnabled(true);
-    ui.action_Stop_Recording_Playback->setEnabled(false);
+    ui.action_Pause->setEnabled(true);
+    ui.action_Stop->setEnabled(true);
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
+    ui.action_Record_Movie->setEnabled(true);
+    ui.action_Play_Movie->setEnabled(true);
+    ui.action_Stop_Recording_Playback->setEnabled(false);
 }
 
 void GMainWindow::OnPauseGame() {
