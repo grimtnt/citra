@@ -14,7 +14,7 @@ ConfigureAudio::ConfigureAudio(QWidget* parent)
     ui->setupUi(this);
 
     ui->output_sink_combo_box->clear();
-    ui->output_sink_combo_box->addItem("auto");
+    ui->output_sink_combo_box->addItem(AudioCore::auto_device_name);
     for (const auto& sink_detail : AudioCore::g_sink_details) {
         ui->output_sink_combo_box->addItem(sink_detail.id);
     }
