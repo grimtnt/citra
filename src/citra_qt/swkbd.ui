@@ -42,18 +42,15 @@
     </item>
     <item>
      <widget class="QPushButton" name="button1">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
       <property name="text">
-       <string>OK</string>
+       <string>I Forgot</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="button2">
       <property name="text">
-       <string>I Forgot</string>
+       <string>OK</string>
       </property>
      </widget>
     </item>
