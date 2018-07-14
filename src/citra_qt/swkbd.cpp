@@ -14,12 +14,28 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
       ui(new Ui::SoftwareKeyboardDialog) {
     ui->setupUi(this);
     setWindowTitle(tr("Software Keyboard"));
+    auto Validate = [&] {
+        switch (config.num_buttons_m1) {
+            case SwkbdButtonConfig::SingleButton:
+                ui->button0->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
+                break;
+            case SwkbdButtonConfig::DualButton:
+                ui->button1->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
+                break;
+            case SwkbdButtonConfig::TripleButton:
+                ui->button2->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
+                break;
+            default:
+                UNREACHABLE();
+                break;
+        }
+    };
+    Validate();  
     std::u16string button0_text(reinterpret_cast<char16_t*>(config.button_text[0]));
     std::u16string button1_text(reinterpret_cast<char16_t*>(config.button_text[1]));
     std::u16string button2_text(reinterpret_cast<char16_t*>(config.button_text[2]));
     std::u16string hint_text(reinterpret_cast<char16_t*>(config.hint_text));
-    ((config.num_buttons_m1 == SwkbdButtonConfig::SingleButton) ? ui->button0 : ui->button1)
-        ->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
+
     ui->text->setPlaceholderText(QString::fromStdU16String(hint_text));
     ui->button1->setVisible(config.num_buttons_m1 >= SwkbdButtonConfig::DualButton);
     ui->button2->setVisible(config.num_buttons_m1 == SwkbdButtonConfig::TripleButton);
@@ -36,13 +52,10 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
                                    default_button_text[static_cast<u32>(config.num_buttons_m1)][2])
                              : QString::fromStdU16String(button2_text));
     connect(ui->text, &QTextEdit::textChanged, [&] {
-        ((config.num_buttons_m1 == SwkbdButtonConfig::SingleButton) ? ui->button0 : ui->button1)
-            ->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
-                         ValidationError::None);
+        Validate();
     });
     connect(ui->button0, &QPushButton::clicked, [&](bool) {
-        std::u16string utf16_input = ui->text->toPlainText().toStdU16String();
-        text = utf16_input;
+        text = ui->text->toPlainText().toStdU16String();
         config.return_code = results[static_cast<u32>(config.num_buttons_m1)][0];
         config.text_length = static_cast<u16>(utf16_input.size());
         config.text_offset = 0;
