@@ -7,8 +7,7 @@
 
 using namespace HLE::Applets;
 
-SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
-                                               HLE::Applets::SoftwareKeyboardConfig& config,
+SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent, SoftwareKeyboardConfig& config,
                                                std::u16string& text)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint),
       ui(new Ui::SoftwareKeyboardDialog) {
@@ -24,9 +23,6 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
                 break;
             case SwkbdButtonConfig::TripleButton:
                 ui->button2->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
-                break;
-            default:
-                UNREACHABLE();
                 break;
         }
     };
