@@ -139,7 +139,7 @@ public:
     GatewayCheat(std::string name) : name(std::move(name)), type("Gateway") {}
 
     GatewayCheat(std::string name, std::vector<CheatLine> cheat_lines, bool enabled)
-        : GatewayCheat(std::move(name)), cheat_lines(std::move(cheat_lines)),
+        : GatewayCheat{std::move(name)}, cheat_lines(std::move(cheat_lines)),
           enabled(enabled) {}
 
     void Execute() override;
