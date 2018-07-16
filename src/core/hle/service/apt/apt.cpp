@@ -556,7 +556,7 @@ void Module::Interface::PrepareToCloseLibraryApplet(Kernel::HLERequestContext& c
 void Module::Interface::CloseLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x28, 1, 4); // 0x00280044
     u32 parameter_size = rp.Pop<u32>();
-    u32 handle = rp.PopHLEHandles<1>()[0];
+    u32 handle = rp.Pop<u32>();
     rp.Pop<u32>(); // Descriptor
     VAddr parameter_addr = rp.Pop<VAddr>();
 
