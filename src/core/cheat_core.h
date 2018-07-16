@@ -136,19 +136,22 @@ protected:
 /// Implements support for Gateway (GateShark) cheats.
 class GatewayCheat : public CheatBase {
 public:
-    GatewayCheat(std::string name) : name(std::move(name)), type("Gateway") {}
+    GatewayCheat(std::string name) {
+        this->name = std::move(name);
+        type = "Gateway";
+    }
 
     GatewayCheat(std::string name, std::vector<CheatLine> cheat_lines, bool enabled)
-        : GatewayCheat{std::move(name)}, cheat_lines(std::move(cheat_lines)),
-          enabled(enabled) {}
+        : GatewayCheat{std::move(name)} {
+        this->cheat_lines = std::move(cheat_lines);
+        this->enabled = enabled;
+    }
 
     void Execute() override;
     std::string ToString() override;
 };
 
-/*
- * Handles loading/saving of cheats and executing them.
- */
+/// Handles loading/saving of cheats and executing them.
 class CheatEngine {
 public:
     CheatEngine();
