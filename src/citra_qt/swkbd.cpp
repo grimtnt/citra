@@ -57,23 +57,21 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     connect(ui->button0, &QPushButton::clicked, [&](bool) {
         text = ui->text->toPlainText().toStdU16String();
         config.return_code = results[static_cast<u32>(config.num_buttons_m1)][0];
-        config.text_length = static_cast<u16>(utf16_input.size());
+        config.text_length = static_cast<u16>(text.length());
         config.text_offset = 0;
         close();
     });
     connect(ui->button1, &QPushButton::clicked, [&](bool) {
-        std::u16string utf16_input = ui->text->toPlainText().toStdU16String();
-        text = utf16_input;
+        text = ui->text->toPlainText().toStdU16String();
         config.return_code = results[static_cast<u32>(config.num_buttons_m1)][1];
-        config.text_length = static_cast<u16>(utf16_input.size());
+        config.text_length = static_cast<u16>(text.length());
         config.text_offset = 0;
         close();
     });
     connect(ui->button2, &QPushButton::clicked, [&](bool) {
-        std::u16string utf16_input = ui->text->toPlainText().toStdU16String();
-        text = utf16_input;
+        text = ui->text->toPlainText().toStdU16String();
         config.return_code = results[static_cast<u32>(config.num_buttons_m1)][2];
-        config.text_length = static_cast<u16>(utf16_input.size());
+        config.text_length = static_cast<u16>(text.length());
         config.text_offset = 0;
         close();
     });
