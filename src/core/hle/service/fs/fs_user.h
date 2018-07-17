@@ -448,7 +448,7 @@ private:
     void GetProgramLaunchInfo(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::Obsoleted 3 0 CreateExtSaveData service function.
+     * FS_User::Obsoleted_3_0_CreateExtSaveData service function.
      *  Inputs:
      *      0 : 0x08300182
      *      1 : Media type
@@ -465,7 +465,7 @@ private:
     void ObsoletedCreateExtSaveData(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::Obsoleted 3 0 DeleteExtSaveData service function.
+     * FS_User::Obsoleted_3_0_DeleteExtSaveData service function.
      *  Inputs:
      *      0 : 0x08350080
      *      1 : Media type
