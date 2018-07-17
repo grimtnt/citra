@@ -61,29 +61,51 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
     FileUtil::ReadFileToString(true, file_path.c_str(), contents);
     std::vector<std::string> lines;
     Common::SplitString(contents, '\n', lines);
+
+    std::string code_type =
+        "Gateway"; // If more cheat types added, need to specify which type in parsing.
+    std::vector<std::string> notes;
     std::vector<CheatLine> cheat_lines;
     std::vector<std::shared_ptr<CheatBase>> cheats;
     std::string name;
+    bool enabled = false;
     for (size_t i = 0; i < lines.size(); i++) {
         std::string current_line = std::string(lines[i].c_str());
         current_line = Common::Trim(current_line);
         if (!current_line.empty()) {
             if (current_line.compare(0, 2, "+[") == 0) { // Enabled code
                 if (!cheat_lines.empty()) {
-                    cheats.push_back(std::make_shared<GatewayCheat>(name, cheat_lines, true));
+                    if (code_type == "Gateway")
+                        cheats.push_back(
+                            std::make_shared<GatewayCheat>(cheat_lines, notes, enabled, name));
                 }
                 name = current_line.substr(2, current_line.length() - 3);
                 cheat_lines.clear();
+                notes.clear();
+                enabled = true;
                 continue;
             } else if (current_line.front() == '[') { // Disabled code
                 if (!cheat_lines.empty()) {
-                    cheats.push_back(std::make_shared<GatewayCheat>(name, cheat_lines, false));
+                    if (code_type == "Gateway")
+                        cheats.push_back(
+                            std::make_shared<GatewayCheat>(cheat_lines, notes, enabled, name));
                 }
                 name = current_line.substr(1, current_line.length() - 2);
                 cheat_lines.clear();
+                notes.clear();
+                enabled = false;
                 continue;
-            } else if (current_line.front() != '*') {
+            } else if (current_line.front() == '*') { // Comment
+                notes.push_back(std::move(current_line));
+            } else {
                 cheat_lines.emplace_back(std::move(current_line));
+            }
+        }
+        if (i == lines.size() - 1) { // End of file
+            if (!cheat_lines.empty()) {
+                if (code_type == "Gateway")
+                    cheats.push_back(
+                        std::make_shared<GatewayCheat>(cheat_lines, notes, enabled, name));
             }
         }
     }
@@ -94,7 +116,9 @@ void CheatEngine::Save(std::vector<std::shared_ptr<CheatBase>> cheats) {
     const auto file_path = GetFilePath();
     FileUtil::IOFile file = FileUtil::IOFile(file_path, "w+");
     for (auto& cheat : cheats) {
-        file.WriteString(cheat->ToString());
+        if (cheat->GetType() == "Gateway") {
+            file.WriteString(cheat->ToString());
+        }
     }
 }
 
@@ -414,6 +438,13 @@ std::string GatewayCheat::ToString() {
     if (enabled)
         result += '+';
     result += '[' + name + "]\n";
+    for (auto& str : notes) {
+        if (str.front() == '*')
+            str.insert(0, 1, '*');
+    }
+    result += Common::Join(notes, "\n");
+    if (!notes.empty())
+        result += '\n';
     for (const auto& line : cheat_lines)
         result += line.cheat_line + '\n';
     result += '\n';
