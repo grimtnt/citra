@@ -9,6 +9,7 @@
 #include "core/hle/kernel/process.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
+#include "core/core.h"
 
 namespace CheatCore {
 
