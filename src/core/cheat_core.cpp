@@ -118,7 +118,8 @@ void CheatEngine::Save(std::vector<std::shared_ptr<CheatBase>> cheats) {
     FileUtil::IOFile file = FileUtil::IOFile(file_path, "w+");
     for (auto& cheat : cheats) {
         if (cheat->GetType() == "Gateway") {
-            file.WriteString(cheat->ToString());
+            std::string str = cheat->ToString();
+            file.WriteBytes(str.c_str(), str.length());
         }
     }
 }
