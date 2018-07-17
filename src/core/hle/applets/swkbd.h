@@ -200,8 +200,8 @@ const std::string default_button_text[][3]{
     },
     {
         "Cancel",
-        "I Forgot",
         "OK",
+        "I Forgot",
     },
 };
 
