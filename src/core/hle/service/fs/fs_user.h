@@ -229,8 +229,8 @@ private:
     void IsSdmcWriteable(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::FormatSaveData service function
-     * Formats the SaveData specified by the input path.
+     * FS_User::FormatSaveData service function,
+     * formats the SaveData specified by the input path.
      *  Inputs:
      *      0  : 0x084C0242
      *      1  : Archive ID
@@ -310,7 +310,7 @@ private:
     void DeleteExtSaveData(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::CardSlotIsInserted service function
+     * FS_User::CardSlotIsInserted service function.
      *  Inputs:
      *      0 : 0x08210000
      *  Outputs:
@@ -320,7 +320,7 @@ private:
     void CardSlotIsInserted(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::DeleteSystemSaveData service function
+     * FS_User::DeleteSystemSaveData service function.
      *  Inputs:
      *      0 : 0x08570080
      *      1 : High word of the SystemSaveData id to delete
@@ -331,7 +331,7 @@ private:
     void DeleteSystemSaveData(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::CreateSystemSaveData service function
+     * FS_User::CreateSystemSaveData service function.
      *  Inputs:
      *      0 : 0x08560240
      *      1 : u8 MediaType of the system save data
@@ -349,7 +349,7 @@ private:
     void CreateSystemSaveData(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::CreateLegacySystemSaveData service function
+     * FS_User::CreateLegacySystemSaveData service function.
      *  This function appears to be obsolete and seems to have been replaced by
      *  command 0x08560240 (CreateSystemSaveData).
      *
@@ -369,7 +369,7 @@ private:
     void CreateLegacySystemSaveData(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::InitializeWithSdkVersion service function
+     * FS_User::InitializeWithSdkVersion service function.
      *  Inputs:
      *      0 : 0x08610042
      *      1 : Used SDK Version
@@ -381,7 +381,7 @@ private:
     void InitializeWithSdkVersion(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::SetPriority service function
+     * FS_User::SetPriority service function.
      *  Inputs:
      *      0 : 0x08620040
      *      1 : priority
@@ -391,7 +391,7 @@ private:
     void SetPriority(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetPriority service function
+     * FS_User::GetPriority service function.
      *  Inputs:
      *      0 : 0x08630000
      *  Outputs:
@@ -401,7 +401,7 @@ private:
     void GetPriority(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetArchiveResource service function
+     * FS_User::GetArchiveResource service function.
      *  Inputs:
      *      0 : 0x08490040
      *      1 : Media type
@@ -415,7 +415,7 @@ private:
     void GetArchiveResource(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetFormatInfo service function
+     * FS_User::GetFormatInfo service function.
      *  Inputs:
      *      0 : 0x084500C2
      *      1 : Archive ID
@@ -434,7 +434,7 @@ private:
     void GetFormatInfo(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetProgramLaunchInfo service function
+     * FS_User::GetProgramLaunchInfo service function.
      *  Inputs:
      *      0 : 0x082F0040
      *      1 : Process ID
@@ -448,7 +448,35 @@ private:
     void GetProgramLaunchInfo(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetNumSeeds service function
+     * FS_User::Obsoleted 3 0 CreateExtSaveData service function.
+     *  Inputs:
+     *      0 : 0x08300182
+     *      1 : Media type
+     *      2 : Low word of the saveid to create
+     *      3 : High word of the saveid to create
+     *      4 : Size of the SMDH icon
+     *      5 : Number of directories
+     *      6 : Number of files
+     *      7 : (SMDH Size << 4) | 0x0000000A
+     *      8 : Pointer to the SMDH icon for the new ExtSaveData
+     *  Outputs:
+     *      1 : Result of function, 0 on success, otherwise error code
+     */
+    void ObsoletedCreateExtSaveData(Kernel::HLERequestContext& ctx);
+
+    /**
+     * FS_User::Obsoleted 3 0 DeleteExtSaveData service function.
+     *  Inputs:
+     *      0 : 0x08350080
+     *      1 : Media type
+     *      2 : Save ID Low (high is always 0x00000000)
+     *  Outputs:
+     *      1 : Result of function, 0 on success, otherwise error code
+     */
+    void ObsoletedDeleteExtSaveData(Kernel::HLERequestContext& ctx);
+
+    /**
+     * FS_User::GetNumSeeds service function.
      *  Inputs:
      *      0 : 0x087D0000
      *  Outputs:
@@ -459,7 +487,7 @@ private:
     void GetNumSeeds(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::SetSaveDataSecureValue service function
+     * FS_User::SetSaveDataSecureValue service function.
      *  Inputs:
      *      0 : 0x08650140
      *      1-2 : Secure Value
@@ -473,7 +501,7 @@ private:
     void SetSaveDataSecureValue(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetSaveDataSecureValue service function
+     * FS_User::GetSaveDataSecureValue service function.
      *  Inputs:
      *      0 : 0x086600C0
      *      1 : Secure Value Slot
