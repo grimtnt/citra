@@ -10,6 +10,7 @@
 #include "citra_qt/cheatsearch.h"
 #include "common/common_types.h"
 #include "core/memory.h"
+#include "core/core.h"
 #include "ui_cheatsearch.h"
 
 CheatSearch::CheatSearch(QWidget* parent)
@@ -389,28 +390,33 @@ void ModifyAddressDialog::OnOkClicked() {
     case 0: { // u32
         u32 value = newValue.toUInt(nullptr, base);
         Memory::Write32(address, value);
+        Core::CPU().InvalidateCacheRange(address, sizeof(u32));
         break;
     }
     case 1: { // u16
         u16 value = newValue.toUShort(nullptr, base);
         Memory::Write16(address, value);
+        Core::CPU().InvalidateCacheRange(address, sizeof(u32));
         break;
     }
     case 2: { // u8
         u8 value = static_cast<u8>(newValue.toUShort(nullptr, base));
         Memory::Write8(address, value);
+        Core::CPU().InvalidateCacheRange(address, sizeof(u8));
         break;
     }
     case 3: { // float
         float value = newValue.toFloat();
         u32 converted = std::stoul(ieee_float_to_hex(value), nullptr, 10);
         Memory::Write32(address, converted);
+        Core::CPU().InvalidateCacheRange(address, sizeof(u32));
         break;
     }
     case 4: { // double
         double value = newValue.toDouble();
         u64 converted = std::stoull(double2hexstr(value), nullptr, 10);
         Memory::Write64(address, converted);
+        Core::CPU().InvalidateCacheRange(address, sizeof(u64));
         break;
     }
     }
