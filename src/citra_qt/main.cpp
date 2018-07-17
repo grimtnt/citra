@@ -619,6 +619,8 @@ void GMainWindow::ShutdownGame() {
     else
         game_list->show();
     game_list->setFilterFocus();
+    if (cheat_search_window != nullptr)
+        cheat_search_window->close();
 
     // Disable status bar updates
     status_bar_update_timer.stop();
