@@ -50,9 +50,8 @@ enum class CheatType {
     Joker = 0xDD,
     Patch = 0x0E,
 };
-/*
- * Represents a single line of a cheat, i.e. 1xxxxxxxx yyyyyyyy
- */
+
+/// Represents a single line of a cheat, i.e. 1xxxxxxxx yyyyyyyy
 struct CheatLine {
     explicit CheatLine(std::string line) {
         line = std::string(line.c_str()); // remove '/0' characters if any.
@@ -94,6 +93,14 @@ public:
     virtual ~CheatBase() = default;
     virtual std::string ToString() = 0;
 
+    const std::vector<std::string>& GetNotes() const {
+        return notes;
+    }
+
+    void SetNotes(std::vector<std::string> new_notes) {
+        notes = std::move(new_notes);
+    }
+
     bool GetEnabled() const {
         return enabled;
     }
@@ -127,6 +134,7 @@ public:
     }
 
 protected:
+    std::vector<std::string> notes;
     bool enabled = false;
     std::string type;
     std::vector<CheatLine> cheat_lines;
@@ -141,9 +149,11 @@ public:
         type = "Gateway";
     }
 
-    GatewayCheat(std::string name, std::vector<CheatLine> cheat_lines, bool enabled)
+    GatewayCheat(std::vector<CheatLine> cheat_lines, std::vector<std::string> notes,
+                 bool enabled, std::string name)
         : GatewayCheat{std::move(name)} {
         this->cheat_lines = std::move(cheat_lines);
+        this->notes = std::move(notes);
         this->enabled = enabled;
     }
 
