@@ -14,8 +14,22 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent, SoftwareKeyboard
     ui->setupUi(this);
     setWindowTitle(tr("Software Keyboard"));
     auto Validate = [&] {
-        ((config.num_buttons_m1 == SwkbdButtonConfig::SingleButton) ? ui->button0 : ui->button1)
-            ->setEnabled(ValidateInput(config, std::string()) == ValidationError::None);
+        std::string text = ui->text->toPlainText().toStdString();
+        switch (config.num_buttons_m1) {
+            case SwkbdButtonConfig::SingleButton:
+                ui->button0->setEnabled(ValidateInput(config, text) == ValidationError::None);
+                break;
+            case SwkbdButtonConfig::DualButton:
+                ui->button1->setEnabled(ValidateInput(config, text) == ValidationError::None);
+                break;
+            case SwkbdButtonConfig::TripleButton:
+                ui->button2->setEnabled(ValidateInput(config, text) == ValidationError::None);
+                break;
+            default:
+                NGLOG_CRITICAL(Applet_Swkbd, "button config: {}, text: {}",
+                               static_cast<u32>(config.num_buttons_m1), text);
+                break;
+        }
     };
     Validate();  
     std::u16string button0_text(reinterpret_cast<char16_t*>(config.button_text[0]));
