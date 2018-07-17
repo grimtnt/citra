@@ -70,14 +70,14 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
         if (!current_line.empty()) {
             if (current_line.compare(0, 2, "+[") == 0) { // Enabled code
                 if (!cheat_lines.empty()) {
-                    cheats.push_back(std::make_shared<GatewayCheat>(cheat_lines, true, name));
+                    cheats.push_back(std::make_shared<GatewayCheat>(name, cheat_lines, true));
                 }
                 name = current_line.substr(2, current_line.length() - 3);
                 cheat_lines.clear();
                 continue;
             } else if (current_line.front() == '[') { // Disabled code
                 if (!cheat_lines.empty()) {
-                    cheats.push_back(std::make_shared<GatewayCheat>(cheat_lines, false, name));
+                    cheats.push_back(std::make_shared<GatewayCheat>(name, cheat_lines, false));
                 }
                 name = current_line.substr(1, current_line.length() - 2);
                 cheat_lines.clear();
