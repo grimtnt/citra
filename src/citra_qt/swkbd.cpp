@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "common/logging/log.h"
 #include "citra_qt/swkbd.h"
 #include "ui_swkbd.h"
 
@@ -27,8 +26,6 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent, SoftwareKeyboard
                 ui->button2->setEnabled(ValidateInput(config, text) == ValidationError::None);
                 break;
             default:
-                LOG_CRITICAL(Applet_Swkbd, "button config: {}, text: {}",
-                             static_cast<u32>(config.num_buttons_m1), text);
                 break;
         }
     };
