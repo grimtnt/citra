@@ -101,7 +101,7 @@ void Config::ReadValues() {
     // Hardware shader is broken on macos thanks to poor drivers.
     // We still want to provide this option for test/development purposes, but disable it by
     // default.
-    Settings::values.use_hw_shader = sdl2_config->GetBoolean("Renderer", "use_hw_shader", false);
+    Settings::values.use_hw_shader = qt_config->value("use_hw_shader", false).toBool();
 #else
     Settings::values.use_hw_shader = qt_config->value("use_hw_shader", true).toBool();
 #endif
