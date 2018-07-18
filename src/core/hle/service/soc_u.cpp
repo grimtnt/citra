@@ -764,8 +764,8 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
         err = EINVAL;
 #endif
     } else {
-        err = ::getsockopt(socket_handle, level, optname,
-                           reinterpret_cast<char*>(optval.data()), &optlen);
+        char* optval_data = reinterpret_cast<char*>(optval.data());
+        err = ::getsockopt(socket_handle, level, optname, optval_data, &optlen);
         if (err == SOCKET_ERROR_VALUE) {
             err = TranslateError(GET_ERRNO);
         }
@@ -796,9 +796,9 @@ void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
         err = EINVAL;
 #endif
     } else {
+        const char* optval_data = reinterpret_cast<const char*>(optval.data());
         err = static_cast<u32>(
-            ::setsockopt(socket_handle, level, optname,
-                         reinterpret_cast<const char*>(optval.data()), optval.size()));
+            ::setsockopt(socket_handle, level, optname, optval_data, optval.size()));
         if (err == SOCKET_ERROR_VALUE) {
             err = TranslateError(GET_ERRNO);
         }
