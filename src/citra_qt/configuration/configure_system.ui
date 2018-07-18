@@ -292,13 +292,7 @@
          </widget>
         </item>
         <item row="5" column="1">
-         <widget class="QSpinBox" name="spinbox_country">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>186</number>
-          </property>
+         <widget class="QComboBox" name="combo_country">
          </widget>
         </item>
        </layout>
