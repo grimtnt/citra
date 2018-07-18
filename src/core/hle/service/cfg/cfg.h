@@ -364,23 +364,22 @@ public:
     void SetSoundOutputMode(SoundOutputMode mode);
 
     /**
-     * Sets the country data in config savegame.
-     * @param unknown  unknown data (leave for research).
-     * @param country_code the country corresponding code.
-     */
-    void SetCountryInfo(u8 unknown[3], u8 country_code);
-
-    /**
-     * Gets the country data from  config savegame.
-     * @returns a tuple of (unknown, country_code) of birthday
-     */
-    std::tuple<unsigned char*, u8> GetCountryInfo();
-
-    /**
      * Gets the sound output mode from config savegame.
      * @returns the sound output mode
      */
     SoundOutputMode GetSoundOutputMode();
+
+    /**
+     * Sets the country code in config savegame.
+     * @param country_code the country code to set
+     */
+    void SetCountryCode(u8 country_code);
+
+    /**
+     * Gets the country code from config savegame.
+     * @returns the country code
+     */
+    u8 GetCountryCode();
 
     /**
      * Generates a new random console unique id.
