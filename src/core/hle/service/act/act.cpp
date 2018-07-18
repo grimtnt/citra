@@ -74,7 +74,7 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
         break;
     }
     case BlkID::CountryName: {
-        u8 country_code = std::get<1>(CFG::GetCurrentModule()->GetCountryInfo());
+        u8 country_code = CFG::GetCurrentModule()->GetCountryCode();
         u16 country_name = CFG::country_codes[country_code];
         buffer.Write(&country_name, 0, sizeof(u16));
         break;
