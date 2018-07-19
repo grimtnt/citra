@@ -56,7 +56,8 @@ public:
         ErrorSystemFiles,               ///< Error in finding system files
         ErrorSharedFont,                ///< Error in finding shared font
         ErrorVideoCore,                 ///< Error in the video core
-        ErrorUnknown                    ///< Any other error
+        ShutdownRequested,              ///< Emulated program requested a system shutdown 
+        ErrorUnknown,                   ///< Any other error
     };
 
     /**
@@ -79,6 +80,20 @@ public:
 
     /// Shutdown the emulated system.
     void Shutdown();
+
+
+    /// Shutdown and then load again
+    void Reset();
+
+    /// Request reset of the system
+    void RequestReset() {
+        reset_requested = true;
+    }
+
+    /// Request shutdown of the system
+    void RequestShutdown() {
+        shutdown_requested = true;
+    }
 
     /**
      * Load an executable application.
@@ -186,6 +201,12 @@ private:
 
     ResultStatus status = ResultStatus::Success;
     std::string status_details = "";
+    /// Saved variables for reset
+    EmuWindow* m_emu_window;
+    std::string m_filepath;
+
+    std::atomic<bool> reset_requested;
+    std::atomic<bool> shutdown_requested;
 };
 
 inline ARM_Interface& CPU() {
