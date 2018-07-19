@@ -1243,6 +1243,11 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
         break;
     }
 
+    case Core::System::ResultStatus::ShutdownRequested: {
+        answer = QMessageBox::Yes;
+        break;
+    }
+
     default:
         answer = QMessageBox::question(
             this, tr("Fatal Error"),
