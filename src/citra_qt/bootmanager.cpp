@@ -28,8 +28,13 @@ void EmuThread::run() {
         if (running) {
             if (!was_active)
                 emit DebugModeLeft();
-
             Core::System::ResultStatus result = Core::System::GetInstance().RunLoop();
+            if (result == Core::System::ResultStatus::ShutdownRequested) {
+                // Notify frontend we shutdown
+                emit ErrorThrown(result, "");
+                // End emulation execution
+                break;
+            }
             if (result != Core::System::ResultStatus::Success) {
                 this->SetRunning(false);
                 emit ErrorThrown(result, Core::System::GetInstance().GetStatusDetails());
