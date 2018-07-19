@@ -10,6 +10,7 @@
 #include "common/swap.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/service/service.h"
+#include "core/hle/service/fs/archive.h"
 
 namespace Kernel {
 class Mutex;
@@ -597,7 +598,9 @@ public:
 
     private:
         std::shared_ptr<Module> apt;
-        bool application_reset_prepared;
+        bool application_reset = false;
+        u64 jump_tid;
+        FS::MediaType jump_media;
     };
 
 private:

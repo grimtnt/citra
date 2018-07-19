@@ -10,6 +10,7 @@
 #include "common/common_types.h"
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
+#include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
 #include "core/memory.h"
 #include "core/perf_stats.h"
@@ -82,13 +83,14 @@ public:
     /// Shutdown the emulated system.
     void Shutdown();
 
+    /// Shutdown and then load
+    void Jump();
 
-    /// Shutdown and then load again
-    void Reset();
-
-    /// Request reset of the system
-    void RequestReset() {
-        reset_requested = true;
+    /// Request jump of the system
+    void RequestJump(u64 title_id, Service::FS::MediaType media_type) {
+        jump_requested = true;
+        jump_tid = title_id;
+        jump_media = media_type;
     }
 
     /// Request shutdown of the system
@@ -202,11 +204,13 @@ private:
 
     ResultStatus status = ResultStatus::Success;
     std::string status_details = "";
-    /// Saved variables for reset
+    /// Saved variables for jump
     EmuWindow* m_emu_window;
     std::string m_filepath;
+    u64 jump_tid;
+    Service::FS::MediaType jump_media;
 
-    std::atomic<bool> reset_requested;
+    std::atomic<bool> jump_requested;
     std::atomic<bool> shutdown_requested;
 };
 

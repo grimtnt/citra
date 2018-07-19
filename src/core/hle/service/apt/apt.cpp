@@ -20,7 +20,6 @@
 #include "core/hle/service/apt/apt_u.h"
 #include "core/hle/service/apt/bcfnt/bcfnt.h"
 #include "core/hle/service/cfg/cfg.h"
-#include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/hle/service/service.h"
 #include "core/hw/aes/ccm.h"
@@ -560,21 +559,9 @@ void Module::Interface::CloseApplication(Kernel::HLERequestContext& ctx) {
 void Module::Interface::PrepareToDoApplicationJump(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x31, 4, 0);
     u32 flags = rp.Pop<u8>();
-    u32 program_id_low = rp.Pop<u32>();
-    u32 program_id_high = rp.Pop<u32>();
-    Service::FS::MediaType media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-
-    LOG_WARNING(Service_APT,
-                "(STUBBED) called, flags={:08X}, program_id_low={:08X}, program_id_high={:08X}, "
-                "media_type={:08X}",
-                flags, program_id_low, program_id_high, static_cast<u8>(media_type));
-
-    if (flags == 0x2) {
-        // It seems that flags 0x2 means jumping to the same application,
-        // and ignore the parameters. This is used in Pokemon main series
-        // to soft reset.
-        application_reset_prepared = true;
-    }
+    jump_tid = rp.Pop<u64>();
+    jump_media = static_cast<FS::MediaType>(rp.Pop<u8>());
+    application_reset = flags == 0x2;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
@@ -587,15 +574,11 @@ void Module::Interface::DoApplicationJump(Kernel::HLERequestContext& ctx) {
     std::vector<u8> parameter = rp.PopStaticBuffer();
     std::vector<u8> hmac = rp.PopStaticBuffer();
 
-    LOG_WARNING(Service_APT, "(STUBBED) called");
-
-    if (application_reset_prepared) {
+    if (application_reset) {
         // Reset system
-        Core::System::GetInstance().RequestReset();
+        Core::System::GetInstance().RequestJump(0, FS::MediaType::SDMC);
     } else {
-        // After the jump, the application should shutdown
-        // TODO: Actually implement the jump
-        Core::System::GetInstance().RequestShutdown();
+        Core::System::GetInstance().RequestJump(jump_tid, jump_media);
     }
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);

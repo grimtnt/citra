@@ -20,6 +20,7 @@
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/thread.h"
 #include "core/hle/service/service.h"
+#include "core/hle/service/am/am.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hw/hw.h"
 #include "core/loader/loader.h"
@@ -58,8 +59,8 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
     HW::Update();
     Reschedule();
 
-    if (reset_requested.exchange(false)) {
-        Reset();
+    if (jump_requested.exchange(false)) {
+        Jump();
     } else if (shutdown_requested.exchange(false)) {
         return ResultStatus::ShutdownRequested;
     }
@@ -214,10 +215,14 @@ void System::Shutdown() {
     LOG_DEBUG(Core, "Shutdown OK");
 }
 
-void System::Reset() {
+void System::Jump() {
     Shutdown();
-    // Reload the system with the same setting
-    Load(m_emu_window, m_filepath);
+    if (jump_tid == 0) {
+        Load(m_emu_window, m_filepath);
+        return;  
+    }
+    auto path = Service::AM::GetTitleContentPath(jump_media, jump_tid);
+    Load(m_emu_window, path);
 }
 
 } // namespace Core
