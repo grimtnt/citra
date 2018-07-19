@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include "common/common_types.h"
