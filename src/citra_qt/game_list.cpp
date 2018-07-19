@@ -31,10 +31,7 @@
 #include "core/loader/loader.h"
 #include "core/settings.h"
 
-GameList::SearchField::KeyReleaseEater::KeyReleaseEater(GameList* gamelist) {
-    this->gamelist = gamelist;
-    edit_filter_text_old = "";
-}
+GameList::SearchField::KeyReleaseEater::KeyReleaseEater(GameList* gamelist) : gamelist{gamelist} {}
 
 // EventFilter in order to process systemkeys while editing the searchfield
 bool GameList::SearchField::KeyReleaseEater::eventFilter(QObject* obj, QEvent* event) {
@@ -166,10 +163,13 @@ GameList::SearchField::SearchField(GameList* parent) : QWidget{parent} {
  * @param String containing all words getting checked
  * @return true if the haystack contains all words of userinput
  */
-bool GameList::containsAllWords(QString haystack, QString userinput) {
-    QStringList userinput_split = userinput.split(" ", QString::SplitBehavior::SkipEmptyParts);
+
+static bool ContainsAllWords(const QString& haystack, const QString& userinput) {
+    const QStringList userinput_split =
+        userinput.split(' ', QString::SplitBehavior::SkipEmptyParts);
+
     return std::all_of(userinput_split.begin(), userinput_split.end(),
-                       [haystack](QString s) { return haystack.contains(s); });
+                       [&haystack](const QString& s) { return haystack.contains(s); });
 }
 
 // Syncs the expanded state of Game Directories with settings to persist across sessions
