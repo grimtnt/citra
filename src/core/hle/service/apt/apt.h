@@ -597,6 +597,7 @@ public:
 
     private:
         std::shared_ptr<Module> apt;
+        bool application_reset_prepared;
     };
 
 private:
