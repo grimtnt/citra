@@ -30,7 +30,7 @@ namespace Kernel {
 static CoreTiming::EventType* ThreadWakeupEventType{};
 
 bool Thread::ShouldWait(Thread* thread) const {
-    return status != THREADSTATUS_DEAD;
+    return status != ThreadStatus::Dead;
 }
 
 void Thread::Acquire(Thread* thread) {
@@ -75,11 +75,11 @@ void Thread::Stop() {
 
     // Clean up thread from ready queue
     // This is only needed when the thread is termintated forcefully (SVC TerminateProcess)
-    if (status == THREADSTATUS_READY) {
+    if (status == ThreadStatus::Ready) {
         ready_queue.remove(current_priority, this);
     }
 
-    status = THREADSTATUS_DEAD;
+    status = ThreadStatus::Dead;
 
     WakeupAllWaitingThreads();
 
@@ -127,17 +127,17 @@ static void SwitchContext(Thread* new_thread) {
         previous_thread->last_running_ticks = CoreTiming::GetTicks();
         Core::GetCPU().SaveContext(previous_thread->context);
 
-        if (previous_thread->status == THREADSTATUS_RUNNING) {
+        if (previous_thread->status == ThreadStatus::Running) {
             // This is only the case when a reschedule is triggered without the current thread
             // yielding execution (i.e. an event triggered, system core time-sliced, etc)
             ready_queue.push_front(previous_thread->current_priority, previous_thread);
-            previous_thread->status = THREADSTATUS_READY;
+            previous_thread->status = ThreadStatus::Ready;
         }
     }
 
     // Load context of new thread
     if (new_thread) {
-        ASSERT_MSG(new_thread->status == THREADSTATUS_READY,
+        ASSERT_MSG(new_thread->status == ThreadStatus::Ready,
                    "Thread must be ready to become running.");
 
         // Cancel any outstanding wakeup events for this thread
@@ -148,7 +148,7 @@ static void SwitchContext(Thread* new_thread) {
         current_thread = new_thread;
 
         ready_queue.remove(new_thread->current_priority, new_thread);
-        new_thread->status = THREADSTATUS_RUNNING;
+        new_thread->status = ThreadStatus::Running;
 
         if (Settings::values.priority_boost)
             new_thread->current_priority = new_thread->nominal_priority;
@@ -175,7 +175,7 @@ static Thread* PopNextReadyThread() {
     Thread* next{};
     Thread* thread{GetCurrentThread()};
 
-    if (thread && thread->status == THREADSTATUS_RUNNING) {
+    if (thread && thread->status == ThreadStatus::Running) {
         // We have to do better than the current thread.
         // This call returns null when that's not possible.
         next = ready_queue.pop_first_better(thread->current_priority);
@@ -192,7 +192,7 @@ static Thread* PopNextReadyThread() {
 
 void WaitCurrentThread_Sleep() {
     Thread* thread{GetCurrentThread()};
-    thread->status = THREADSTATUS_WAIT_SLEEP;
+    thread->status = ThreadStatus::WaitSleep;
 }
 
 void ExitCurrentThread() {
@@ -214,9 +214,9 @@ static void ThreadWakeupCallback(u64 thread_handle, s64 cycles_late) {
         return;
     }
 
-    if (thread->status == THREADSTATUS_WAIT_SYNCH_ANY ||
-        thread->status == THREADSTATUS_WAIT_SYNCH_ALL || thread->status == THREADSTATUS_WAIT_ARB ||
-        thread->status == THREADSTATUS_WAIT_HLE_EVENT) {
+    if (thread->status == ThreadStatus::WaitSynchAny ||
+        thread->status == ThreadStatus::WaitSynchAll || thread->status == ThreadStatus::WaitArb ||
+        thread->status == ThreadStatus::WaitHleEvent) {
 
         // Invoke the wakeup callback before clearing the wait objects
         if (thread->wakeup_callback)
@@ -243,27 +243,27 @@ void Thread::ResumeFromWait() {
     ASSERT_MSG(wait_objects.empty(), "Thread is waking up while waiting for objects");
 
     switch (status) {
-    case THREADSTATUS_WAIT_SYNCH_ALL:
-    case THREADSTATUS_WAIT_SYNCH_ANY:
-    case THREADSTATUS_WAIT_HLE_EVENT:
-    case THREADSTATUS_WAIT_ARB:
-    case THREADSTATUS_WAIT_SLEEP:
-    case THREADSTATUS_WAIT_IPC:
+    case ThreadStatus::WaitSynchAll:
+    case ThreadStatus::WaitSynchAny:
+    case ThreadStatus::WaitHleEvent:
+    case ThreadStatus::WaitArb:
+    case ThreadStatus::WaitSleep:
+    case ThreadStatus::WaitIPC:
         break;
 
-    case THREADSTATUS_READY:
+    case ThreadStatus::Ready:
         // The thread's wakeup callback must have already been cleared when the thread was first
         // awoken.
         ASSERT(wakeup_callback == nullptr);
         // If the thread is waiting on multiple wait objects, it might be awoken more than once
         // before actually resuming. We can ignore subsequent wakeups if the thread status has
-        // already been set to THREADSTATUS_READY.
+        // already been set to ThreadStatus::Ready.
         return;
 
-    case THREADSTATUS_RUNNING:
+    case ThreadStatus::Running:
         DEBUG_ASSERT_MSG(false, "Thread with object id {} has already resumed.", GetObjectId());
         return;
-    case THREADSTATUS_DEAD:
+    case ThreadStatus::Dead:
         // This should never happen, as threads must complete before being stopped.
         DEBUG_ASSERT_MSG(false, "Thread with object id {} cannot be resumed because it's DEAD.",
                          GetObjectId());
@@ -273,7 +273,7 @@ void Thread::ResumeFromWait() {
     wakeup_callback = nullptr;
 
     ready_queue.push_back(current_priority, this);
-    status = THREADSTATUS_READY;
+    status = ThreadStatus::Ready;
     Core::System::GetInstance().PrepareReschedule();
 }
 
@@ -348,7 +348,7 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
     ready_queue.prepare(priority);
 
     thread->thread_id = NewThreadId();
-    thread->status = THREADSTATUS_DORMANT;
+    thread->status = ThreadStatus::Dormant;
     thread->entry_point = entry_point;
     thread->stack_top = stack_top;
     thread->nominal_priority = thread->current_priority = priority;
@@ -407,7 +407,7 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
     ResetThreadContext(thread->context, stack_top, entry_point, arg);
 
     ready_queue.push_back(thread->current_priority, thread.get());
-    thread->status = THREADSTATUS_READY;
+    thread->status = ThreadStatus::Ready;
 
     return MakeResult<SharedPtr<Thread>>(std::move(thread));
 }
@@ -416,7 +416,7 @@ void Thread::SetPriority(u32 priority) {
     ASSERT_MSG(priority <= THREADPRIO_LOWEST && priority >= THREADPRIO_HIGHEST,
                "Invalid priority value.");
     // If thread was ready, adjust queues
-    if (status == THREADSTATUS_READY)
+    if (status == ThreadStatus::Ready)
         ready_queue.move(this, current_priority, priority);
     else
         ready_queue.prepare(priority);
@@ -435,7 +435,7 @@ void Thread::UpdatePriority() {
 
 void Thread::BoostPriority(u32 priority) {
     // If thread was ready, adjust queues
-    if (status == THREADSTATUS_READY)
+    if (status == ThreadStatus::Ready)
         ready_queue.move(this, current_priority, priority);
     else
         ready_queue.prepare(priority);
