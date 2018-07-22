@@ -176,7 +176,6 @@ Module::Module() {
             auto gamecoin = std::move(gamecoin_result).Unwrap();
             gamecoin->backend->Write(0, sizeof(GameCoin), true,
                                      reinterpret_cast<const u8*>(&default_game_coin));
-            gamecoin->backend->Close();
         }
     }
 }
@@ -202,7 +201,6 @@ void Module::SetPlayCoins(u16 play_coins) {
         game_coin.total_coins = play_coins;
         gamecoin->backend->Write(0, sizeof(GameCoin), true,
                                  reinterpret_cast<const u8*>(&game_coin));
-        gamecoin->backend->Close();
     }
 }
 
