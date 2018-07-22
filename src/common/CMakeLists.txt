@@ -17,12 +17,8 @@ add_library(common STATIC
     assert.h
     bit_field.h
     bit_set.h
-    break_points.cpp
-    break_points.h
-    chunk_file.h
     cityhash.cpp
     cityhash.h
-    code_block.h
     color.h
     common_funcs.h
     common_paths.h
@@ -30,7 +26,6 @@ add_library(common STATIC
     file_util.cpp
     file_util.h
     hash.h
-    linear_disk_cache.h
     logging/backend.cpp
     logging/backend.h
     logging/filter.cpp
@@ -51,7 +46,6 @@ add_library(common STATIC
     string_util.cpp
     string_util.h
     swap.h
-    synchronized_wrapper.h
     thread.cpp
     thread.h
     thread_queue_list.h
