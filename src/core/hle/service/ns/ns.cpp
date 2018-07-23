@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <cinttypes>
+#include "core/hle/ipc_helpers.h"
 #include "core/hle/service/am/am.h"
 #include "core/hle/service/ns/ns.h"
 #include "core/hle/service/ns/ns_s.h"
@@ -35,7 +36,7 @@ void NS_S::LaunchTitle(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x2, 3, 0);
     u64 title_id = rp.Pop<u64>();
     u32 flags = rp.Pop<u32>();
-    FS::MediaType media_type = (id == 0)
+    FS::MediaType media_type = (title_id == 0)
         ? FS::MediaType::GameCard : AM::GetTitleMediaType(title_id);
     LOG_WARNING(Service_NS,
                 "(STUBBED) called, title_id={}, media_type={}, flags={}",
