@@ -2,6 +2,10 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#ifdef _WIN32
+#define _WIN32_WINNT 0x4000
+#include <windows.h>
+#endif
 #include "common/logging/log.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
@@ -26,9 +30,12 @@ void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx, u16 id) 
     IPC::RequestParser rp(ctx, id, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
+#ifdef _WIN32
+    SYSTEM_POWER_STATUS status;
+    rb.Push<u8>(GetSystemPowerStatus(&status) ? status.BatteryLifePercent : 0);
+#else
     rb.Push<u8>(0x64);
-
-    LOG_WARNING(Service_MCU, "(STUBBED) called");
+#endif
 }
 
 void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
@@ -62,6 +69,9 @@ Module::Interface::Interface(std::shared_ptr<Module> mcu, const char* name, u32 
     : ServiceFramework(name, max_session), mcu(std::move(mcu)) {}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
+#ifndef _WIN32
+    LOG_WARNING(Service_MCU, "OS not supported");
+#endif
     auto mcu = std::make_shared<Module>();
     std::make_shared<CAM>(mcu)->InstallAsService(service_manager);
     std::make_shared<CDC>(mcu)->InstallAsService(service_manager);
