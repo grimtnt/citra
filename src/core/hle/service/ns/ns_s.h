@@ -15,6 +15,16 @@ class NS_S final : public ServiceFramework<NS_S> {
 public:
     NS_S();
     ~NS_S();
+
+    void LaunchTitle(Kernel::HLERequestContext& ctx);
+    void TerminateApplication(Kernel::HLERequestContext& ctx);
+    void TerminateProcess(Kernel::HLERequestContext& ctx);
+    void ShutdownAsync(Kernel::HLERequestContext& ctx);
+    void RebootSystem(Kernel::HLERequestContext& ctx);
+    void TerminateTitle(Kernel::HLERequestContext& ctx);
+    void SetApplicationCpuTimeLimit(Kernel::HLERequestContext& ctx);
+    void LaunchApplication(Kernel::HLERequestContext& ctx);
+    void RebootSystemClean(Kernel::HLERequestContext& ctx);
 };
 
 } // namespace NS
