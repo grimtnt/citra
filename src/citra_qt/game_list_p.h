@@ -423,12 +423,10 @@ private:
         // EventFilter in order to process systemkeys while editing the searchfield
         bool eventFilter(QObject* obj, QEvent* event) override;
     };
-
     QHBoxLayout* layout_filter = nullptr;
     QTreeView* tree_view = nullptr;
     QLabel* label_filter = nullptr;
     QLineEdit* edit_filter = nullptr;
     QLabel* label_filter_result = nullptr;
-
     QToolButton* button_filter_close = nullptr;
 };
