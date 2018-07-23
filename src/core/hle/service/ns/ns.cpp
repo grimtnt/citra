@@ -31,6 +31,37 @@ Kernel::SharedPtr<Kernel::Process> LaunchTitle(FS::MediaType media_type, u64 tit
     return process;
 }
 
+void NS_S::LaunchTitle(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x2, 3, 0);
+    u64 title_id = rp.Pop<u64>();
+    u32 flags = rp.Pop<u32>();
+    FS::MediaType media_type = (id == 0)
+        ? FS::MediaType::GameCard : AM::GetTitleMediaType(title_id);
+    LOG_WARNING(Service_NS,
+                "(STUBBED) called, title_id={}, media_type={}, flags={}",
+                title_id, static_cast<u32>(media_type), flags);
+    auto process = LaunchTitle(media_type, title_id);
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u32>(process->process_id);
+}
+
+void NS_S::ShutdownAsync(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0xE, 0, 0);
+    Core::System::GetInstance().RequestShutdown();
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
+void NS_S::RebootSystemClean(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0xE, 0, 0);
+    u64 title_id = Kernel::g_current_process->codeset->program_id;
+    FS::MediaType media_type = AM::GetTitleMediaType(title_id);
+    Core::System::GetInstance().RequestJump(title_id, media_type);
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<NS_S>()->InstallAsService(service_manager);
 }
