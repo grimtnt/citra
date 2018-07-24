@@ -346,7 +346,7 @@ ResultCode AppletManager::PreloadLibraryApplet(AppletId applet_id) {
                           ErrorSummary::InvalidState, ErrorLevel::Status);
     }
 
-    auto process = NS::LaunchTitle(FS::MediaType::NAND, GetTitleIdForApplet(applet_id));
+    auto process = NS::LaunchTitleImpl(FS::MediaType::NAND, GetTitleIdForApplet(applet_id));
     if (process) {
         return RESULT_SUCCESS;
     }
