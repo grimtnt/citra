@@ -585,27 +585,6 @@ void Module::Interface::DoApplicationJump(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 }
 
-void Module::Interface::PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x25, 3, 0); // 0x002500C0
-    bool not_pause = rp.Pop<bool>();
-    bool exiting = rp.Pop<bool>();
-    bool jump_to_home = rp.Pop<bool>();
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(apt->applet_manager->PrepareToCloseLibraryApplet(not_pause, exiting, jump_to_home));
-}
-
-void Module::Interface::CloseLibraryApplet(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x28, 1, 4); // 0x00280044
-    u32 parameter_size = rp.Pop<u32>();
-    u32 handle = rp.Pop<u32>();
-    rp.Pop<u32>(); // Descriptor
-    VAddr parameter_addr = rp.Pop<VAddr>();
-
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
-    rb.Push(apt->applet_manager->CloseLibraryApplet(parameter_size, handle, parameter_addr));
-}
-
 void Module::Interface::CancelLibraryApplet(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x3B, 1, 0); // 0x003B0040
     bool exiting = rp.Pop<bool>();
@@ -614,6 +593,32 @@ void Module::Interface::CancelLibraryApplet(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(1); // TODO: Find the return code meaning
 
     LOG_WARNING(Service_APT, "(STUBBED) called exiting={}", exiting);
+}
+
+void Module::Interface::PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x25, 3, 0); // 0x002500C0
+    bool not_pause = rp.Pop<bool>();
+    bool exiting = rp.Pop<bool>();
+    bool jump_to_home = rp.Pop<bool>();
+
+    LOG_DEBUG(Service_APT, "called, not_pause=%u exiting=%u jump_to_home=%u",
+              static_cast<u32>(not_pause), static_cast<u32>(exiting),
+              static_cast<u32>(jump_to_home));
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(apt->applet_manager->PrepareToCloseLibraryApplet(not_pause, exiting, jump_to_home));
+}
+
+void Module::Interface::CloseLibraryApplet(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x28, 1, 4); // 0x00280044
+    u32 parameter_size = rp.Pop<u32>();
+    auto object = rp.PopGenericObject();
+    std::vector<u8> buffer = rp.PopStaticBuffer();
+
+    LOG_DEBUG(Service_APT, "called, size=%u", parameter_size);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(apt->applet_manager->CloseLibraryApplet(std::move(object), std::move(buffer)));
 }
 
 void Module::Interface::SendDspSleep(Kernel::HLERequestContext& ctx) {
