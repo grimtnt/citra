@@ -8,11 +8,12 @@
 #include "core/hle/service/ns/ns.h"
 #include "core/hle/service/ns/ns_s.h"
 #include "core/loader/loader.h"
+#include "core/core.h"
 
 namespace Service {
 namespace NS {
 
-Kernel::SharedPtr<Kernel::Process> LaunchTitle(FS::MediaType media_type, u64 title_id) {
+Kernel::SharedPtr<Kernel::Process> LaunchTitleImpl(FS::MediaType media_type, u64 title_id) {
     std::string path = AM::GetTitleContentPath(media_type, title_id);
     auto loader = Loader::GetLoader(path);
 
@@ -41,7 +42,7 @@ void NS_S::LaunchTitle(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_NS,
                 "(STUBBED) called, title_id={}, media_type={}, flags={}",
                 title_id, static_cast<u32>(media_type), flags);
-    auto process = LaunchTitle(media_type, title_id);
+    auto process = LaunchTitleImpl(media_type, title_id);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(process->process_id);
