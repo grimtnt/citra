@@ -168,6 +168,7 @@ private:
     void UpdateStatusBar();
     void LoadTranslation();
     void SetupUIStrings();
+    void RetranslateStatusBar();
 
     Ui::MainWindow ui;
 
