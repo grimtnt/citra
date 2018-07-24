@@ -8,10 +8,8 @@
 #include <vector>
 #include <boost/optional.hpp>
 #include "core/hle/kernel/event.h"
-#include "core/hle/kernel/kernel.h"
 #include "core/hle/result.h"
 #include "core/hle/service/fs/archive.h"
-#include "core/memory.h"
 
 namespace Service {
 namespace APT {
@@ -130,6 +128,8 @@ public:
     ResultCode FinishPreloadingLibraryApplet(AppletId applet_id);
     ResultCode StartLibraryApplet(AppletId applet_id, Kernel::SharedPtr<Kernel::Object> object,
                                   const std::vector<u8>& buffer);
+    ResultCode PrepareToCloseLibraryApplet(bool not_pause, bool exiting, bool jump_home);
+    ResultCode CloseLibraryApplet(Kernel::SharedPtr<Kernel::Object> object, std::vector<u8> buffer);
 
     struct AppletInfo {
         u64 title_id;
@@ -140,8 +140,6 @@ public:
     };
 
     ResultVal<AppletInfo> GetAppletInfo(AppletId app_id);
-    ResultCode PrepareToCloseLibraryApplet(bool not_pause, bool exiting, bool jump_to_home);
-    ResultCode CloseLibraryApplet(u32 parameter_size, u32 handle, VAddr parameter_addr);
 
 private:
     /// Parameter data to be returned in the next call to Glance/ReceiveParameter.
@@ -176,16 +174,15 @@ private:
         }
     };
 
-    /// The parameter signal to send to an application when a running library applet calls
-    /// CloseLibraryApplet.
-    SignalType library_applet_closing_command = SignalType::None;
-
     // Holds data about the concurrently running applets in the system.
     std::array<AppletSlotData, NumAppletSlot> applet_slots = {};
 
     // This overload returns nullptr if no applet with the specified id has been started.
     AppletSlotData* GetAppletSlotData(AppletId id);
     AppletSlotData* GetAppletSlotData(AppletAttributes attributes);
+
+    // Command that will be sent to the application when a library applet calls CloseLibraryApplet.
+    SignalType library_applet_closing_command;
 };
 
 } // namespace APT
