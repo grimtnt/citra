@@ -322,7 +322,7 @@ ResultCode AppletManager::PrepareToStartLibraryApplet(AppletId applet_id) {
                           ErrorSummary::InvalidState, ErrorLevel::Status);
     }
 
-    auto process = NS::LaunchTitle(FS::MediaType::NAND, GetTitleIdForApplet(applet_id));
+    auto process = NS::LaunchTitleImpl(FS::MediaType::NAND, GetTitleIdForApplet(applet_id));
     if (process) {
         return RESULT_SUCCESS;
     }
@@ -420,9 +420,6 @@ ResultVal<AppletManager::AppletInfo> AppletManager::GetAppletInfo(AppletId app_i
 
 ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiting,
                                                       bool jump_to_home) {
-    LOG_DEBUG(Service_APT, "called not_pause={}, exiting={}, jump_to_home={}", not_pause, exiting,
-              jump_to_home);
-
     if (next_parameter) {
         return ResultCode(ErrCodes::ParameterPresent, ErrorModule::Applet,
                           ErrorSummary::InvalidState, ErrorLevel::Status);
@@ -440,9 +437,8 @@ ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiti
     return RESULT_SUCCESS;
 }
 
-ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, u32 handle, VAddr parameter_addr) {
-    LOG_DEBUG(Service_APT, "called, size={}, handle={}", parameter_size, handle);
-
+ResultCode AppletManager::CloseLibraryApplet(Kernel::SharedPtr<Kernel::Object> object,
+                                             std::vector<u8> buffer) {
     auto& slot = applet_slots[static_cast<size_t>(AppletSlot::LibraryApplet)];
 
     MessageParameter param;
@@ -451,18 +447,18 @@ ResultCode AppletManager::CloseLibraryApplet(u32 parameter_size, u32 handle, VAd
     // application, but it could be something else if a system applet is launched.
     param.destination_id = AppletId::Application;
     param.sender_id = slot.applet_id;
-    param.object = Kernel::g_handle_table.GetGeneric(handle);
+    param.object = std::move(object);
     param.signal = library_applet_closing_command;
-    param.buffer.resize(parameter_size);
-    Memory::ReadBlock(parameter_addr, param.buffer.data(), param.buffer.size());
-    SendParameter(param);
+    param.buffer = std::move(buffer);
+
+    ResultCode result = SendParameter(param);
 
     if (library_applet_closing_command != SignalType::WakeupByPause) {
         // TODO(Subv): Terminate the running applet title
         slot.Reset();
     }
 
-    return RESULT_SUCCESS;
+    return result;
 }
 
 AppletManager::AppletManager() {
