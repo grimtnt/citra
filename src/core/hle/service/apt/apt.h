@@ -458,9 +458,6 @@ public:
          */
         void DoApplicationJump(Kernel::HLERequestContext& ctx);
 
-        void PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx);
-        void CloseLibraryApplet(Kernel::HLERequestContext& ctx);
-
         /**
          * APT::CancelLibraryApplet service function
          *  Inputs:
@@ -471,6 +468,34 @@ public:
          *      1 : Result code
          */
         void CancelLibraryApplet(Kernel::HLERequestContext& ctx);
+
+        /**
+         * APT::PrepareToCloseLibraryApplet service function
+         *  Inputs:
+         *      0 : Command header [0x002500C0]
+         *      1 : u8, Unknown
+         *      2 : u8, Caller exiting
+         *      3 : u8, Jump to home
+         *  Outputs:
+         *      0 : Header code
+         *      1 : Result code
+         */
+        void PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx);
+
+        /**
+         * APT::CloseLibraryApplet service function
+         *  Inputs:
+         *      0 : Command header [0x00280044]
+         *      1 : Buffer size
+         *      2 : 0x0
+         *      3 : Object handle
+         *      4 : (Size << 14) | 2
+         *      5 : Input buffer virtual address
+         *  Outputs:
+         *      0 : Header code
+         *      1 : Result code
+         */
+        void CloseLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SendDspSleep service function
