@@ -601,9 +601,8 @@ void Module::Interface::PrepareToCloseLibraryApplet(Kernel::HLERequestContext& c
     bool exiting = rp.Pop<bool>();
     bool jump_to_home = rp.Pop<bool>();
 
-    LOG_DEBUG(Service_APT, "called, not_pause=%u exiting=%u jump_to_home=%u",
-              static_cast<u32>(not_pause), static_cast<u32>(exiting),
-              static_cast<u32>(jump_to_home));
+    LOG_DEBUG(Service_APT, "called, not_pause={}, exiting={}, jump_to_home={}", not_pause, exiting,
+              jump_to_home);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(apt->applet_manager->PrepareToCloseLibraryApplet(not_pause, exiting, jump_to_home));
@@ -615,7 +614,7 @@ void Module::Interface::CloseLibraryApplet(Kernel::HLERequestContext& ctx) {
     auto object = rp.PopGenericObject();
     std::vector<u8> buffer = rp.PopStaticBuffer();
 
-    LOG_DEBUG(Service_APT, "called, size=%u", parameter_size);
+    LOG_DEBUG(Service_APT, "called, size={}", parameter_size);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(apt->applet_manager->CloseLibraryApplet(std::move(object), std::move(buffer)));
