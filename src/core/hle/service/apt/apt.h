@@ -473,9 +473,9 @@ public:
          * APT::PrepareToCloseLibraryApplet service function
          *  Inputs:
          *      0 : Command header [0x002500C0]
-         *      1 : u8, Unknown
-         *      2 : u8, Caller exiting
-         *      3 : u8, Jump to home
+         *      1 : bool, Not pause
+         *      2 : bool, Caller exiting
+         *      3 : bool, Jump to home
          *  Outputs:
          *      0 : Header code
          *      1 : Result code
