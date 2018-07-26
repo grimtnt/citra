@@ -167,6 +167,15 @@ void AddNamedPort(std::string name, SharedPtr<ClientPort> port) {
     g_kernel_named_ports.emplace(std::move(name), std::move(port));
 }
 
+static void AddNamedPort(Interface* interface_) {
+    SharedPtr<ServerPort> server_port;
+    SharedPtr<ClientPort> client_port;
+    std::tie(server_port, client_port) =
+        ServerPort::CreatePortPair(interface_->GetMaxSessions(), interface_->GetPortName());
+    server_port->SetHleHandler(std::shared_ptr<Interface>(interface_));
+    AddNamedPort(interface_->GetPortName(), std::move(client_port));
+}
+
 /// Initialize ServiceManager
 void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     SM::ServiceManager::InstallInterfaces(sm);
