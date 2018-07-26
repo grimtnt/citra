@@ -539,7 +539,9 @@ bool GMainWindow::LoadROM(const QString& filename) {
     DiscordRichPresence presence{};
     presence.state = game_title.isEmpty() ? "Unknown game" : game_title.toLocal8Bit().constData();
     presence.details = "Playing";
-    presence.startTimestamp = time(NULL);
+    presence.startTimestamp = std::chrono::duration_cast<std::chrono::seconds>(
+                              std::chrono::system_clock::now().time_since_epoch())
+                              .count();
     presence.largeImageKey = "icon";
     Discord_UpdatePresence(&presence);
 #endif
