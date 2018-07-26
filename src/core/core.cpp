@@ -172,8 +172,9 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     Service::Init(service_manager);
     CheatCore::Init();
 
-    if (!VideoCore::Init(emu_window)) {
-        return ResultStatus::ErrorVideoCore;
+    ResultStatus result = VideoCore::Init(emu_window);
+    if (result != ResultStatus::Success) {
+        return result;
     }
 
     LOG_DEBUG(Core, "Initialized OK");
