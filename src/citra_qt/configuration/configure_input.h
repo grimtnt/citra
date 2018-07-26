@@ -46,6 +46,9 @@ private:
 
     std::array<Common::ParamPackage, Settings::NativeButton::NumButtons> buttons_param;
     std::array<Common::ParamPackage, Settings::NativeAnalog::NumAnalogs> analogs_param;
+    Common::ParamPackage tilt_param;
+
+    void updateTiltClampLabel(int value);
 
     static constexpr int ANALOG_SUB_BUTTONS_NUM = 5;
 
