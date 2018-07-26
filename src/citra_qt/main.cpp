@@ -69,8 +69,6 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 enum class CalloutFlag : uint32_t {};
 
 #ifdef ENABLE_DISCORD_RPC
-s64 g_start_time = 0;
-
 static void HandleDiscordDisconnected(int errorCode, const char* message) {
     LOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
 }
@@ -534,15 +532,14 @@ bool GMainWindow::LoadROM(const QString& filename) {
     game_title = QString::fromStdString(title);
     SetupUIStrings();
 #ifdef ENABLE_DISCORD_RPC
-    g_start_time = time(NULL);
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
     handlers.errored = HandleDiscordError;
-    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
+    Discord_Initialize("472104565165260826", &handlers, 0, NULL);
     DiscordRichPresence presence{};
     presence.state = game_title.isEmpty() ? "Unknown game" : game_title.toLocal8Bit().constData();
     presence.details = "Playing";
-    presence.startTimestamp = g_start_time;
+    presence.startTimestamp = time(NULL);
     presence.largeImageKey = "icon";
     Discord_UpdatePresence(&presence);
 #endif
