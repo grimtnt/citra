@@ -447,8 +447,9 @@ bool GMainWindow::LoadROM(const QString& filename) {
     render_window->MakeCurrent();
 
     if (!gladLoadGL()) {
-        QMessageBox::critical(this, tr("Error while initializing OpenGL 3.3 Core!"),
-                              tr("Your GPU may not support OpenGL 3.3, or you do not "
+        QMessageBox::critical(this, tr("Video Core Error!"),
+                              tr("Error while initializing the OpenGL 3.3 Core! Your GPU may not "
+                                 "support OpenGL 3.3, or you do not "
                                  "have the latest graphics driver."));
         return false;
     }
@@ -496,12 +497,27 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
         case Core::System::ResultStatus::ErrorVideoCore:
             QMessageBox::critical(
-                this, tr("An error occured in the video core."),
+                this, tr("Video Core Error!"),
                 tr("Citra has encountered an error while running the video core, please see the "
                    "log for more details."
                    "To access the log, Click Open Log Location in the general tab of the "
                    "configuration window.<br/><br/>"
                    "Ensure that you have the latest graphics drivers for your GPU."));
+            break;
+ 
+        case Core::System::ResultStatus::ErrorVideoCore_ErrorGenericDrivers:
+            QMessageBox::critical(
+                this, tr("Video Core Error!"),
+                tr("An error occured in the video core. You are running default Windows drivers "
+                   "for your GPU. You need to install the "
+                   "proper drivers for your graphics card from the manufacturer's website."));
+            break;
+
+        case Core::System::ResultStatus::ErrorVideoCore_ErrorBelowGL33:
+            QMessageBox::critical(this, tr("Video Core Error!"),
+                                  tr("Error while initializing the OpenGL 3.3 Core! Your GPU may "
+                                     "not support OpenGL 3.3, or you do not "
+                                     "have the latest graphics driver."));
             break;
 
         default:
