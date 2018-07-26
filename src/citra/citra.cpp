@@ -48,8 +48,6 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 #endif
 
 #ifdef ENABLE_DISCORD_RPC
-s64 g_start_time = 0;
-
 static void HandleDiscordDisconnected(int errorCode, const char* message) {
     LOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
 }
@@ -310,7 +308,6 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_DISCORD_RPC
     std::string title;
     system.GetAppLoader().ReadTitle(title);
-    g_start_time = time(NULL);
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
     handlers.errored = HandleDiscordError;
@@ -318,7 +315,7 @@ int main(int argc, char** argv) {
     DiscordRichPresence presence{};
     presence.state = title.empty() ? "Unknown game" : title.c_str();
     presence.details = "Playing";
-    presence.startTimestamp = g_start_time;
+    presence.startTimestamp = time(NULL);
     presence.largeImageKey = "icon";
     Discord_UpdatePresence(&presence);
 #endif
