@@ -176,6 +176,9 @@ ConfigureInput::ConfigureInput(QWidget* parent)
         }
     });
 
+    connect(ui->tilt_sensitivity, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this,
+            [this](double value) { tilt_param.Set("sensitivity", (float)value); });
+
     loadConfiguration();
 
     // TODO(wwylele): enable this when we actually emulate it
@@ -187,6 +190,7 @@ void ConfigureInput::applyConfiguration() {
                    [](const Common::ParamPackage& param) { return param.Serialize(); });
     std::transform(analogs_param.begin(), analogs_param.end(), Settings::values.analogs.begin(),
                    [](const Common::ParamPackage& param) { return param.Serialize(); });
+    Settings::values.motion_device = tilt_param.Serialize();
 }
 
 void ConfigureInput::loadConfiguration() {
@@ -197,6 +201,9 @@ void ConfigureInput::loadConfiguration() {
                    analogs_param.begin(),
                    [](const std::string& str) { return Common::ParamPackage(str); });
     updateButtonLabels();
+
+    tilt_param = Common::ParamPackage(Settings::values.motion_device);
+    ui->tilt_sensitivity->setValue(tilt_param.Get("sensitivity", 0.01f));
 }
 
 void ConfigureInput::restoreDefaults() {
