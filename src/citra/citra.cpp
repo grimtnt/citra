@@ -314,7 +314,7 @@ int main(int argc, char** argv) {
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
     handlers.errored = HandleDiscordError;
-    Discord_Initialize("451776535058448385", &handlers, 0, NULL);
+    Discord_Initialize("472104565165260826", &handlers, 0, NULL);
     DiscordRichPresence presence{};
     presence.state = title.empty() ? "Unknown game" : title.c_str();
     presence.details = "Playing";
