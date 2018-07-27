@@ -77,6 +77,14 @@ void MultiplayerState::retranslateUi() {
     }
 }
 
+void MultiplayerState::UpdateUITheme() {
+    if (current_state == Network::RoomMember::State::Joined) {
+        status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
+    } else {
+        status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
+    }
+}
+
 void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& state) {
     LOG_DEBUG(Frontend, "Network State: {}", Network::GetStateStr(state));
     bool is_connected = false;
