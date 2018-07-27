@@ -62,6 +62,7 @@ public:
                                             /// generic drivers installed
         ErrorVideoCore_ErrorBelowGL33,      ///< Error in the video core due to the user not having
                                             /// OpenGL 3.3 or higher
+        ShutdownRequested,                  ///< Emulated program requested a system shutdown
         ErrorUnknown                        ///< Any other error
     };
 
