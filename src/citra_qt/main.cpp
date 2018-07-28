@@ -1407,8 +1407,6 @@ void GMainWindow::UpdateUITheme() {
         QIcon::setThemeName(":/icons/default");
     }
     QIcon::setThemeSearchPaths(theme_paths);
-    if (multiplayer_state)
-        multiplayer_state->UpdateUITheme();
 }
 
 void GMainWindow::LoadTranslation() {
