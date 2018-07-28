@@ -284,8 +284,8 @@ private:
     bool is_compressed = false;
 
     bool is_encrypted = false;
-    std::array<u8, 16>
-        primary_key{}; // for decrypting exheader, exefs header and icon/banner section
+    // for decrypting exheader, exefs header and icon/banner section
+    std::array<u8, 16> primary_key{};
     std::array<u8, 16> secondary_key{}; // for decrypting romfs and .code section
     std::array<u8, 16> exheader_ctr{};
     std::array<u8, 16> exefs_ctr{};
