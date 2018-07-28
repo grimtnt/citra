@@ -274,7 +274,7 @@ static ResultCode WaitSynchronization1(Handle handle, s64 nano_seconds) {
     if (object == nullptr)
         return ERR_INVALID_HANDLE;
 
-    LOG_TRACE(Kernel_SVC, "called handle=0x{:08X}({}:{}), nanoseconds=%lld", handle,
+    LOG_TRACE(Kernel_SVC, "called handle=0x{:08X}({}:{}), nanoseconds={}", handle,
               object->GetTypeName(), object->GetName(), nano_seconds);
 
     if (object->ShouldWait(thread)) {
@@ -662,9 +662,9 @@ static void Break(u8 break_reason) {
 
 /// Used to output a message on a debug hardware unit - does nothing on a retail unit
 static void OutputDebugString(VAddr address, int len) {
-    std::vector<char> string(len);
+    std::string string(len, ' ');
     Memory::ReadBlock(address, string.data(), len);
-    LOG_DEBUG(Debug_Emulated, "%.*s", len, string.data());
+    LOG_DEBUG(Debug_Emulated, "{}", string);
 }
 
 /// Get resource limit
@@ -973,7 +973,7 @@ static ResultCode SignalEvent(Handle handle) {
 
 /// Clears an event
 static ResultCode ClearEvent(Handle handle) {
-    LOG_TRACE(Kernel_SVC, "called event=0x%08X", handle);
+    LOG_TRACE(Kernel_SVC, "called event=0x{:08X}", handle);
 
     SharedPtr<Event> evt = g_handle_table.Get<Event>(handle);
     if (evt == nullptr)
