@@ -77,7 +77,7 @@ void MultiplayerState::retranslateUi() {
     }
 }
 
-void MultiplayerState::UpdateUITheme() {
+void MultiplayerState::UpdateThemedIcons() {
     if (current_state == Network::RoomMember::State::Joined) {
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
     } else {
