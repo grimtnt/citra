@@ -135,6 +135,7 @@ EmuWindow_SDL2::EmuWindow_SDL2(bool fullscreen) {
     SDL_PumpEvents();
     SDL_GL_SetSwapInterval(Settings::values.use_vsync);
     LOG_INFO(Frontend, "Citra version: {}", Common::g_build_version);
+    Settings::LogSettings();
 
     DoneCurrent();
 }
