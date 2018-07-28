@@ -96,6 +96,15 @@ static void ShowCalloutMessage(const QString& message, CalloutFlag flag) {
 void GMainWindow::ShowCallouts() {}
 
 GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
+    Log::Filter log_filter;
+    log_filter.ParseFilterString(Settings::values.log_filter);
+    Log::SetGlobalFilter(log_filter);
+    FileUtil::CreateFullPath(FileUtil::GetUserPath(D_LOGS_IDX));
+    Log::AddBackend(
+        std::make_unique<Log::FileBackend>(FileUtil::GetUserPath(D_LOGS_IDX) + LOG_FILE));
+    Util::ToggleConsole();
+    Settings::LogSettings();
+
     // register types to use in slots and signals
     qRegisterMetaType<size_t>("size_t");
     qRegisterMetaType<Service::AM::InstallStatus>("Service::AM::InstallStatus");
@@ -323,7 +332,6 @@ void GMainWindow::RestoreUIState() {
 
     ui.action_Show_Status_Bar->setChecked(UISettings::values.show_status_bar);
     statusBar()->setVisible(ui.action_Show_Status_Bar->isChecked());
-    Util::ToggleConsole();
 }
 
 void GMainWindow::ConnectWidgetEvents() {
@@ -1503,13 +1511,6 @@ int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "C");
 
     GMainWindow main_window;
-    // After settings have been loaded by GMainWindow, apply the filter
-    Log::Filter log_filter;
-    log_filter.ParseFilterString(Settings::values.log_filter);
-    Log::SetGlobalFilter(log_filter);
-    FileUtil::CreateFullPath(FileUtil::GetUserPath(D_LOGS_IDX));
-    Log::AddBackend(
-        std::make_unique<Log::FileBackend>(FileUtil::GetUserPath(D_LOGS_IDX) + LOG_FILE));
 
     // Register CameraFactory
     Camera::RegisterFactory("image", std::make_unique<Camera::StillImageCameraFactory>());
