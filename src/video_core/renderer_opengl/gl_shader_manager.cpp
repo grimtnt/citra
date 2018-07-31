@@ -263,8 +263,8 @@ public:
     OGLPipeline pipeline;
 };
 
-ShaderProgramManager::ShaderProgramManager(bool separable)
-    : impl(std::make_unique<Impl>(separable)) {}
+ShaderProgramManager::ShaderProgramManager(bool separable, bool is_amd)
+    : impl(std::make_unique<Impl>(separable)), is_amd(is_amd) {}
 
 ShaderProgramManager::~ShaderProgramManager() = default;
 
@@ -304,11 +304,15 @@ void ShaderProgramManager::UseFragmentShader(const GLShader::PicaFSConfig& confi
 
 void ShaderProgramManager::ApplyTo(OpenGLState& state) {
     if (impl->separable) {
-        // Without this reseting, AMD sometimes freezes when one stage is changed but not for the
-        // others
-        glUseProgramStages(impl->pipeline.handle,
-                           GL_VERTEX_SHADER_BIT | GL_GEOMETRY_SHADER_BIT | GL_FRAGMENT_SHADER_BIT,
-                           0);
+        if (is_amd) {
+            // Without this reseting, AMD sometimes freezes when one stage is changed but not for
+            // the others.
+            // On the other hand, including this reset seems to introduce memory leak in Intel
+            // Graphics.
+            glUseProgramStages(
+                impl->pipeline.handle,
+                GL_VERTEX_SHADER_BIT | GL_GEOMETRY_SHADER_BIT | GL_FRAGMENT_SHADER_BIT, 0);
+        }
 
         glUseProgramStages(impl->pipeline.handle, GL_VERTEX_SHADER_BIT, impl->current.vs);
         glUseProgramStages(impl->pipeline.handle, GL_GEOMETRY_SHADER_BIT, impl->current.gs);
