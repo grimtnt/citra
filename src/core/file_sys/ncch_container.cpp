@@ -157,16 +157,20 @@ Loader::ResultStatus NCCHContainer::Load() {
             } else {
                 using namespace HW::AES;
                 InitKeys();
-                if (ncch_header.seed_crypto) {
+                std::array<u8, 16> key_y_primary, key_y_secondary;
+
+                std::copy(ncch_header.signature, ncch_header.signature + key_y_primary.size(),
+                          key_y_primary.begin());
+
+                if (!ncch_header.seed_crypto) {
+                    key_y_secondary = key_y_primary;
+                } else {
                     // Seed crypto is unimplemented.
                     LOG_ERROR(Service_FS, "Unsupported seed crypto");
                     failed_to_decrypt = true;
                 }
 
-                std::array<u8, 16> key_y;
-                std::copy(ncch_header.signature, ncch_header.signature + key_y.size(),
-                          key_y.begin());
-                SetKeyY(KeySlotID::NCCHSecure1, key_y);
+                SetKeyY(KeySlotID::NCCHSecure1, key_y_primary);
                 if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure1)) {
                     LOG_ERROR(Service_FS, "Secure1 KeyX missing");
                     failed_to_decrypt = true;
@@ -180,7 +184,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                     break;
                 case 1:
                     LOG_DEBUG(Service_FS, "Secure2 crypto");
-                    SetKeyY(KeySlotID::NCCHSecure2, key_y);
+                    SetKeyY(KeySlotID::NCCHSecure2, key_y_secondary);
                     if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure2)) {
                         LOG_ERROR(Service_FS, "Secure2 KeyX missing");
                         failed_to_decrypt = true;
@@ -189,7 +193,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                     break;
                 case 10:
                     LOG_DEBUG(Service_FS, "Secure3 crypto");
-                    SetKeyY(KeySlotID::NCCHSecure3, key_y);
+                    SetKeyY(KeySlotID::NCCHSecure3, key_y_secondary);
                     if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure3)) {
                         LOG_ERROR(Service_FS, "Secure3 KeyX missing");
                         failed_to_decrypt = true;
@@ -198,7 +202,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                     break;
                 case 11:
                     LOG_DEBUG(Service_FS, "Secure4 crypto");
-                    SetKeyY(KeySlotID::NCCHSecure4, key_y);
+                    SetKeyY(KeySlotID::NCCHSecure4, key_y_secondary);
                     if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure4)) {
                         LOG_ERROR(Service_FS, "Secure4 KeyX missing");
                         failed_to_decrypt = true;
