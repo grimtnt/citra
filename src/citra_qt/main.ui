@@ -329,11 +329,17 @@
    </property>
   </action>
   <action name="action_Record_Movie">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Record Movie</string>
    </property>
   </action>
   <action name="action_Play_Movie">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Play Movie</string>
    </property>
