@@ -121,5 +121,4 @@ public:
 private:
     class Impl;
     std::unique_ptr<Impl> impl;
-    bool is_amd;
 };
