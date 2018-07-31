@@ -2308,6 +2308,7 @@ inline SSLClient::SSLClient(const char* host, int port, size_t timeout_sec)
         : Client(host, port, timeout_sec)
 {
     ctx_ = SSL_CTX_new(SSLv23_client_method());
+    SSL_CTX_set_verify(ctx_, SSL_VERIFY_NONE, NULL);
 }
 
 inline SSLClient::~SSLClient()
