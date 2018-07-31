@@ -151,7 +151,7 @@ Loader::ResultStatus NCCHContainer::Load() {
 
             // Find primary and secondary keys
             if (ncch_header.fixed_key) {
-                LOG_INFO(Service_FS, "Fixed-key crypto");
+                LOG_DEBUG(Service_FS, "Fixed-key crypto");
                 primary_key.fill(0);
                 secondary_key.fill(0);
             } else {
@@ -159,7 +159,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                 InitKeys();
                 if (ncch_header.seed_crypto) {
                     // Seed crypto is unimplemented.
-                    LOG_ERROR(Service_FS, "Unsupoorted seed crypto");
+                    LOG_ERROR(Service_FS, "Unsupported seed crypto");
                     failed_to_decrypt = true;
                 }
 
@@ -175,11 +175,11 @@ Loader::ResultStatus NCCHContainer::Load() {
 
                 switch (ncch_header.secondary_key_slot) {
                 case 0:
-                    LOG_INFO(Service_FS, "Secure1 crypto");
+                    LOG_DEBUG(Service_FS, "Secure1 crypto");
                     secondary_key = primary_key;
                     break;
                 case 1:
-                    LOG_INFO(Service_FS, "Secure2 crypto");
+                    LOG_DEBUG(Service_FS, "Secure2 crypto");
                     SetKeyY(KeySlotID::NCCHSecure2, key_y);
                     if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure2)) {
                         LOG_ERROR(Service_FS, "Secure2 KeyX missing");
@@ -188,7 +188,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                     secondary_key = GetNormalKey(KeySlotID::NCCHSecure2);
                     break;
                 case 10:
-                    LOG_INFO(Service_FS, "Secure3 crypto");
+                    LOG_DEBUG(Service_FS, "Secure3 crypto");
                     SetKeyY(KeySlotID::NCCHSecure3, key_y);
                     if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure3)) {
                         LOG_ERROR(Service_FS, "Secure3 KeyX missing");
@@ -197,7 +197,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                     secondary_key = GetNormalKey(KeySlotID::NCCHSecure3);
                     break;
                 case 11:
-                    LOG_INFO(Service_FS, "Secure4 crypto");
+                    LOG_DEBUG(Service_FS, "Secure4 crypto");
                     SetKeyY(KeySlotID::NCCHSecure4, key_y);
                     if (!IsNormalKeyAvailable(KeySlotID::NCCHSecure4)) {
                         LOG_ERROR(Service_FS, "Secure4 KeyX missing");
@@ -212,7 +212,7 @@ Loader::ResultStatus NCCHContainer::Load() {
             // Written with reference to
             // https://github.com/d0k3/GodMode9/blob/99af6a73be48fa7872649aaa7456136da0df7938/arm9/source/game/ncch.c#L34-L52
             if (ncch_header.version == 0 || ncch_header.version == 2) {
-                LOG_INFO(Loader, "NCCH version 0/2");
+                LOG_DEBUG(Loader, "NCCH version 0/2");
                 // In this version, CTR for each section is a magic number prefixed by partition ID
                 // (reverse order)
                 std::reverse_copy(ncch_header.partition_id, ncch_header.partition_id + 8,
@@ -222,7 +222,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                 exefs_ctr[8] = 2;
                 romfs_ctr[8] = 3;
             } else if (ncch_header.version == 1) {
-                LOG_INFO(Loader, "NCCH version 1");
+                LOG_DEBUG(Loader, "NCCH version 1");
                 // In this version, CTR for each section is the section offset prefixed by partition
                 // ID, as if the entire NCCH image is encrypted using a single CTR stream.
                 std::copy(ncch_header.partition_id, ncch_header.partition_id + 8,
@@ -248,7 +248,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                 failed_to_decrypt = true;
             }
         } else {
-            LOG_INFO(Service_FS, "No crypto");
+            LOG_DEBUG(Service_FS, "No crypto");
             is_encrypted = false;
         }
 
