@@ -1456,9 +1456,9 @@ void GMainWindow::OnMoviePlaybackCompleted() {
 
 void GMainWindow::SetupUIStrings() {
     if (game_title.isEmpty()) {
-        setWindowTitle(tr("Citra %1").arg(Common::g_build_fullname));
+        setWindowTitle(tr("Citra Valentin %1").arg(Common::g_build_fullname));
     } else {
-        setWindowTitle(tr("Citra %1| %2").arg(Common::g_build_fullname, game_title));
+        setWindowTitle(tr("Citra Valentin %1| %2").arg(Common::g_build_fullname, game_title));
     }
 }
 
