@@ -11,6 +11,7 @@
 #include "common/common_types.h"
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
+#include "core/hle/shared_page.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
 #include "core/memory.h"
@@ -21,7 +22,7 @@ class ARM_Interface;
 
 namespace AudioCore {
 class DspInterface;
-}
+} // namespace AudioCore
 
 namespace Service {
 namespace SM {
@@ -175,6 +176,10 @@ public:
         return *qt_callbacks;
     }
 
+    std::shared_ptr<SharedPage::Handler> GetSharedPageHandler() const {
+        return shared_page_handler;
+    }
+
 private:
     /**
      * Initialize the emulated system.
@@ -204,6 +209,9 @@ private:
 
     /// Service manager
     std::shared_ptr<Service::SM::ServiceManager> service_manager;
+
+    /// Shared Page
+    std::shared_ptr<SharedPage::Handler> shared_page_handler;
 
     static System s_instance;
 
