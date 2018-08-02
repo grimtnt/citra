@@ -49,9 +49,6 @@ ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& param
 ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parameter) {
     is_running = true;
 
-    ASSERT_MSG(parameter.buffer.size() == sizeof(config),
-               "The size of the parameter (ErrEulaConfig) is wrong");
-
     std::memcpy(&config, parameter.buffer.data(), parameter.buffer.size());
 
     return RESULT_SUCCESS;
