@@ -30,6 +30,6 @@ struct SinkDetails {
 
 extern const std::vector<SinkDetails> g_sink_details;
 
-const SinkDetails& GetSinkDetails(std::string sink_id);
+const SinkDetails& GetSinkDetails(const std::string& sink_id);
 
 } // namespace AudioCore
