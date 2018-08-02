@@ -103,12 +103,12 @@ public:
     ~ShaderProgramManager();
 
     bool UseProgrammableVertexShader(const GLShader::PicaVSConfig& config,
-                                     const Pica::Shader::ShaderSetup setup);
+                                     const Pica::Shader::ShaderSetup& setup);
 
     void UseTrivialVertexShader();
 
     bool UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
-                                       const Pica::Shader::ShaderSetup setup);
+                                       const Pica::Shader::ShaderSetup& setup);
 
     void UseFixedGeometryShader(const GLShader::PicaFixedGSConfig& config);
 
