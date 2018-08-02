@@ -12,7 +12,6 @@
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "common/math_util.h"
-#include "common/microprofile.h"
 #include "common/quaternion.h"
 #include "common/vector_math.h"
 #include "core/hw/gpu.h"
