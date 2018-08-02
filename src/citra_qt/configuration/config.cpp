@@ -87,6 +87,10 @@ void Config::ReadValues() {
     Settings::values.touch_device =
         qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
 
+    Settings::values.udp_input_address =
+        qt_config->value("udp_input_address", "127.0.0.1").toString().toStdString();
+    Settings::values.udp_input_port = qt_config->value("udp_input_port", 26760).toInt();
+
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
@@ -318,6 +322,9 @@ void Config::SaveValues() {
     }
     qt_config->setValue("motion_device", QString::fromStdString(Settings::values.motion_device));
     qt_config->setValue("touch_device", QString::fromStdString(Settings::values.touch_device));
+    qt_config->setValue("udp_input_address",
+                        QString::fromStdString(Settings::values.udp_input_address));
+    qt_config->setValue("udp_input_port", Settings::values.udp_input_port);
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");

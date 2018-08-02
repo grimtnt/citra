@@ -39,13 +39,13 @@ n_state =
 #      - "code": the code of the key to bind
 #  - "sdl" for joystick input using SDL. Required parameters:
 #      - "joystick": the index of the joystick to bind
-#      - "button"(optional): the index of the button to bind
-#      - "hat"(optional): the index of the hat to bind as direction buttons
-#      - "axis"(optional): the index of the axis to bind
-#      - "direction"(only used for hat): the direction name of the hat to bind. Can be "up", "down", "left" or "right"
-#      - "threshold"(only used for axis): a float value in (-1.0, 1.0) which the button is
+#      - "button" (optional): the index of the button to bind
+#      - "hat" (optional): the index of the hat to bind as direction buttons
+#      - "axis" (optional): the index of the axis to bind
+#      - "direction" (only used for hat): the direction name of the hat to bind. Can be "up", "down", "left" or "right"
+#      - "threshold" (only used for axis): a float value in (-1.0, 1.0) which the button is
 #          triggered if the axis value crosses
-#      - "direction"(only used for axis): "+" means the button is triggered when the axis value
+#      - "direction" (only used for axis): "+" means the button is triggered when the axis value
 #          is greater than the threshold; "-" means the button is triggered when the axis value
 #          is smaller than the threshold
 button_a=
@@ -83,11 +83,25 @@ c_stick=
 #      - "update_period": update period in milliseconds (default to 100)
 #      - "sensitivity": the coefficient converting mouse movement to tilting angle (default to 0.00125)
 #      - "tilt_clamp": the max value of the tilt angle in degrees (default to 90)
+#  - "udp" reads motion input from a udp server that uses cemuhook's udp protocol
 motion_device=
 
 # for touch input, the following devices are available:
 #  - "emu_window" (default) for emulating touch input from mouse input to the emulation window. No parameters required
+#  - "udp" reads touch input from a udp server that uses cemuhook's udp protocol
+#      - "min_x", "min_y", "max_x", "max_y": defines the udp device's touch screen coordinate system
 touch_device=
+
+# Most desktop operating systems do not expose a way to poll the motion state of the controllers
+# so as a way around it, cemuhook created a udp client/server protocol to broadcast the data directly
+# from a controller device to the client program. Citra has a client that can connect and read
+# from any cemuhook compatible motion program.
+
+# IPv4 address of the udp input server (Default "127.0.0.1")
+udp_input_address=
+
+# Port of the udp input server. (Default 26760)
+udp_input_port=
 
 [Core]
 # Whether to use the Just-In-Time (JIT) compiler for CPU emulation
