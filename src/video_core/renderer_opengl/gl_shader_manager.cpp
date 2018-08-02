@@ -271,7 +271,7 @@ ShaderProgramManager::ShaderProgramManager(bool separable, bool is_amd)
 ShaderProgramManager::~ShaderProgramManager() = default;
 
 bool ShaderProgramManager::UseProgrammableVertexShader(const GLShader::PicaVSConfig& config,
-                                                       const Pica::Shader::ShaderSetup setup) {
+                                                       const Pica::Shader::ShaderSetup& setup) {
     GLuint handle = impl->programmable_vertex_shaders.Get(config, setup);
     if (handle == 0)
         return false;
@@ -284,7 +284,7 @@ void ShaderProgramManager::UseTrivialVertexShader() {
 }
 
 bool ShaderProgramManager::UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
-                                                         const Pica::Shader::ShaderSetup setup) {
+                                                         const Pica::Shader::ShaderSetup& setup) {
     GLuint handle = impl->programmable_geometry_shaders.Get(config, setup);
     if (handle == 0)
         return false;
