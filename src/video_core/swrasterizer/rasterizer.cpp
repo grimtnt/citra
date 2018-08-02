@@ -12,6 +12,7 @@
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "common/math_util.h"
+#include "common/microprofile.h"
 #include "common/quaternion.h"
 #include "common/vector_math.h"
 #include "core/hw/gpu.h"
@@ -266,7 +267,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
             }
 
             // Clamp the result
-            depth = MathUtil::Clamp(depth, 0.0f, 1.0f);
+            depth = std::clamp(depth, 0.0f, 1.0f);
 
             // Perspective correct attribute interpolation:
             // Attribute values cannot be calculated by simple linear interpolation since
@@ -640,11 +641,11 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                 }
 
                 // Generate clamped fog factor from LUT for given fog index
-                float fog_i = MathUtil::Clamp(floorf(fog_index), 0.0f, 127.0f);
+                float fog_i = std::clamp(floorf(fog_index), 0.0f, 127.0f);
                 float fog_f = fog_index - fog_i;
                 const auto& fog_lut_entry = g_state.fog.lut[static_cast<unsigned int>(fog_i)];
                 float fog_factor = fog_lut_entry.ToFloat() + fog_lut_entry.DiffToFloat() * fog_f;
-                fog_factor = MathUtil::Clamp(fog_factor, 0.0f, 1.0f);
+                fog_factor = std::clamp(fog_factor, 0.0f, 1.0f);
 
                 // Blend the fog
                 for (unsigned i = 0; i < 3; i++) {
