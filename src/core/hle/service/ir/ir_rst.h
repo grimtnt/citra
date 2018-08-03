@@ -20,11 +20,7 @@ class SharedMemory;
 
 namespace CoreTiming {
 struct EventType;
-<<<<<<< HEAD
 } // namespace CoreTiming
-=======
-};
->>>>>>> c35a251d8... Merge pull request #3985 from BreadFish64/fix-warnings
 
 namespace Service {
 namespace IR {
@@ -80,7 +76,7 @@ private:
 
     void LoadInputDevices();
     void UnloadInputDevices();
-    void UpdateCallback(u64 userdata, s64 cycles_late);
+    void UpdateCallback(u64 userdata, u64 cycles_late);
 
     Kernel::SharedPtr<Kernel::Event> update_event;
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;

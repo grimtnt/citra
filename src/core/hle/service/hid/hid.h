@@ -25,11 +25,7 @@ class SharedMemory;
 
 namespace CoreTiming {
 struct EventType;
-<<<<<<< HEAD
 } // namespace CoreTiming
-=======
-};
->>>>>>> c35a251d8... Merge pull request #3985 from BreadFish64/fix-warnings
 
 namespace Service {
 
