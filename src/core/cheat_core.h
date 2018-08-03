@@ -149,8 +149,8 @@ public:
         type = "Gateway";
     }
 
-    GatewayCheat(std::vector<CheatLine> cheat_lines, std::vector<std::string> notes,
-                 bool enabled, std::string name)
+    GatewayCheat(std::vector<CheatLine> cheat_lines, std::vector<std::string> notes, bool enabled,
+                 std::string name)
         : GatewayCheat{std::move(name)} {
         this->cheat_lines = std::move(cheat_lines);
         this->notes = std::move(notes);

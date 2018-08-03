@@ -6,10 +6,10 @@
 #include "common/common_paths.h"
 #include "common/file_util.h"
 #include "core/cheat_core.h"
+#include "core/core.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
-#include "core/core.h"
 
 namespace CheatCore {
 

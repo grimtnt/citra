@@ -100,8 +100,9 @@ EmuWindow_SDL2::EmuWindow_SDL2(bool fullscreen) {
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
 
-    std::string window_title = Common::StringFromFormat(
-        "Citra Valentin %s| %s-%s ", Common::g_build_fullname, Common::g_scm_branch, Common::g_scm_desc);
+    std::string window_title =
+        Common::StringFromFormat("Citra Valentin %s| %s-%s ", Common::g_build_fullname,
+                                 Common::g_scm_branch, Common::g_scm_desc);
     render_window =
         SDL_CreateWindow(window_title.c_str(),
                          SDL_WINDOWPOS_UNDEFINED, // x position

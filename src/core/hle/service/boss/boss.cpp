@@ -135,8 +135,9 @@ void Module::Interface::RegisterTask(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}, unk_param3={:#04X}",
-                size, unk_param2, unk_param3);
+    LOG_WARNING(Service_BOSS,
+                "(STUBBED) called, size={:#010X}, unk_param2={:#04X}, unk_param3={:#04X}", size,
+                unk_param2, unk_param3);
 }
 
 void Module::Interface::UnregisterTask(Kernel::HLERequestContext& ctx) {
@@ -149,7 +150,8 @@ void Module::Interface::UnregisterTask(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size, unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size,
+                unk_param2);
 }
 
 void Module::Interface::ReconfigureTask(Kernel::HLERequestContext& ctx) {
@@ -162,7 +164,8 @@ void Module::Interface::ReconfigureTask(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size, unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size,
+                unk_param2);
 }
 
 void Module::Interface::GetTaskIdList(Kernel::HLERequestContext& ctx) {
@@ -276,7 +279,8 @@ void Module::Interface::SendProperty(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, property_id={:#06X}, size={:#010X}", property_id, size);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, property_id={:#06X}, size={:#010X}", property_id,
+                size);
 }
 
 void Module::Interface::SendPropertyHandle(Kernel::HLERequestContext& ctx) {
@@ -301,7 +305,8 @@ void Module::Interface::ReceiveProperty(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(size); /// Should be actual read size
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, property_id={:#06X}, size={:#010X}", property_id, size);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, property_id={:#06X}, size={:#010X}", property_id,
+                size);
 }
 
 void Module::Interface::UpdateTaskInterval(Kernel::HLERequestContext& ctx) {
@@ -314,7 +319,8 @@ void Module::Interface::UpdateTaskInterval(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#06X}", size, unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#06X}", size,
+                unk_param2);
 }
 
 void Module::Interface::UpdateTaskCount(Kernel::HLERequestContext& ctx) {
@@ -327,7 +333,8 @@ void Module::Interface::UpdateTaskCount(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#010X}", size, unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#010X}", size,
+                unk_param2);
 }
 
 void Module::Interface::GetTaskInterval(Kernel::HLERequestContext& ctx) {
@@ -473,8 +480,9 @@ void Module::Interface::GetTaskStatus(Kernel::HLERequestContext& ctx) {
     rb.Push<u8>(0); // stub 0 (8 bit value)
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}, unk_param3={:#04X}",
-                size, unk_param2, unk_param3);
+    LOG_WARNING(Service_BOSS,
+                "(STUBBED) called, size={:#010X}, unk_param2={:#04X}, unk_param3={:#04X}", size,
+                unk_param2, unk_param3);
 }
 
 void Module::Interface::GetTaskError(Kernel::HLERequestContext& ctx) {
@@ -488,7 +496,8 @@ void Module::Interface::GetTaskError(Kernel::HLERequestContext& ctx) {
     rb.Push<u8>(0); // stub 0 (8 bit value)
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size, unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size,
+                unk_param2);
 }
 
 void Module::Interface::GetTaskInfo(Kernel::HLERequestContext& ctx) {
@@ -501,7 +510,8 @@ void Module::Interface::GetTaskInfo(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size, unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}", size,
+                unk_param2);
 }
 
 void Module::Interface::DeleteNsData(Kernel::HLERequestContext& ctx) {
@@ -542,8 +552,9 @@ void Module::Interface::ReadNsData(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(0);    /// unknown
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, ns_data_id={:#010X}, offset={:#018X}, size={:#010X}",
-                ns_data_id, offset, size);
+    LOG_WARNING(Service_BOSS,
+                "(STUBBED) called, ns_data_id={:#010X}, offset={:#018X}, size={:#010X}", ns_data_id,
+                offset, size);
 }
 
 void Module::Interface::SetNsDataAdditionalInfo(Kernel::HLERequestContext& ctx) {
@@ -554,8 +565,8 @@ void Module::Interface::SetNsDataAdditionalInfo(Kernel::HLERequestContext& ctx) 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}", unk_param1,
-                unk_param2);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, unk_param2={:#010X}",
+                unk_param1, unk_param2);
 }
 
 void Module::Interface::GetNsDataAdditionalInfo(Kernel::HLERequestContext& ctx) {
@@ -577,8 +588,8 @@ void Module::Interface::SetNsDataNewFlag(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#04X}", unk_param1,
-                ns_data_new_flag);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#04X}",
+                unk_param1, ns_data_new_flag);
 }
 
 void Module::Interface::GetNsDataNewFlag(Kernel::HLERequestContext& ctx) {
@@ -589,8 +600,8 @@ void Module::Interface::GetNsDataNewFlag(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(ns_data_new_flag);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#04X}", unk_param1,
-                ns_data_new_flag);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, unk_param1={:#010X}, ns_data_new_flag={:#04X}",
+                unk_param1, ns_data_new_flag);
 }
 
 void Module::Interface::GetNsDataLastUpdate(Kernel::HLERequestContext& ctx) {
@@ -709,8 +720,9 @@ void Module::Interface::RegisterImmediateTask(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, size={:#010X}, unk_param2={:#04X}, unk_param3={:#04X}",
-                size, unk_param2, unk_param3);
+    LOG_WARNING(Service_BOSS,
+                "(STUBBED) called, size={:#010X}, unk_param2={:#04X}, unk_param3={:#04X}", size,
+                unk_param2, unk_param3);
 }
 
 void Module::Interface::SetTaskQuery(Kernel::HLERequestContext& ctx) {
@@ -819,7 +831,8 @@ void Module::Interface::SendPropertyPrivileged(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, property_id={:#06X}, size={:#010X}", property_id, size);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, property_id={:#06X}, size={:#010X}", property_id,
+                size);
 }
 
 void Module::Interface::DeleteNsDataPrivileged(Kernel::HLERequestContext& ctx) {
@@ -830,8 +843,8 @@ void Module::Interface::DeleteNsDataPrivileged(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_BOSS, "(STUBBED) called, programID={:#018X}, ns_data_id={:#010X}", programID,
-                ns_data_id);
+    LOG_WARNING(Service_BOSS, "(STUBBED) called, programID={:#018X}, ns_data_id={:#010X}",
+                programID, ns_data_id);
 }
 
 void Module::Interface::GetNsDataHeaderInfoPrivileged(Kernel::HLERequestContext& ctx) {
@@ -846,9 +859,10 @@ void Module::Interface::GetNsDataHeaderInfoPrivileged(Kernel::HLERequestContext&
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS,
-                "(STUBBED) called, programID={:#018X} ns_data_id={:#010X}, type={:#04X}, size={:#010X}",
-                programID, ns_data_id, type, size);
+    LOG_WARNING(
+        Service_BOSS,
+        "(STUBBED) called, programID={:#018X} ns_data_id={:#010X}, type={:#04X}, size={:#010X}",
+        programID, ns_data_id, type, size);
 }
 
 void Module::Interface::ReadNsDataPrivileged(Kernel::HLERequestContext& ctx) {
@@ -865,9 +879,10 @@ void Module::Interface::ReadNsDataPrivileged(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(0);    /// unknown
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_BOSS,
-                "(STUBBED) called, programID={:#018X}, ns_data_id={:#010X}, offset={:#018X}, size={:#010X}",
-                programID, ns_data_id, offset, size);
+    LOG_WARNING(
+        Service_BOSS,
+        "(STUBBED) called, programID={:#018X}, ns_data_id={:#010X}, offset={:#018X}, size={:#010X}",
+        programID, ns_data_id, offset, size);
 }
 
 void Module::Interface::SetNsDataNewFlagPrivileged(Kernel::HLERequestContext& ctx) {
@@ -879,10 +894,10 @@ void Module::Interface::SetNsDataNewFlagPrivileged(Kernel::HLERequestContext& ct
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(
-        Service_BOSS,
-        "(STUBBED) called, programID={:#018X}, unk_param1={:#010X}, ns_data_new_flag_privileged={:#04X}",
-        programID, unk_param1, ns_data_new_flag_privileged);
+    LOG_WARNING(Service_BOSS,
+                "(STUBBED) called, programID={:#018X}, unk_param1={:#010X}, "
+                "ns_data_new_flag_privileged={:#04X}",
+                programID, unk_param1, ns_data_new_flag_privileged);
 }
 
 void Module::Interface::GetNsDataNewFlagPrivileged(Kernel::HLERequestContext& ctx) {
@@ -894,10 +909,10 @@ void Module::Interface::GetNsDataNewFlagPrivileged(Kernel::HLERequestContext& ct
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(ns_data_new_flag_privileged);
 
-    LOG_WARNING(
-        Service_BOSS,
-        "(STUBBED) called, programID={:#018X}, unk_param1={:#010X}, ns_data_new_flag_privileged={:#04X}",
-        programID, unk_param1, ns_data_new_flag_privileged);
+    LOG_WARNING(Service_BOSS,
+                "(STUBBED) called, programID={:#018X}, unk_param1={:#010X}, "
+                "ns_data_new_flag_privileged={:#04X}",
+                programID, unk_param1, ns_data_new_flag_privileged);
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> boss, const char* name, u32 max_session)

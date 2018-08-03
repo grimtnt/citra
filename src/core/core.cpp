@@ -19,8 +19,8 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/thread.h"
-#include "core/hle/service/service.h"
 #include "core/hle/service/am/am.h"
+#include "core/hle/service/service.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hw/hw.h"
 #include "core/loader/loader.h"
@@ -220,7 +220,7 @@ void System::Jump() {
     Shutdown();
     if (jump_tid == 0) {
         Load(m_emu_window, m_filepath);
-        return;  
+        return;
     }
     auto path = Service::AM::GetTitleContentPath(jump_media, jump_tid);
     Load(m_emu_window, path);

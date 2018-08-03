@@ -512,7 +512,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
                    "configuration window.<br/><br/>"
                    "Ensure that you have the latest graphics drivers for your GPU."));
             break;
- 
+
         case Core::System::ResultStatus::ErrorVideoCore_ErrorGenericDrivers:
             QMessageBox::critical(
                 this, tr("Video Core Error!"),
@@ -550,8 +550,8 @@ bool GMainWindow::LoadROM(const QString& filename) {
     presence.state = game_title.isEmpty() ? "Unknown game" : game_title.toLocal8Bit().constData();
     presence.details = "Playing";
     presence.startTimestamp = std::chrono::duration_cast<std::chrono::seconds>(
-                              std::chrono::system_clock::now().time_since_epoch())
-                              .count();
+                                  std::chrono::system_clock::now().time_since_epoch())
+                                  .count();
     presence.largeImageKey = "icon";
     Discord_UpdatePresence(&presence);
 #endif
@@ -1138,10 +1138,10 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnRecordMovie() {
-    const QString path = 
+    const QString path =
         QFileDialog::getSaveFileName(this, tr("Record Movie"), "", tr("Citra TAS Movie (*.ctm)"));
     if (path.isEmpty())
-        return; 
+        return;
     Core::Movie::GetInstance().StartRecording(path.toStdString());
     ui.action_Record_Movie->setEnabled(false);
     ui.action_Play_Movie->setEnabled(false);

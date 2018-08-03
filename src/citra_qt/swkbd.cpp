@@ -14,18 +14,21 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent, SoftwareKeyboard
     ui->setupUi(this);
     setWindowTitle(tr("Software Keyboard"));
     switch (config.num_buttons_m1) {
-        case SwkbdButtonConfig::SingleButton:
-            ui->button0->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) == ValidationError::None);
-            break;
-        case SwkbdButtonConfig::DualButton:
-            ui->button1->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) == ValidationError::None);
-            break;
-        case SwkbdButtonConfig::TripleButton:
-            ui->button2->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) == ValidationError::None);
-            break;
-        default:
-            UNREACHABLE();
-            break;
+    case SwkbdButtonConfig::SingleButton:
+        ui->button0->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
+                                ValidationError::None);
+        break;
+    case SwkbdButtonConfig::DualButton:
+        ui->button1->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
+                                ValidationError::None);
+        break;
+    case SwkbdButtonConfig::TripleButton:
+        ui->button2->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
+                                ValidationError::None);
+        break;
+    default:
+        UNREACHABLE();
+        break;
     }
     std::u16string button0_text(reinterpret_cast<char16_t*>(config.button_text[0]));
     std::u16string button1_text(reinterpret_cast<char16_t*>(config.button_text[1]));
@@ -48,18 +51,21 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent, SoftwareKeyboard
                              : QString::fromStdU16String(button2_text));
     connect(ui->text, &QTextEdit::textChanged, [&] {
         switch (config.num_buttons_m1) {
-            case SwkbdButtonConfig::SingleButton:
-                ui->button0->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) == ValidationError::None);
-                break;
-            case SwkbdButtonConfig::DualButton:
-                ui->button1->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) == ValidationError::None);
-                break;
-            case SwkbdButtonConfig::TripleButton:
-                ui->button2->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) == ValidationError::None);
-                break;
-            default:
-                UNREACHABLE();
-                break;
+        case SwkbdButtonConfig::SingleButton:
+            ui->button0->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
+                                    ValidationError::None);
+            break;
+        case SwkbdButtonConfig::DualButton:
+            ui->button1->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
+                                    ValidationError::None);
+            break;
+        case SwkbdButtonConfig::TripleButton:
+            ui->button2->setEnabled(ValidateInput(config, ui->text->toPlainText().toStdString()) ==
+                                    ValidationError::None);
+            break;
+        default:
+            UNREACHABLE();
+            break;
         }
     });
     connect(ui->button0, &QPushButton::clicked, [&](bool) {

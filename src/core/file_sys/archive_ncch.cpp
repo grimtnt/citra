@@ -141,8 +141,9 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
                 u64 romfs_size = bad_word_list_file.size();
                 std::unique_ptr<DelayGenerator> delay_generator =
                     std::make_unique<RomFSDelayGenerator>();
-                file = std::make_unique<IVFCFileInMemory>(std::move(bad_word_list_file), romfs_offset,
-                                                          romfs_size, std::move(delay_generator));
+                file =
+                    std::make_unique<IVFCFileInMemory>(std::move(bad_word_list_file), romfs_offset,
+                                                       romfs_size, std::move(delay_generator));
                 return MakeResult<std::unique_ptr<FileBackend>>(std::move(file));
             }
         }

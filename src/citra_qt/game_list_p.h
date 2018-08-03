@@ -410,7 +410,7 @@ public:
     int visible;
     int total;
 
-private: 
+private:
     class KeyReleaseEater : public QObject {
     public:
         explicit KeyReleaseEater(GameList* gamelist);

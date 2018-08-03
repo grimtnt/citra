@@ -9,8 +9,8 @@
 #include <QVBoxLayout>
 #include "citra_qt/cheatsearch.h"
 #include "common/common_types.h"
-#include "core/memory.h"
 #include "core/core.h"
+#include "core/memory.h"
 #include "ui_cheatsearch.h"
 
 CheatSearch::CheatSearch(QWidget* parent)
