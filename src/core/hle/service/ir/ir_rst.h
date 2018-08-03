@@ -76,7 +76,7 @@ private:
 
     void LoadInputDevices();
     void UnloadInputDevices();
-    void UpdateCallback(u64 userdata, u64 cycles_late);
+    void UpdateCallback(u64 userdata, s64 cycles_late);
 
     Kernel::SharedPtr<Kernel::Event> update_event;
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
