@@ -373,6 +373,13 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
+    connect(ui.action_Dump_RAM, &QAction::triggered, this, [&] {
+        FileUtil::IOFile file("ramdump.bin", "wb");
+        u8* ram = new u8[0x08000000];
+        Memory::ReadBlock(0x08000000, ram, 0x08000000);
+        file.WriteBytes(ram, 0x08000000);
+        delete[] ram;
+    });
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -634,6 +641,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
+    ui.action_Dump_RAM->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Record_Movie->setEnabled(false);
     ui.action_Play_Movie->setEnabled(false);
@@ -954,6 +962,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
+    ui.action_Dump_RAM->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Record_Movie->setEnabled(true);
     ui.action_Play_Movie->setEnabled(true);

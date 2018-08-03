@@ -77,6 +77,7 @@
     <addaction name="action_Cheats"/>
     <addaction name="action_Cheat_Search"/>
     <addaction name="action_Control_Panel"/>
+    <addaction name="action_Dump_RAM"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -326,6 +327,14 @@
   <action name="action_Control_Panel">
    <property name="text">
     <string>Control Panel</string>
+   </property>
+  </action>
+  <action name="action_Dump_RAM">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Dump RAM</string>
    </property>
   </action>
   <action name="action_Record_Movie">
