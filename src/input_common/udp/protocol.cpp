@@ -3,14 +3,23 @@
 // Refer to the license.txt file included.
 
 #include <cstddef>
-
+#include <cstring>
 #include "common/logging/log.h"
 #include "input_common/udp/protocol.h"
 
-namespace InputCommon {
-namespace UDP {
+namespace InputCommon::CemuhookUDP {
 
-static const size_t GetSizeOfResponseType(Type t);
+static const size_t GetSizeOfResponseType(Type t) {
+    switch (t) {
+    case Type::Version:
+        return sizeof(Response::Version);
+    case Type::PortInfo:
+        return sizeof(Response::PortInfo);
+    case Type::PadData:
+        return sizeof(Response::PadData);
+    }
+    return 0;
+}
 
 namespace Response {
 
@@ -67,17 +76,4 @@ boost::optional<Type> Validate(u8* data, size_t size) {
 }
 } // namespace Response
 
-static const size_t GetSizeOfResponseType(Type t) {
-    switch (t) {
-    case Type::Version:
-        return sizeof(Response::Version);
-    case Type::PortInfo:
-        return sizeof(Response::PortInfo);
-    case Type::PadData:
-        return sizeof(Response::PadData);
-    }
-    return 0;
-}
-
-} // namespace UDP
-} // namespace InputCommon
+} // namespace InputCommon::CemuhookUDP

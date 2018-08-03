@@ -3,7 +3,10 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
+#include <array>
 #include <chrono>
+#include <cstring>
+#include <functional>
 #include <thread>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -15,8 +18,7 @@
 using boost::asio::ip::address_v4;
 using boost::asio::ip::udp;
 
-namespace InputCommon {
-namespace UDP {
+namespace InputCommon::CemuhookUDP {
 
 struct SocketCallback {
     std::function<void(Response::Version)> version;
@@ -28,11 +30,10 @@ class Socket {
 public:
     using clock = std::chrono::system_clock;
 
-    explicit Socket(const std::string host, const u16 port, const u32 client_id,
-                    SocketCallback callback)
-        : client_id(client_id), io_service(), timer(io_service),
-          send_endpoint(udp::endpoint(address_v4::from_string(host), port)), receive_endpoint(),
-          socket(io_service, udp::endpoint(udp::v4(), 0)), callback(callback) {}
+    explicit Socket(const std::string& host, u16 port, u32 client_id, SocketCallback callback)
+        : client_id(client_id), timer(io_service),
+          send_endpoint(udp::endpoint(address_v4::from_string(host), port)),
+          socket(io_service, udp::endpoint(udp::v4(), 0)), callback(std::move(callback)) {}
 
     void Stop() {
         io_service.stop();
@@ -44,14 +45,15 @@ public:
 
     void StartSend(const clock::time_point& from) {
         timer.expires_at(from + std::chrono::seconds(3));
-        timer.async_wait(boost::bind(&Socket::HandleSend, this, boost::asio::placeholders::error));
+        timer.async_wait([this](const boost::system::error_code& error) { HandleSend(error); });
     }
 
     void StartReceive() {
-        socket.async_receive_from(boost::asio::buffer(receive_buffer), receive_endpoint,
-                                  boost::bind(&Socket::HandleReceive, this,
-                                              boost::asio::placeholders::error,
-                                              boost::asio::placeholders::bytes_transferred));
+        socket.async_receive_from(
+            boost::asio::buffer(receive_buffer), receive_endpoint,
+            [this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+                HandleReceive(error, bytes_transferred);
+            });
     }
 
 private:
@@ -91,11 +93,11 @@ private:
         size_t len = socket.send_to(boost::asio::buffer(send_buffer1), send_endpoint);
 
         // Send a request for getting pad data for pad 1
-        Request::PadData pad_data{Request::PadData::Flags::ID, 0, EMPTY_MAC_ADDRESS};
+        Request::PadData pad_data{Request::PadData::Flags::Id, 0, EMPTY_MAC_ADDRESS};
         auto pad_message = Request::Create(pad_data, client_id);
         std::memcpy(send_buffer2.data(), &pad_message, PAD_DATA_SIZE);
         size_t len2 = socket.send_to(boost::asio::buffer(send_buffer2), send_endpoint);
-        StartSend(timer.expires_at());
+        StartSend(timer.expiry());
     }
 
     SocketCallback callback;
@@ -121,12 +123,12 @@ static void SocketLoop(Socket* socket) {
     socket->Loop();
 }
 
-Client::Client(std::shared_ptr<DeviceStatus> status, const std::string host, const u16 port,
-               const u32 client_id)
+Client::Client(std::shared_ptr<DeviceStatus> status, const std::string& host, u16 port,
+               u32 client_id)
     : status(status) {
-    SocketCallback callback{std::bind(&Client::OnVersion, this, std::placeholders::_1),
-                            std::bind(&Client::OnPortInfo, this, std::placeholders::_1),
-                            std::bind(&Client::OnPadData, this, std::placeholders::_1)};
+    SocketCallback callback{[this](Response::Version version) { OnVersion(version); },
+                            [this](Response::PortInfo info) { OnPortInfo(info); },
+                            [this](Response::PadData data) { OnPadData(data); }};
     LOG_INFO(Input, "Starting communication with UDP input server on {}:{}", host, port);
     socket = std::make_unique<Socket>(host, port, client_id, callback);
     thread = std::thread{SocketLoop, this->socket.get()};
@@ -162,10 +164,10 @@ void Client::OnPadData(Response::PadData data) {
     {
         std::lock_guard<std::mutex> guard(status->update_mutex);
 
-        // TODO: add a setting for invert axis
         status->motion_status = {accel, gyro};
 
-        // TODO: add a setting for "click" touch
+        // TODO: add a setting for "click" touch. Click touch refers to a device that differentiates
+        // between a simple "tap" and a hard press that causes the touch screen to click.
         bool is_active = data.touch_1.is_active != 0;
 
         float x = 0;
@@ -187,5 +189,4 @@ void Client::OnPadData(Response::PadData data) {
     }
 }
 
-} // namespace UDP
-} // namespace InputCommon
+} // namespace InputCommon::CemuhookUDP

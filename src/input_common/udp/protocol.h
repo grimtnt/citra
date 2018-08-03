@@ -5,25 +5,24 @@
 #pragma once
 
 #include <array>
+#include <type_traits>
 #include <vector>
 #include <boost/crc.hpp>
 #include <boost/optional.hpp>
-
 #include "common/bit_field.h"
 #include "common/swap.h"
 
-namespace InputCommon {
-namespace UDP {
+namespace InputCommon::CemuhookUDP {
 
-static constexpr size_t MAX_PACKET_SIZE = 100;
-static constexpr u16 PROTOCOL_VERSION = 1001;
-static constexpr u32 CLIENT_MAGIC = 0x43555344; // DSUC (but flipped for LE)
-static constexpr u32 SERVER_MAGIC = 0x53555344; // DSUS (but flipped for LE)
+constexpr size_t MAX_PACKET_SIZE = 100;
+constexpr u16 PROTOCOL_VERSION = 1001;
+constexpr u32 CLIENT_MAGIC = 0x43555344; // DSUC (but flipped for LE)
+constexpr u32 SERVER_MAGIC = 0x53555344; // DSUS (but flipped for LE)
 
-enum class Type : u32_le {
-    Version = 0x100000,
-    PortInfo = 0x100001,
-    PadData = 0x100002,
+enum class Type : u32 {
+    Version = 0x00100000,
+    PortInfo = 0x00100001,
+    PadData = 0x00100002,
 };
 
 struct Header {
@@ -38,8 +37,7 @@ struct Header {
     Type type;
 };
 static_assert(sizeof(Header) == 20, "UDP Message Header struct has wrong size");
-static_assert(std::is_trivially_copyable<Header>::value,
-              "UDP Message Header is not trivially copyable");
+static_assert(std::is_trivially_copyable_v<Header>, "UDP Message Header is not trivially copyable");
 
 using MacAddress = std::array<u8, 6>;
 constexpr MacAddress EMPTY_MAC_ADDRESS = {0, 0, 0, 0, 0, 0};
@@ -69,7 +67,7 @@ struct PortInfo {
     u32_le pad_count; ///> Number of ports to request data for
     std::array<u8, MAX_PORTS> port;
 };
-static_assert(std::is_trivially_copyable<PortInfo>::value,
+static_assert(std::is_trivially_copyable_v<PortInfo>,
               "UDP Request PortInfo is not trivially copyable");
 
 /**
@@ -79,9 +77,9 @@ static_assert(std::is_trivially_copyable<PortInfo>::value,
  */
 struct PadData {
     enum class Flags : u8 {
-        ALL_PORTS,
-        ID,
-        MAC,
+        AllPorts,
+        Id,
+        Mac,
     };
     /// Determines which method will be used as a look up for the controller
     Flags flags;
@@ -91,7 +89,7 @@ struct PadData {
     MacAddress mac;
 };
 static_assert(sizeof(PadData) == 8, "UDP Request PadData struct has wrong size");
-static_assert(std::is_trivially_copyable<PadData>::value,
+static_assert(std::is_trivially_copyable_v<PadData>,
               "UDP Request PadData is not trivially copyable");
 
 /**
@@ -118,7 +116,7 @@ struct Version {
     u16_le version;
 };
 static_assert(sizeof(Version) == 2, "UDP Response Version struct has wrong size");
-static_assert(std::is_trivially_copyable<Version>::value,
+static_assert(std::is_trivially_copyable_v<Version>,
               "UDP Response Version is not trivially copyable");
 
 struct PortInfo {
@@ -131,7 +129,7 @@ struct PortInfo {
     u8 is_pad_active;
 };
 static_assert(sizeof(PortInfo) == 12, "UDP Response PortInfo struct has wrong size");
-static_assert(std::is_trivially_copyable<PortInfo>::value,
+static_assert(std::is_trivially_copyable_v<PortInfo>,
               "UDP Response PortInfo is not trivially copyable");
 
 #pragma pack(push, 1)
@@ -204,11 +202,11 @@ struct PadData {
         float yaw;
         float roll;
     } gyro;
-}; // namespace Response
+};
 #pragma pack(pop)
 
 static_assert(sizeof(PadData) == 80, "UDP Response PadData struct has wrong size ");
-static_assert(std::is_trivially_copyable<PadData>::value,
+static_assert(std::is_trivially_copyable_v<PadData>,
               "UDP Response PadData is not trivially copyable");
 
 static_assert(sizeof(Message<PadData>) == MAX_PACKET_SIZE,
@@ -248,5 +246,4 @@ template <>
 constexpr Type GetMessageType<Response::PadData>() {
     return Type::PadData;
 }
-} // namespace UDP
-} // namespace InputCommon
+} // namespace InputCommon::CemuhookUDP

@@ -9,7 +9,6 @@
 #include "input_common/main.h"
 #include "input_common/motion_emu.h"
 #include "input_common/udp/udp.h"
-
 #ifdef HAVE_SDL2
 #include "input_common/sdl/sdl.h"
 #endif
@@ -18,7 +17,7 @@ namespace InputCommon {
 
 static std::shared_ptr<Keyboard> keyboard;
 static std::shared_ptr<MotionEmu> motion_emu;
-static std::unique_ptr<UDP::State> udp;
+static std::unique_ptr<CemuhookUDP::State> udp;
 
 void Init() {
     keyboard = std::make_shared<Keyboard>();
@@ -32,7 +31,7 @@ void Init() {
     SDL::Init();
 #endif
 
-    udp = UDP::Init();
+    udp = CemuhookUDP::Init();
 }
 
 void Shutdown() {
@@ -85,7 +84,6 @@ std::vector<std::unique_ptr<DevicePoller>> GetPollers(DeviceType type) {
 #ifdef HAVE_SDL2
     SDL::Polling::GetPollers(type, pollers);
 #endif
-    UDP::Polling::GetPollers(type, pollers);
 
     return pollers;
 }

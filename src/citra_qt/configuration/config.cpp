@@ -89,7 +89,8 @@ void Config::ReadValues() {
 
     Settings::values.udp_input_address =
         qt_config->value("udp_input_address", "127.0.0.1").toString().toStdString();
-    Settings::values.udp_input_port = qt_config->value("udp_input_port", 26760).toInt();
+    Settings::values.udp_input_port =
+        static_cast<u16>(qt_config->value("udp_input_port", 26760).toInt());
 
     qt_config->endGroup();
 

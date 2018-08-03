@@ -9,13 +9,11 @@
 #include "input_common/udp/client.h"
 #include "input_common/udp/udp.h"
 
-namespace InputCommon {
-
-namespace UDP {
+namespace InputCommon::CemuhookUDP {
 
 class UDPTouchDevice final : public Input::TouchDevice {
 public:
-    explicit UDPTouchDevice(std::shared_ptr<DeviceStatus> status) : status(status) {}
+    explicit UDPTouchDevice(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
     std::tuple<float, float, bool> GetStatus() const {
         std::lock_guard<std::mutex> guard(status->update_mutex);
         return status->touch_status;
@@ -27,7 +25,7 @@ private:
 
 class UDPMotionDevice final : public Input::MotionDevice {
 public:
-    explicit UDPMotionDevice(std::shared_ptr<DeviceStatus> status) : status(status) {}
+    explicit UDPMotionDevice(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
     std::tuple<Math::Vec3<float>, Math::Vec3<float>> GetStatus() const {
         std::lock_guard<std::mutex> guard(status->update_mutex);
         return status->motion_status;
@@ -39,7 +37,7 @@ private:
 
 class UDPTouchFactory final : public Input::Factory<Input::TouchDevice> {
 public:
-    explicit UDPTouchFactory(std::shared_ptr<DeviceStatus> status) : status(status) {}
+    explicit UDPTouchFactory(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
 
     std::unique_ptr<Input::TouchDevice> Create(const Common::ParamPackage& params) override {
         {
@@ -60,7 +58,7 @@ private:
 
 class UDPMotionFactory final : public Input::Factory<Input::MotionDevice> {
 public:
-    explicit UDPMotionFactory(std::shared_ptr<DeviceStatus> status) : status(status) {}
+    explicit UDPMotionFactory(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
 
     std::unique_ptr<Input::MotionDevice> Create(const Common::ParamPackage& params) override {
         return std::make_unique<UDPMotionDevice>(status);
@@ -75,24 +73,18 @@ State::State() {
     client = std::make_unique<Client>(status, Settings::values.udp_input_address,
                                       Settings::values.udp_input_port);
 
-    Input::RegisterFactory<Input::TouchDevice>("udp", std::make_shared<UDPTouchFactory>(status));
-    Input::RegisterFactory<Input::MotionDevice>("udp", std::make_shared<UDPMotionFactory>(status));
+    Input::RegisterFactory<Input::TouchDevice>("cemuhookudp",
+                                               std::make_shared<UDPTouchFactory>(status));
+    Input::RegisterFactory<Input::MotionDevice>("cemuhookudp",
+                                                std::make_shared<UDPMotionFactory>(status));
 }
 
 State::~State() {
-    Input::UnregisterFactory<Input::TouchDevice>("udp");
-    Input::UnregisterFactory<Input::MotionDevice>("udp");
+    Input::UnregisterFactory<Input::TouchDevice>("cemuhookudp");
+    Input::UnregisterFactory<Input::MotionDevice>("cemuhookudp");
 }
 
 std::unique_ptr<State> Init() {
     return std::make_unique<State>();
 }
-
-namespace Polling {
-
-void GetPollers(InputCommon::Polling::DeviceType type,
-                std::vector<std::unique_ptr<InputCommon::Polling::DevicePoller>>& pollers) {}
-
-} // namespace Polling
-} // namespace UDP
-} // namespace InputCommon
+} // namespace InputCommon::CemuhookUDP

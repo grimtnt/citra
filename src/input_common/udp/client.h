@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -14,15 +13,14 @@
 #include <boost/optional.hpp>
 #include "common/common_types.h"
 
-namespace InputCommon {
-namespace UDP {
+namespace InputCommon::CemuhookUDP {
 
 class Socket;
 
 namespace Response {
-struct Version;
-struct PortInfo;
 struct PadData;
+struct PortInfo;
+struct Version;
 } // namespace Response
 
 struct DeviceStatus {
@@ -42,8 +40,8 @@ struct DeviceStatus {
 
 class Client {
 public:
-    explicit Client(std::shared_ptr<DeviceStatus> status, const std::string host = "127.0.0.1",
-                    const u16 port = 26760, const u32 client_id = 24872);
+    explicit Client(std::shared_ptr<DeviceStatus> status, const std::string& host = "127.0.0.1",
+                    u16 port = 26760, u32 client_id = 24872);
     ~Client();
 
 private:
@@ -56,5 +54,4 @@ private:
     std::thread thread;
     u64 packet_sequence = 0;
 };
-} // namespace UDP
-} // namespace InputCommon
+} // namespace InputCommon::CemuhookUDP

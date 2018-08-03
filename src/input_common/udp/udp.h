@@ -7,8 +7,7 @@
 #include "input_common/main.h"
 #include "input_common/udp/client.h"
 
-namespace InputCommon {
-namespace UDP {
+namespace InputCommon::CemuhookUDP {
 
 class UDPTouchDevice;
 class UDPMotionDevice;
@@ -24,12 +23,4 @@ private:
 
 std::unique_ptr<State> Init();
 
-namespace Polling {
-
-/// Get all DevicePoller that use the SDL backend for a specific device type
-void GetPollers(InputCommon::Polling::DeviceType type,
-                std::vector<std::unique_ptr<InputCommon::Polling::DevicePoller>>& pollers);
-
-} // namespace Polling
-} // namespace UDP
-} // namespace InputCommon
+} // namespace InputCommon::CemuhookUDP
