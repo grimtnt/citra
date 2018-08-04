@@ -402,7 +402,7 @@ void Config::SaveValues() {
     qt_config->beginGroup("System");
     qt_config->setValue("region_value", Settings::values.region_value);
     qt_config->setValue("init_clock", static_cast<u32>(Settings::values.init_clock));
-    qt_config->setValue("init_time", static_cast<u64>(Settings::values.init_time));
+    qt_config->setValue("init_time", static_cast<unsigned long long>(Settings::values.init_time));
     qt_config->setValue("enable_new_mode", Settings::values.enable_new_mode);
     qt_config->endGroup();
 
