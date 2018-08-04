@@ -136,9 +136,7 @@ Client::Client(std::shared_ptr<DeviceStatus> status, const std::string& host, u1
 
 Client::~Client() {
     socket->Stop();
-    if (thread.joinable()) {
-        thread.join();
-    }
+    thread.join();
 }
 
 void Client::OnVersion(Response::Version data) {

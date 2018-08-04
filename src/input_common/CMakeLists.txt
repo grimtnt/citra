@@ -18,7 +18,6 @@ add_library(input_common STATIC
 )
 
 create_target_directory_groups(input_common)
-target_compile_definitions(input_common PRIVATE BOOST_ERROR_CODE_HEADER_ONLY BOOST_SYSTEM_NO_LIB BOOST_DATE_TIME_NO_LIB BOOST_REGEX_NO_LIB)
 target_link_libraries(input_common PUBLIC core PRIVATE common ${Boost_LIBRARIES})
 
 if(SDL2_FOUND)
