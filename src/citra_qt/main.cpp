@@ -377,8 +377,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start, &QAction::triggered, this, &GMainWindow::OnStartGame);
     connect(ui.action_Pause, &QAction::triggered, this, &GMainWindow::OnPauseGame);
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
-    connect(ui.action_Restart, &QAction::triggered, this,
-            [&] { BootGame(game_path); });
+    connect(ui.action_Restart, &QAction::triggered, this, [&] { BootGame(game_path); });
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
@@ -616,7 +615,8 @@ void GMainWindow::BootGame(const QString& filename) {
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
-    qt_callbacks.swkbd = [this](HLE::Applets::SoftwareKeyboardConfig& config, std::u16string& text) {
+    qt_callbacks.swkbd = [this](HLE::Applets::SoftwareKeyboardConfig& config,
+                                std::u16string& text) {
         applet_open = true;
         SwkbdCallback(config, text);
         std::unique_lock<std::mutex> lock(applet_mutex);
