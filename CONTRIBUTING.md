@@ -20,7 +20,7 @@ If clang format is found, then cmake will add a custom build target that can be 
 ### General Rules
 * A lot of code was taken from other projects (e.g. Dolphin, PPSSPP, Gekko, SkyEye). In general, when editing other people's code, follow the style of the module you're in (or better yet, fix the style if it drastically differs from our guide).
 * Use namespaces often
-* Avoid the use of C-style casts and instead prefer C++-style `static_cast` and `reinterpret_cast`. Try to avoid using `dynamic_cast`. Never use `const_cast`. The only exception to this rule is for casting between two numeric types, where C-style casts are encouraged for brevity and readability.
+* Avoid the use of C-style casts and instead prefer C++-style `static_cast` and `reinterpret_cast`. Try to avoid using `dynamic_cast` and `const_cast`. The only exception to this rule is for casting between two numeric types, where C-style casts are encouraged for brevity and readability.
 
 ### Naming Rules
 * Functions: `PascalCase`
