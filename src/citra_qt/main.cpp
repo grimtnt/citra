@@ -220,6 +220,16 @@ void GMainWindow::InitializeRecentFileMenuActions() {
 
         ui.menu_recent_files->addAction(actions_recent_files[i]);
     }
+    QAction* action_recent_files_clear = new QAction(this);
+    action_recent_files_clear->setText(tr("Clear"));
+    action_recent_files_clear->setData(tr("Clear"));
+    action_recent_files_clear->setToolTip(tr("Clear"));
+    connect(action_recent_files_clear, &QAction::triggered, this, [&] {
+        while (UISettings::values.recent_files.size() > 0)
+            UISettings::values.recent_files.removeLast();
+        UpdateRecentFiles();
+    });
+    ui.menu_recent_files->addAction(action_recent_files_clear);
 
     UpdateRecentFiles();
 }
