@@ -55,8 +55,10 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 }
 
 void ErrEula::Update() {
-    if (Core::System::GetInstance().GetAppletFactories().erreula.IsRegistered("qt")) {
-        Core::System::GetInstance().GetAppletFactories().erreula.Launch("qt", config);
+    auto cb = Core::System::GetInstance().GetQtCallbacks().erreula;
+
+    if (cb) {
+        cb(config);
         Finalize();
         return;
     }
@@ -68,7 +70,7 @@ void ErrEula::Update() {
     }
     case ErrEulaErrorType::LocalizedErrorText:
     case ErrEulaErrorType::ErrorText: {
-        LOG_INFO(Applet_ErrEula, "Error Code: {:#x}", config.error_code);
+        LOG_INFO(Applet_ErrEula, "Error Code: {:#010X}", config.error_code);
         LOG_INFO(Applet_ErrEula, "Error Text: {}", Common::UTF16ToUTF8(config.error_text));
         break;
     }

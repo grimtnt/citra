@@ -201,11 +201,12 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 }
 
 void SoftwareKeyboard::Update() {
-    if (Settings::values.swkbd_implementation == Settings::SwkbdImplementation::Qt &&
-        Core::System::GetInstance().GetAppletFactories().swkbd.IsRegistered("qt")) {
+    auto cb = Core::System::GetInstance().GetQtCallbacks().swkbd;
+
+    if (Settings::values.swkbd_implementation == Settings::SwkbdImplementation::Qt && cb) {
+        // Call the function registered by the Qt frontend
         std::u16string text;
-        // Call the function registered by the frontend
-        Core::System::GetInstance().GetAppletFactories().swkbd.Launch("qt", config, text);
+        cb(config, text);
         memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
         Finalize();
     } else {

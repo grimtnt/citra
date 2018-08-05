@@ -5,6 +5,7 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 #include <memory>
 #include <string>
 #include "common/common_types.h"
@@ -30,9 +31,9 @@ class ServiceManager;
 
 namespace Core {
 
-struct AppletFactories {
-    HLE::Applets::ErrEulaFactory erreula;
-    HLE::Applets::SwkbdFactory swkbd;
+struct QtCallbacks {
+    std::function<void(HLE::Applets::ErrEulaConfig&)> erreula;
+    std::function<void(HLE::Applets::SoftwareKeyboardConfig&, std::u16string&)> swkbd;
 };
 
 class System {
@@ -170,8 +171,8 @@ public:
         return *app_loader;
     }
 
-    AppletFactories& GetAppletFactories() const {
-        return *applet_factories;
+    QtCallbacks& GetQtCallbacks() const {
+        return *qt_callbacks;
     }
 
 private:
@@ -190,7 +191,7 @@ private:
     std::unique_ptr<Loader::AppLoader> app_loader;
 
     /// Applet factories
-    std::unique_ptr<AppletFactories> applet_factories;
+    std::unique_ptr<QtCallbacks> qt_callbacks;
 
     /// ARM11 CPU core
     std::unique_ptr<ARM_Interface> cpu_core;

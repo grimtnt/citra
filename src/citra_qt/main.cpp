@@ -607,20 +607,19 @@ void GMainWindow::BootGame(const QString& filename) {
     }
     OnStartGame();
 
-    Core::System::GetInstance().GetAppletFactories().erreula.Register(
-        "qt", [this](ErrEulaConfig& config) {
-            applet_open = true;
-            ErrEulaCallback(config);
-            std::unique_lock<std::mutex> lock(applet_mutex);
-            applet_cv.wait(lock, [&] { return !applet_open; });
-        });
+    auto& qt_callbacks = Core::System::GetInstance().GetQtCallbacks();
+    qt_callbacks.erreula = [this](ErrEulaConfig& config) {
+        applet_open = true;
+        ErrEulaCallback(config);
+        std::unique_lock<std::mutex> lock(applet_mutex);
+        applet_cv.wait(lock, [&] { return !applet_open; });
+    };
 
-    Core::System::GetInstance().GetAppletFactories().swkbd.Register(
-        "qt", [this](SoftwareKeyboardConfig& config, std::u16string& text) {
-            applet_open = true;
-            SwkbdCallback(config, text);
-            std::unique_lock<std::mutex> lock(applet_mutex);
-            applet_cv.wait(lock, [&] { return !applet_open; });
+    qt_callbacks.swkbd = [this](SoftwareKeyboardConfig& config, std::u16string& text) {
+        applet_open = true;
+        SwkbdCallback(config, text);
+        std::unique_lock<std::mutex> lock(applet_mutex);
+        applet_cv.wait(lock, [&] { return !applet_open; });
         });
 }
 
@@ -630,7 +629,7 @@ void GMainWindow::ShutdownGame() {
     if (was_recording) {
         QMessageBox::information(this, "Movie Saved", "The movie is successfully saved.");
     }
-    emu_thread->RequestStop();
+    Er emu_thread->RequestStop();
 
     emit EmulationStopping();
 
@@ -692,10 +691,10 @@ void GMainWindow::StoreRecentFile(const QString& filename) {
     UpdateRecentFiles();
 }
 
-void GMainWindow::ErrEulaCallback(ErrEulaConfig& config) {
+void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, "ErrEulaCallback", Qt::BlockingQueuedConnection,
-                                  Q_ARG(ErrEulaConfig&, config));
+                                  Q_ARG(HLE::Applets::ErrEulaConfig&, config));
         return;
     }
 
@@ -728,14 +727,15 @@ void GMainWindow::ErrEulaCallback(ErrEulaConfig& config) {
     }
     }
 
-    config.return_code = ErrEulaResult::Success;
+    config.return_code = HLE::Applets::ErrEulaResult::Success;
     applet_open = false;
 }
 
-void GMainWindow::SwkbdCallback(SoftwareKeyboardConfig& config, std::u16string& text) {
+void GMainWindow::SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
+                                std::u16string& text) {
     if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, "SwkbdCallback", Qt::BlockingQueuedConnection,
-                                  Q_ARG(SoftwareKeyboardConfig&, config),
+                                  Q_ARG(HLE::Applets::SoftwareKeyboardConfig&, config),
                                   Q_ARG(std::u16string&, text));
         return;
     }

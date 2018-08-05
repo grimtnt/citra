@@ -34,8 +34,6 @@ template <typename>
 class QFutureWatcher;
 class QProgressBar;
 
-using namespace HLE::Applets;
-
 class GMainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -81,8 +79,9 @@ private:
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
-    Q_INVOKABLE void ErrEulaCallback(ErrEulaConfig& config);
-    Q_INVOKABLE void SwkbdCallback(SoftwareKeyboardConfig& config, std::u16string& text);
+    Q_INVOKABLE void ErrEulaCallback(HLE::AppletsErrEulaConfig& config);
+    Q_INVOKABLE void SwkbdCallback(HLE::AppletsSoftwareKeyboardConfig& config,
+                                   std::u16string& text);
     void SyncMenuUISettings();
     void RestoreUIState();
 
@@ -195,6 +194,7 @@ private:
     // The title of the game currently running
     QString game_title;
 
+    // Variables used to sleep the application when a Qt applet is open.
     bool applet_open = false;
     std::mutex applet_mutex;
     std::condition_variable applet_cv;

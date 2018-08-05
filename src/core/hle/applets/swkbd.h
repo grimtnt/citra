@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <functional>
 #include <string>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
@@ -252,28 +251,6 @@ private:
 
     /// Configuration of this instance of the SoftwareKeyboard, as received from the application
     SoftwareKeyboardConfig config;
-};
-
-class SwkbdFactory {
-public:
-    bool IsRegistered(const std::string& name) const {
-        auto it = callbacks.find(name);
-        return it != callbacks.end();
-    }
-
-    void Register(std::string name,
-                  std::function<void(SoftwareKeyboardConfig&, std::u16string&)> callback) {
-        callbacks.emplace(std::move(name), std::move(callback));
-    }
-
-    void Launch(const std::string& name, SoftwareKeyboardConfig& config, std::u16string& text) {
-        auto it = callbacks.find(name);
-        if (it != callbacks.end())
-            it->second(config, text);
-    }
-
-private:
-    std::map<std::string, std::function<void(SoftwareKeyboardConfig&, std::u16string&)>> callbacks;
 };
 } // namespace Applets
 } // namespace HLE
