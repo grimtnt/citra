@@ -2,7 +2,7 @@
 
 **The issue tracker is not a support forum.** Unless you can provide precise *technical information* regarding an issue, you *should not post in it*. If you need support, first read the [FAQ](https://github.com/citra-emu/citra/wiki/FAQ) and then ask in a general emulation forum such as [/r/emulation](https://www.reddit.com/r/emulation/). If you post support questions, generic messages to the developers or vague reports without technical details, they will be closed and locked.
 
-If you believe you have a valid issue report, please post text or a screenshot from the log (the console window that opens alongside Citra) and build version (hex string visible in the titlebar and zip filename), as well as your hardware and software information if applicable.
+If you believe you have a valid issue report, please post the log and build version (number in title bar/hex string visible in the filename), as well as your hardware and software information if applicable.
 
 # Contributing
 
@@ -19,9 +19,6 @@ If clang format is found, then cmake will add a custom build target that can be 
 
 ### General Rules
 * A lot of code was taken from other projects (e.g. Dolphin, PPSSPP, Gekko, SkyEye). In general, when editing other people's code, follow the style of the module you're in (or better yet, fix the style if it drastically differs from our guide).
-* Line width is typically 100 characters. Please do not use 80-characters.
-* Don't ever introduce new external dependencies into Core
-* Don't use any platform specific code in Core
 * Use namespaces often
 * Avoid the use of C-style casts and instead prefer C++-style `static_cast` and `reinterpret_cast`. Try to avoid using `dynamic_cast`. Never use `const_cast`. The only exception to this rule is for casting between two numeric types, where C-style casts are encouraged for brevity and readability.
 

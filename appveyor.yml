@@ -85,12 +85,10 @@ after_build:
         if ($env:BUILD_TYPE -eq 'msvc') {
           # Where are these spaces coming from? Regardless, let's remove them
           $MSVC_BUILD_ZIP = "citra-windows-msvc-$GITDATE-$GITREV.zip" -replace " ", ""
-          $MSVC_BUILD_PDB = "citra-windows-msvc-$GITDATE-$GITREV-debugsymbols.zip" -replace " ", ""
           $MSVC_SEVENZIP = "citra-windows-msvc-$GITDATE-$GITREV.7z" -replace " ", ""
 
           # set the build names as env vars so the artifacts can upload them
           $env:BUILD_ZIP = $MSVC_BUILD_ZIP
-          $env:BUILD_SYMBOLS = $MSVC_BUILD_PDB
           $env:BUILD_UPDATE = $MSVC_SEVENZIP
 
           mkdir $RELEASE_DIST
@@ -98,21 +96,16 @@ after_build:
           Copy-Item .\license.txt -Destination $RELEASE_DIST
           Copy-Item .\README.md -Destination $RELEASE_DIST
 
-          # process PDBs
-          . "./.appveyor/ProcessPdb.ps1"
-          7z a -tzip $MSVC_BUILD_PDB $RELEASE_DIST\*.pdb
           rm $RELEASE_DIST\*.pdb
 
           7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
           7z a $MSVC_SEVENZIP $RELEASE_DIST
         } else {
           $MINGW_BUILD_ZIP = "citra-windows-mingw-$GITDATE-$GITREV.zip" -replace " ", ""
-          $MINGW_BUILD_PDB = "citra-windows-mingw-$GITDATE-$GITREV-debugsymbols.zip" -replace " ", ""
           $MINGW_SEVENZIP = "citra-windows-mingw-$GITDATE-$GITREV.7z" -replace " ", ""
 
           # store the build information in env vars so we can use them as artifacts
           $env:BUILD_ZIP = $MINGW_BUILD_ZIP
-          $env:BUILD_SYMBOLS = $MINGW_BUILD_PDB
           $env:BUILD_UPDATE = $MINGW_SEVENZIP
 
           $CMAKE_SOURCE_DIR = "$env:APPVEYOR_BUILD_FOLDER"
@@ -133,8 +126,7 @@ after_build:
           # copy all the dll dependencies to the release folder
           . "./.appveyor/FindDependencies.ps1"
           $DLLSearchPath = "C:\msys64\mingw64\bin;$env:PATH"
-          $MingwDLLs = RecursivelyGetDeps $DLLSearchPath "$RELEASE_DIST\citra.exe"
-          $MingwDLLs += RecursivelyGetDeps $DLLSearchPath  "$RELEASE_DIST\citra-qt.exe"
+          $MingwDLLs = RecursivelyGetDeps $DLLSearchPath "$RELEASE_DIST\citra-qt.exe"
           Write-Host "Detected the following dependencies:"
           Write-Host $MingwDLLs
           foreach ($file in $MingwDLLs) {
@@ -153,31 +145,16 @@ after_build:
           # copy the qt imageformats plugin dlls to imageformats
           Get-ChildItem "C:/msys64/mingw64/share/qt5/plugins/imageformats" -Exclude "*d.dll" | Copy-Item -force -destination "$RELEASE_DIST/imageformats"
 
-          # process PDBs
-          . "./.appveyor/ProcessPdb.ps1"
-          7z a -tzip $MINGW_BUILD_PDB $RELEASE_DIST\*.pdb
           rm $RELEASE_DIST\*.pdb
 
           7z a -tzip $MINGW_BUILD_ZIP $RELEASE_DIST\*
           7z a $MINGW_SEVENZIP $RELEASE_DIST
         }
 
-test_script:
-  - cd %BUILD_TYPE%_build
-  - ps: |
-        if ($env:BUILD_TYPE -eq 'msvc') {
-          ctest -VV -C Release
-        } else {
-          C:\msys64\usr\bin\bash.exe -lc "ctest -VV -C Release"
-        }
-  - cd ..
-
 artifacts:
   - path: $(BUILD_ZIP)
     name: build
     type: zip
-  - path: $(BUILD_SYMBOLS)
-    name: debugsymbols
   - path: $(BUILD_UPDATE)
     name: update
 

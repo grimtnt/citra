@@ -9,7 +9,7 @@ project(citra)
 
 # Set bundled sdl2/qt as dependent options.
 # OFF by default, but if ENABLE_SDL2 and MSVC are true then ON
-option(ENABLE_SDL2 "Enable the SDL2 frontend" ON)
+option(ENABLE_SDL2 "Enable SDL2" ON)
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_SDL2 "Download bundled SDL2 binaries" ON "ENABLE_SDL2;MSVC" OFF)
 
 option(ENABLE_QT "Enable the Qt frontend" ON)
@@ -104,7 +104,6 @@ if (NOT MSVC)
 
     if (MINGW)
         add_definitions(-DMINGW_HAS_SECURE_API)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gdwarf")
 
         if (MINGW_STATIC_BUILD)
             add_definitions(-DQT_STATICPLUGIN)
@@ -372,7 +371,6 @@ git_describe(GIT_DESC --always --long --dirty)
 git_branch_name(GIT_BRANCH)
 get_timestamp(BUILD_DATE)
 
-enable_testing()
 add_subdirectory(externals)
 add_subdirectory(src)
 
@@ -391,16 +389,4 @@ if(ENABLE_QT AND UNIX AND NOT APPLE)
             DESTINATION "${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/scalable/apps")
     install(FILES "${CMAKE_SOURCE_DIR}/dist/citra.xml"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/share/mime/packages")
-endif()
-
-if(UNIX)
-    if(ENABLE_SDL2)
-        install(FILES "${CMAKE_SOURCE_DIR}/dist/citra.6"
-                DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man6")
-    endif()
-
-    if (ENABLE_QT)
-        install(FILES "${CMAKE_SOURCE_DIR}/dist/citra-qt.6"
-                DESTINATION "${CMAKE_INSTALL_PREFIX}/share/man/man6")
-    endif()
 endif()
