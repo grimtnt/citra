@@ -79,8 +79,8 @@ private:
     void InitializeHotkeys();
 
     void SetDefaultUIGeometry();
-    Q_INVOKABLE void ErrEulaCallback(HLE::AppletsErrEulaConfig& config);
-    Q_INVOKABLE void SwkbdCallback(HLE::AppletsSoftwareKeyboardConfig& config,
+    Q_INVOKABLE void ErrEulaCallback(HLE::Applets::ErrEulaConfig& config);
+    Q_INVOKABLE void SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
                                    std::u16string& text);
     void SyncMenuUISettings();
     void RestoreUIState();
