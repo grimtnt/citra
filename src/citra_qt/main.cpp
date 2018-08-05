@@ -675,7 +675,6 @@ void GMainWindow::ShutdownGame() {
     emulation_running = false;
 
     game_title.clear();
-    game_path.clear();
     SetupUIStrings();
 #ifdef ENABLE_DISCORD_RPC
     Discord_ClearPresence();
