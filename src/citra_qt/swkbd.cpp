@@ -56,17 +56,17 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
             : QString::fromStdU16String(button2_text));
     connect(ui->text, &QTextEdit::textChanged, [&] {
         switch (config.num_buttons_m1) {
-        case SwkbdButtonConfig::SingleButton:
+        case HLE::Applets::SwkbdButtonConfig::SingleButton:
             ui->button0->setEnabled(
                 HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
                 HLE::Applets::ValidationError::None);
             break;
-        case SwkbdButtonConfig::DualButton:
+        case HLE::Applets::SwkbdButtonConfig::DualButton:
             ui->button1->setEnabled(
                 HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
                 HLE::Applets::ValidationError::None);
             break;
-        case SwkbdButtonConfig::TripleButton:
+        case HLE::Applets::SwkbdButtonConfig::TripleButton:
             ui->button2->setEnabled(
                 HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
                 HLE::Applets::ValidationError::None);
