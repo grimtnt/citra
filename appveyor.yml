@@ -27,7 +27,7 @@ platform:
 
 branches:
   only:
-    - master-alt
+    - master
 
 configuration:
   - Release
@@ -162,4 +162,4 @@ deploy:
  - provider: Environment
    name: ghreleases
    on:
-     branch: master-alt
+     branch: master
