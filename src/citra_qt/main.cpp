@@ -268,7 +268,7 @@ void GMainWindow::InitializeHotkeys() {
     connect(GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this, [&] {
         if (!Core::System::GetInstance().IsPoweredOn())
             return;
-        BootGame(QString(UISettings::values.recent_files.first()));
+        BootGame(game_path);
     });
     connect(GetHotkey("Main Window", "Swap Screens", render_window), &QShortcut::activated,
             ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
@@ -378,7 +378,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Pause, &QAction::triggered, this, &GMainWindow::OnPauseGame);
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
     connect(ui.action_Restart, &QAction::triggered, this,
-            [&] { BootGame(QString(UISettings::values.recent_files.first())); });
+            [&] { BootGame(game_path); });
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
@@ -578,6 +578,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
 void GMainWindow::BootGame(const QString& filename) {
     LOG_INFO(Frontend, "Citra starting...");
+    game_path = filename;
     StoreRecentFile(filename); // Put the filename on top of the list
 
     if (!LoadROM(filename))
