@@ -193,7 +193,7 @@ private:
     std::unique_ptr<EmuThread> emu_thread;
     // The title of the game currently running
     QString game_title;
-    // The path of the game currently running
+    // The path to the game currently running
     QString game_path;
 
     // Variables used to sleep the application when a Qt applet is open.

@@ -220,16 +220,14 @@ void GMainWindow::InitializeRecentFileMenuActions() {
 
         ui.menu_recent_files->addAction(actions_recent_files[i]);
     }
-    QAction* action_recent_files_clear = new QAction(this);
-    action_recent_files_clear->setText(tr("Clear"));
-    action_recent_files_clear->setData(tr("Clear"));
-    action_recent_files_clear->setToolTip(tr("Clear"));
-    connect(action_recent_files_clear, &QAction::triggered, this, [&] {
-        while (UISettings::values.recent_files.size() > 0)
-            UISettings::values.recent_files.removeLast();
+    ui.menu_recent_files->addSeparator();
+    QAction* action_clear_recent_files = new QAction(this);
+    action_clear_recent_files->setText(tr("Clear Recent Files"));
+    connect(action_clear_recent_files, &QAction::triggered, this, [this] {
+        UISettings::values.recent_files.clear();
         UpdateRecentFiles();
     });
-    ui.menu_recent_files->addAction(action_recent_files_clear);
+    ui.menu_recent_files->addAction(action_clear_recent_files);
 
     UpdateRecentFiles();
 }
@@ -265,10 +263,10 @@ void GMainWindow::InitializeHotkeys() {
             }
         }
     });
-    connect(GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this, [&] {
+    connect(GetHotkey("Main Window", "Restart", this), &QShortcut::activated, this, [this] {
         if (!Core::System::GetInstance().IsPoweredOn())
             return;
-        BootGame(game_path);
+        BootGame(QString(game_path));
     });
     connect(GetHotkey("Main Window", "Swap Screens", render_window), &QShortcut::activated,
             ui.action_Screen_Layout_Swap_Screens, &QAction::trigger);
@@ -377,7 +375,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Start, &QAction::triggered, this, &GMainWindow::OnStartGame);
     connect(ui.action_Pause, &QAction::triggered, this, &GMainWindow::OnPauseGame);
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
-    connect(ui.action_Restart, &QAction::triggered, this, [&] { BootGame(game_path); });
+    connect(ui.action_Restart, &QAction::triggered, this, [this] { BootGame(QString(game_path)); });
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
@@ -557,6 +555,8 @@ bool GMainWindow::LoadROM(const QString& filename) {
     system.GetAppLoader().ReadTitle(title);
     game_title = QString::fromStdString(title);
     SetupUIStrings();
+
+    game_path = filename;
 #ifdef ENABLE_DISCORD_RPC
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
@@ -577,7 +577,6 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
 void GMainWindow::BootGame(const QString& filename) {
     LOG_INFO(Frontend, "Citra starting...");
-    game_path = filename;
     StoreRecentFile(filename); // Put the filename on top of the list
 
     if (!LoadROM(filename))
@@ -676,6 +675,8 @@ void GMainWindow::ShutdownGame() {
 
     game_title.clear();
     SetupUIStrings();
+
+    game_path.clear();
 #ifdef ENABLE_DISCORD_RPC
     Discord_ClearPresence();
     Discord_Shutdown();
