@@ -50,8 +50,8 @@ ControlPanel::ControlPanel(QWidget* parent)
     ui->power_battery_level->setCurrentIndex(Settings::values.p_battery_level - 1);
     ui->network_wifi_status->setCurrentIndex(Settings::values.n_wifi_status);
     ui->network_link_level->setCurrentIndex(Settings::values.n_wifi_link_level);
-    ui->network_state->setCurrentIndex(
-        SharedPageUtil::NetworkStateToIndex(static_cast<NetworkState>(Settings::values.n_state)));
+    ui->network_state->setCurrentIndex(SharedPageUtil::NetworkStateToIndex(
+        static_cast<SharedPage::NetworkState>(Settings::values.n_state)));
 
     connect(ui->shared_page_enable_3d, &QCheckBox::stateChanged, this,
             &ControlPanel::On3DEnabledChanged);
@@ -117,5 +117,5 @@ void ControlPanel::OnNetworkStateChanged() {
     Settings::values.n_state =
         static_cast<u8>(SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex()));
     Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(
-        SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex()));
+        static_cast<SharedPage::NetworkState>(Settings::values.n_state));
 }
