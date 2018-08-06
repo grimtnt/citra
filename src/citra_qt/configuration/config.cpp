@@ -181,9 +181,9 @@ void Config::ReadValues() {
     qt_config->beginGroup("System");
     Settings::values.region_value =
         qt_config->value("region_value", Settings::REGION_VALUE_AUTO_SELECT).toInt();
-    Settings::values.init_clock =
-        static_cast<Settings::InitClock>(qt_config->value("init_clock", static_cast<u32>(Settings::InitClock::SystemTime)).toInt());
-    Settings::values.init_time = qt_config->value("init_time", 946681277ULL).toULongLong(); 
+    Settings::values.init_clock = static_cast<Settings::InitClock>(
+        qt_config->value("init_clock", static_cast<u32>(Settings::InitClock::SystemTime)).toInt());
+    Settings::values.init_time = qt_config->value("init_time", 946681277ULL).toULongLong();
     Settings::values.enable_new_mode = qt_config->value("enable_new_mode", false).toBool();
     qt_config->endGroup();
 
