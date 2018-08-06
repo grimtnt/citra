@@ -116,5 +116,6 @@ void ControlPanel::OnWifiLinkLevelChanged() {
 void ControlPanel::OnNetworkStateChanged() {
     Settings::values.n_state =
         static_cast<u8>(SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex()));
-    Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex()));
+    Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(
+        SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex()));
 }
