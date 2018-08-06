@@ -96,6 +96,7 @@ public:
     void SetWifiLinkLevel(WifiLinkLevel);
 
     void SetNetworkState(NetworkState);
+    NetworkState GetNetworkState();
 
     void SetAdapterConnected(u8);
 
