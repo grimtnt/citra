@@ -7,6 +7,7 @@
 #include <windows.h>
 #endif
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/result.h"
@@ -21,7 +22,6 @@
 #include "core/hle/service/mcu/rtc.h"
 #include "core/hle/service/mcu/snd.h"
 #include "core/settings.h"
-#include "core/core.h"
 
 namespace Service {
 namespace MCU {

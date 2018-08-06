@@ -3,10 +3,10 @@
 // Refer to the license.txt file included.
 
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/service/nwm/nwm_ext.h"
 #include "core/settings.h"
-#include "core/core.h"
 
 namespace Service {
 namespace NWM {
@@ -28,7 +28,8 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
 
     switch (enabled) {
     case 0: {
-        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() != SharedPage::NetworkState::Internet) {
+        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() !=
+            SharedPage::NetworkState::Internet) {
             result =
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
             break;
@@ -43,7 +44,8 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     }
 
     case 1: {
-        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() == SharedPage::NetworkState::Internet) {
+        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() ==
+            SharedPage::NetworkState::Internet) {
             result =
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
             break;
