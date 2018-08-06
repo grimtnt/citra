@@ -5,8 +5,8 @@
 #include "common/logging/log.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/service/nwm/nwm_ext.h"
-#include "core/hle/shared_page.h"
 #include "core/settings.h"
+#include "core/core.h"
 
 namespace Service {
 namespace NWM {
@@ -28,7 +28,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
 
     switch (enabled) {
     case 0: {
-        if (SharedPage::shared_page.network_state != 7) {
+        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() != SharedPage::NetworkState::Internet) {
             result =
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
             break;
@@ -38,12 +38,12 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
         Settings::values.n_wifi_link_level = 3;
         Settings::values.n_state = 2;
         SharedPage::shared_page.wifi_link_level = 3;
-        SharedPage::shared_page.network_state = 2;
+        SharedPage::shared_page.network_state = SharedPage::NetworkState::Disabled;
         break;
     }
 
     case 1: {
-        if (SharedPage::shared_page.network_state == 7) {
+        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() == SharedPage::NetworkState::Internet) {
             result =
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
             break;
@@ -52,12 +52,12 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
         Settings::values.n_wifi_link_level = 0;
         Settings::values.n_state = 7;
         SharedPage::shared_page.wifi_link_level = 0;
-        SharedPage::shared_page.network_state = 7;
+        SharedPage::shared_page.network_state = SharedPage::NetworkState::Internet;
         break;
     }
 
     default: {
-        LOG_ERROR(Service_NWM, "Invalid enabled value {}", static_cast<u32>(enabled));
+        LOG_ERROR(Service_NWM, "Invalid enabled value {}", enabled);
         break;
     }
     }
