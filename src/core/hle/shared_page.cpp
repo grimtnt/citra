@@ -115,6 +115,10 @@ void Handler::SetNetworkState(NetworkState state) {
     shared_page.network_state = state;
 }
 
+NetworkState Handler::GetNetworkState() {
+    return shared_page.network_state;
+}
+
 void Handler::SetAdapterConnected(u8 adapter_connected) {
     shared_page.battery_state.is_adapter_connected.Assign(adapter_connected);
 }
