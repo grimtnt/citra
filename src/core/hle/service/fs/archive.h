@@ -26,7 +26,7 @@ static constexpr char SDCARD_ID[]{"00000000000000000000000000000000"};
 
 namespace Loader {
 class AppLoader;
-}
+} // namespace Loader
 
 namespace Service {
 namespace FS {
