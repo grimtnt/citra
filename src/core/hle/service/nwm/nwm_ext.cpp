@@ -27,8 +27,8 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     ResultCode result = RESULT_SUCCESS;
 
     switch (enabled) {
-    case 0: {
-        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() !=
+    case 0: { // Enable
+        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() ==
             SharedPage::NetworkState::Internet) {
             result =
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
@@ -38,13 +38,15 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
         Settings::values.n_wifi_status = Settings::values.enable_new_mode ? 2 : 1;
         Settings::values.n_wifi_link_level = 3;
         Settings::values.n_state = 2;
-        SharedPage::shared_page.wifi_link_level = 3;
-        SharedPage::shared_page.network_state = SharedPage::NetworkState::Disabled;
+        Core::System::GetInstance().GetSharedPageHandler()->SetWifiLinkLevel(
+            SharedPage::WifiLinkLevel::Best);
+        Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(
+            SharedPage::NetworkState::Internet);
         break;
     }
 
-    case 1: {
-        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() ==
+    case 1: { // Disable
+        if (Core::System::GetInstance().GetSharedPageHandler()->GetNetworkState() !=
             SharedPage::NetworkState::Internet) {
             result =
                 ResultCode(13, ErrorModule::NWM, ErrorSummary::InvalidState, ErrorLevel::Status);
@@ -53,8 +55,10 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
         Settings::values.n_wifi_status = 0;
         Settings::values.n_wifi_link_level = 0;
         Settings::values.n_state = 7;
-        SharedPage::shared_page.wifi_link_level = 0;
-        SharedPage::shared_page.network_state = SharedPage::NetworkState::Internet;
+        Core::System::GetInstance().GetSharedPageHandler()->SetWifiLinkLevel(
+            SharedPage::WifiLinkLevel::Off);
+        Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(
+            SharedPage::NetworkState::Disabled);
         break;
     }
 
