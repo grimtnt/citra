@@ -576,7 +576,7 @@ void Module::Interface::DoApplicationJump(Kernel::HLERequestContext& ctx) {
 
     if (application_reset) {
         // Reset system
-        Core::System::GetInstance().RequestJump(0, FS::MediaType::SDMC);
+        Core::System::GetInstance().RequestJump(0, FS::MediaType::NAND);
     } else {
         Core::System::GetInstance().RequestJump(jump_tid, jump_media);
     }
