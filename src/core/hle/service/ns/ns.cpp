@@ -44,7 +44,7 @@ void NS_S::LaunchTitle(Kernel::HLERequestContext& ctx) {
     auto process = LaunchTitleImpl(media_type, title_id);
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(process->process_id);
+    rb.Push<u32>(process ? process->process_id : 0);
 }
 
 void NS_S::ShutdownAsync(Kernel::HLERequestContext& ctx) {
