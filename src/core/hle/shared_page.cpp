@@ -44,7 +44,7 @@ Handler::Handler() {
         static_cast<u8>(Settings::values.p_battery_charging));
 
     shared_page.wifi_link_level = Settings::values.n_wifi_link_level;
-    shared_page.network_state = Settings::values.n_state;
+    shared_page.network_state = static_cast<NetworkState>(Settings::values.n_state);
 
     shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
 
