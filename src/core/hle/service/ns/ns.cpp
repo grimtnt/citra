@@ -56,9 +56,7 @@ void NS_S::ShutdownAsync(Kernel::HLERequestContext& ctx) {
 
 void NS_S::RebootSystemClean(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0xE, 0, 0);
-    u64 title_id = Kernel::g_current_process->codeset->program_id;
-    FS::MediaType media_type = AM::GetTitleMediaType(title_id);
-    Core::System::GetInstance().RequestJump(title_id, media_type);
+    Core::System::GetInstance().RequestJump(0, FS::MediaType::NAND);
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
 }
