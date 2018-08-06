@@ -33,26 +33,6 @@ enum class RequestMethod : u8 {
 };
 
 struct Context {
-    std::unique_ptr<httplib::Client> GetClientFor(const LUrlParser::clParseURL& parsedUrl) {
-        namespace hl = httplib;
-
-        int port;
-
-        if (parsedUrl.m_Scheme == "http") {
-            if (!parsedUrl.GetPort(&port)) {
-                port = 80;
-            }
-            return std::make_unique<hl::Client>(parsedUrl.m_Host.c_str(), port,
-                                                (timeout == 0) ? 300
-                                                               : (timeout * std::pow(10, -9)));
-        }
-        if (!parsedUrl.GetPort(&port)) {
-            port = 443;
-        }
-        return std::make_unique<hl::SSLClient>(parsedUrl.m_Host.c_str(), port,
-                                               (timeout == 0) ? 300 : (timeout * std::pow(10, -9)));
-    }
-
     void SetUrl(std::string url) {
         this->url = std::move(url);
     }
@@ -62,99 +42,94 @@ struct Context {
     }
 
     void SetKeepAlive(bool keep_alive) {
-        this->keep_alive = keep_alive;
+        auto itr = request_headers.find("Connection");
+        bool header_keep_alive = (itr != request_headers.end()) && (itr->second == "Keep-Alive");
+        if (keep_alive && !header_keep_alive) {
+            request_headers.emplace("Connection", "Keep-Alive");
+        } else if (!keep_alive && header_keep_alive) {
+            request_headers.erase("Connection");
+        }
+    }
+
+    void SetSSLOptions(u32 ssl_options) {
+        if ((ssl_options & 0x200) == 0x200) {
+            disable_verify = true;
+            LOG_WARNING(Service_HTTP, "Disable verify requested");
+        }
+        if ((ssl_options & 0x800) == 0x800) {
+            LOG_WARNING(Service_HTTP, "TLS v1.0 requested, unimplemented.");
+        }
     }
 
     u32 GetResponseStatusCode() const {
-        return response.status;
+        return response ? response->status : 0;
     }
 
     u32 GetResponseContentLength() const {
         try {
-            const std::string length = response.get_header_value("Content-Length");
+            const std::string length = response->get_header_value("Content-Length");
             return std::stoi(length);
         } catch (...) {
             return 0;
         }
     }
 
-    void Delete() {
+    void Send() {
         using lup = LUrlParser::clParseURL;
         namespace hl = httplib;
         lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
-
+        std::unique_ptr<hl::Client> cli = nullptr;
+        int port;
+        if (parsedUrl.m_Scheme == "http") {
+            if (!parsedUrl.GetPort(&port)) {
+                port = 80;
+            }
+            cli = std::make_unique<hl::Client>(parsedUrl.m_Host.c_str(), port,
+                                               (timeout == 0) ? 300 : (timeout * std::pow(10, -9)));
+        } else if (parsedUrl.m_Scheme == "https") {
+            if (!parsedUrl.GetPort(&port)) {
+                port = 443;
+            }
+            cli = std::make_unique<hl::SSLClient>(parsedUrl.m_Host.c_str(), port,
+                                                  (timeout == 0) ? 300
+                                                                 : (timeout * std::pow(10, -9)));
+        } else {
+            UNREACHABLE_MSG("Invalid scheme!");
+        }
+        if (disable_verify) {
+            cli->set_verify(hl::SSLVerifyMode::None);
+        }
         hl::Request request;
-        request.method = "DELETE";
+        static const std::unordered_map<RequestMethod, std::string> methods_map_strings = {
+            {RequestMethod::Get, "GET"},       {RequestMethod::Post, "POST"},
+            {RequestMethod::Head, "HEAD"},     {RequestMethod::Put, "PUT"},
+            {RequestMethod::Delete, "DELETE"}, {RequestMethod::PostEmpty, "POST"},
+            {RequestMethod::PutEmpty, "PUT"},
+        };
+        static const std::unordered_map<RequestMethod, bool> methods_map_body = {
+            {RequestMethod::Get, false},      {RequestMethod::Post, true},
+            {RequestMethod::Head, false},     {RequestMethod::Put, true},
+            {RequestMethod::Delete, true},    {RequestMethod::PostEmpty, false},
+            {RequestMethod::PutEmpty, false},
+        };
+        request.method = methods_map_strings.find(method)->second;
         request.path = '/' + parsedUrl.m_Path;
-        request.headers = request_header;
-
-        cli->send(request, response);
-    }
-
-    void Get() {
-        using lup = LUrlParser::clParseURL;
-        namespace hl = httplib;
-        lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
-
-        hl::Request request;
-        request.method = "GET";
-        request.path = '/' + parsedUrl.m_Path;
-        request.headers = request_header;
-
-        cli->send(request, response);
-    }
-
-    void Head() {
-        using lup = LUrlParser::clParseURL;
-        namespace hl = httplib;
-        lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
-
-        hl::Request request;
-        request.method = "HEAD";
-        request.path = '/' + parsedUrl.m_Path;
-        request.headers = request_header;
-
-        cli->send(request, response);
-    }
-
-    void Post(const std::string& body) {
-        using lup = LUrlParser::clParseURL;
-        namespace hl = httplib;
-        lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
-
-        hl::Request request;
-        request.method = "POST";
-        request.path = '/' + parsedUrl.m_Path;
-        request.headers = request_header;
-        request.body = body;
-
-        cli->send(request, response);
-    }
-
-    void Put(const std::string& body) {
-        using lup = LUrlParser::clParseURL;
-        namespace hl = httplib;
-        lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli = GetClientFor(parsedUrl);
-
-        hl::Request request;
-        request.method = "PUT";
-        request.path = '/' + parsedUrl.m_Path;
-        request.headers = request_header;
-        request.body = body;
-
-        cli->send(request, response);
+        request.headers = request_headers;
+        if (methods_map_body.find(method)->second) {
+            request.body = body;
+        }
+        hl::Params params;
+        hl::detail::parse_query_text(parsedUrl.m_Query, params);
+        request.params = params;
+        response = std::make_shared<hl::Response>();
+        cli->send(request, *response);
     }
 
     void Initialize() {
         current_offset = 0;
+        response = nullptr;
+        disable_verify = false;
         proxy_default = false;
-        keep_alive = true;
-        ssl_options = 0;
         timeout = 0;
         state = State::NotStarted;
     }
@@ -168,13 +143,12 @@ struct Context {
     };
 
     u32 current_offset;
-    httplib::Headers request_header;
+    httplib::Headers request_headers;
     std::string url;
-    httplib::Response response;
-    RequestMethod method{RequestMethod::Get};
+    std::shared_ptr<httplib::Response> response;
+    RequestMethod method;
+    bool disable_verify;
     bool proxy_default;
-    bool keep_alive;
-    u32 ssl_options;
     u64 timeout;
     State state;
     std::string body;
@@ -203,44 +177,6 @@ public:
     void SetKeepAlive(Kernel::HLERequestContext& ctx);
 
 private:
-    void MakeRequest(Context& context) {
-        switch (context.method) {
-        case RequestMethod::Get: {
-            context.Get();
-            break;
-        }
-        case RequestMethod::Post: {
-            context.Post(context.body);
-            break;
-        }
-        case RequestMethod::PostEmpty: {
-            const std::string body;
-            context.Post(body);
-            break;
-        }
-        case RequestMethod::Delete: {
-            context.Delete();
-            break;
-        }
-        case RequestMethod::Head: {
-            context.Head();
-            break;
-        }
-        case RequestMethod::Put: {
-            context.Put(context.body);
-        }
-        case RequestMethod::PutEmpty: {
-            const std::string body;
-            context.Put(body);
-            break;
-        }
-        default: {
-            UNIMPLEMENTED();
-            break;
-        }
-        }
-    }
-
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory = nullptr;
     std::unordered_map<u32, Context> contexts;
     u32 context_counter{0};
@@ -376,9 +312,11 @@ void HTTP_C::Impl::BeginRequest(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    context->second.state = Context::State::InProgress;
-    MakeRequest(context->second);
-    context->second.state = Context::State::ReadyToDownloadContent;
+    std::async(std::launch::async, [&] {
+        context->second.state = Context::State::InProgress;
+        context->second.Send();
+        context->second.state = Context::State::ReadyToDownloadContent;
+    });
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
@@ -398,11 +336,9 @@ void HTTP_C::Impl::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    context->second.state = Context::State::InProgress;
-
     std::async(std::launch::async, [&] {
-        MakeRequest(context->second);
-
+        context->second.state = Context::State::InProgress;
+        context->second.Send();
         context->second.state = Context::State::ReadyToDownloadContent;
     });
 
@@ -427,7 +363,7 @@ void HTTP_C::Impl::ReceiveData(Kernel::HLERequestContext& ctx) {
     }
     const u32 size = std::min(buffer_size, context->second.GetResponseContentLength() -
                                                context->second.current_offset);
-    buffer.Write(&context->second.response.body[context->second.current_offset], 0, size);
+    buffer.Write(&context->second.response->body[context->second.current_offset], 0, size);
     context->second.current_offset += size;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
@@ -456,7 +392,7 @@ void HTTP_C::Impl::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     context->second.timeout = timeout;
     const u32 size = std::min(buffer_size, context->second.GetResponseContentLength() -
                                                context->second.current_offset);
-    buffer.Write(&context->second.response.body[context->second.current_offset], 0, size);
+    buffer.Write(&context->second.response->body[context->second.current_offset], 0, size);
     context->second.current_offset += size;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
@@ -505,7 +441,7 @@ void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
-    context->second.request_header.emplace(name, value);
+    context->second.request_headers.emplace(name, value);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
     rb.Push(RESULT_SUCCESS);
@@ -553,7 +489,7 @@ void HTTP_C::Impl::GetResponseHeader(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
-    const std::string value = context->second.response.headers.find(name)->second + '\0';
+    const std::string value = context->second.response->headers.find(name)->second + '\0';
 
     u32 size = static_cast<u32>(value.size());
     value_buffer.Write(value.c_str(), 0, size);
@@ -620,7 +556,7 @@ void HTTP_C::Impl::SetSSLOpt(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
-    context->second.ssl_options = ssl_options;
+    context->second.SetSSLOptions(ssl_options);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
@@ -640,7 +576,7 @@ void HTTP_C::Impl::SetKeepAlive(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
-    context->second.keep_alive = keep_alive;
+    context->second.SetKeepAlive(keep_alive);
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
