@@ -111,6 +111,22 @@ void Handler::SetWifiLinkLevel(WifiLinkLevel level) {
     shared_page.wifi_link_level = static_cast<u8>(level);
 }
 
+void Handler::SetNetworkState(NetworkState state) {
+    shared_page.network_state = state;
+}
+
+void Handler::SetAdapterConnected(u8 adapter_connected) {
+    shared_page.battery_state.is_adapter_connected.Assign(adapter_connected);
+}
+
+void Handler::SetBatteryCharging(u8 charging) {
+    shared_page.battery_state.is_charging.Assign(charging);
+}
+
+void Handler::SetBatteryLevel(u8 level) {
+    shared_page.battery_state.charge_level.Assign(level);
+}
+
 void Handler::Set3DLed(u8 state) {
     shared_page.ledstate_3d = state;
 }

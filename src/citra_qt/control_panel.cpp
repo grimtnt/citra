@@ -5,39 +5,39 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include "citra_qt/control_panel.h"
-#include "core/hle/shared_page.h"
+#include "core/core.h"
 #include "core/settings.h"
 #include "ui_control_panel.h"
 
 namespace SharedPageUtil {
-static int nsti(u8 state) {
+
+static int NetworkStateToIndex(SharedPage::NetworkState state) {
     switch (state) {
-    case 2:
+    case SharedPage::NetworkState::Internet:
         return 3;
-    case 3:
-    case 4:
-    case 6:
+    case SharedPage::NetworkState::Local:
         return 2;
-    case 7:
+    case SharedPage::NetworkState::Disabled:
         return 1;
-    default:
+    case SharedPage::NetworkState::Enabled:
         return 0;
     }
 }
 
-static u8 itns(int index) {
+static SharedPage::NetworkState IndexToNetworkState(int index) {
     switch (index) {
     case 0:
-        return 0;
+        return SharedPage::NetworkState::Enabled;
     case 1:
-        return 7;
+        return SharedPage::NetworkState::Disabled;
     case 2:
-        return 3;
+        return SharedPage::NetworkState::Local;
     case 3:
-        return 2;
+        return SharedPage::NetworkState::Internet;
     }
-    return 0;
+    return SharedPage::NetworkState::Enabled;
 }
+
 } // namespace SharedPageUtil
 
 ControlPanel::ControlPanel(QWidget* parent)
@@ -50,7 +50,8 @@ ControlPanel::ControlPanel(QWidget* parent)
     ui->power_battery_level->setCurrentIndex(Settings::values.p_battery_level - 1);
     ui->network_wifi_status->setCurrentIndex(Settings::values.n_wifi_status);
     ui->network_link_level->setCurrentIndex(Settings::values.n_wifi_link_level);
-    ui->network_state->setCurrentIndex(SharedPageUtil::nsti(Settings::values.n_state));
+    ui->network_state->setCurrentIndex(
+        SharedPageUtil::NetworkStateToIndex(Settings::values.n_state));
 
     connect(ui->shared_page_enable_3d, &QCheckBox::stateChanged, this,
             &ControlPanel::On3DEnabledChanged);
@@ -79,25 +80,26 @@ ControlPanel::~ControlPanel() {}
 
 void ControlPanel::On3DEnabledChanged() {
     Settings::values.sp_enable_3d = ui->shared_page_enable_3d->isChecked();
-    SharedPage::shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
+    Core::System::GetInstance().GetSharedPageHandler()->Set3DLed(Settings::values.sp_enable_3d ? 1
+                                                                                               : 0);
 }
 
 void ControlPanel::OnAdapterConnectedChanged() {
     Settings::values.p_adapter_connected = ui->power_adapter_connected->isChecked();
-    SharedPage::shared_page.battery_state.is_adapter_connected.Assign(
+    Core::System::GetInstance().GetSharedPageHandler()->SetAdapterConnected(
         static_cast<u8>(Settings::values.p_adapter_connected));
 }
 
 void ControlPanel::OnBatteryChargingChanged() {
     Settings::values.p_battery_charging = ui->power_battery_charging->isChecked();
-    SharedPage::shared_page.battery_state.is_charging.Assign(
+    Core::System::GetInstance().GetSharedPageHandler()->SetBatteryCharging(
         static_cast<u8>(Settings::values.p_battery_charging));
 }
 
 void ControlPanel::OnBatteryLevelChanged() {
     Settings::values.p_battery_level =
         static_cast<u32>(ui->power_battery_level->currentIndex() + 1);
-    SharedPage::shared_page.battery_state.charge_level.Assign(
+    Core::System::GetInstance().GetSharedPageHandler()->SetBatteryLevel(
         static_cast<u8>(Settings::values.p_battery_level));
 }
 
@@ -107,11 +109,12 @@ void ControlPanel::OnWifiStatusChanged() {
 
 void ControlPanel::OnWifiLinkLevelChanged() {
     Settings::values.n_wifi_link_level = static_cast<u8>(ui->network_link_level->currentIndex());
-    SharedPage::SetWifiLinkLevel(
+    Core::System::GetInstance().GetSharedPageHandler()->SetWifiLinkLevel(
         static_cast<SharedPage::WifiLinkLevel>(Settings::values.n_wifi_link_level));
 }
 
 void ControlPanel::OnNetworkStateChanged() {
-    Settings::values.n_state = SharedPageUtil::itns(ui->network_state->currentIndex());
-    SharedPage::shared_page.network_state = Settings::values.n_state;
+    Settings::values.n_state =
+        SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex());
+    Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(Settings::values.n_state);
 }
