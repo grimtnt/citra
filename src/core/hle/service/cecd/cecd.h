@@ -455,27 +455,6 @@ public:
         void GetChangeStateEventHandle(Kernel::HLERequestContext& ctx);
 
         /**
-<<<<<<< HEAD
-         * OpenAndRead service function
-         *  Inputs:
-         *      0: 0x00120104
-         *      1: Buffer size
-         *      2: NCCH Program ID
-         *      3: Path type
-         *      4: File open flag
-         *      5: Descriptor for process ID
-         *      6: Placeholder for process ID
-         *      7: Descriptor for mapping a write-only buffer in the target process
-         *      8: Buffer address
-         *  Outputs:
-         *      1: Result code
-         *      2: Total bytes read
-         *      3: Descriptor for mapping a write-only buffer in the target process
-         *      4: Buffer address
-         */
-        void OpenAndRead(Kernel::HLERequestContext& ctx);
-
-=======
          * CECD::OpenAndWrite service function
          *  Inputs:
          *      0 : Header Code[0x00110104]
@@ -538,7 +517,6 @@ public:
          */
         void GetEventLogStart(Kernel::HLERequestContext& ctx);
 
->>>>>>> 7cce0e251... service/cecd: Stub some functions
     private:
         std::shared_ptr<Module> cecd;
     };

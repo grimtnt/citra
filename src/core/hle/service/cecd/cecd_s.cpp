@@ -28,15 +28,10 @@ CECD_S::CECD_S(std::shared_ptr<Module> cecd)
         {0x000E0000, &CECD_S::GetCecStateAbbreviated, "GetCecStateAbbreviated"},
         {0x000F0000, &CECD_S::GetCecInfoEventHandle, "GetCecInfoEventHandle"},
         {0x00100000, &CECD_S::GetChangeStateEventHandle, "GetChangeStateEventHandle"},
-<<<<<<< HEAD
-        {0x00110104, nullptr, "OpenAndWrite"},
-        {0x00120104, &CECD_S::OpenAndRead, "OpenAndRead"},
-=======
         {0x00110104, &CECD_S::OpenAndWrite, "OpenAndWrite"},
         {0x00120104, &CECD_S::OpenAndRead, "OpenAndRead"},
         {0x001E0082, nullptr, "GetEventLog"},
         {0x001F0000, nullptr, "GetEventLogStart"},
->>>>>>> 7cce0e251... service/cecd: Stub some functions
         // clang-format on
     };
 
