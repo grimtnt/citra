@@ -12,8 +12,12 @@
 #include <vector>
 #include <boost/optional.hpp>
 #include "common/common_types.h"
+#include "common/vector_math.h"
 
 namespace InputCommon::CemuhookUDP {
+
+static constexpr u16 DEFAULT_PORT = 26760;
+static constexpr const char* DEFAULT_ADDR = "127.0.0.1";
 
 class Socket;
 
@@ -40,8 +44,8 @@ struct DeviceStatus {
 
 class Client {
 public:
-    explicit Client(std::shared_ptr<DeviceStatus> status, const std::string& host = "127.0.0.1",
-                    u16 port = 26760, u32 client_id = 24872);
+    explicit Client(std::shared_ptr<DeviceStatus> status, const std::string& host = DEFAULT_ADDR,
+                    u16 port = DEFAULT_PORT, u32 client_id = 24872);
     ~Client();
 
 private:

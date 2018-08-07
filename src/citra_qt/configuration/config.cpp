@@ -7,6 +7,7 @@
 #include "citra_qt/ui_settings.h"
 #include "common/file_util.h"
 #include "input_common/main.h"
+#include "input_common/udp/client.h"
 #include "network/network.h"
 
 Config::Config() {
@@ -88,10 +89,9 @@ void Config::ReadValues() {
         qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
 
     Settings::values.udp_input_address =
-        qt_config->value("udp_input_address", "127.0.0.1").toString().toStdString();
+        qt_config->value("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR).toString().toStdString();
     Settings::values.udp_input_port =
-        static_cast<u16>(qt_config->value("udp_input_port", 26760).toInt());
-
+        static_cast<u16>(qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
