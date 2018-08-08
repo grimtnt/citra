@@ -59,6 +59,8 @@ public:
 
     QStandardItemModel* GetModel() const;
 
+    QString FindGameByProgramID(u64 program_id);
+
     static const QStringList supported_file_extensions;
 
 signals:
@@ -87,6 +89,8 @@ private:
     void AddGamePopup(QMenu& context_menu, u64 program_id);
     void AddCustomDirPopup(QMenu& context_menu, QStandardItem* child);
     void AddPermDirPopup(QMenu& context_menu, QStandardItem* child);
+
+    QString FindGameByProgramID(QStandardItem* current_item, u64 program_id);
 
     GameListSearchField* search_field;
     GMainWindow* main_window = nullptr;
