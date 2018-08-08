@@ -1,4 +1,4 @@
-// Copyright 2016 Citra Emulator Project
+﻿// Copyright 2016 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
@@ -23,7 +23,7 @@ class QTimer;
 
 namespace Ui {
 class ConfigureInput;
-} // namespace Ui
+}
 
 class ConfigureInput : public QWidget {
     Q_OBJECT
@@ -46,9 +46,6 @@ private:
 
     std::array<Common::ParamPackage, Settings::NativeButton::NumButtons> buttons_param;
     std::array<Common::ParamPackage, Settings::NativeAnalog::NumAnalogs> analogs_param;
-    Common::ParamPackage tilt_param;
-
-    void updateTiltClampLabel(int value);
 
     static constexpr int ANALOG_SUB_BUTTONS_NUM = 5;
 
