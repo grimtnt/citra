@@ -180,10 +180,7 @@ ConfigureInput::ConfigureInput(QWidget* parent)
         }
     });
 
-    this->loadConfiguration();
-
-    // TODO(wwylele): enable this when we actually emulate it
-    ui->buttonHome->setEnabled(false);
+    loadConfiguration();
 }
 
 void ConfigureInput::applyConfiguration() {

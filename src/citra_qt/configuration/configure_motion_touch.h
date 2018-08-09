@@ -10,7 +10,7 @@
 
 namespace Ui {
 class ConfigureMotionTouch;
-}
+} // namespace Ui
 
 class ConfigureMotionTouch : public QDialog {
     Q_OBJECT

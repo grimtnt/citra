@@ -32,7 +32,7 @@ ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
     ui->udp_learn_more->setOpenExternalLinks(true);
     ui->udp_learn_more->setText(
         tr("<a "
-           "href='https://citra-emu.org/wiki/"
+           "href='https://github.com/valentinvanelslande/citra/wiki/"
            "how-to-set-up-your-controller-or-android-phones-for-touch-and-motion-input'><span "
            "style=\"text-decoration: underline; color:#039be5;\">Learn More</span></a>"));
 
