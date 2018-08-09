@@ -89,9 +89,11 @@ void Config::ReadValues() {
         qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
 
     Settings::values.udp_input_address =
-        qt_config->value("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR).toString().toStdString();
-    Settings::values.udp_input_port =
-        static_cast<u16>(qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
+        qt_config->value("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR)
+            .toString()
+            .toStdString();
+    Settings::values.udp_input_port = static_cast<u16>(
+        qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
