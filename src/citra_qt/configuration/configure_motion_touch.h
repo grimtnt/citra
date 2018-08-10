@@ -27,6 +27,7 @@ public:
 
 private:
     Q_INVOKABLE void UpdateLabelText(QString text);
+    Q_INVOKABLE void UpdateButtonText(QString text);
 
     QVBoxLayout* layout;
     QLabel* status_label;

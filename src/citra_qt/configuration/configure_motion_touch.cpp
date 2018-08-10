@@ -47,7 +47,7 @@ CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
             }
             QMetaObject::invokeMethod(this, "UpdateLabelText", Q_ARG(QString, text));
             if (status == CalibrationConfigurationJob::Status::Completed) {
-                cancel_button->setText(tr("OK"));
+                QMetaObject::invokeMethod(this, "UpdateButtonText", Q_ARG(QString, tr("OK")));
             }
         },
         [this](u16 min_x_, u16 min_y_, u16 max_x_, u16 max_y_) {
@@ -63,6 +63,10 @@ CalibrationConfigurationDialog::~CalibrationConfigurationDialog() = default;
 
 void CalibrationConfigurationDialog::UpdateLabelText(QString text) {
     status_label->setText(text);
+}
+
+void CalibrationConfigurationDialog::UpdateButtonText(QString text) {
+    cancel_button->setText(text);
 }
 
 const std::array<std::pair<const char*, const char*>, 2> MotionProviders = {
