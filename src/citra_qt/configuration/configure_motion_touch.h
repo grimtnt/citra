@@ -7,10 +7,38 @@
 #include <memory>
 #include <QDialog>
 #include "common/param_package.h"
+#include "input_common/udp/udp.h"
+
+class QVBoxLayout;
+class QLabel;
+class QPushButton;
 
 namespace Ui {
 class ConfigureMotionTouch;
 } // namespace Ui
+
+/// A dialog for touchpad calibration configuration.
+class CalibrationConfigurationDialog : public QDialog {
+    Q_OBJECT
+public:
+    explicit CalibrationConfigurationDialog(QWidget* parent, const std::string& host, u16 port,
+                                            u16 client_id);
+    ~CalibrationConfigurationDialog();
+
+private:
+    Q_INVOKABLE void UpdateLabelText(QString text);
+
+    QVBoxLayout* layout;
+    QLabel* status_label;
+    QPushButton* cancel_button;
+    std::unique_ptr<InputCommon::CemuhookUDP::CalibrationConfigurationJob> job;
+
+    // Configuration results
+    bool completed{};
+    u16 min_x, min_y, max_x, max_y;
+
+    friend class ConfigureMotionTouch;
+};
 
 class ConfigureMotionTouch : public QDialog {
     Q_OBJECT
@@ -29,7 +57,6 @@ private slots:
 private:
     void closeEvent(QCloseEvent* event) override;
     Q_INVOKABLE void ShowUDPTestResult(bool result);
-    Q_INVOKABLE void ShowCalibrationConfigureResult(bool result);
     void setConfiguration();
     void updateUiDisplay();
     void connectEvents();
@@ -40,5 +67,5 @@ private:
     // Coordinate system of the CemuhookUDP touch provider
     int min_x, min_y, max_x, max_y;
 
-    bool udp_test_in_progress{}, calibration_config_in_progress{};
+    bool udp_test_in_progress{};
 };

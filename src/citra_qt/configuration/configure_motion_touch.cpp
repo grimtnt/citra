@@ -4,12 +4,66 @@
 
 #include <array>
 #include <QCloseEvent>
+#include <QLabel>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QVBoxLayout>
 #include "citra_qt/configuration/configure_motion_touch.h"
 #include "core/settings.h"
 #include "input_common/main.h"
-#include "input_common/udp/udp.h"
 #include "ui_configure_motion_touch.h"
+
+CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
+                                                               const std::string& host, u16 port,
+                                                               u16 client_id)
+    : QDialog(parent) {
+    layout = new QVBoxLayout;
+    status_label = new QLabel(tr("Communicating with the server..."));
+    cancel_button = new QPushButton(tr("Cancel"));
+    connect(cancel_button, &QPushButton::clicked, this, [this] {
+        if (!completed)
+            job->Stop();
+        accept();
+    });
+    layout->addWidget(status_label);
+    layout->addWidget(cancel_button);
+    setLayout(layout);
+
+    using namespace InputCommon::CemuhookUDP;
+    job = std::move(std::make_unique<CalibrationConfigurationJob>(
+        host, port, client_id,
+        [this](CalibrationConfigurationJob::Status status) {
+            QString text;
+            switch (status) {
+            case CalibrationConfigurationJob::Status::Ready:
+                text = tr("Touch the top left corner <br>of your touchpad.");
+                break;
+            case CalibrationConfigurationJob::Status::Stage1Completed:
+                text = tr("Now touch the bottom right corner <br>of your touchpad.");
+                break;
+            case CalibrationConfigurationJob::Status::Completed:
+                text = tr("Configuration completed!");
+                break;
+            }
+            QMetaObject::invokeMethod(this, "UpdateLabelText", Q_ARG(QString, text));
+            if (status == CalibrationConfigurationJob::Status::Completed) {
+                cancel_button->setText(tr("OK"));
+            }
+        },
+        [this](u16 min_x_, u16 min_y_, u16 max_x_, u16 max_y_) {
+            completed = true;
+            min_x = min_x_;
+            min_y = min_y_;
+            max_x = max_x_;
+            max_y = max_y_;
+        }));
+}
+
+CalibrationConfigurationDialog::~CalibrationConfigurationDialog() = default;
+
+void CalibrationConfigurationDialog::UpdateLabelText(QString text) {
+    status_label->setText(text);
+}
 
 const std::array<std::pair<const char*, const char*>, 2> MotionProviders = {
     {{"motion_emu", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "Mouse (Right Click)")},
@@ -131,27 +185,23 @@ void ConfigureMotionTouch::OnCemuhookUDPTest() {
 void ConfigureMotionTouch::OnConfigureTouchCalibration() {
     ui->touch_calibration_config->setEnabled(false);
     ui->touch_calibration_config->setText(tr("Configuring"));
-    QMessageBox::information(this, tr("Configure Touchpad Calibration"),
-                             tr("After pressing OK, first touch the upper-left corner of your "
-                                "touchpad, then touch the lower-right corner."));
-    calibration_config_in_progress = true;
-    InputCommon::CemuhookUDP::ConfigureCalibration(
-        ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toInt()), 24872,
-        [this](u16 min_x_, u16 min_y_, u16 max_x_, u16 max_y_) {
-            min_x = min_x_;
-            min_y = min_y_;
-            max_x = max_x_;
-            max_y = max_y_;
-            LOG_INFO(
-                Frontend,
-                "UDP touchpad calibration config success: min_x={}, min_y={}, max_x={}, max_y={}",
-                min_x, min_y, max_x, max_y);
-            QMetaObject::invokeMethod(this, "ShowCalibrationConfigureResult", Q_ARG(bool, true));
-        },
-        [this] {
-            LOG_ERROR(Frontend, "UDP touchpad calibration config failed");
-            QMetaObject::invokeMethod(this, "ShowCalibrationConfigureResult", Q_ARG(bool, false));
-        });
+    CalibrationConfigurationDialog* dialog =
+        new CalibrationConfigurationDialog(this, ui->udp_server->text().toStdString(),
+                                           static_cast<u16>(ui->udp_port->text().toUInt()), 24872);
+    dialog->exec();
+    if (dialog->completed) {
+        min_x = dialog->min_x;
+        min_y = dialog->min_y;
+        max_x = dialog->max_x;
+        max_y = dialog->max_y;
+        LOG_INFO(Frontend,
+                 "UDP touchpad calibration config success: min_x={}, min_y={}, max_x={}, max_y={}",
+                 min_x, min_y, max_x, max_y);
+    } else {
+        LOG_ERROR(Frontend, "UDP touchpad calibration config failed");
+    }
+    ui->touch_calibration_config->setEnabled(true);
+    ui->touch_calibration_config->setText(tr("Configure"));
 }
 
 void ConfigureMotionTouch::closeEvent(QCloseEvent* event) {
@@ -176,23 +226,8 @@ void ConfigureMotionTouch::ShowUDPTestResult(bool result) {
     ui->udp_test->setText(tr("Test"));
 }
 
-void ConfigureMotionTouch::ShowCalibrationConfigureResult(bool result) {
-    calibration_config_in_progress = false;
-    if (result) {
-        QMessageBox::information(this, tr("Configuration Successful"),
-                                 tr("Successfully updated touchpad calibration data."));
-    } else {
-        QMessageBox::warning(this, tr("Configuration Failed"),
-                             tr("Configuration timed out after 30s.<br>Please try again."));
-    }
-    ui->touch_calibration_config->setEnabled(true);
-    ui->touch_calibration_config->setText(tr("Configure"));
-
-    updateUiDisplay();
-}
-
 bool ConfigureMotionTouch::CanCloseDialog() {
-    if (udp_test_in_progress || calibration_config_in_progress) {
+    if (udp_test_in_progress) {
         QMessageBox::warning(this, tr("Citra"),
                              tr("UDP Test or calibration configuration is in progress.<br>Please "
                                 "wait for them to finish."));
