@@ -326,6 +326,7 @@ private:
     std::atomic<bool> is_device_reload_pending{true};
     std::array<std::unique_ptr<Input::ButtonDevice>, Settings::NativeButton::NUM_BUTTONS_HID>
         buttons;
+    std::unique_ptr<Input::ButtonDevice> button_home;
     std::unique_ptr<Input::AnalogDevice> circle_pad;
     std::unique_ptr<Input::MotionDevice> motion_device;
     std::unique_ptr<Input::TouchDevice> touch_device;

@@ -66,6 +66,8 @@ void Module::LoadInputDevices() {
     std::transform(Settings::values.buttons.begin() + Settings::NativeButton::BUTTON_HID_BEGIN,
                    Settings::values.buttons.begin() + Settings::NativeButton::BUTTON_HID_END,
                    buttons.begin(), Input::CreateDevice<Input::ButtonDevice>);
+    button_home = Input::CreateDevice<Input::ButtonDevice>(
+        Settings::values.buttons[Settings::NativeButton::Home]);
     circle_pad = Input::CreateDevice<Input::AnalogDevice>(
         Settings::values.analogs[Settings::NativeAnalog::CirclePad]);
     motion_device = Input::CreateDevice<Input::MotionDevice>(Settings::values.motion_device);
@@ -92,6 +94,8 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
     state.r.Assign(buttons[R - BUTTON_HID_BEGIN]->GetStatus());
     state.start.Assign(buttons[Start - BUTTON_HID_BEGIN]->GetStatus());
     state.select.Assign(buttons[Select - BUTTON_HID_BEGIN]->GetStatus());
+    if (button_home->GetStatus())
+        Core::System::GetInstance().RequestShutdown();
 
     // Get current circle pad position and update circle pad direction
     float circle_pad_x_f, circle_pad_y_f;
