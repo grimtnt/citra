@@ -3,19 +3,27 @@
 // Refer to the license.txt file included.
 
 #include <cstring>
-#include <dynarmic/context.h>
-#include <dynarmic/dynarmic.h>
+#include <dynarmic/A32/a32.h>
+#include <dynarmic/A32/context.h>
 #include "common/assert.h"
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dynarmic/arm_dynarmic_cp15.h"
 #include "core/arm/dyncom/arm_dyncom_interpreter.h"
 #include "core/core.h"
 #include "core/core_timing.h"
-#include "core/hle/kernel/process.h"
 #include "core/hle/kernel/svc.h"
-#include "core/hle/kernel/vm_manager.h"
 #include "core/memory.h"
-#include "core/settings.h"
+
+static std::unordered_map<u64, u64> custom_ticks_map = {
+    {0x000400000008C300, 570},   {0x000400000008C400, 570},   {0x000400000008C500, 570},
+    {0x0004000000126A00, 570},   {0x0004000000126B00, 570},   {0x0004000200120C01, 570},
+    {0x000400000F700E00, 18000}, {0x0004000000055D00, 17000}, {0x0004000000055E00, 17000},
+    {0x000400000011C400, 17000}, {0x000400000011C500, 17000}, {0x0004000000164800, 17000},
+    {0x0004000000175E00, 17000}, {0x00040000001B5000, 17000}, {0x00040000001B5100, 17000},
+    {0x00040000001BC500, 27000}, {0x00040000001BC600, 27000}, {0x000400000016E100, 27000},
+    {0x0004000000055F00, 27000}, {0x0004000000076500, 27000}, {0x0004000000076400, 27000},
+    {0x00040000000D0000, 27000},
+};
 
 class DynarmicThreadContext final : public ARM_Interface::ThreadContext {
 public:
@@ -66,143 +74,106 @@ public:
 private:
     friend class ARM_Dynarmic;
 
-    Dynarmic::Context ctx;
+    Dynarmic::A32::Context ctx;
     u32 fpexc;
 };
 
-static void InterpreterFallback(u32 pc, Dynarmic::Jit* jit, void* user_arg) {
-    ARMul_State* state = static_cast<ARMul_State*>(user_arg);
-
-    state->Reg = jit->Regs();
-    state->Cpsr = jit->Cpsr();
-    state->Reg[15] = pc;
-    state->ExtReg = jit->ExtRegs();
-    state->VFP[VFP_FPSCR] = jit->Fpscr();
-    state->NumInstrsToExecute = 1;
-
-    InterpreterMainLoop(state);
-
-    bool is_thumb = (state->Cpsr & (1 << 5)) != 0;
-    state->Reg[15] &= (is_thumb ? 0xFFFFFFFE : 0xFFFFFFFC);
-
-    jit->Regs() = state->Reg;
-    jit->SetCpsr(state->Cpsr);
-    jit->ExtRegs() = state->ExtReg;
-    jit->SetFpscr(state->VFP[VFP_FPSCR]);
-}
-
-static bool IsCodeMemory(u32 vaddr) {
-    auto it = Kernel::g_current_process->vm_manager.FindVMA(vaddr);
-    if (it == Kernel::g_current_process->vm_manager.vma_map.end())
-        return false;
-    if (static_cast<int>(it->second.permissions) & static_cast<int>(Kernel::VMAPermission::Write))
-        return false;
-    return it->second.meminfo_state == Kernel::MemoryState::Code;
-}
-
-static bool IsReadOnlyMemory(u32 vaddr) {
-    // TODO(bunnei): ImplementMe
-    return false;
-}
-
-static void AddTicks(u64 ticks) {
-    CoreTiming::AddTicks(ticks);
-}
-
-template <u64 custom>
-static void AddTicksCustom(u64 ticks) {
-    CoreTiming::AddTicks(custom);
-}
-
-static u64 GetTicksRemaining() {
-    s64 ticks = CoreTiming::GetDowncount();
-    return static_cast<u64>(ticks <= 0 ? 0 : ticks);
-}
-
-static u32 ReadCode(u32 vaddr) {
-    if (!IsCodeMemory(vaddr)) {
-        LOG_CRITICAL(Core_ARM11, "Tried to execute PC=0x{:08X}", vaddr);
-        return 0xEAFFFFFE; // b +#0 ; infinite loop
-    }
-    return Memory::Read32(vaddr);
-}
-
-static Dynarmic::UserCallbacks GetUserCallbacks(
-    const std::shared_ptr<ARMul_State>& interpreter_state, Memory::PageTable* current_page_table) {
-    Dynarmic::UserCallbacks user_callbacks{};
-    user_callbacks.InterpreterFallback = &InterpreterFallback;
-    user_callbacks.user_arg = static_cast<void*>(interpreter_state.get());
-    user_callbacks.CallSVC = &Kernel::CallSVC;
-    user_callbacks.memory.IsReadOnlyMemory = &IsReadOnlyMemory;
-    user_callbacks.memory.ReadCode = &ReadCode;
-    user_callbacks.memory.Read8 = &Memory::Read8;
-    user_callbacks.memory.Read16 = &Memory::Read16;
-    user_callbacks.memory.Read32 = &Memory::Read32;
-    user_callbacks.memory.Read64 = &Memory::Read64;
-    user_callbacks.memory.Write8 = &Memory::Write8;
-    user_callbacks.memory.Write16 = &Memory::Write16;
-    user_callbacks.memory.Write32 = &Memory::Write32;
-    user_callbacks.memory.Write64 = &Memory::Write64;
-    if (Settings::values.cpu_jit_hacks) {
-        u64 title_id;
-        Core::System::GetInstance().GetAppLoader().ReadProgramId(title_id);
-        switch (title_id) {
-        case 0x000400000008C300:
-        case 0x000400000008C400:
-        case 0x000400000008C500:
-        case 0x0004000000126A00:
-        case 0x0004000000126B00:
-        case 0x0004000200120C01:
-            user_callbacks.AddTicks = &AddTicksCustom<570>;
-            break;
-        case 0x000400000F700E00:
-            user_callbacks.AddTicks = &AddTicksCustom<18000>;
-            break;
-        case 0x0004000000055D00:
-        case 0x0004000000055E00:
-        case 0x000400000011C400:
-        case 0x000400000011C500:
-        case 0x0004000000164800:
-        case 0x0004000000175E00:
-        case 0x00040000001B5000:
-        case 0x00040000001B5100:
-            user_callbacks.AddTicks = &AddTicksCustom<17000>;
-            break;
-        case 0x00040000001BC500:
-        case 0x00040000001BC600:
-        case 0x000400000016E100:
-        case 0x0004000000055F00:
-        case 0x0004000000076500:
-        case 0x0004000000076400:
-        case 0x00040000000D0000:
-            user_callbacks.AddTicks = &AddTicksCustom<27000>;
-            break;
-        default:
-            user_callbacks.AddTicks = &AddTicks;
-            break;
+class DynarmicUserCallbacks final : public Dynarmic::A32::UserCallbacks {
+public:
+    explicit DynarmicUserCallbacks(ARM_Dynarmic& parent) : parent(parent) {
+        u64 program_id = 0;
+        Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
+        auto itr = custom_ticks_map.find(program_id);
+        if (itr != custom_ticks_map.end()) {
+            custom_ticks = itr->second;
+            use_custom_ticks = true;
         }
-    } else {
-        user_callbacks.AddTicks = &AddTicks;
     }
-    user_callbacks.GetTicksRemaining = &GetTicksRemaining;
-    user_callbacks.page_table = &current_page_table->pointers;
-    user_callbacks.coprocessors[15] = std::make_shared<DynarmicCP15>(interpreter_state);
-    return user_callbacks;
-}
+    ~DynarmicUserCallbacks() = default;
 
-ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode) {
+    std::uint8_t MemoryRead8(VAddr vaddr) override {
+        return Memory::Read8(vaddr);
+    }
+    std::uint16_t MemoryRead16(VAddr vaddr) override {
+        return Memory::Read16(vaddr);
+    }
+    std::uint32_t MemoryRead32(VAddr vaddr) override {
+        return Memory::Read32(vaddr);
+    }
+    std::uint64_t MemoryRead64(VAddr vaddr) override {
+        return Memory::Read64(vaddr);
+    }
+
+    void MemoryWrite8(VAddr vaddr, std::uint8_t value) override {
+        Memory::Write8(vaddr, value);
+    }
+    void MemoryWrite16(VAddr vaddr, std::uint16_t value) override {
+        Memory::Write16(vaddr, value);
+    }
+    void MemoryWrite32(VAddr vaddr, std::uint32_t value) override {
+        Memory::Write32(vaddr, value);
+    }
+    void MemoryWrite64(VAddr vaddr, std::uint64_t value) override {
+        Memory::Write64(vaddr, value);
+    }
+
+    void InterpreterFallback(VAddr pc, size_t num_instructions) override {
+        parent.interpreter_state->Reg = parent.jit->Regs();
+        parent.interpreter_state->Cpsr = parent.jit->Cpsr();
+        parent.interpreter_state->Reg[15] = pc;
+        parent.interpreter_state->ExtReg = parent.jit->ExtRegs();
+        parent.interpreter_state->VFP[VFP_FPSCR] = parent.jit->Fpscr();
+        parent.interpreter_state->NumInstrsToExecute = num_instructions;
+
+        InterpreterMainLoop(parent.interpreter_state.get());
+
+        bool is_thumb = (parent.interpreter_state->Cpsr & (1 << 5)) != 0;
+        parent.interpreter_state->Reg[15] &= (is_thumb ? 0xFFFFFFFE : 0xFFFFFFFC);
+
+        parent.jit->Regs() = parent.interpreter_state->Reg;
+        parent.jit->SetCpsr(parent.interpreter_state->Cpsr);
+        parent.jit->ExtRegs() = parent.interpreter_state->ExtReg;
+        parent.jit->SetFpscr(parent.interpreter_state->VFP[VFP_FPSCR]);
+    }
+
+    void CallSVC(std::uint32_t swi) override {
+        Kernel::CallSVC(swi);
+    }
+
+    void ExceptionRaised(VAddr pc, Dynarmic::A32::Exception exception) override {
+        ASSERT_MSG(false, "ExceptionRaised(exception = {}, pc = {:X})",
+                   static_cast<size_t>(exception), pc);
+    }
+
+    void AddTicks(std::uint64_t ticks) override {
+        CoreTiming::AddTicks(use_custom_ticks ? custom_ticks : ticks);
+    }
+    std::uint64_t GetTicksRemaining() override {
+        s64 ticks = CoreTiming::GetDowncount();
+        return static_cast<u64>(ticks <= 0 ? 0 : ticks);
+    }
+
+    ARM_Dynarmic& parent;
+    u64 custom_ticks = 0;
+    bool use_custom_ticks = false;
+};
+
+ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode)
+    : cb(std::make_unique<DynarmicUserCallbacks>(*this)) {
     interpreter_state = std::make_shared<ARMul_State>(initial_mode);
     PageTableChanged();
 }
 
+ARM_Dynarmic::~ARM_Dynarmic() = default;
+
 void ARM_Dynarmic::Run() {
     ASSERT(Memory::GetCurrentPageTable() == current_page_table);
 
-    jit->Run(GetTicksRemaining());
+    jit->Run();
 }
 
 void ARM_Dynarmic::Step() {
-    InterpreterFallback(jit->Regs()[15], jit, static_cast<void*>(interpreter_state.get()));
+    cb->InterpreterFallback(jit->Regs()[15], 1);
 }
 
 void ARM_Dynarmic::SetPC(u32 pc) {
@@ -309,6 +280,15 @@ void ARM_Dynarmic::PageTableChanged() {
         return;
     }
 
-    jit = new Dynarmic::Jit(GetUserCallbacks(interpreter_state, current_page_table));
-    jits.emplace(current_page_table, std::unique_ptr<Dynarmic::Jit>(jit));
+    auto new_jit = MakeJit();
+    jit = new_jit.get();
+    jits.emplace(current_page_table, std::move(new_jit));
+}
+
+std::unique_ptr<Dynarmic::A32::Jit> ARM_Dynarmic::MakeJit() {
+    Dynarmic::A32::UserConfig config;
+    config.callbacks = cb.get();
+    config.page_table = &current_page_table->pointers;
+    config.coprocessors[15] = std::make_shared<DynarmicCP15>(interpreter_state);
+    return std::make_unique<Dynarmic::A32::Jit>(config);
 }
