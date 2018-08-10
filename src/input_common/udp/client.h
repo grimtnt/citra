@@ -12,8 +12,8 @@
 #include <vector>
 #include <boost/optional.hpp>
 #include "common/common_types.h"
-#include "common/vector_math.h"
 #include "common/thread.h"
+#include "common/vector_math.h"
 
 namespace InputCommon::CemuhookUDP {
 
