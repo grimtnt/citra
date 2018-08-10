@@ -102,6 +102,14 @@ void Config::ReadValues() {
         qt_config->value("swkbd_implementation", 1).toInt());
     qt_config->endGroup();
 
+    qt_config->beginGroup("LLE");
+    for (const auto& service_module : Service::service_module_map) {
+        bool use_lle =
+            qt_config->value(QString::fromStdString(service_module.name), false).toBool();
+        Settings::values.lle_modules.emplace(service_module.name, use_lle);
+    }
+    qt_config->endGroup();
+
     qt_config->beginGroup("Renderer");
     Settings::values.use_hw_renderer = qt_config->value("use_hw_renderer", true).toBool();
 #ifdef __APPLE__
@@ -337,6 +345,12 @@ void Config::SaveValues() {
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
     qt_config->setValue("swkbd_implementation",
                         static_cast<int>(Settings::values.swkbd_implementation));
+    qt_config->endGroup();
+
+    qt_config->beginGroup("LLE");
+    for (const auto& service_module : Settings::values.lle_modules) {
+        qt_config->setValue(QString::fromStdString(service_module.first), service_module.second);
+    }
     qt_config->endGroup();
 
     qt_config->beginGroup("Renderer");

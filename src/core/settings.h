@@ -6,6 +6,7 @@
 
 #include <array>
 #include <string>
+#include <unordered_map>
 #include "common/common_types.h"
 #include "core/hle/service/cam/cam.h"
 
@@ -115,6 +116,9 @@ struct Values {
     // Core
     bool use_cpu_jit;
     SwkbdImplementation swkbd_implementation;
+
+    // LLE
+    std::unordered_map<std::string, bool> lle_modules;
 
     // Data Storage
     bool use_virtual_sd;

@@ -65,6 +65,58 @@ namespace Service {
 
 std::unordered_map<std::string, SharedPtr<ClientPort>> g_kernel_named_ports;
 
+const std::array<ServiceModuleInfo, 40> service_module_map{
+    {{"FS", 0x00040130'00001102, FS::InstallInterfaces},
+     {"PM", 0x00040130'00001202, PM::InstallInterfaces},
+     {"LDR", 0x00040130'00003702, LDR::InstallInterfaces},
+     {"PXI", 0x00040130'00001402, PXI::InstallInterfaces},
+
+     {"ERR", 0x00040030'00008A02, [](SM::ServiceManager& sm) { ERR::InstallInterfaces(); }},
+     {"AC", 0x00040130'00002402, AC::InstallInterfaces},
+     {"ACT", 0x00040130'00003802, ACT::InstallInterfaces},
+     {"AM", 0x00040130'00001502, AM::InstallInterfaces},
+     {"BOSS", 0x00040130'00003402, BOSS::InstallInterfaces},
+     {"CAM", 0x00040130'00001602,
+      [](SM::ServiceManager& sm) {
+          CAM::InstallInterfaces(sm);
+          Y2R::InstallInterfaces(sm);
+      }},
+     {"CECD", 0x00040130'00002602, CECD::InstallInterfaces},
+     {"CFG", 0x00040130'00001702, CFG::InstallInterfaces},
+     {"DLP", 0x00040130'00002802, DLP::InstallInterfaces},
+     {"DSP", 0x00040130'00001A02, DSP::InstallInterfaces},
+     {"FRD", 0x00040130'00003202, FRD::InstallInterfaces},
+     {"GSP", 0x00040130'00001C02, GSP::InstallInterfaces},
+     {"HID", 0x00040130'00001D02, HID::InstallInterfaces},
+     {"IR", 0x00040130'00003302, IR::InstallInterfaces},
+     {"MIC", 0x00040130'00002002, MIC::InstallInterfaces},
+     {"MVD", 0x00040130'20004102, MVD::InstallInterfaces},
+     {"NDM", 0x00040130'00002B02, NDM::InstallInterfaces},
+     {"NEWS", 0x00040130'00003502, NEWS::InstallInterfaces},
+     {"NFC", 0x00040130'00004002, NFC::InstallInterfaces},
+     {"NIM", 0x00040130'00002C02, NIM::InstallInterfaces},
+     {"NS", 0x00040130'00008002,
+      [](SM::ServiceManager& sm) {
+          NS::InstallInterfaces(sm);
+          APT::InstallInterfaces(sm);
+      }},
+     {"NWM", 0x00040130'00002D02, NWM::InstallInterfaces},
+     {"PTM", 0x00040130'00002202, PTM::InstallInterfaces},
+     {"QTM", 0x00040130'00004202, QTM::InstallInterfaces},
+     {"CSND", 0x00040130'00002702, CSND::InstallInterfaces},
+     {"HTTP", 0x00040130'00002902, HTTP::InstallInterfaces},
+     {"SOC", 0x00040130'00002E02, SOC::InstallInterfaces},
+     {"SSL", 0x00040130'00002F02, SSL::InstallInterfaces},
+     {"MCU", 0x00040130'00001F02, MCU::InstallInterfaces},
+     {"PS", 0x00040130'00003102, PS::InstallInterfaces},
+     // no HLE implementation
+     {"CDC", 0x00040130'00001802, nullptr},
+     {"GPIO", 0x00040130'00001B02, nullptr},
+     {"I2C", 0x00040130'00001E02, nullptr},
+     {"MP", 0x00040130'00002A02, nullptr},
+     {"PDN", 0x00040130'00002102, nullptr},
+     {"SPI", 0x00040130'00002302, nullptr}}};
+
 /**
  * Creates a function string for logging, complete with the name (or header code, depending
  * on what's passed in) the port name, and all the cmd_buff arguments.

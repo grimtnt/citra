@@ -618,7 +618,7 @@ const QStringList GameList::supported_file_extensions = {"3ds", "3dsx", "elf", "
                                                          "cci", "cxi",  "app"};
 
 static bool HasSupportedFileExtension(const std::string& file_name) {
-    QFileInfo file = QFileInfo(file_name.c_str());
+    QFileInfo file = QFileInfo(QString::fromStdString());
     return GameList::supported_file_extensions.contains(file.suffix(), Qt::CaseInsensitive);
 }
 
@@ -739,14 +739,12 @@ void GameListWorker::run() {
             emit DirEntryReady({game_list_dir});
             AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
         } else if (game_dir.path == "SYSTEM") {
-            QString path = QString(FileUtil::GetUserPath(D_NAND_IDX).c_str()) +
+            QString path = QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX)) +
                            "00000000000000000000000000000000/title/00040010";
             watch_list.append(path);
             GameListDir* game_list_dir = new GameListDir(game_dir, GameListItemType::SystemDir);
             emit DirEntryReady({game_list_dir});
-            AddFstEntriesToGameList(std::string(FileUtil::GetUserPath(D_NAND_IDX).c_str()) +
-                                        "00000000000000000000000000000000/title/00040010",
-                                    2, game_list_dir);
+            AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
         } else {
             watch_list.append(game_dir.path);
             GameListDir* game_list_dir = new GameListDir(game_dir);
