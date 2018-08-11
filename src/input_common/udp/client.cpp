@@ -11,6 +11,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include "common/logging/log.h"
+#include "common/vector_math.h"
 #include "input_common/udp/client.h"
 #include "input_common/udp/protocol.h"
 
@@ -29,10 +30,12 @@ class Socket {
 public:
     using clock = std::chrono::system_clock;
 
-    explicit Socket(const std::string& host, u16 port, u32 client_id, SocketCallback callback)
+    explicit Socket(const std::string& host, u16 port, u8 pad_index, u32 client_id,
+                    SocketCallback callback)
         : client_id(client_id), timer(io_service),
           send_endpoint(udp::endpoint(address_v4::from_string(host), port)),
-          socket(io_service, udp::endpoint(udp::v4(), 0)), callback(std::move(callback)) {}
+          socket(io_service, udp::endpoint(udp::v4(), 0)), pad_index(pad_index),
+          callback(std::move(callback)) {}
 
     void Stop() {
         io_service.stop();
@@ -84,15 +87,14 @@ private:
     }
 
     void HandleSend(const boost::system::error_code& error) {
-        // TODO: add something to the UI to let people choose what ports to listen on
-        // Send a request for getting port info for pad 1
-        Request::PortInfo port_info{1, {0, 0, 0, 0}};
+        // Send a request for getting port info for the pad
+        Request::PortInfo port_info{1, {pad_index, 0, 0, 0}};
         auto port_message = Request::Create(port_info, client_id);
         std::memcpy(&send_buffer1, &port_message, PORT_INFO_SIZE);
         size_t len = socket.send_to(boost::asio::buffer(send_buffer1), send_endpoint);
 
-        // Send a request for getting pad data for pad 1
-        Request::PadData pad_data{Request::PadData::Flags::Id, 0, EMPTY_MAC_ADDRESS};
+        // Send a request for getting pad data for the pad
+        Request::PadData pad_data{Request::PadData::Flags::Id, pad_index, EMPTY_MAC_ADDRESS};
         auto pad_message = Request::Create(pad_data, client_id);
         std::memcpy(send_buffer2.data(), &pad_message, PAD_DATA_SIZE);
         size_t len2 = socket.send_to(boost::asio::buffer(send_buffer2), send_endpoint);
@@ -105,6 +107,7 @@ private:
     udp::socket socket;
 
     u32 client_id;
+    u8 pad_index;
 
     static constexpr size_t PORT_INFO_SIZE = sizeof(Message<Request::PortInfo>);
     static constexpr size_t PAD_DATA_SIZE = sizeof(Message<Request::PadData>);
@@ -123,20 +126,19 @@ static void SocketLoop(Socket* socket) {
 }
 
 Client::Client(std::shared_ptr<DeviceStatus> status, const std::string& host, u16 port,
-               u32 client_id)
+               u8 pad_index, u32 client_id)
     : status(status) {
-    StartCommunication(host, port, client_id);
+    SocketCallback callback{[this](Response::Version version) { OnVersion(version); },
+                            [this](Response::PortInfo info) { OnPortInfo(info); },
+                            [this](Response::PadData data) { OnPadData(data); }};
+    LOG_INFO(Input, "Starting communication with UDP input server on {}:{}", host, port);
+    socket = std::make_unique<Socket>(host, port, pad_index, client_id, callback);
+    thread = std::thread{SocketLoop, this->socket.get()};
 }
 
 Client::~Client() {
     socket->Stop();
     thread.join();
-}
-
-void Client::ReloadSocket(const std::string& host, u16 port, u32 client_id) {
-    socket->Stop();
-    thread.join();
-    StartCommunication(host, port, client_id);
 }
 
 void Client::OnVersion(Response::Version data) {
@@ -188,94 +190,6 @@ void Client::OnPadData(Response::PadData data) {
 
         status->touch_status = {x, y, is_active};
     }
-}
-
-void Client::StartCommunication(const std::string& host, u16 port, u32 client_id) {
-    SocketCallback callback{[this](Response::Version version) { OnVersion(version); },
-                            [this](Response::PortInfo info) { OnPortInfo(info); },
-                            [this](Response::PadData data) { OnPadData(data); }};
-    LOG_INFO(Input, "Starting communication with UDP input server on {}:{}", host, port);
-    socket = std::make_unique<Socket>(host, port, client_id, callback);
-    thread = std::thread{SocketLoop, this->socket.get()};
-}
-
-void TestCommunication(const std::string& host, u16 port, u32 client_id,
-                       std::function<void()> success_callback,
-                       std::function<void()> failure_callback) {
-    std::thread([=] {
-        Common::Event success_event;
-        SocketCallback callback{[](Response::Version version) {}, [](Response::PortInfo info) {},
-                                [&](Response::PadData data) { success_event.Set(); }};
-        Socket socket(host, port, client_id, callback);
-        std::thread worker_thread{SocketLoop, &socket};
-        bool result = success_event.WaitFor(std::chrono::seconds(10));
-        socket.Stop();
-        worker_thread.join();
-        if (result)
-            success_callback();
-        else
-            failure_callback();
-    })
-        .detach();
-}
-
-CalibrationConfigurationJob::CalibrationConfigurationJob(
-    const std::string& host, u16 port, u32 client_id, std::function<void(Status)> status_callback,
-    std::function<void(u16, u16, u16, u16)> data_callback) {
-
-    std::thread([=] {
-        constexpr u16 CALIBRATION_THRESHOLD = 100;
-
-        u16 min_x{UINT16_MAX}, min_y{UINT16_MAX};
-        u16 max_x, max_y;
-
-        Status current_status{Status::Initialized};
-        SocketCallback callback{[](Response::Version version) {}, [](Response::PortInfo info) {},
-                                [&](Response::PadData data) {
-                                    if (current_status == Status::Initialized) {
-                                        // Receiving data means the communication is ready now
-                                        current_status = Status::Ready;
-                                        status_callback(current_status);
-                                    }
-                                    if (!data.touch_1.is_active)
-                                        return;
-                                    LOG_DEBUG(Input, "Current touch: {} {}", data.touch_1.x,
-                                              data.touch_1.y);
-                                    min_x = std::min(min_x, static_cast<u16>(data.touch_1.x));
-                                    min_y = std::min(min_y, static_cast<u16>(data.touch_1.y));
-                                    if (current_status == Status::Ready) {
-                                        // First touch - min data (min_x/min_y)
-                                        current_status = Status::Stage1Completed;
-                                        status_callback(current_status);
-                                    }
-                                    if (data.touch_1.x - min_x > CALIBRATION_THRESHOLD &&
-                                        data.touch_1.y - min_y > CALIBRATION_THRESHOLD) {
-                                        // Set the current position as max value and finishes
-                                        // configuration
-                                        max_x = data.touch_1.x;
-                                        max_y = data.touch_1.y;
-                                        current_status = Status::Completed;
-                                        data_callback(min_x, min_y, max_x, max_y);
-                                        status_callback(current_status);
-
-                                        complete_event.Set();
-                                    }
-                                }};
-        Socket socket{host, port, client_id, callback};
-        std::thread worker_thread{SocketLoop, &socket};
-        complete_event.Wait();
-        socket.Stop();
-        worker_thread.join();
-    })
-        .detach();
-}
-
-CalibrationConfigurationJob::~CalibrationConfigurationJob() {
-    Stop();
-}
-
-void CalibrationConfigurationJob::Stop() {
-    complete_event.Set();
 }
 
 } // namespace InputCommon::CemuhookUDP

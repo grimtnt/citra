@@ -94,6 +94,7 @@ void Config::ReadValues() {
             .toStdString();
     Settings::values.udp_input_port = static_cast<u16>(
         qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
+    Settings::values.udp_pad_index = static_cast<u8>(qt_config->value("udp_pad_index", 0).toUInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
@@ -343,6 +344,7 @@ void Config::SaveValues() {
     qt_config->setValue("udp_input_address",
                         QString::fromStdString(Settings::values.udp_input_address));
     qt_config->setValue("udp_input_port", Settings::values.udp_input_port);
+    qt_config->setValue("udp_pad_index", Settings::values.udp_pad_index);
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
