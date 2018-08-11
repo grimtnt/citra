@@ -14,6 +14,8 @@ namespace Settings {
 
 enum class SwkbdImplementation { StdIn, Qt };
 
+enum class TicksMode { Auto, Accurate, Custom };
+
 enum class InitClock {
     SystemTime = 0,
     FixedTime = 1,
@@ -138,7 +140,6 @@ struct Values {
     bool use_shader_jit;
     u16 resolution_factor;
     bool use_vsync;
-    bool use_bos;
     bool use_frame_limit;
     u16 frame_limit;
 
@@ -183,7 +184,9 @@ struct Values {
 
     // Hacks
     bool priority_boost;
-    bool cpu_jit_hacks;
+    TicksMode ticks_mode;
+    u64 ticks;
+    bool use_bos;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region

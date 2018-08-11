@@ -178,3 +178,5 @@ void ARM_DynCom::LoadContext(const std::unique_ptr<ThreadContext>& arg) {
 void ARM_DynCom::PrepareReschedule() {
     state->NumInstrsToExecute = 0;
 }
+
+void ARM_DynCom::SyncSettings() {}

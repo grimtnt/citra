@@ -74,7 +74,6 @@ void ConfigureGraphics::setConfiguration() {
     bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue);
     ui->layout_bg->setStyleSheet(
         QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
-    ui->toggle_bos->setChecked(Settings::values.use_bos);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -93,7 +92,6 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.bg_red = bg_color.redF();
     Settings::values.bg_green = bg_color.greenF();
     Settings::values.bg_blue = bg_color.blueF();
-    Settings::values.use_bos = ui->toggle_bos->isChecked();
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();

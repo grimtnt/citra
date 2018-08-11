@@ -76,7 +76,6 @@ void LogSettings() {
     LogSetting("System_EnableNewMode", Settings::values.enable_new_mode);
     LogSetting("System_RegionValue", Settings::values.region_value);
     LogSetting("Hacks_PriorityBoost", Settings::values.priority_boost);
-    LogSetting("Hacks_CpuJit", Settings::values.cpu_jit_hacks);
 }
 
 } // namespace Settings

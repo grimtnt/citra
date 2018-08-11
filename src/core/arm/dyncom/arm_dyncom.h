@@ -40,6 +40,7 @@ public:
     void LoadContext(const std::unique_ptr<ThreadContext>& arg) override;
 
     void PrepareReschedule() override;
+    void SyncSettings() override;
 
 private:
     void ExecuteInstructions(u64 num_instructions);

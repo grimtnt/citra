@@ -13,6 +13,7 @@
 #include "core/core_timing.h"
 #include "core/hle/kernel/svc.h"
 #include "core/memory.h"
+#include "core/settings.h"
 
 static std::unordered_map<u64, u64> custom_ticks_map = {
     {0x000400000008C300, 570},   {0x000400000008C400, 570},   {0x000400000008C500, 570},
@@ -81,12 +82,30 @@ private:
 class DynarmicUserCallbacks final : public Dynarmic::A32::UserCallbacks {
 public:
     explicit DynarmicUserCallbacks(ARM_Dynarmic& parent) : parent(parent) {
-        u64 program_id = 0;
-        Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
-        auto itr = custom_ticks_map.find(program_id);
-        if (itr != custom_ticks_map.end()) {
-            custom_ticks = itr->second;
+        switch (Settings::values.ticks_mode) {
+        case Settings::TicksMode::Custom: {
+            custom_ticks = Settings::values.ticks;
             use_custom_ticks = true;
+            break;
+        }
+        case Settings::TicksMode::Auto: {
+            u64 program_id = 0;
+            Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
+            auto itr = custom_ticks_map.find(program_id);
+            if (itr != custom_ticks_map.end()) {
+                custom_ticks = itr->second;
+                use_custom_ticks = true;
+            } else {
+                custom_ticks = 0;
+                use_custom_ticks = false;
+            }
+            break;
+        }
+        case Settings::TicksMode::Accurate: {
+            custom_ticks = 0;
+            use_custom_ticks = false;
+            break;
+        }
         }
     }
     ~DynarmicUserCallbacks() = default;
@@ -283,6 +302,36 @@ void ARM_Dynarmic::PageTableChanged() {
     auto new_jit = MakeJit();
     jit = new_jit.get();
     jits.emplace(current_page_table, std::move(new_jit));
+}
+
+void ARM_Dynarmic::SyncSettings() {
+    cb->custom_ticks = Settings::values.ticks;
+    cb->use_custom_ticks = Settings::values.ticks_mode != Settings::TicksMode::Accurate;
+    switch (Settings::values.ticks_mode) {
+    case Settings::TicksMode::Custom: {
+        cb->custom_ticks = Settings::values.ticks;
+        cb->use_custom_ticks = true;
+        break;
+    }
+    case Settings::TicksMode::Auto: {
+        u64 program_id = 0;
+        Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
+        auto itr = custom_ticks_map.find(program_id);
+        if (itr != custom_ticks_map.end()) {
+            cb->custom_ticks = itr->second;
+            cb->use_custom_ticks = true;
+        } else {
+            cb->custom_ticks = 0;
+            cb->use_custom_ticks = false;
+        }
+        break;
+    }
+    case Settings::TicksMode::Accurate: {
+        cb->custom_ticks = 0;
+        cb->use_custom_ticks = false;
+        break;
+    }
+    }
 }
 
 std::unique_ptr<Dynarmic::A32::Jit> ARM_Dynarmic::MakeJit() {
