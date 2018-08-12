@@ -80,7 +80,7 @@ static u8 network_channel = DefaultNetworkChannel;
 static NetworkInfo network_info;
 
 // Mapping of mac addresses to their respective node_ids.
-static std::map<MacAddress, u32> node_map;
+static std::map<MacAddress, u16> node_map;
 
 // Event that will generate and send the 802.11 beacon frames.
 static CoreTiming::EventType* beacon_broadcast_event;
@@ -179,7 +179,7 @@ static void HandleNodeMapPacket(const Network::WifiPacket& packet) {
     node_map.clear();
     size_t num_entries;
     Network::MacAddress address;
-    u32 id;
+    u16 id;
     std::memcpy(&num_entries, packet.data.data(), sizeof(num_entries));
     size_t offset = sizeof(num_entries);
     for (size_t i = 0; i < num_entries; ++i) {
