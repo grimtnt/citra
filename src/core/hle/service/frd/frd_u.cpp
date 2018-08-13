@@ -11,7 +11,7 @@ FRD_U::FRD_U(std::shared_ptr<Module> frd) : Module::Interface(std::move(frd), "f
     static const FunctionInfo functions[] = {
         {0x00010000, nullptr, "HasLoggedIn"},
         {0x00020000, nullptr, "IsOnline"},
-        {0x00030000, nullptr, "Login"},
+        {0x00030002, nullptr, "Login"},
         {0x00040000, nullptr, "Logout"},
         {0x00050000, &FRD_U::GetMyFriendKey, "GetMyFriendKey"},
         {0x00060000, nullptr, "GetMyPreference"},
