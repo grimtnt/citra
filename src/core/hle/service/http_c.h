@@ -134,6 +134,16 @@ private:
     void SetProxyDefault(Kernel::HLERequestContext& ctx);
 
     /**
+     * HTTP_C::SetSocketBufferSize service function
+     *  Inputs:
+     *      1 : HTTP context handle
+     *		2 : u32 val
+     *  Outputs:
+     *      1 : Result of function, 0 on success, otherwise error code
+     */
+    void SetSocketBufferSize(Kernel::HLERequestContext& ctx);
+
+    /**
      * HTTP_C::AddRequestHeader service function
      *  Inputs:
      *      1 : HTTP context handle

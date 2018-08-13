@@ -168,6 +168,7 @@ public:
     void ReceiveData(Kernel::HLERequestContext& ctx);
     void ReceiveDataTimeout(Kernel::HLERequestContext& ctx);
     void SetProxyDefault(Kernel::HLERequestContext& ctx);
+    void SetSocketBufferSize(Kernel::HLERequestContext& ctx);
     void AddRequestHeader(Kernel::HLERequestContext& ctx);
     void AddPostDataRaw(Kernel::HLERequestContext& ctx);
     void GetResponseHeader(Kernel::HLERequestContext& ctx);
@@ -423,6 +424,25 @@ void HTTP_C::Impl::SetProxyDefault(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
 
+void HTTP_C::Impl::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x10, 2, 0);
+    const u32 context_id = rp.Pop<u32>();
+    const u32 val = rp.Pop<u32>();
+
+    const auto context = contexts.find(context_id);
+    if (context == contexts.end()) {
+        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        rb.Push(ERROR_CONTEXT_ERROR);
+        LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
+        return;
+    }
+
+    // TODO: Implement
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
 void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x11, 3, 4);
     const u32 context_id = rp.Pop<u32>();
@@ -601,7 +621,7 @@ HTTP_C::HTTP_C() : ServiceFramework("http:C", 32), pimpl{new Impl{}} {
         {0x000D0146, nullptr, "SetProxy"},
         {0x000E0040, &HTTP_C::SetProxyDefault, "SetProxyDefault"},
         {0x000F00C4, nullptr, "SetBasicAuthorization"},
-        {0x00100080, nullptr, "SetSocketBufferSize"},
+        {0x00100080, &HTTP_C::SetSocketBufferSize, "SetSocketBufferSize"},
         {0x001100C4, &HTTP_C::AddRequestHeader, "AddRequestHeader"},
         {0x001200C4, nullptr, "AddPostDataAscii"},
         {0x001300C4, nullptr, "AddPostDataBinary"},
@@ -686,6 +706,10 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::SetProxyDefault(Kernel::HLERequestContext& ctx) {
     pimpl->SetProxyDefault(ctx);
+}
+
+void HTTP_C::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
+    pimpl->SetSocketBufferSize(ctx);
 }
 
 void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
