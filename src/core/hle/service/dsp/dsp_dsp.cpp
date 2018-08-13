@@ -10,6 +10,7 @@
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/service/dsp/dsp_dsp.h"
+#include "core/settings.h"
 
 using DspPipe = AudioCore::DspPipe;
 using InterruptType = Service::DSP::DSP_DSP::InterruptType;
@@ -305,8 +306,9 @@ void DSP_DSP::GetHeadphoneStatus(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
     rb.Push(RESULT_SUCCESS);
-    rb.Push(false); /// u8, 0 = not inserted, 1 = inserted
+    rb.Push<u8>(static_cast<u8>(Settings::values.headphones_connected));
 
+    LOG_INFO(Service_DSP, "{}", Settings::values.headphones_connected);
     LOG_DEBUG(Service_DSP, "called");
 }
 

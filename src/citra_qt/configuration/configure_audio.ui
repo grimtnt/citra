@@ -117,6 +117,13 @@
         </item>
        </layout>
       </item>
+      <item>
+       <widget class="QCheckBox" name="headphones_connected">
+        <property name="text">
+         <string>Headphones Connected</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

@@ -170,6 +170,7 @@ struct Values {
     bool enable_audio_stretching;
     std::string audio_device_id;
     float volume;
+    bool headphones_connected;
 
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;

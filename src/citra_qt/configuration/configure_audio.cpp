@@ -60,6 +60,7 @@ void ConfigureAudio::setConfiguration() {
 
     ui->volume_slider->setValue(Settings::values.volume * ui->volume_slider->maximum());
     ui->volume_indicator->setText(tr("%1 %").arg(ui->volume_slider->sliderPosition()));
+    ui->headphones_connected->setChecked(Settings::values.headphones_connected);
 }
 
 void ConfigureAudio::applyConfiguration() {
@@ -72,6 +73,7 @@ void ConfigureAudio::applyConfiguration() {
             .toStdString();
     Settings::values.volume =
         static_cast<float>(ui->volume_slider->sliderPosition()) / ui->volume_slider->maximum();
+    Settings::values.headphones_connected = ui->headphones_connected->isChecked();
 }
 
 void ConfigureAudio::updateAudioDevices(int sink_index) {

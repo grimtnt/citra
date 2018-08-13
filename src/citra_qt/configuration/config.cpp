@@ -159,6 +159,8 @@ void Config::ReadValues() {
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
     Settings::values.volume = qt_config->value("volume", 1).toFloat();
+    Settings::values.headphones_connected =
+        qt_config->value("headphones_connected", false).toBool();
     qt_config->endGroup();
 
     using namespace Service::CAM;
@@ -393,6 +395,7 @@ void Config::SaveValues() {
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
     qt_config->setValue("volume", Settings::values.volume);
+    qt_config->setValue("headphones_connected", Settings::values.headphones_connected);
     qt_config->endGroup();
 
     using namespace Service::CAM;
