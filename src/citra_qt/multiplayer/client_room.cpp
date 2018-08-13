@@ -38,6 +38,7 @@ ClientRoomWindow::ClientRoomWindow(QWidget* parent)
     }
 
     connect(ui->disconnect, &QPushButton::pressed, [this] { Disconnect(); });
+    connect(ui->add_reply, &QPushButton::pressed, [this] { ui->chat->AddReply(); });
     ui->disconnect->setDefault(false);
     ui->disconnect->setAutoDefault(false);
     UpdateView();

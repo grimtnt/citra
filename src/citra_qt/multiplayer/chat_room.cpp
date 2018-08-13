@@ -6,6 +6,7 @@
 #include <future>
 #include <QColor>
 #include <QImage>
+#include <QInputDialog>
 #include <QList>
 #include <QLocale>
 #include <QMenu>
@@ -167,15 +168,27 @@ void ChatRoom::OnChatReceive(const Network::ChatEntry& chat) {
         auto player = std::distance(members.begin(), it);
         ChatMessage m(chat);
         AppendChatMessage(m.GetPlayerChatMessage(player));
+        auto itr = replies.find(m.GetPlayerChatMessage(player).toStdString());
+        if (itr != replies.end()) {
+            SendMessage(itr->second);
+        }
     }
 }
 
 void ChatRoom::OnSendChat() {
+    SendMessage(ui->chat_message->text().toStdString());
+    auto itr = replies.find(ui->chat_message->text().toStdString());
+    if (itr != replies.end()) {
+        SendMessage(itr->second);
+    }
+    ui->chat_message->clear();
+}
+
+void ChatRoom::SendMessage(const std::string& message) {
     if (auto room = Network::GetRoomMember().lock()) {
         if (room->GetState() != Network::RoomMember::State::Joined) {
             return;
         }
-        auto message = ui->chat_message->text().toStdString();
         if (!ValidateMessage(message)) {
             return;
         }
@@ -194,7 +207,6 @@ void ChatRoom::OnSendChat() {
         ChatMessage m(chat);
         room->SendChatMessage(message);
         AppendChatMessage(m.GetPlayerChatMessage(player));
-        ui->chat_message->clear();
     }
 }
 
@@ -255,4 +267,22 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
     });
 
     context_menu.exec(ui->player_view->viewport()->mapToGlobal(menu_location));
+}
+
+void ChatRoom::AddReply() {
+    QString message = QInputDialog::getText(this, tr("Add Reply"), tr("Message:"));
+    if (message.isEmpty()) {
+        QMessageBox::critical(this, tr("Add Reply"), tr("The message can't be empty."));
+        return;
+    }
+    QString reply = QInputDialog::getText(this, tr("Add Reply"), tr("Reply:"));
+    if (reply.isEmpty()) {
+        QMessageBox::critical(this, tr("Add Reply"), tr("The reply can't be empty."));
+        return;
+    }
+    if (replies.find(reply.toStdString()) != replies.end()) {
+        QMessageBox::critical(this, tr("Add Reply"), tr("The reply already exists."));
+        return;
+    }
+    replies.emplace(message.toStdString(), reply.toStdString());
 }

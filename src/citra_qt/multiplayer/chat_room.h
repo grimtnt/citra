@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 #include <QDialog>
 #include <QSortFilterProxyModel>
@@ -18,7 +19,7 @@ class ChatRoom;
 
 namespace Core {
 class AnnounceMultiplayerSession;
-}
+} // namespace Core
 
 class ConnectionError;
 class ComboBoxProxyModel;
@@ -39,8 +40,10 @@ public slots:
     void OnRoomUpdate(const Network::RoomInformation& info);
     void OnChatReceive(const Network::ChatEntry&);
     void OnSendChat();
+    void SendMessage(const std::string& message);
     void OnChatTextChanged();
     void PopupContextMenu(const QPoint& menu_location);
+    void AddReply();
     void Disable();
     void Enable();
 
@@ -54,6 +57,7 @@ private:
     QStandardItemModel* player_list;
     std::unique_ptr<Ui::ChatRoom> ui;
     std::unordered_set<std::string> block_list;
+    std::unordered_map<std::string, std::string> replies;
 };
 
 Q_DECLARE_METATYPE(Network::ChatEntry);

@@ -41,6 +41,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="add_reply">
+         <property name="text">
+          <string>Add Reply</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

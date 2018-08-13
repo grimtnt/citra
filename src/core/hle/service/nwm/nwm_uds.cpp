@@ -161,7 +161,8 @@ static void BroadcastNodeMap() {
     packet.type = Network::WifiPacket::PacketType::NodeMap;
     packet.destination_address = Network::BroadcastMac;
     size_t size = node_map.size();
-    packet.data.resize(sizeof(size) + (sizeof(node.first) + sizeof(node.second)) * size);
+    using node_t = decltype(node_map)::value_type;
+    packet.data.resize(sizeof(size) + (sizeof(node_t::first) + sizeof(node_t::second)) * size);
     std::memcpy(packet.data.data(), &size, sizeof(size));
     size_t offset = sizeof(size);
     for (const auto& node : node_map) {
