@@ -280,7 +280,7 @@ void ChatRoom::AddReply() {
         QMessageBox::critical(this, tr("Add Reply"), tr("The reply can't be empty."));
         return;
     }
-    if (replies.find(reply.toStdString()) != replies.end()) {
+    if (replies.find(message.toStdString()) != replies.end()) {
         QMessageBox::critical(this, tr("Add Reply"), tr("The reply already exists."));
         return;
     }
