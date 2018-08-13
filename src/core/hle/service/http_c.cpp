@@ -441,6 +441,8 @@ void HTTP_C::Impl::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
+
+    LOG_WARNING(Service_HTTP, "(STUBBED) called, val={}", val);
 }
 
 void HTTP_C::Impl::AddRequestHeader(Kernel::HLERequestContext& ctx) {
