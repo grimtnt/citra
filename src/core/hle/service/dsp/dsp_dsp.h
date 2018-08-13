@@ -251,7 +251,7 @@ private:
      *      0 : Header Code[0x00210000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
-     *		2 : u8, 0 = not occupied, non-zero = occupied
+     *      2 : u8, 0 = not occupied, non-zero = occupied
      */
     void GetIsDspOccupied(Kernel::HLERequestContext& ctx);
 

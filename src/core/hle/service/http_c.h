@@ -137,7 +137,7 @@ private:
      * HTTP_C::SetSocketBufferSize service function
      *  Inputs:
      *      1 : HTTP context handle
-     *		2 : u32 val
+     *      2 : u32 val
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      */
