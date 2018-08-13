@@ -16,7 +16,7 @@ using InterruptType = Service::DSP::DSP_DSP::InterruptType;
 
 namespace AudioCore {
 enum class DspPipe;
-}
+} // namespace AudioCore
 
 namespace Service {
 namespace DSP {
@@ -212,6 +212,15 @@ void DSP_DSP::LoadComponent(Kernel::HLERequestContext& ctx) {
                 size, prog_mask, data_mask);
 }
 
+void DSP_DSP::UnloadComponent(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x12, 0, 0);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+
+    LOG_WARNING(Service_DSP, "(STUBBED) called");
+}
+
 void DSP_DSP::FlushDataCache(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x13, 2, 2);
     const VAddr address = rp.Pop<u32>();
@@ -313,6 +322,16 @@ void DSP_DSP::ForceHeadphoneOut(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_DSP, "(STUBBED) called, force={}", force);
 }
 
+void DSP_DSP::GetIsDspOccupied(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x21, 0, 0);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u8>(0);
+
+    LOG_WARNING(Service_DSP, "(STUBBED) called");
+}
+
 void DSP_DSP::SignalInterrupt(InterruptType type, DspPipe pipe) {
     LOG_DEBUG(Service_DSP, "called, type={}, pipe={}", static_cast<u32>(type),
               static_cast<u32>(pipe));
@@ -369,7 +388,7 @@ DSP_DSP::DSP_DSP() : ServiceFramework("dsp::DSP", DefaultMaxSessions) {
         {0x000F0080, &DSP_DSP::GetPipeReadableSize, "GetPipeReadableSize"},
         {0x001000C0, &DSP_DSP::ReadPipeIfPossible, "ReadPipeIfPossible"},
         {0x001100C2, &DSP_DSP::LoadComponent, "LoadComponent"},
-        {0x00120000, nullptr, "UnloadComponent"},
+        {0x00120000, &DSP_DSP::UnloadComponent, "UnloadComponent"},
         {0x00130082, &DSP_DSP::FlushDataCache, "FlushDataCache"},
         {0x00140082, &DSP_DSP::InvalidateDataCache, "InvalidateDCache"},
         {0x00150082, &DSP_DSP::RegisterInterruptEvents, "RegisterInterruptEvents"},
@@ -384,7 +403,7 @@ DSP_DSP::DSP_DSP() : ServiceFramework("dsp::DSP", DefaultMaxSessions) {
         {0x001E00C2, nullptr, "WriteMultiEx_SPI2"},
         {0x001F0000, &DSP_DSP::GetHeadphoneStatus, "GetHeadphoneStatus"},
         {0x00200040, &DSP_DSP::ForceHeadphoneOut, "ForceHeadphoneOut"},
-        {0x00210000, nullptr, "GetIsDspOccupied"},
+        {0x00210000, &DSP_DSP::GetIsDspOccupied, "GetIsDspOccupied"},
         // clang-format on
     };
 

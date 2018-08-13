@@ -151,6 +151,15 @@ private:
     void LoadComponent(Kernel::HLERequestContext& ctx);
 
     /**
+     * DSP_DSP::UnloadComponent service function
+     *  Inputs:
+     *      0 : Header Code[0x00120000]
+     *  Outputs:
+     *      1 : Result of function, 0 on success, otherwise error code
+     */
+    void UnloadComponent(Kernel::HLERequestContext& ctx);
+
+    /**
      * DSP_DSP::FlushDataCache service function
      *
      * This Function is a no-op, We aren't emulating the CPU cache any time soon.
@@ -235,6 +244,16 @@ private:
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void ForceHeadphoneOut(Kernel::HLERequestContext& ctx);
+
+    /**
+     * DSP_DSP::GetIsDspOccupied service function
+     *  Inputs:
+     *      0 : Header Code[0x00210000]
+     *  Outputs:
+     *      1 : Result of function, 0 on success, otherwise error code
+     *		2 : u8, 0 = not occupied, non-zero = occupied
+     */
+    void GetIsDspOccupied(Kernel::HLERequestContext& ctx);
 
     /// Returns the Interrupt Event for a given pipe
     Kernel::SharedPtr<Kernel::Event>& GetInterruptEvent(InterruptType type,
