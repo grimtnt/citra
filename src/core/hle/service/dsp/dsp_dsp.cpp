@@ -308,7 +308,6 @@ void DSP_DSP::GetHeadphoneStatus(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(static_cast<u8>(Settings::values.headphones_connected));
 
-    LOG_INFO(Service_DSP, "{}", Settings::values.headphones_connected);
     LOG_DEBUG(Service_DSP, "called");
 }
 
