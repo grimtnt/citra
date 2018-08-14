@@ -119,6 +119,7 @@ AM_NET::AM_NET(std::shared_ptr<Module> am) : Module::Interface(std::move(am), "a
         {0x08260042, nullptr, "UpdateImportContentContexts"},
         {0x08270000, nullptr, "DeleteAllDemoLaunchInfos"},
         {0x082800C0, nullptr, "BeginImportTitleForOverWrite"},
+        {0x08290184, nullptr, "ExportTicketWrapped"},
     };
     RegisterHandlers(functions);
 }
