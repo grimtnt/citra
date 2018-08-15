@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/hwc.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 HWC::HWC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::HWC", 1) {
     static const FunctionInfo functions[] = {
@@ -29,5 +28,4 @@ HWC::HWC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

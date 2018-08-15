@@ -13,8 +13,7 @@
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
 
-namespace Service {
-namespace ACT {
+namespace Service::ACT {
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x0001, 2, 4);
@@ -119,5 +118,4 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<ACT_U>(act)->InstallAsService(service_manager);
 }
 
-} // namespace ACT
-} // namespace Service
+} // namespace Service::ACT

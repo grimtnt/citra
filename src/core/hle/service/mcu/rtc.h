@@ -7,13 +7,11 @@
 #include <memory>
 #include "core/hle/service/mcu/mcu.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 class RTC final : public Module::Interface {
 public:
     explicit RTC(std::shared_ptr<Module> mcu);
 };
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

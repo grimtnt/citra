@@ -8,8 +8,7 @@
 #include "core/hle/service/nwm/nwm_ext.h"
 #include "core/settings.h"
 
-namespace Service {
-namespace NWM {
+namespace Service::NWM {
 
 NWM_EXT::NWM_EXT() : ServiceFramework("nwm::EXT") {
     static const FunctionInfo functions[] = {
@@ -71,5 +70,4 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(result);
 }
-} // namespace NWM
-} // namespace Service
+} // namespace Service::NWM

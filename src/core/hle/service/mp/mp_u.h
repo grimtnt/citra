@@ -6,8 +6,7 @@
 
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace MP {
+namespace Service::MP {
 
 class MP_U final : public ServiceFramework<MP_U> {
 public:
@@ -15,5 +14,4 @@ public:
     ~MP_U();
 };
 
-} // namespace MP
-} // namespace Service
+} // namespace Service::MP

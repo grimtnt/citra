@@ -14,10 +14,9 @@
 
 namespace Kernel {
 class Event;
-}
+} // namespace Kernel
 
-namespace Service {
-namespace Y2R {
+namespace Service::Y2R {
 
 enum class InputFormat : u8 {
     /// 8-bit input, with YUV components in separate planes and 4:2:2 subsampling.
@@ -301,5 +300,4 @@ private:
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace Y2R
-} // namespace Service
+} // namespace Service::Y2R

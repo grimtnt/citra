@@ -9,8 +9,7 @@
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace CECD {
+namespace Service::CECD {
 
 class Module final {
 public:
@@ -545,5 +544,4 @@ private:
 /// Initialize CECD service(s)
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace CECD
-} // namespace Service
+} // namespace Service::CECD

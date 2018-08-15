@@ -12,8 +12,7 @@ class HLERequestContext;
 class Semaphore;
 } // namespace Kernel
 
-namespace Service {
-namespace SM {
+namespace Service::SM {
 
 /// Interface to "srv:" service
 class SRV final : public ServiceFramework<SRV> {
@@ -34,5 +33,4 @@ private:
     Kernel::SharedPtr<Kernel::Semaphore> notification_semaphore;
 };
 
-} // namespace SM
-} // namespace Service
+} // namespace Service::SM

@@ -9,13 +9,12 @@
 
 namespace Kernel {
 class Process;
-}
+} // namespace Kernel
 
-namespace Service {
-namespace LDR {
+namespace Service::LDR {
 
 /**
- * This is a work-around before we implement memory aliasing.
+ * This is a work-around before memory aliasing is implemented.
  * CRS and CRO are mapped (aliased) to another memory when loading. Games can read
  * from both the original buffer and the mapping memory. So we use this to synchronize
  * all original buffers with mapping memory after modifying the content.
@@ -42,5 +41,4 @@ private:
     auto FindMemoryBlock(VAddr mapping, VAddr original);
 };
 
-} // namespace LDR
-} // namespace Service
+} // namespace Service::LDR

@@ -8,10 +8,9 @@
 
 namespace Kernel {
 class HLERequestContext;
-}
+} // namespace Kernel
 
-namespace Service {
-namespace NWM {
+namespace Service::NWM {
 
 class NWM_EXT final : public ServiceFramework<NWM_EXT> {
 public:
@@ -28,5 +27,4 @@ private:
     void ControlWirelessEnabled(Kernel::HLERequestContext& ctx);
 };
 
-} // namespace NWM
-} // namespace Service
+} // namespace Service::NWM

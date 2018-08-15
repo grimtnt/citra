@@ -4,10 +4,8 @@
 
 #include "core/hle/service/mcu/nwm.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 NWM::NWM(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::NWM", 1) {}
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

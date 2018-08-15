@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/snd.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 SND::SND(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::SND", 1) {
     static const FunctionInfo functions[] = {
@@ -15,5 +14,4 @@ SND::SND(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

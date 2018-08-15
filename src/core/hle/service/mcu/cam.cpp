@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/cam.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 CAM::CAM(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::CAM", 1) {
     static const FunctionInfo functions[] = {
@@ -15,5 +14,4 @@ CAM::CAM(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

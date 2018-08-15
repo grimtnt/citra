@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/rtc.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 RTC::RTC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::RTC", 1) {
     static const FunctionInfo functions[] = {
@@ -95,5 +94,4 @@ RTC::RTC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

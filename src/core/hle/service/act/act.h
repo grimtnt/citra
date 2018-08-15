@@ -7,8 +7,7 @@
 #include "common/common_types.h"
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace ACT {
+namespace Service::ACT {
 
 enum class BlkID : u32 {
     PersistentID = 0x5,
@@ -116,5 +115,4 @@ public:
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace ACT
-} // namespace Service
+} // namespace Service::ACT

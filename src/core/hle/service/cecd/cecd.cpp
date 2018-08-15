@@ -17,8 +17,7 @@
 #include "core/hle/service/cecd/cecd_s.h"
 #include "core/hle/service/cecd/cecd_u.h"
 
-namespace Service {
-namespace CECD {
+namespace Service::CECD {
 
 using CecDataPathType = Module::CecDataPathType;
 using CecOpenMode = Module::CecOpenMode;
@@ -819,5 +818,4 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<CECD_U>(cecd)->InstallAsService(service_manager);
 }
 
-} // namespace CECD
-} // namespace Service
+} // namespace Service::CECD

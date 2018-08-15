@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/hid.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 HID::HID(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::HID", 1) {
     static const FunctionInfo functions[] = {
@@ -19,5 +18,4 @@ HID::HID(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

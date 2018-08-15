@@ -12,8 +12,7 @@
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/http_c.h"
 
-namespace Service {
-namespace HTTP {
+namespace Service::HTTP {
 
 const ResultCode ERROR_CONTEXT_ERROR = // 0xD8A0A066
     ResultCode(static_cast<ErrorDescription>(102), ErrorModule::HTTP, ErrorSummary::InvalidState,
@@ -638,5 +637,4 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<HTTP_C>()->InstallAsService(service_manager);
 }
 
-} // namespace HTTP
-} // namespace Service
+} // namespace Service::HTTP

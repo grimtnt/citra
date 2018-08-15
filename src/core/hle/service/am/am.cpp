@@ -30,8 +30,7 @@
 #include "core/loader/smdh.h"
 #include "core/settings.h"
 
-namespace Service {
-namespace AM {
+namespace Service::AM {
 
 constexpr u16 PLATFORM_CTR = 0x0004;
 constexpr u16 CATEGORY_SYSTEM = 0x0010;
@@ -1331,6 +1330,4 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<AM_U>(am)->InstallAsService(service_manager);
 }
 
-} // namespace AM
-
-} // namespace Service
+} // namespace Service::AM

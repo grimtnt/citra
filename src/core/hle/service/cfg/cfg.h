@@ -10,8 +10,7 @@
 #include "common/common_types.h"
 #include "core/hle/service/fs/archive.h"
 
-namespace Service {
-namespace CFG {
+namespace Service::CFG {
 
 enum SystemModel {
     NINTENDO_3DS = 0,
@@ -419,5 +418,4 @@ private:
 void InstallInterfaces(SM::ServiceManager& service_manager);
 std::shared_ptr<Module> GetCurrentModule();
 
-} // namespace CFG
-} // namespace Service
+} // namespace Service::CFG

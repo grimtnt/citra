@@ -6,8 +6,7 @@
 
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace HTTP {
+namespace Service::HTTP {
 
 struct Context;
 
@@ -236,5 +235,4 @@ private:
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace HTTP
-} // namespace Service
+} // namespace Service::HTTP

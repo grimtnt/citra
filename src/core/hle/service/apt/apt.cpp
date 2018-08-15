@@ -26,8 +26,7 @@
 #include "core/hw/aes/key.h"
 #include "core/settings.h"
 
-namespace Service {
-namespace APT {
+namespace Service::APT {
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x2, 2, 0); // 0x20080
@@ -899,5 +898,4 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<APT_A>(apt)->InstallAsService(service_manager);
 }
 
-} // namespace APT
-} // namespace Service
+} // namespace Service::APT

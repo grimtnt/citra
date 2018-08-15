@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mp/mp_u.h"
 
-namespace Service {
-namespace MP {
+namespace Service::MP {
 
 MP_U::MP_U() : ServiceFramework("mp:u", DefaultMaxSessions) {
     const FunctionInfo functions[] = {
@@ -19,5 +18,4 @@ MP_U::MP_U() : ServiceFramework("mp:u", DefaultMaxSessions) {
 
 MP_U::~MP_U() = default;
 
-} // namespace MP
-} // namespace Service
+} // namespace Service::MP

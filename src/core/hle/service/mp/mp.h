@@ -6,10 +6,8 @@
 
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace MP {
+namespace Service::MP {
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace MP
-} // namespace Service
+} // namespace Service::MP

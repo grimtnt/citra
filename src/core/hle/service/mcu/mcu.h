@@ -8,8 +8,7 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 class Module final {
 public:
@@ -63,5 +62,4 @@ public:
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

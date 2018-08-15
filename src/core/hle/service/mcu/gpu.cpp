@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/gpu.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 GPU::GPU(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::GPU", 1) {
     static const FunctionInfo functions[] = {
@@ -27,5 +26,4 @@ GPU::GPU(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

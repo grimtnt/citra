@@ -23,8 +23,7 @@
 #include "core/hle/service/mcu/snd.h"
 #include "core/settings.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx, u16 id) {
     IPC::RequestParser rp(ctx, id, 0, 0);
@@ -84,5 +83,4 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<SND>(mcu)->InstallAsService(service_manager);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

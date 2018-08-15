@@ -5,8 +5,7 @@
 #include "core/hle/service/act/act.h"
 #include "core/hle/service/act/act_u.h"
 
-namespace Service {
-namespace ACT {
+namespace Service::ACT {
 
 ACT_U::ACT_U(std::shared_ptr<Module> act)
     : Module::Interface(std::move(act), "act:u", DefaultMaxSessions) {
@@ -20,5 +19,4 @@ ACT_U::ACT_U(std::shared_ptr<Module> act)
     RegisterHandlers(functions);
 }
 
-} // namespace ACT
-} // namespace Service
+} // namespace Service::ACT

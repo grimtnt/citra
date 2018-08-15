@@ -19,8 +19,7 @@
 #include "core/memory.h"
 #include "core/settings.h"
 
-namespace Service {
-namespace GSP {
+namespace Service::GSP {
 
 // Beginning address of HW regs
 const u32 REGS_BEGIN = 0x1EB00000;
@@ -776,5 +775,4 @@ SessionData::~SessionData() {
     used_thread_ids[thread_id] = false;
 }
 
-} // namespace GSP
-} // namespace Service
+} // namespace Service::GSP

@@ -7,8 +7,7 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace NS {
+namespace Service::NS {
 
 /// Interface to "ns:s" service
 class NS_S final : public ServiceFramework<NS_S> {
@@ -21,5 +20,4 @@ public:
     void RebootSystemClean(Kernel::HLERequestContext& ctx);
 };
 
-} // namespace NS
-} // namespace Service
+} // namespace Service::NS

@@ -17,11 +17,10 @@
 namespace Service {
 namespace FS {
 enum class MediaType : u32;
-}
+} // namespace FS
 } // namespace Service
 
-namespace Service {
-namespace AM {
+namespace Service::AM {
 
 namespace ErrCodes {
 enum {
@@ -525,5 +524,4 @@ private:
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
-} // namespace AM
-} // namespace Service
+} // namespace Service::AM

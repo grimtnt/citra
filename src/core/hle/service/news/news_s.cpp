@@ -5,8 +5,7 @@
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/service/news/news_s.h"
 
-namespace Service {
-namespace NEWS {
+namespace Service::NEWS {
 
 void NEWS_S::GetTotalNotifications(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x5, 0, 0);
@@ -47,5 +46,4 @@ NEWS_S::NEWS_S() : ServiceFramework("news:s", 2) {
     RegisterHandlers(functions);
 }
 
-} // namespace NEWS
-} // namespace Service
+} // namespace Service::NEWS

@@ -4,8 +4,7 @@
 
 #include "core/hle/service/mcu/pls.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 PLS::PLS(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::PLS", 1) {
     static const FunctionInfo functions[] = {
@@ -17,5 +16,4 @@ PLS::PLS(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::
     RegisterHandlers(functions);
 }
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

@@ -7,13 +7,11 @@
 #include <memory>
 #include "core/hle/service/mcu/mcu.h"
 
-namespace Service {
-namespace MCU {
+namespace Service::MCU {
 
 class HWC final : public Module::Interface {
 public:
     explicit HWC(std::shared_ptr<Module> mcu);
 };
 
-} // namespace MCU
-} // namespace Service
+} // namespace Service::MCU

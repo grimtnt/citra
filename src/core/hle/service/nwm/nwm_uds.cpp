@@ -28,8 +28,7 @@
 #include "core/memory.h"
 #include "network/network.h"
 
-namespace Service {
-namespace NWM {
+namespace Service::NWM {
 
 namespace ErrCodes {
 enum {
@@ -1357,5 +1356,4 @@ NWM_UDS::~NWM_UDS() {
     CoreTiming::UnscheduleEvent(beacon_broadcast_event, 0);
 }
 
-} // namespace NWM
-} // namespace Service
+} // namespace Service::NWM
