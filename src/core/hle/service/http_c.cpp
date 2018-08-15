@@ -478,9 +478,8 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
-    auto itr = context->second.response->headers.find(name);
-    bool has_header = itr != context->second.response->headers.end();
-    const std::string value = has_header ? itr->second + '\0' : "";
+
+    const std::string value = context->second.response->get_header_value(name.c_str());
 
     u32 size = static_cast<u32>(value.size());
     value_buffer.Write(value.c_str(), 0, size);

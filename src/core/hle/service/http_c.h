@@ -9,6 +9,8 @@
 namespace Service {
 namespace HTTP {
 
+struct Context;
+
 class HTTP_C final : public ServiceFramework<HTTP_C> {
 public:
     HTTP_C();
