@@ -227,8 +227,9 @@ private:
      */
     void SetKeepAlive(Kernel::HLERequestContext& ctx);
 
-    class Impl;
-    std::unique_ptr<Impl> pimpl;
+    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory = nullptr;
+    std::unordered_map<u32, Context> contexts;
+    u32 context_counter{0};
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
