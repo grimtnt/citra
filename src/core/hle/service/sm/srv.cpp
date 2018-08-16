@@ -2,6 +2,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <condition_variable>
+#include <mutex>
 #include <tuple>
 #include "common/common_types.h"
 #include "common/logging/log.h"
