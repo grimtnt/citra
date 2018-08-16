@@ -396,7 +396,7 @@ void ModifyAddressDialog::OnOkClicked() {
     case 1: { // u16
         u16 value = newValue.toUShort(nullptr, base);
         Memory::Write16(address, value);
-        Core::CPU().InvalidateCacheRange(address, sizeof(u32));
+        Core::CPU().InvalidateCacheRange(address, sizeof(u16));
         break;
     }
     case 2: { // u8
