@@ -26,6 +26,7 @@
 #include "core/loader/loader.h"
 #include "core/memory_setup.h"
 #include "core/movie.h"
+#include "core/rpc/rpc_server.h"
 #include "core/settings.h"
 #include "network/network.h"
 #include "video_core/video_core.h"
@@ -165,6 +166,7 @@ System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
     dsp_core->SetSink(Settings::values.sink_id, Settings::values.audio_device_id);
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
+    rpc_server = std::make_unique<RPC::RPCServer>();
     service_manager = std::make_shared<Service::SM::ServiceManager>();
     shared_page_handler = std::make_shared<SharedPage::Handler>();
 

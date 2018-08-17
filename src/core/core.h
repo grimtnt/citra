@@ -24,6 +24,10 @@ namespace AudioCore {
 class DspInterface;
 } // namespace AudioCore
 
+namespace RPC {
+class RPCServer;
+} // namespace RPC
+
 namespace Service {
 namespace SM {
 class ServiceManager;
@@ -212,6 +216,9 @@ private:
 
     /// Shared Page
     std::shared_ptr<SharedPage::Handler> shared_page_handler;
+
+    /// RPC Server for scripting support
+    std::unique_ptr<RPC::RPCServer> rpc_server;
 
     static System s_instance;
 
