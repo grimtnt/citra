@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>420</height>
+    <height>450</height>
    </rect>
   </property>
   <layout class="QVBoxLayout">
@@ -184,6 +184,41 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="udp_pad_index_label">
+          <property name="text">
+           <string>Pad:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="udp_pad_index">
+          <item>
+           <property name="text">
+            <string>Pad 1</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pad 2</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pad 3</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pad 4</string>
+           </property>
+          </item>
          </widget>
         </item>
        </layout>
