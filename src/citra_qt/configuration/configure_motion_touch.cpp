@@ -15,7 +15,7 @@
 
 CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
                                                                const std::string& host, u16 port,
-                                                               u16 client_id)
+                                                               u8 pad_index, u16 client_id)
     : QDialog(parent) {
     layout = new QVBoxLayout;
     status_label = new QLabel(tr("Communicating with the server..."));
@@ -31,7 +31,7 @@ CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
 
     using namespace InputCommon::CemuhookUDP;
     job = std::move(std::make_unique<CalibrationConfigurationJob>(
-        host, port, client_id,
+        host, port, pad_index, client_id,
         [this](CalibrationConfigurationJob::Status status) {
             QString text;
             switch (status) {
@@ -99,7 +99,7 @@ ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
     connectEvents();
 }
 
-ConfigureMotionTouch::~ConfigureMotionTouch() {}
+ConfigureMotionTouch::~ConfigureMotionTouch() = default;
 
 void ConfigureMotionTouch::setConfiguration() {
     Common::ParamPackage motion_param(Settings::values.motion_device);
@@ -120,6 +120,7 @@ void ConfigureMotionTouch::setConfiguration() {
 
     ui->udp_server->setText(QString::fromStdString(Settings::values.udp_input_address));
     ui->udp_port->setText(QString::number(Settings::values.udp_input_port));
+    ui->udp_pad_index->setCurrentIndex(Settings::values.udp_pad_index);
 }
 
 void ConfigureMotionTouch::updateUiDisplay() {
@@ -175,7 +176,8 @@ void ConfigureMotionTouch::OnCemuhookUDPTest() {
     ui->udp_test->setText(tr("Testing"));
     udp_test_in_progress = true;
     InputCommon::CemuhookUDP::TestCommunication(
-        ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toInt()), 24872,
+        ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toInt()),
+        static_cast<u8>(ui->udp_pad_index->currentIndex()), 24872,
         [this] {
             LOG_INFO(Frontend, "UDP input test success");
             QMetaObject::invokeMethod(this, "ShowUDPTestResult", Q_ARG(bool, true));
@@ -189,9 +191,9 @@ void ConfigureMotionTouch::OnCemuhookUDPTest() {
 void ConfigureMotionTouch::OnConfigureTouchCalibration() {
     ui->touch_calibration_config->setEnabled(false);
     ui->touch_calibration_config->setText(tr("Configuring"));
-    CalibrationConfigurationDialog* dialog =
-        new CalibrationConfigurationDialog(this, ui->udp_server->text().toStdString(),
-                                           static_cast<u16>(ui->udp_port->text().toUInt()), 24872);
+    CalibrationConfigurationDialog* dialog = new CalibrationConfigurationDialog(
+        this, ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toUInt()),
+        static_cast<u8>(ui->udp_pad_index->currentIndex()), 24872);
     dialog->exec();
     if (dialog->completed) {
         min_x = dialog->min_x;
@@ -201,6 +203,7 @@ void ConfigureMotionTouch::OnConfigureTouchCalibration() {
         LOG_INFO(Frontend,
                  "UDP touchpad calibration config success: min_x={}, min_y={}, max_x={}, max_y={}",
                  min_x, min_y, max_x, max_y);
+        updateUiDisplay();
     } else {
         LOG_ERROR(Frontend, "UDP touchpad calibration config failed");
     }
@@ -209,10 +212,10 @@ void ConfigureMotionTouch::OnConfigureTouchCalibration() {
 }
 
 void ConfigureMotionTouch::closeEvent(QCloseEvent* event) {
-    if (!CanCloseDialog())
-        event->ignore();
-    else
+    if (CanCloseDialog())
         event->accept();
+    else
+        event->ignore();
 }
 
 void ConfigureMotionTouch::ShowUDPTestResult(bool result) {
@@ -266,6 +269,7 @@ void ConfigureMotionTouch::applyConfiguration() {
     Settings::values.touch_device = touch_param.Serialize();
     Settings::values.udp_input_address = ui->udp_server->text().toStdString();
     Settings::values.udp_input_port = static_cast<u16>(ui->udp_port->text().toInt());
+    Settings::values.udp_pad_index = static_cast<u8>(ui->udp_pad_index->currentIndex());
     InputCommon::ReloadInputDevices();
 
     accept();
