@@ -514,6 +514,17 @@ private:
      */
     void GetSaveDataSecureValue(Kernel::HLERequestContext& ctx);
 
+    /**
+     * FS_User::GetSaveDataSecureValue service function.
+     *  Inputs:
+     *      0 : 0x086F0040
+     *      1 : Secure Value Slot
+     *  Outputs:
+     *      0 : 0x086F0040
+     *      1 : Result of function, 0 on success, otherwise error code
+     *      2 : If Secure Value doesn't exist, 0, if it exists, 1
+     *      3-4 : Secure Value
+     */
     void GetThisSaveDataSecureValue(Kernel::HLERequestContext& ctx);
 
     u32 priority = -1; ///< For SetPriority and GetPriority service functions
