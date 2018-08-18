@@ -36,9 +36,9 @@ class Citra:
     def read_memory(self, read_address, read_size):
         """
         >>> c.read_memory(0x100000, 4)
-        '\\x07\\x00\\x00\\xeb'
+        b'\\x07\\x00\\x00\\xeb'
         """
-        result = ""
+        result = bytes()
         while read_size > 0:
             temp_read_size = min(read_size, MAX_REQUEST_DATA_SIZE)
             request_data = struct.pack("II", read_address, temp_read_size)
@@ -59,14 +59,14 @@ class Citra:
 
     def write_memory(self, write_address, write_contents):
         """
-        >>> c.write_memory(0x100000, "\\xff\\xff\\xff\\xff")
+        >>> c.write_memory(0x100000, b"\\xff\\xff\\xff\\xff")
         True
         >>> c.read_memory(0x100000, 4)
-        '\\xff\\xff\\xff\\xff'
-        >>> c.write_memory(0x100000, "\\x07\\x00\\x00\\xeb")
+        b'\\xff\\xff\\xff\\xff'
+        >>> c.write_memory(0x100000, b"\\x07\\x00\\x00\\xeb")
         True
         >>> c.read_memory(0x100000, 4)
-        '\\x07\\x00\\x00\\xeb'
+        b'\\x07\\x00\\x00\\xeb'
         """
         write_size = len(write_contents)
         while write_size > 0:
