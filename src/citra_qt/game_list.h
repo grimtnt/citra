@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <unordered_map>
 #include <QString>
 #include <QWidget>
 #include "common/common_types.h"
@@ -51,7 +50,6 @@ public:
     void setFilterVisible(bool visibility);
     bool isEmpty();
 
-    void LoadCompatibilityList();
     void PopulateAsync(QList<UISettings::GameDir>& game_dirs);
 
     void SaveInterfaceLayout();
@@ -99,7 +97,6 @@ private:
     QStandardItemModel* item_model = nullptr;
     GameListWorker* current_worker = nullptr;
     QFileSystemWatcher* watcher = nullptr;
-    std::unordered_map<std::string, QString> compatibility_list;
 
     friend class GameListSearchField;
 };

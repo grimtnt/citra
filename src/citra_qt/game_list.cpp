@@ -8,8 +8,6 @@
 #include <QFileSystemWatcher>
 #include <QHBoxLayout>
 #include <QHeaderView>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -538,39 +536,6 @@ void GameList::AddPermDirPopup(QMenu& context_menu, QStandardItem* child) {
             [&] { emit OpenDirectory(game_dir.path); });
 }
 
-void GameList::LoadCompatibilityList() {
-    QFile compat_list{":compatibility_list/compatibility_list.json"};
-
-    if (!compat_list.open(QFile::ReadOnly | QFile::Text)) {
-        LOG_ERROR(Frontend, "Unable to open game compatibility list");
-        return;
-    }
-
-    if (compat_list.size() == 0) {
-        LOG_ERROR(Frontend, "Game compatibility list is empty");
-        return;
-    }
-
-    const QByteArray content = compat_list.readAll();
-    if (content.isEmpty()) {
-        LOG_ERROR(Frontend, "Unable to completely read game compatibility list");
-        return;
-    }
-
-    const QString string_content = content;
-    QJsonDocument json = QJsonDocument::fromJson(string_content.toUtf8());
-    QJsonObject list = json.object();
-    QStringList game_ids = list.keys();
-    for (QString id : game_ids) {
-        QJsonObject game = list[id].toObject();
-
-        if (game.contains("compatibility") && game["compatibility"].isString()) {
-            QString compatibility = game["compatibility"].toString();
-            compatibility_list.insert(std::make_pair(id.toUpper().toStdString(), compatibility));
-        }
-    }
-}
-
 QStandardItemModel* GameList::GetModel() const {
     return item_model;
 }
@@ -583,7 +548,7 @@ void GameList::PopulateAsync(QList<UISettings::GameDir>& game_dirs) {
 
     emit ShouldCancelWorker();
 
-    GameListWorker* worker = new GameListWorker(game_dirs, compatibility_list);
+    GameListWorker* worker = new GameListWorker(game_dirs);
 
     connect(worker, &GameListWorker::EntryReady, this, &GameList::AddEntry, Qt::QueuedConnection);
     connect(worker, &GameListWorker::DirEntryReady, this, &GameList::AddDirEntry,
@@ -689,16 +654,10 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
                 return update_smdh;
             }();
 
-            auto it = std::find_if(compatibility_list.begin(), compatibility_list.end(),
-                                   [program_id](const std::pair<std::string, QString>& element) {
-                                       std::string pid =
-                                           Common::StringFromFormat("%016" PRIX64, program_id);
-                                       return element.first == pid;
-                                   });
+            auto it = compatibility_database.find(program_id);
 
-            // The game list uses this as compatibility number for untested games
-            QString compatibility("99");
-            if (it != compatibility_list.end())
+            Compatibility compatibility = Compatibility::NotTested;
+            if (it != compatibility_database.end())
                 compatibility = it->second;
 
             emit EntryReady(

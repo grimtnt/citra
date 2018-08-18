@@ -1,4 +1,4 @@
-// Copyright 2015 Citra Emulator Project
+﻿// Copyright 2015 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
@@ -30,6 +30,119 @@ enum class GameListItemType {
     InstalledDir = QStandardItem::UserType + 3,
     SystemDir = QStandardItem::UserType + 4,
     AddDir = QStandardItem::UserType + 5
+};
+
+enum class Compatibility {
+    Perfect = 0,
+    Great = 1,
+    Okay = 2,
+    Bad = 3,
+    IntroMenu = 4,
+    WontBoot = 5,
+    NotTested = 99,
+};
+
+static const std::unordered_map<u64, Compatibility> compatibility_database = {
+    // Homebrew
+    {0x000400000F800100, Compatibility::Okay}, // FBI
+
+    // ALL
+    {0x00040000001C1E00, Compatibility::Great},     // Detective Pikachu™
+    {0x0004000000164800, Compatibility::Great},     // Pokémon™ Sun
+    {0x0004000000175E00, Compatibility::Great},     // Pokémon™ Moon
+    {0x000400000011C400, Compatibility::Great},     // Pokémon™ Omega Ruby
+    {0x000400000011C500, Compatibility::Great},     // Pokémon™ Alpha Sapphire
+    {0x00040000001B5000, Compatibility::Great},     // Pokémon™ Ultra Sun
+    {0x00040000001B5100, Compatibility::Great},     // Pokémon™ Ultra Moon
+    {0x0004000000055D00, Compatibility::IntroMenu}, // Pokémon™ X
+    {0x0004000000055E00, Compatibility::IntroMenu}, // Pokémon™ Y
+    {0x000400000F700E00, Compatibility::Okay},      // Super Mario World™
+
+    // EUR
+    {0x00040000001A4900, Compatibility::Great},   // Ever Oasis™
+    {0x000400000F70CD00, Compatibility::Great},   // Fire Emblem Warriors
+    {0x000400000014F200, Compatibility::Great},   // Animal Crossing™: Happy Home Designer
+    {0x000400000017EB00, Compatibility::Great},   // Hyrule Warriors™ Legends
+    {0x0004000000076500, Compatibility::Okay},    // Luigi’s Mansion™ 2
+    {0x00040000001BC600, Compatibility::Okay},    // Monster Hunter Stories™
+    {0x0004000000198F00, Compatibility::Great},   // Animal Crossing™: New Leaf - Welcome amiibo
+    {0x00040000001A0500, Compatibility::Great},   // Super Mario Maker™ for Nintendo 3DS
+    {0x0004000000086400, Compatibility::Great},   // Animal Crossing™: New Leaf
+    {0x0004000000030C00, Compatibility::Okay},    // Golden Retriever & New Friends
+    {0x0004000000033600, Compatibility::Perfect}, // The Legend of Zelda™: Ocarina of Time 3D
+    {0x00040000001A4200, Compatibility::Great},   // Poochy & Yoshi's™ Woolly World
+    {0x0004000000053F00, Compatibility::Great},   // Super Mario 3D Land™
+    {0x000400000008C400, Compatibility::Great},   // Tomodachi Life™
+    {0x0004000000177000, Compatibility::Great},   // The Legend of Zelda™: Tri Force Heroes
+    {0x000400000007AF00, Compatibility::Perfect}, // New Super Mario Bros.™ 2
+    {0x0004000000137F00, Compatibility::Perfect}, // New SUPER MARIO BROS. 2: Special Edition
+    {0x00040000001B4F00, Compatibility::Great},   // Miitopia™
+    {0x00040000000A9200, Compatibility::Perfect}, // PICROSS e
+    {0x00040000000CBC00, Compatibility::Perfect}, // PICROSS e2
+    {0x0004000000102900, Compatibility::Perfect}, // PICROSS e3
+    {0x0004000000128400, Compatibility::Perfect}, // PICROSS e4
+    {0x000400000014D200, Compatibility::Perfect}, // PICROSS e5
+    {0x000400000016E800, Compatibility::Perfect}, // PICROSS e6
+    {0x00040000001AD600, Compatibility::Perfect}, // PICROSS e7
+    {0x00040000001CE000, Compatibility::Perfect}, // PICROSS e8
+    {0x0004000000130600, Compatibility::Bad},     // Photos with Mario™
+    {0x0004000000030700, Compatibility::Great},   // Mario Kart™ 7
+    {0x0004000000143D00, Compatibility::Great},   // 2048
+    {0x0004000000187E00, Compatibility::Perfect}, // Picross 3D™: Round 2
+    {0x00040000000EE000, Compatibility::Great},   // Super Smash Bros.™ for Nintendo 3DS
+    {0x0004000000125600, Compatibility::Perfect}, // The Legend of Zelda™: Majora's Mask 3D
+    {0x000400000010C000, Compatibility::Great},   // Kirby™: Triple Deluxe
+    {0x00040000001B2900, Compatibility::Great},   // YO-KAI WATCH™ 2: Psychic Specters
+    {0x00040000001CB200, Compatibility::Great},   // Captain Toad™: Treasure Tracker
+    {0x0004000000116700, Compatibility::Great},   // Cut the Rope: Triple Treat
+
+    // EUR (System)
+    {0x0004001000022A00, Compatibility::IntroMenu}, // ???
+    {0x0004001000022700, Compatibility::Great},     // Mii Maker
+
+    // EUR (Demos)
+    {0x00040002001CB201, Compatibility::Perfect}, // Captain Toad Demo
+
+    // USA
+    {0x00040000000E5D00, Compatibility::Perfect}, // PICROSS e
+    {0x00040000000CD400, Compatibility::Perfect}, // PICROSS e2
+    {0x0004000000101D00, Compatibility::Perfect}, // PICROSS e3
+    {0x0004000000127300, Compatibility::Perfect}, // PICROSS e4
+    {0x0004000000149800, Compatibility::Perfect}, // PICROSS e5
+    {0x000400000016EF00, Compatibility::Perfect}, // PICROSS e6
+    {0x00040000001ADB00, Compatibility::Perfect}, // PICROSS e7
+    {0x00040000001CF700, Compatibility::Perfect}, // PICROSS e8
+    {0x00040000001A0400, Compatibility::Great},   // Super Mario Maker™ for Nintendo 3DS
+    {0x000400000014F100, Compatibility::Great},   // Animal Crossing™: Happy Home Designer
+    {0x000400000017F200, Compatibility::Perfect}, // Moco Moco Friends
+    {0x00040000001B4E00, Compatibility::Great},   // Miitopia™
+    {0x0004000000130500, Compatibility::Bad},     // Photos with Mario™
+    {0x0004000000086300, Compatibility::Great},   // Animal Crossing™: New Leaf
+    {0x000400000008C300, Compatibility::Great},   // Tomodachi Life™
+    {0x0004000000030800, Compatibility::Great},   // Mario Kart™ 7
+    {0x0004000000139000, Compatibility::Great},   // 2048
+    {0x00040000001B2700, Compatibility::Great},   // YO-KAI WATCH™ 2: Psychic Specters
+    {0x0004000000112600, Compatibility::Great},   // Cut the Rope: Triple Treat
+
+    // USA (Demos)
+    {0x00040002001CB101, Compatibility::Perfect}, // Captain Toad Demo
+
+    // JPN
+    {0x0004000000178800, Compatibility::Great},   // Miitopia(ミートピア)
+    {0x0004000000181000, Compatibility::Perfect}, // My Melody Negai ga Kanau Fushigi na Hako
+    {0x0004000000086200, Compatibility::Great},   // とびだせ どうぶつの森
+    {0x0004000000198D00, Compatibility::Great},   // とびだせ どうぶつの森 amiibo+
+    {0x00040000001A0300, Compatibility::Great},   // スーパーマリオメーカー for ニンテンドー3DS
+    {0x0004000000030600, Compatibility::Great},   // マリオカート7
+    {0x000400000014AF00, Compatibility::Great},   // 2048
+
+    // JPN (Demos)
+    {0x00040002001CB001, Compatibility::Perfect}, // Captain Toad Demo
+
+    // KOR
+    {0x0004000000086500, Compatibility::Great}, // 튀어나와요 동물의 숲
+    {0x0004000000199000, Compatibility::Great}, // Animal Crossing™: New Leaf - Welcome amiibo
+    {0x00040000001BB800, Compatibility::Great}, // Super Mario Maker for Nintendo 3DS
 };
 
 /**
@@ -224,14 +337,15 @@ public:
     static const int CompatNumberRole = Qt::UserRole + 1;
 
     GameListItemCompat() = default;
-    explicit GameListItemCompat(const QString compatiblity) {
-        auto iterator = status_data.find(compatiblity);
+    explicit GameListItemCompat(Compatibility compatiblity) {
+        auto iterator = status_data.find(QString::number(static_cast<int>(compatiblity)));
         if (iterator == status_data.end()) {
-            LOG_WARNING(Frontend, "Invalid compatibility number {}", compatiblity.toStdString());
+            LOG_WARNING(Frontend, "Invalid compatibility number {}",
+                        static_cast<int>(compatiblity));
             return;
         }
         CompatStatus status = iterator->second;
-        setData(compatiblity, CompatNumberRole);
+        setData(QString::number(static_cast<int>(compatiblity)), CompatNumberRole);
         setText(QCoreApplication::translate("GameList", status.text));
         setToolTip(QCoreApplication::translate("GameList", status.tooltip));
         setData(CreateCirclePixmapFromColor(status.color), Qt::DecorationRole);
@@ -353,9 +467,8 @@ class GameListWorker : public QObject, public QRunnable {
     Q_OBJECT
 
 public:
-    explicit GameListWorker(QList<UISettings::GameDir>& game_dirs,
-                            const std::unordered_map<std::string, QString>& compatibility_list)
-        : QObject(), QRunnable(), game_dirs(game_dirs), compatibility_list(compatibility_list) {}
+    explicit GameListWorker(QList<UISettings::GameDir>& game_dirs)
+        : QObject(), QRunnable(), game_dirs(game_dirs) {}
 
 public slots:
     /// Starts the processing of directory tree information.
@@ -381,7 +494,6 @@ signals:
 
 private:
     QStringList watch_list;
-    const std::unordered_map<std::string, QString>& compatibility_list;
     QList<UISettings::GameDir>& game_dirs;
     std::atomic_bool stop_processing;
 

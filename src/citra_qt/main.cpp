@@ -134,7 +134,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
 
     SetupUIStrings();
 
-    game_list->LoadCompatibilityList();
     game_list->PopulateAsync(UISettings::values.game_dirs);
 
     // Show one-time "callout" messages to the user
