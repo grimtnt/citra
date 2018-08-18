@@ -87,7 +87,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x00040000001CE000, Compatibility::Perfect}, // PICROSS e8
     {0x0004000000130600, Compatibility::Bad},     // Photos with Mario™
     {0x0004000000030700, Compatibility::Great},   // Mario Kart™ 7
-    {0x0004000000143D00, Compatibility::Great},   // 2048
+    {0x0004000000143D00, Compatibility::Perfect}, // 2048
     {0x0004000000187E00, Compatibility::Perfect}, // Picross 3D™: Round 2
     {0x00040000000EE000, Compatibility::Great},   // Super Smash Bros.™ for Nintendo 3DS
     {0x0004000000125600, Compatibility::Perfect}, // The Legend of Zelda™: Majora's Mask 3D
@@ -120,7 +120,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x0004000000086300, Compatibility::Great},   // Animal Crossing™: New Leaf
     {0x000400000008C300, Compatibility::Great},   // Tomodachi Life™
     {0x0004000000030800, Compatibility::Great},   // Mario Kart™ 7
-    {0x0004000000139000, Compatibility::Great},   // 2048
+    {0x0004000000139000, Compatibility::Perfect}, // 2048
     {0x00040000001B2700, Compatibility::Great},   // YO-KAI WATCH™ 2: Psychic Specters
     {0x0004000000112600, Compatibility::Great},   // Cut the Rope: Triple Treat
 
@@ -134,7 +134,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x0004000000198D00, Compatibility::Great},   // とびだせ どうぶつの森 amiibo+
     {0x00040000001A0300, Compatibility::Great},   // スーパーマリオメーカー for ニンテンドー3DS
     {0x0004000000030600, Compatibility::Great},   // マリオカート7
-    {0x000400000014AF00, Compatibility::Great},   // 2048
+    {0x000400000014AF00, Compatibility::Perfect}, // 2048
 
     // JPN (Demos)
     {0x00040002001CB001, Compatibility::Perfect}, // Captain Toad Demo
