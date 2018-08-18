@@ -741,6 +741,19 @@ void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
     rb.Push<u64>(0);      // the secure value
 }
 
+void FS_USER::GetThisSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x86F, 1, 0);
+
+    u32 unk = rp.Pop<u32>();
+
+    LOG_WARNING(Service_FS, "stubbed unk={}", unk);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u64>(0);
+}
+
 FS_USER::FS_USER() : ServiceFramework("fs:USER", 30) {
     static const FunctionInfo functions[] = {
         {0x000100C6, nullptr, "Dummy1"},
@@ -851,6 +864,7 @@ FS_USER::FS_USER() : ServiceFramework("fs:USER", 30) {
         {0x08680000, nullptr, "GetMediaType"},
         {0x08690000, nullptr, "GetNandEraseCount"},
         {0x086A0082, nullptr, "ReadNandReport"},
+        {0x086F0040, &FS_USER::GetThisSaveDataSecureValue, "GetThisSaveDataSecureValue"},
         {0x087A0180, nullptr, "AddSeed"},
         {0x087D0000, &FS_USER::GetNumSeeds, "GetNumSeeds"},
         {0x088600C0, nullptr, "CheckUpdatedDat"},

@@ -514,6 +514,8 @@ private:
      */
     void GetSaveDataSecureValue(Kernel::HLERequestContext& ctx);
 
+    void GetThisSaveDataSecureValue(Kernel::HLERequestContext& ctx);
+
     u32 priority = -1; ///< For SetPriority and GetPriority service functions
 };
 
