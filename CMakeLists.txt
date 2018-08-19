@@ -16,8 +16,6 @@ option(ENABLE_QT "Enable the Qt frontend" ON)
 option(ENABLE_QT_TRANSLATION "Enable translations for the Qt frontend" OFF)
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "ENABLE_QT;MSVC" OFF)
 
-option(ENABLE_WEB_SERVICE "Enable web services" ON)
-
 option(ENABLE_CUBEB "Enable the cubeb audio backend" ON)
 
 option(ENABLE_DISCORD_RPC "Enable Discord rich presence integration" OFF)
@@ -229,9 +227,6 @@ if (ENABLE_QT)
     endif()
 endif()
 
-if (ENABLE_WEB_SERVICE)
-    add_definitions(-DENABLE_WEB_SERVICE)
-endif()
 if (ENABLE_DISCORD_RPC)
     add_definitions(-DENABLE_DISCORD_RPC)
 endif()

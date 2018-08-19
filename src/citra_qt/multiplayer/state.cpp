@@ -8,13 +8,11 @@
 #include <QStandardItemModel>
 #include "citra_qt/game_list.h"
 #include "citra_qt/multiplayer/client_room.h"
-#include "citra_qt/multiplayer/direct_connect.h"
 #include "citra_qt/multiplayer/host_room.h"
-#include "citra_qt/multiplayer/lobby.h"
+#include "citra_qt/multiplayer/ip_connect.h"
 #include "citra_qt/multiplayer/message.h"
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/util/clickable_label.h"
-#include "common/announce_multiplayer_room.h"
 #include "common/logging/log.h"
 
 MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_list_model,
@@ -30,19 +28,10 @@ MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_lis
     }
 
     qRegisterMetaType<Network::RoomMember::State>();
-    qRegisterMetaType<Common::WebResult>();
-    announce_multiplayer_session = std::make_shared<Core::AnnounceMultiplayerSession>();
-    announce_multiplayer_session->BindErrorCallback(
-        [this](const Common::WebResult& result) { emit AnnounceFailed(result); });
-    connect(this, &MultiplayerState::AnnounceFailed, this, &MultiplayerState::OnAnnounceFailed);
 
-    status_text = new ClickableLabel(this);
     status_icon = new ClickableLabel(this);
-    status_text->setToolTip(tr("Current connection status"));
-    status_text->setText(tr("Not Connected. Click here to find a room!"));
     status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
 
-    connect(status_text, &ClickableLabel::clicked, this, &MultiplayerState::OnOpenNetworkRoom);
     connect(status_icon, &ClickableLabel::clicked, this, &MultiplayerState::OnOpenNetworkRoom);
 }
 
@@ -57,24 +46,10 @@ MultiplayerState::~MultiplayerState() {
 void MultiplayerState::Close() {
     if (host_room)
         host_room->close();
-    if (direct_connect)
-        direct_connect->close();
+    if (ip_connect)
+        ip_connect->close();
     if (client_room)
         client_room->close();
-    if (lobby)
-        lobby->close();
-}
-
-void MultiplayerState::retranslateUi() {
-    status_text->setToolTip(tr("Current connection status"));
-
-    if (current_state == Network::RoomMember::State::Uninitialized) {
-        status_text->setText(tr("Not Connected. Click here to find a room!"));
-    } else if (current_state == Network::RoomMember::State::Joined) {
-        status_text->setText(tr("Connected"));
-    } else {
-        status_text->setText(tr("Not Connected"));
-    }
 }
 
 void MultiplayerState::UpdateThemedIcons() {
@@ -104,9 +79,6 @@ void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& s
     case Network::RoomMember::State::WrongPassword:
         NetworkMessage::ShowError(NetworkMessage::WRONG_PASSWORD);
         break;
-    case Network::RoomMember::State::WrongVersion:
-        NetworkMessage::ShowError(NetworkMessage::WRONG_VERSION);
-        break;
     case Network::RoomMember::State::Error:
         NetworkMessage::ShowError(NetworkMessage::UNABLE_TO_CONNECT);
         break;
@@ -117,29 +89,15 @@ void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& s
     }
     if (is_connected) {
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
-        status_text->setText(tr("Connected"));
         leave_room->setEnabled(true);
         show_room->setEnabled(true);
     } else {
         status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
-        status_text->setText(tr("Not Connected"));
         leave_room->setEnabled(false);
         show_room->setEnabled(false);
     }
 
     current_state = state;
-}
-
-void MultiplayerState::OnAnnounceFailed(const Common::WebResult& result) {
-    announce_multiplayer_session->Stop();
-    QMessageBox::warning(
-        this, tr("Error"),
-        tr("Failed to announce the room to the public lobby. In order to host a room publicly, you "
-           "must have a valid Citra account configured in Emulation -> Configure -> Web. If you do "
-           "not want to publish a room in the public lobby, then select Unlisted instead.\n"
-           "Debug Message: ") +
-            QString::fromStdString(result.result_string),
-        QMessageBox::Ok);
 }
 
 static void BringWidgetToFront(QWidget* widget) {
@@ -148,16 +106,9 @@ static void BringWidgetToFront(QWidget* widget) {
     widget->raise();
 }
 
-void MultiplayerState::OnViewLobby() {
-    if (lobby == nullptr) {
-        lobby = new Lobby(this, game_list_model, announce_multiplayer_session);
-    }
-    BringWidgetToFront(lobby);
-}
-
 void MultiplayerState::OnCreateRoom() {
     if (host_room == nullptr) {
-        host_room = new HostRoomWindow(this, game_list_model, announce_multiplayer_session);
+        host_room = new HostRoomWindow(this, game_list_model);
     }
     BringWidgetToFront(host_room);
 }
@@ -177,7 +128,6 @@ bool MultiplayerState::OnCloseRoom() {
             return true;
         }
         room->Destroy();
-        announce_multiplayer_session->Stop();
         LOG_DEBUG(Frontend, "Closed the room (as a server)");
     }
     return true;
@@ -193,14 +143,11 @@ void MultiplayerState::OnOpenNetworkRoom() {
             return;
         }
     }
-    // If the user is not a member of a room, show the lobby instead.
-    // This is currently only used on the clickable label in the status bar
-    OnViewLobby();
 }
 
-void MultiplayerState::OnDirectConnectToRoom() {
-    if (direct_connect == nullptr) {
-        direct_connect = new DirectConnectWindow(this);
+void MultiplayerState::OnIpConnectToRoom() {
+    if (ip_connect == nullptr) {
+        ip_connect = new IpConnectWindow(this);
     }
-    BringWidgetToFront(direct_connect);
+    BringWidgetToFront(ip_connect);
 }

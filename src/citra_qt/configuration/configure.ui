@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>6</number>
      </property>
      <widget class="ConfigureGeneral" name="generalTab">
       <attribute name="title">
@@ -47,11 +47,6 @@
      <widget class="ConfigureCamera" name="cameraTab">
       <attribute name="title">
        <string>Camera</string>
-      </attribute>
-     </widget>
-     <widget class="ConfigureWeb" name="webTab">
-      <attribute name="title">
-       <string>Web</string>
       </attribute>
      </widget>
      <widget class="ConfigureHacks" name="hacksTab">
@@ -105,12 +100,6 @@
    <class>ConfigureGraphics</class>
    <extends>QWidget</extends>
    <header>configuration/configure_graphics.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ConfigureWeb</class>
-   <extends>QWidget</extends>
-   <header>configuration/configure_web.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

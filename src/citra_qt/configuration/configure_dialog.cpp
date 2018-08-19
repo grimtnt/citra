@@ -22,7 +22,6 @@ void ConfigureDialog::applyConfiguration() {
     ui->graphicsTab->applyConfiguration();
     ui->audioTab->applyConfiguration();
     ui->cameraTab->applyConfiguration();
-    ui->webTab->applyConfiguration();
     ui->hacksTab->applyConfiguration();
     sd_card_root_changed = ui->generalTab->sd_card_root_changed;
     Settings::Apply();
@@ -38,6 +37,5 @@ void ConfigureDialog::onLanguageChanged(const QString& locale) {
     ui->graphicsTab->retranslateUi();
     ui->audioTab->retranslateUi();
     ui->cameraTab->retranslateUi();
-    ui->webTab->retranslateUi();
     ui->hacksTab->retranslateUi();
 }

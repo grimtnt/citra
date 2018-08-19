@@ -10,46 +10,38 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include "citra_qt/main.h"
 #include "citra_qt/multiplayer/client_room.h"
-#include "citra_qt/multiplayer/direct_connect.h"
+#include "citra_qt/multiplayer/ip_connect.h"
 #include "citra_qt/multiplayer/message.h"
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/multiplayer/validation.h"
 #include "citra_qt/ui_settings.h"
 #include "core/settings.h"
 #include "network/network.h"
-#include "ui_direct_connect.h"
+#include "ui_ip_connect.h"
 
-enum class ConnectionType : u8 { TraversalServer, IP };
-
-DirectConnectWindow::DirectConnectWindow(QWidget* parent)
+IpConnectWindow::IpConnectWindow(QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::DirectConnect>()) {
+      ui(std::make_unique<Ui::IpConnect>()) {
 
     ui->setupUi(this);
 
     // setup the watcher for background connections
     watcher = new QFutureWatcher<void>;
-    connect(watcher, &QFutureWatcher<void>::finished, this, &DirectConnectWindow::OnConnection);
+    connect(watcher, &QFutureWatcher<void>::finished, this, &IpConnectWindow::OnConnection);
 
     ui->nickname->setValidator(validation.GetNickname());
     ui->nickname->setText(UISettings::values.nickname);
-    if (ui->nickname->text().isEmpty() && !Settings::values.citra_username.empty()) {
-        // Use Citra Web Service user name as nickname by default
-        ui->nickname->setText(QString::fromStdString(Settings::values.citra_username));
-    }
     ui->ip->setValidator(validation.GetIP());
     ui->ip->setText(UISettings::values.ip);
     ui->port->setValidator(validation.GetPort());
     ui->port->setText(UISettings::values.port);
 
-    // TODO(jroweboy): Show or hide the connection options based on the current value of the combo
-    // box. Add this back in when the traversal server support is added.
-    connect(ui->connect, &QPushButton::pressed, this, &DirectConnectWindow::Connect);
+    connect(ui->connect, &QPushButton::pressed, this, &IpConnectWindow::Connect);
 }
 
-DirectConnectWindow::~DirectConnectWindow() = default;
+IpConnectWindow::~IpConnectWindow() = default;
 
-void DirectConnectWindow::Connect() {
+void IpConnectWindow::Connect() {
     if (!ui->nickname->hasAcceptableInput()) {
         NetworkMessage::ShowError(NetworkMessage::USERNAME_NOT_VALID);
         return;
@@ -65,19 +57,13 @@ void DirectConnectWindow::Connect() {
             }
         }
     }
-    switch (static_cast<ConnectionType>(ui->connection_type->currentIndex())) {
-    case ConnectionType::TraversalServer:
-        break;
-    case ConnectionType::IP:
-        if (!ui->ip->hasAcceptableInput()) {
-            NetworkMessage::ShowError(NetworkMessage::IP_ADDRESS_NOT_VALID);
-            return;
-        }
-        if (!ui->port->hasAcceptableInput()) {
-            NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
-            return;
-        }
-        break;
+    if (!ui->ip->hasAcceptableInput()) {
+        NetworkMessage::ShowError(NetworkMessage::IP_ADDRESS_NOT_VALID);
+        return;
+    }
+    if (!ui->port->hasAcceptableInput()) {
+        NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
+        return;
     }
 
     // Store settings
@@ -102,17 +88,17 @@ void DirectConnectWindow::Connect() {
     BeginConnecting();
 }
 
-void DirectConnectWindow::BeginConnecting() {
+void IpConnectWindow::BeginConnecting() {
     ui->connect->setEnabled(false);
     ui->connect->setText(tr("Connecting"));
 }
 
-void DirectConnectWindow::EndConnecting() {
+void IpConnectWindow::EndConnecting() {
     ui->connect->setEnabled(true);
     ui->connect->setText(tr("Connect"));
 }
 
-void DirectConnectWindow::OnConnection() {
+void IpConnectWindow::OnConnection() {
     EndConnecting();
 
     if (auto room_member = Network::GetRoomMember().lock()) {

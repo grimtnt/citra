@@ -5,14 +5,12 @@
 #pragma once
 
 #include <QWidget>
-#include "core/announce_multiplayer_session.h"
 #include "network/network.h"
 
 class QStandardItemModel;
-class Lobby;
 class HostRoomWindow;
 class ClientRoomWindow;
-class DirectConnectWindow;
+class IpConnectWindow;
 class ClickableLabel;
 
 class MultiplayerState : public QWidget {
@@ -28,43 +26,29 @@ public:
      */
     void Close();
 
-    ClickableLabel* GetStatusText() const {
-        return status_text;
-    }
-
     ClickableLabel* GetStatusIcon() const {
         return status_icon;
     }
 
-    void retranslateUi();
-
 public slots:
     void OnNetworkStateChanged(const Network::RoomMember::State& state);
-    void OnViewLobby();
     void OnCreateRoom();
     bool OnCloseRoom();
     void OnOpenNetworkRoom();
-    void OnDirectConnectToRoom();
-    void OnAnnounceFailed(const Common::WebResult&);
+    void OnIpConnectToRoom();
     void UpdateThemedIcons();
 
 signals:
     void NetworkStateChanged(const Network::RoomMember::State&);
-    void AnnounceFailed(const Common::WebResult&);
 
 private:
-    Lobby* lobby = nullptr;
     HostRoomWindow* host_room = nullptr;
     ClientRoomWindow* client_room = nullptr;
-    DirectConnectWindow* direct_connect = nullptr;
+    IpConnectWindow* ip_connect = nullptr;
     ClickableLabel* status_icon = nullptr;
-    ClickableLabel* status_text = nullptr;
     QStandardItemModel* game_list_model = nullptr;
     QAction* leave_room;
     QAction* show_room;
-    std::shared_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
     Network::RoomMember::State current_state = Network::RoomMember::State::Uninitialized;
     Network::RoomMember::CallbackHandle<Network::RoomMember::State> state_callback_handle;
 };
-
-Q_DECLARE_METATYPE(Common::WebResult);

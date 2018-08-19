@@ -110,7 +110,6 @@
     <property name="title">
      <string>Multiplayer</string>
     </property>
-    <addaction name="action_View_Lobby"/>
     <addaction name="action_Start_Room"/>
     <addaction name="action_Connect_To_Room"/>
     <addaction name="separator"/>
@@ -257,7 +256,7 @@
   </action>
   <action name="action_Connect_To_Room">
    <property name="text">
-    <string>Direct Connect to Room</string>
+    <string>Connect To Room</string>
    </property>
   </action>
   <action name="action_Show_Room">

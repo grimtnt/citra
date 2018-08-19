@@ -1,8 +1,6 @@
 add_library(core STATIC
     3ds.h
     arm/arm_interface.h
-    announce_multiplayer_session.cpp
-    announce_multiplayer_session.h
     arm/dyncom/arm_dyncom.cpp
     arm/dyncom/arm_dyncom.h
     arm/dyncom/arm_dyncom_dec.cpp
@@ -442,13 +440,10 @@ add_library(core STATIC
 
 create_target_directory_groups(core)
 
-target_compile_options(core PRIVATE -DCPPHTTPLIB_OPENSSL_SUPPORT)
+target_compile_options(core PUBLIC -DCPPHTTPLIB_OPENSSL_SUPPORT)
 
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core ssl httplib lurlparser)
 target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt open_source_archives)
-if (ENABLE_WEB_SERVICE)
-    target_link_libraries(core PUBLIC json-headers web_service)
-endif()
 
 if (ARCHITECTURE_x86_64)
     target_sources(core PRIVATE

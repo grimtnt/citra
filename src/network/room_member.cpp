@@ -160,9 +160,6 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                 case IdMacCollision:
                     SetState(State::MacCollision);
                     break;
-                case IdVersionMismatch:
-                    SetState(State::WrongVersion);
-                    break;
                 case IdWrongPassword:
                     SetState(State::WrongPassword);
                     break;
@@ -207,7 +204,6 @@ void RoomMember::RoomMemberImpl::SendJoinRequest(const std::string& nickname,
     packet << static_cast<u8>(IdJoinRequest);
     packet << nickname;
     packet << preferred_mac;
-    packet << network_version;
     packet << password;
     Send(std::move(packet));
 }

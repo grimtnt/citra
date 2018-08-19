@@ -43,21 +43,16 @@ add_executable(citra-qt
     configuration/configure_motion_touch.h
     configuration/configure_system.cpp
     configuration/configure_system.h
-    configuration/configure_web.cpp
-    configuration/configure_web.h
     configuration/configure_hacks.cpp
     configuration/configure_hacks.h
     multiplayer/chat_room.cpp
     multiplayer/chat_room.h
     multiplayer/client_room.cpp
     multiplayer/client_room.h
-    multiplayer/direct_connect.cpp
-    multiplayer/direct_connect.h
+    multiplayer/ip_connect.cpp
+    multiplayer/ip_connect.h
     multiplayer/host_room.cpp
     multiplayer/host_room.h
-    multiplayer/lobby.cpp
-    multiplayer/lobby.h
-    multiplayer/lobby_p.h
     multiplayer/message.cpp
     multiplayer/message.h
     multiplayer/state.cpp
@@ -95,7 +90,6 @@ set(UIS
     configuration/configure_input.ui
     configuration/configure_motion_touch.ui
     configuration/configure_system.ui
-    configuration/configure_web.ui
     configuration/configure_hacks.ui
     swkbd.ui
     aboutdialog.ui
@@ -104,8 +98,7 @@ set(UIS
     cheatsearch.ui
     main.ui
     control_panel.ui
-    multiplayer/direct_connect.ui
-    multiplayer/lobby.ui
+    multiplayer/ip_connect.ui
     multiplayer/chat_room.ui
     multiplayer/client_room.ui
     multiplayer/host_room.ui

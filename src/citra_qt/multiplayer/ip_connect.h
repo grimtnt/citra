@@ -10,15 +10,15 @@
 #include "citra_qt/multiplayer/validation.h"
 
 namespace Ui {
-class DirectConnect;
+class IpConnect;
 } // namespace Ui
 
-class DirectConnectWindow : public QDialog {
+class IpConnectWindow : public QDialog {
     Q_OBJECT
 
 public:
-    explicit DirectConnectWindow(QWidget* parent = nullptr);
-    ~DirectConnectWindow();
+    explicit IpConnectWindow(QWidget* parent = nullptr);
+    ~IpConnectWindow();
 
 signals:
     /**
@@ -36,6 +36,6 @@ private:
     void EndConnecting();
 
     QFutureWatcher<void>* watcher;
-    std::unique_ptr<Ui::DirectConnect> ui;
+    std::unique_ptr<Ui::IpConnect> ui;
     Validation validation;
 };

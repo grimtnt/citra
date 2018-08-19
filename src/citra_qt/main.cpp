@@ -198,7 +198,6 @@ void GMainWindow::InitializeWidgets() {
         label->setContentsMargins(4, 0, 4, 0);
         statusBar()->addPermanentWidget(label, 0);
     }
-    statusBar()->addPermanentWidget(multiplayer_state->GetStatusText(), 0);
     statusBar()->addPermanentWidget(multiplayer_state->GetStatusIcon(), 0);
     statusBar()->setVisible(true);
 
@@ -426,14 +425,12 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnStopRecordingPlayback);
 
     // Multiplayer
-    connect(ui.action_View_Lobby, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnViewLobby);
     connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCreateRoom);
     connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCloseRoom);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnDirectConnectToRoom);
+            &MultiplayerState::OnIpConnectToRoom);
     connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnOpenNetworkRoom);
 
@@ -1546,8 +1543,6 @@ void GMainWindow::RetranslateStatusBar() {
     emu_frametime_label->setToolTip(
         tr("Time taken to emulate a 3DS frame, not counting framelimiting or v-sync. For "
            "full-speed emulation this should be at most 16.67 ms."));
-
-    multiplayer_state->retranslateUi();
 }
 
 #ifdef main

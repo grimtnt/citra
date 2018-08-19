@@ -17,10 +17,6 @@ namespace Ui {
 class ChatRoom;
 } // namespace Ui
 
-namespace Core {
-class AnnounceMultiplayerSession;
-} // namespace Core
-
 class ConnectionError;
 class ComboBoxProxyModel;
 

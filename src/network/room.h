@@ -12,8 +12,6 @@
 
 namespace Network {
 
-constexpr u32 network_version = 3; ///< The version of this Room and RoomMember
-
 constexpr u16 DefaultRoomPort = 24872;
 
 constexpr u32 MaxMessageSize = 500;
@@ -52,10 +50,10 @@ enum RoomMessageTypes : u8 {
     IdRoomInformation,
     IdSetGameInfo,
     IdWifiPacket,
+    IdDlpPacket, // For future DLP implementation
     IdChatMessage,
     IdNameCollision,
     IdMacCollision,
-    IdVersionMismatch,
     IdWrongPassword,
     IdCloseRoom
 };

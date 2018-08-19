@@ -11,7 +11,6 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QTranslator>
-#include "common/announce_multiplayer_room.h"
 #include "core/core.h"
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"

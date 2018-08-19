@@ -17,10 +17,6 @@ namespace Ui {
 class HostRoom;
 } // namespace Ui
 
-namespace Core {
-class AnnounceMultiplayerSession;
-}
-
 class ConnectionError;
 class ComboBoxProxyModel;
 
@@ -30,8 +26,7 @@ class HostRoomWindow : public QDialog {
     Q_OBJECT
 
 public:
-    explicit HostRoomWindow(QWidget* parent, QStandardItemModel* list,
-                            std::shared_ptr<Core::AnnounceMultiplayerSession> session);
+    explicit HostRoomWindow(QWidget* parent, QStandardItemModel* list);
     ~HostRoomWindow();
 
 private slots:
@@ -44,7 +39,6 @@ private slots:
 private:
     void Host();
 
-    std::weak_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
     QStandardItemModel* game_list;
     ComboBoxProxyModel* proxy;
     std::unique_ptr<Ui::HostRoom> ui;

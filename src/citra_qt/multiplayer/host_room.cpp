@@ -18,14 +18,12 @@
 #include "citra_qt/multiplayer/validation.h"
 #include "citra_qt/ui_settings.h"
 #include "common/logging/log.h"
-#include "core/announce_multiplayer_session.h"
 #include "core/settings.h"
 #include "ui_host_room.h"
 
-HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list,
-                               std::shared_ptr<Core::AnnounceMultiplayerSession> session)
+HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::HostRoom>()), announce_multiplayer_session(session) {
+      ui(std::make_unique<Ui::HostRoom>()) {
     ui->setupUi(this);
 
     // set up validation for all of the fields
@@ -54,18 +52,11 @@ HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list,
 
     // Restore the settings:
     ui->username->setText(UISettings::values.room_nickname);
-    if (ui->username->text().isEmpty() && !Settings::values.citra_username.empty()) {
-        // Use Citra Web Service user name as nickname by default
-        ui->username->setText(QString::fromStdString(Settings::values.citra_username));
-    }
     ui->room_name->setText(UISettings::values.room_name);
     ui->port->setText(UISettings::values.room_port);
     ui->max_player->setValue(UISettings::values.max_player);
-    int index = UISettings::values.host_type;
-    if (index < ui->host_type->count()) {
-        ui->host_type->setCurrentIndex(index);
-    }
-    index = ui->game_list->findData(UISettings::values.game_id, GameListItemPath::ProgramIdRole);
+    int index =
+        ui->game_list->findData(UISettings::values.game_id, GameListItemPath::ProgramIdRole);
     if (index != -1) {
         ui->game_list->setCurrentIndex(index);
     }
@@ -121,8 +112,6 @@ void HostRoomWindow::Host() {
         UISettings::values.game_id =
             ui->game_list->currentData(GameListItemPath::ProgramIdRole).toLongLong();
         UISettings::values.max_player = ui->max_player->value();
-
-        UISettings::values.host_type = ui->host_type->currentIndex();
         UISettings::values.room_port = (ui->port->isModified() && !ui->port->text().isEmpty())
                                            ? ui->port->text()
                                            : QString::number(Network::DefaultRoomPort);
@@ -133,19 +122,7 @@ void HostRoomWindow::Host() {
 
 void HostRoomWindow::OnConnection() {
     ui->host->setEnabled(true);
-    if (auto room_member = Network::GetRoomMember().lock()) {
-        if (room_member->GetState() == Network::RoomMember::State::Joining) {
-            // Start the announce session if they chose Public
-            if (ui->host_type->currentIndex() == 0) {
-                if (auto session = announce_multiplayer_session.lock()) {
-                    session->Start();
-                } else {
-                    LOG_ERROR(Network, "Starting announce session failed");
-                }
-            }
-            close();
-        }
-    }
+    close();
 }
 
 QVariant ComboBoxProxyModel::data(const QModelIndex& idx, int role) const {

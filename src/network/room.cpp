@@ -79,11 +79,6 @@ public:
     void SendMacCollision(ENetPeer* client);
 
     /**
-     * Sends a ID_ROOM_VERSION_MISMATCH message telling the client that the version is invalid.
-     */
-    void SendVersionMismatch(ENetPeer* client);
-
-    /**
      * Sends a ID_ROOM_WRONG_PASSWORD message telling the client that the password is wrong.
      */
     void SendWrongPassword(ENetPeer* client);
@@ -202,9 +197,6 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     MacAddress preferred_mac;
     packet >> preferred_mac;
 
-    u32 client_version;
-    packet >> client_version;
-
     std::string pass;
     packet >> pass;
 
@@ -227,11 +219,6 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     } else {
         // Assign a MAC address of this client automatically
         preferred_mac = GenerateMacAddress();
-    }
-
-    if (client_version != network_version) {
-        SendVersionMismatch(event->peer);
-        return;
     }
 
     // At this point the client is ready to be added to the room.
@@ -288,17 +275,6 @@ void Room::RoomImpl::SendMacCollision(ENetPeer* client) {
 void Room::RoomImpl::SendWrongPassword(ENetPeer* client) {
     Packet packet;
     packet << static_cast<u8>(IdWrongPassword);
-
-    ENetPacket* enet_packet =
-        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
-    enet_peer_send(client, 0, enet_packet);
-    enet_host_flush(server);
-}
-
-void Room::RoomImpl::SendVersionMismatch(ENetPeer* client) {
-    Packet packet;
-    packet << static_cast<u8>(IdVersionMismatch);
-    packet << network_version;
 
     ENetPacket* enet_packet =
         enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
