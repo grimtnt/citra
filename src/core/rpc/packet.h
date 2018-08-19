@@ -11,6 +11,7 @@ enum class PacketType {
     Undefined = 0,
     ReadMemory,
     WriteMemory,
+    PadState,
 };
 
 struct PacketHeader {
@@ -65,6 +66,7 @@ public:
 private:
     void HandleReadMemory(u32 address, u32 data_size);
     void HandleWriteMemory(u32 address, const u8* data, u32 data_size);
+    void HandlePadState(Packet& packet, u32 raw);
 
     struct PacketHeader header;
     std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;

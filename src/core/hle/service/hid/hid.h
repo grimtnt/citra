@@ -292,6 +292,7 @@ public:
     };
 
     void ReloadInputDevices();
+    void SetPadState(u32 raw);
 
 private:
     void LoadInputDevices();
@@ -328,12 +329,16 @@ private:
     std::unique_ptr<Input::AnalogDevice> circle_pad;
     std::unique_ptr<Input::MotionDevice> motion_device;
     std::unique_ptr<Input::TouchDevice> touch_device;
+    u32 override_pad_state = 0;
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 
 /// Reload input devices. Used when input configuration changed
 void ReloadInputDevices();
+
+/// Sets the pad state. Used by RPC for PadState requests.
+void SetPadState(u32 raw);
 
 PadState& GetInputsThisFrame();
 } // namespace Service::HID

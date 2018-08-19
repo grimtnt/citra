@@ -111,6 +111,11 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
     state.circle_left.Assign(direction.left);
     state.circle_right.Assign(direction.right);
 
+    if (override_pad_state != 0) {
+        state.hex = override_pad_state;
+    }
+    inputs_this_frame.hex = state.hex;
+
     mem->pad.current_state.hex = state.hex;
     mem->pad.index = next_pad_index;
     next_pad_index = (next_pad_index + 1) % mem->pad.entries.size();
@@ -131,7 +136,6 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
     pad_entry.delta_removals.hex = changed.hex & old_state.hex;
     pad_entry.circle_pad_x = circle_pad_x;
     pad_entry.circle_pad_y = circle_pad_y;
-    inputs_this_frame.hex = state.hex;
 
     // If we just updated index 0, provide a new timestamp
     if (mem->pad.index == 0) {
@@ -395,9 +399,19 @@ void Module::ReloadInputDevices() {
     is_device_reload_pending.store(true);
 }
 
+void Module::SetPadState(u32 raw) {
+    override_pad_state = raw;
+}
+
 void ReloadInputDevices() {
     if (auto hid = current_module.lock())
         hid->ReloadInputDevices();
+}
+
+void SetPadState(u32 raw) {
+    if (auto hid = current_module.lock()) {
+        hid->SetPadState(raw);
+    }
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {

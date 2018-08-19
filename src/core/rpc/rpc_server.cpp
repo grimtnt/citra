@@ -1,6 +1,7 @@
 #include "common/logging/log.h"
 #include "core/arm/arm_interface.h"
 #include "core/core.h"
+#include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
 #include "core/rpc/packet.h"
 #include "core/rpc/rpc_server.h"
@@ -48,11 +49,18 @@ void RPCServer::HandleWriteMemory(Packet& packet, u32 address, const u8* data, u
     packet.SendReply();
 }
 
+void RPCServer::HandlePadState(Packet& packet, u32 raw) {
+    Service::HID::SetPadState(raw);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
         case PacketType::ReadMemory:
         case PacketType::WriteMemory:
+        case PacketType::PadState:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -74,7 +82,6 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         std::memcpy(&address, request_packet->GetPacketData().data(), sizeof(address));
         std::memcpy(&data_size, request_packet->GetPacketData().data() + sizeof(address),
                     sizeof(data_size));
-
         switch (request_packet->GetPacketType()) {
         case PacketType::ReadMemory:
             if (data_size > 0 && data_size <= MAX_READ_SIZE) {
@@ -86,6 +93,15 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
                 const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
                 HandleWriteMemory(*request_packet, address, data, data_size);
+                success = true;
+            }
+            break;
+        case PacketType::PadState:
+            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
+                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
+                u32 raw;
+                std::memcpy(&raw, data, sizeof(u32));
+                HandlePadState(*request_packet, raw);
                 success = true;
             }
             break;

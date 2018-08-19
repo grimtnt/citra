@@ -8,8 +8,30 @@ MAX_REQUEST_DATA_SIZE = 32
 
 REQUEST_TYPE_READ_MEMORY = 1
 REQUEST_TYPE_WRITE_MEMORY = 2
+REQUEST_TYPE_PAD_STATE = 3
 
 CITRA_PORT = "45987"
+
+# https://github.com/smealum/ctrulib/blob/bd34fd59dbf0691e2dba76be65f260303d8ccec7/libctru/include/3ds/services/hid.h#L9
+def BIT(n):
+    return (1 << n)
+
+KEY_A = BIT(0)             # A
+KEY_B = BIT(1)             # B
+KEY_SELECT = BIT(2)        # Select
+KEY_START = BIT(3)         # Start
+KEY_DRIGHT = BIT(4)        # D-Pad Right
+KEY_DLEFT = BIT(5)         # D-Pad Left
+KEY_DUP = BIT(6)           # D-Pad Up
+KEY_DDOWN = BIT(7)         # D-Pad Down
+KEY_R = BIT(8)             # R
+KEY_L = BIT(9)             # L
+KEY_X = BIT(10)            # X
+KEY_Y = BIT(11)            # Y
+KEY_CPAD_RIGHT = BIT(28)   # Circle Pad Right
+KEY_CPAD_LEFT = BIT(29)    # Circle Pad Left
+KEY_CPAD_UP = BIT(30)      # Circle Pad Up
+KEY_CPAD_DOWN = BIT(31)    # Circle Pad Down
 
 class Citra:
     def __init__(self, address="127.0.0.1", port=CITRA_PORT):
@@ -87,6 +109,13 @@ class Citra:
             else:
                 return False
         return True
+
+    def set_pad_state(self, pad_state):
+        request_data = struct.pack("III", 0, 4, pad_state)
+        request, request_id = self._generate_header(REQUEST_TYPE_PAD_STATE, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
 
 if "__main__" == __name__:
     import doctest
