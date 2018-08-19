@@ -100,10 +100,5 @@ void IpConnectWindow::EndConnecting() {
 
 void IpConnectWindow::OnConnection() {
     EndConnecting();
-
-    if (auto room_member = Network::GetRoomMember().lock()) {
-        if (room_member->GetState() == Network::RoomMember::State::Joined) {
-            close();
-        }
-    }
+    close();
 }
