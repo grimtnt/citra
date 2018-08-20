@@ -61,13 +61,6 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 }
 #endif
 
-/**
- * "Callouts" are one-time instructional messages shown to the user. In the config settings, there
- * is a bitfield "callout_flags" options, used to track if a message has already been shown to the
- * user. This is 32-bits - if we have more than 32 callouts, we should retire and recyle old ones.
- */
-enum class CalloutFlag : uint32_t {};
-
 #ifdef ENABLE_DISCORD_RPC
 static void HandleDiscordDisconnected(int errorCode, const char* message) {
     LOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
@@ -77,23 +70,6 @@ static void HandleDiscordError(int errorCode, const char* message) {
     LOG_ERROR(Frontend, "Error: {} ({})", message, errorCode);
 }
 #endif
-
-static void ShowCalloutMessage(const QString& message, CalloutFlag flag) {
-    if (UISettings::values.callout_flags & static_cast<uint32_t>(flag)) {
-        return;
-    }
-
-    UISettings::values.callout_flags |= static_cast<uint32_t>(flag);
-
-    QMessageBox msg;
-    msg.setText(message);
-    msg.setStandardButtons(QMessageBox::Ok);
-    msg.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    msg.setStyleSheet("QLabel{min-width: 900px;}");
-    msg.exec();
-}
-
-void GMainWindow::ShowCallouts() {}
 
 const int GMainWindow::max_recent_files_item;
 
@@ -135,9 +111,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     SetupUIStrings();
 
     game_list->PopulateAsync(UISettings::values.game_dirs);
-
-    // Show one-time "callout" messages to the user
-    ShowCallouts();
 
     QStringList args = QApplication::arguments();
     if (args.length() >= 2) {
