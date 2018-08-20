@@ -78,6 +78,7 @@ class Citra:
             if reply_data:
                 result += reply_data
                 read_size -= len(reply_data)
+                read_address += len(reply_data)
             else:
                 return None
 
