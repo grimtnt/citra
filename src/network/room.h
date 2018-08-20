@@ -50,7 +50,6 @@ enum RoomMessageTypes : u8 {
     IdRoomInformation,
     IdSetGameInfo,
     IdWifiPacket,
-    IdDlpPacket, // For future DLP implementation
     IdChatMessage,
     IdNameCollision,
     IdMacCollision,
