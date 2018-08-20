@@ -360,6 +360,13 @@ private:
      */
     void SetKeepAlive(Kernel::HLERequestContext& ctx);
 
+    /**
+     * HTTP_C::Finalize service function
+     *  Outputs:
+     *      1 : Result of function, 0 on success, otherwise error code
+     */
+    void Finalize(Kernel::HLERequestContext& ctx);
+
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory = nullptr;
     std::unordered_map<u32, Context> contexts;
     u32 context_counter{0};
