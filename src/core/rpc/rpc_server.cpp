@@ -55,21 +55,28 @@ void RPCServer::HandlePadState(Packet& packet, u32 raw) {
     packet.SendReply();
 }
 
-void RPCServer::HandleTouchState(Packet& packet, float x, float y, bool valid) {
+void RPCServer::HandleTouchState(Packet& packet, s16 x, s16 y, bool valid) {
     Service::HID::SetTouchState(x, y, valid);
     packet.SetPacketDataSize(0);
     packet.SendReply();
 }
 
-void RPCServer::HandleMotionState(Packet& packet, float x, float y, float z, float roll,
-                                  float pitch, float yaw) {
+void RPCServer::HandleMotionState(Packet& packet, s16 x, s16 y, s16 z, s16 roll, s16 pitch,
+                                  s16 yaw) {
     Service::HID::SetMotionState(x, y, z, roll, pitch, yaw);
     packet.SetPacketDataSize(0);
     packet.SendReply();
 }
 
-void RPCServer::HandleCircleState(Packet& packet, float x, float y) {
+void RPCServer::HandleCircleState(Packet& packet, s16 x, s16 y) {
     Service::HID::SetCircleState(x, y);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleSetResolution(Packet& packet, u16 resolution) {
+    Settings::values.resolution_factor = resolution;
+    Settings::Apply();
     packet.SetPacketDataSize(0);
     packet.SendReply();
 }
@@ -83,6 +90,7 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::TouchState:
         case PacketType::MotionState:
         case PacketType::CircleState:
+        case PacketType::SetResolution:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -169,6 +177,15 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 State state;
                 std::memcpy(&state, data, sizeof(State));
                 HandleCircleState(*request_packet, state.x, state.y);
+                success = true;
+            }
+            break;
+        case PacketType::SetResolution:
+            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
+                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
+                u16 resolution;
+                std::memcpy(&resolution, data, sizeof(u16));
+                HandleSetResolution(*request_packet, resolution);
                 success = true;
             }
             break;

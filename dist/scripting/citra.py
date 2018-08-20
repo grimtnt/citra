@@ -12,6 +12,7 @@ REQUEST_TYPE_PAD_STATE = 3
 REQUEST_TYPE_TOUCH_STATE = 4
 REQUEST_TYPE_MOTION_STATE = 5
 REQUEST_TYPE_CIRCLE_STATE = 6
+REQUEST_TYPE_SET_RESOLUTION = 7
 
 CITRA_PORT = "45987"
 
@@ -137,6 +138,13 @@ class Citra:
     def set_circle_state(self, x, y):
         request_data = struct.pack("IIhh", 0, 4, x, y)
         request, request_id = self._generate_header(REQUEST_TYPE_CIRCLE_STATE, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_resolution(self, resolution):
+        request_data = struct.pack("IIh", 0, 4, resolution)
+        request, request_id = self._generate_header(REQUEST_TYPE_SET_RESOLUTION, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
