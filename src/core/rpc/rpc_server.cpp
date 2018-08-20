@@ -63,7 +63,6 @@ void RPCServer::HandleTouchState(Packet& packet, float x, float y, bool valid) {
 
 void RPCServer::HandleMotionState(Packet& packet, float x, float y, float z, float roll,
                                   float pitch, float yaw) {
-    LOG_CRITICAL(RPC_Server, "x={} y={} z={} roll={} pitch={} yaw={}", x, y, z, roll, pitch, yaw);
     Service::HID::SetMotionState(x, y, z, roll, pitch, yaw);
     packet.SetPacketDataSize(0);
     packet.SendReply();
