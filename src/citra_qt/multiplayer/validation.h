@@ -37,7 +37,7 @@ private:
     QRegExpValidator nickname;
 
     /// ipv4 address only
-    // TODO remove this when we support hostnames in direct connect
+    // TODO: remove this when we support hostnames in ip connect
     QRegExp ip_regex = QRegExp(
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
         "2[0-4][0-9]|25[0-5])");
