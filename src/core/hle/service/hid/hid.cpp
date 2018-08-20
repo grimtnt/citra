@@ -97,12 +97,17 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
         Core::System::GetInstance().RequestShutdown();
 
     // Get current circle pad position and update circle pad direction
-    float circle_pad_x_f, circle_pad_y_f;
-    std::tie(circle_pad_x_f, circle_pad_y_f) = circle_pad->GetStatus();
-    constexpr int MAX_CIRCLEPAD_POS = 0x9C; // Max value for a circle pad position
-    s16 circle_pad_x = static_cast<s16>(circle_pad_x_f * MAX_CIRCLEPAD_POS);
-    s16 circle_pad_y = static_cast<s16>(circle_pad_y_f * MAX_CIRCLEPAD_POS);
-
+    s16 circle_pad_x = 0, circle_pad_y = 0;
+    if (override_circle_x != 0 && override_circle_y != 0) {
+        circle_pad_x = override_circle_x;
+        circle_pad_y = override_circle_y;
+    } else {
+        float circle_pad_x_f, circle_pad_y_f;
+        std::tie(circle_pad_x_f, circle_pad_y_f) = circle_pad->GetStatus();
+        constexpr int MAX_CIRCLEPAD_POS = 0x9C; // Max value for a circle pad position
+        circle_pad_x = static_cast<s16>(circle_pad_x_f * MAX_CIRCLEPAD_POS);
+        circle_pad_y = static_cast<s16>(circle_pad_y_f * MAX_CIRCLEPAD_POS);
+    }
     Core::Movie::GetInstance().HandlePadAndCircleStatus(state, circle_pad_x, circle_pad_y);
 
     const DirectionState direction = GetStickDirectionState(circle_pad_x, circle_pad_y);
@@ -148,12 +153,18 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
 
     // Get the current touch entry
     TouchDataEntry& touch_entry = mem->touch.entries[mem->touch.index];
-    bool pressed = false;
-    float x, y;
-    std::tie(x, y, pressed) = touch_device->GetStatus();
-    touch_entry.x = static_cast<u16>(x * Core::kScreenBottomWidth);
-    touch_entry.y = static_cast<u16>(y * Core::kScreenBottomHeight);
-    touch_entry.valid.Assign(pressed ? 1 : 0);
+    if (override_touch_x != 0 && override_touch_y != 0 && override_touch_valid) {
+        touch_entry.x = override_touch_x;
+        touch_entry.y = override_touch_y;
+        touch_entry.valid.Assign(override_touch_valid ? 1 : 0);
+    } else {
+        float x, y;
+        bool pressed = false;
+        std::tie(x, y, pressed) = touch_device->GetStatus();
+        touch_entry.x = static_cast<u16>(x * Core::kScreenBottomWidth);
+        touch_entry.y = static_cast<u16>(y * Core::kScreenBottomHeight);
+        touch_entry.valid.Assign(pressed ? 1 : 0);
+    }
 
     Core::Movie::GetInstance().HandleTouchStatus(touch_entry);
 
@@ -180,20 +191,23 @@ void Module::UpdateAccelerometerCallback(u64 userdata, s64 cycles_late) {
 
     mem->accelerometer.index = next_accelerometer_index;
     next_accelerometer_index = (next_accelerometer_index + 1) % mem->accelerometer.entries.size();
-
-    Math::Vec3<float> accel;
-    std::tie(accel, std::ignore) = motion_device->GetStatus();
-    accel *= accelerometer_coef;
-    // TODO(wwylele): do a time stretch like the one in UpdateGyroscopeCallback
-    // The time stretch formula should be like
-    // stretched_vector = (raw_vector - gravity) * stretch_ratio + gravity
-
     AccelerometerDataEntry& accelerometer_entry =
         mem->accelerometer.entries[mem->accelerometer.index];
-
-    accelerometer_entry.x = static_cast<s16>(accel.x);
-    accelerometer_entry.y = static_cast<s16>(accel.y);
-    accelerometer_entry.z = static_cast<s16>(accel.z);
+    if (override_motion_x != 0 && override_motion_y != 0 && override_motion_z != 0) {
+        accelerometer_entry.x = override_motion_x;
+        accelerometer_entry.y = override_motion_y;
+        accelerometer_entry.z = override_motion_z;
+    } else {
+        Math::Vec3<float> accel;
+        std::tie(accel, std::ignore) = motion_device->GetStatus();
+        accel *= accelerometer_coef;
+        // TODO(wwylele): do a time stretch like the one in UpdateGyroscopeCallback
+        // The time stretch formula should be like
+        // stretched_vector = (raw_vector - gravity) * stretch_ratio + gravity
+        accelerometer_entry.x = static_cast<s16>(accel.x);
+        accelerometer_entry.y = static_cast<s16>(accel.y);
+        accelerometer_entry.z = static_cast<s16>(accel.z);
+    }
 
     Core::Movie::GetInstance().HandleAccelerometerStatus(accelerometer_entry);
 
@@ -231,13 +245,19 @@ void Module::UpdateGyroscopeCallback(u64 userdata, s64 cycles_late) {
 
     GyroscopeDataEntry& gyroscope_entry = mem->gyroscope.entries[mem->gyroscope.index];
 
-    Math::Vec3<float> gyro;
-    std::tie(std::ignore, gyro) = motion_device->GetStatus();
-    double stretch = Core::System::GetInstance().perf_stats.GetLastFrameTimeScale();
-    gyro *= gyroscope_coef * static_cast<float>(stretch);
-    gyroscope_entry.x = static_cast<s16>(gyro.x);
-    gyroscope_entry.y = static_cast<s16>(gyro.y);
-    gyroscope_entry.z = static_cast<s16>(gyro.z);
+    if (override_motion_roll != 0 && override_motion_pitch != 0 && override_motion_yaw != 0) {
+        gyroscope_entry.x = override_motion_roll;
+        gyroscope_entry.y = override_motion_pitch;
+        gyroscope_entry.z = override_motion_yaw;
+    } else {
+        Math::Vec3<float> gyro;
+        std::tie(std::ignore, gyro) = motion_device->GetStatus();
+        double stretch = Core::System::GetInstance().perf_stats.GetLastFrameTimeScale();
+        gyro *= gyroscope_coef * static_cast<float>(stretch);
+        gyroscope_entry.x = static_cast<s16>(gyro.x);
+        gyroscope_entry.y = static_cast<s16>(gyro.y);
+        gyroscope_entry.z = static_cast<s16>(gyro.z);
+    }
 
     Core::Movie::GetInstance().HandleGyroscopeStatus(gyroscope_entry);
 
@@ -403,6 +423,26 @@ void Module::SetPadState(u32 raw) {
     override_pad_state = raw;
 }
 
+void Module::SetTouchState(s16 x, s16 y, bool valid) {
+    override_touch_x = x;
+    override_touch_y = y;
+    override_touch_valid = valid;
+}
+
+void Module::SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw) {
+    override_motion_x = x;
+    override_motion_y = y;
+    override_motion_z = z;
+    override_motion_roll = roll;
+    override_motion_pitch = pitch;
+    override_motion_yaw = yaw;
+}
+
+void Module::SetCircleState(s16 x, s16 y) {
+    override_circle_x = x;
+    override_circle_y = y;
+}
+
 void ReloadInputDevices() {
     if (auto hid = current_module.lock())
         hid->ReloadInputDevices();
@@ -411,6 +451,24 @@ void ReloadInputDevices() {
 void SetPadState(u32 raw) {
     if (auto hid = current_module.lock()) {
         hid->SetPadState(raw);
+    }
+}
+
+void SetTouchState(s16 x, s16 y, bool valid) {
+    if (auto hid = current_module.lock()) {
+        hid->SetTouchState(x, y, valid);
+    }
+}
+
+void SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw) {
+    if (auto hid = current_module.lock()) {
+        hid->SetMotionState(x, y, z, roll, pitch, yaw);
+    }
+}
+
+void SetCircleState(s16 x, s16 y) {
+    if (auto hid = current_module.lock()) {
+        hid->SetCircleState(x, y);
     }
 }
 

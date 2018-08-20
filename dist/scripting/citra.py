@@ -9,6 +9,9 @@ MAX_REQUEST_DATA_SIZE = 32
 REQUEST_TYPE_READ_MEMORY = 1
 REQUEST_TYPE_WRITE_MEMORY = 2
 REQUEST_TYPE_PAD_STATE = 3
+REQUEST_TYPE_TOUCH_STATE = 4
+REQUEST_TYPE_MOTION_STATE = 5
+REQUEST_TYPE_CIRCLE_STATE = 6
 
 CITRA_PORT = "45987"
 
@@ -113,6 +116,27 @@ class Citra:
     def set_pad_state(self, pad_state):
         request_data = struct.pack("III", 0, 4, pad_state)
         request, request_id = self._generate_header(REQUEST_TYPE_PAD_STATE, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_touch_state(self, x, y, valid):
+        request_data = struct.pack("IIhh?", 0, 4, x, y, valid)
+        request, request_id = self._generate_header(REQUEST_TYPE_TOUCH_STATE, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_motion_state(self, x, y, z, roll, pitch, yaw):
+        request_data = struct.pack("IIhhhhhh", 0, 4, x, y, z, roll, pitch, yaw)
+        request, request_id = self._generate_header(REQUEST_TYPE_MOTION_STATE, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_circle_state(self, x, y):
+        request_data = struct.pack("IIhh", 0, 4, x, y)
+        request, request_id = self._generate_header(REQUEST_TYPE_CIRCLE_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()

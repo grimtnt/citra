@@ -55,12 +55,35 @@ void RPCServer::HandlePadState(Packet& packet, u32 raw) {
     packet.SendReply();
 }
 
+void RPCServer::HandleTouchState(Packet& packet, float x, float y, bool valid) {
+    Service::HID::SetTouchState(x, y, valid);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleMotionState(Packet& packet, float x, float y, float z, float roll,
+                                  float pitch, float yaw) {
+    LOG_CRITICAL(RPC_Server, "x={} y={} z={} roll={} pitch={} yaw={}", x, y, z, roll, pitch, yaw);
+    Service::HID::SetMotionState(x, y, z, roll, pitch, yaw);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleCircleState(Packet& packet, float x, float y) {
+    Service::HID::SetCircleState(x, y);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
         case PacketType::ReadMemory:
         case PacketType::WriteMemory:
         case PacketType::PadState:
+        case PacketType::TouchState:
+        case PacketType::MotionState:
+        case PacketType::CircleState:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -102,6 +125,51 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 u32 raw;
                 std::memcpy(&raw, data, sizeof(u32));
                 HandlePadState(*request_packet, raw);
+                success = true;
+            }
+            break;
+        case PacketType::TouchState:
+            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
+                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
+                struct State {
+                    s16 x;
+                    s16 y;
+                    bool valid;
+                };
+                State state;
+                std::memcpy(&state, data, sizeof(State));
+                HandleTouchState(*request_packet, state.x, state.y, state.valid);
+                success = true;
+            }
+            break;
+        case PacketType::MotionState:
+            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
+                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
+                struct State {
+                    s16 x;
+                    s16 y;
+                    s16 z;
+                    s16 roll;
+                    s16 pitch;
+                    s16 yaw;
+                };
+                State state;
+                std::memcpy(&state, data, sizeof(State));
+                HandleMotionState(*request_packet, state.x, state.y, state.z, state.roll,
+                                  state.pitch, state.yaw);
+                success = true;
+            }
+            break;
+        case PacketType::CircleState:
+            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
+                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
+                struct State {
+                    s16 x;
+                    s16 y;
+                };
+                State state;
+                std::memcpy(&state, data, sizeof(State));
+                HandleCircleState(*request_packet, state.x, state.y);
                 success = true;
             }
             break;

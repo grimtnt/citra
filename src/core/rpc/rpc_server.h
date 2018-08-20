@@ -25,6 +25,10 @@ private:
     void HandleReadMemory(Packet& packet, u32 address, u32 data_size);
     void HandleWriteMemory(Packet& packet, u32 address, const u8* data, u32 data_size);
     void HandlePadState(Packet& packet, u32 raw);
+    void HandleTouchState(Packet& packet, float x, float y, bool valid);
+    void HandleMotionState(Packet& packet, float x, float y, float z, float roll, float pitch,
+                           float yaw);
+    void HandleCircleState(Packet& packet, float x, float y);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
     void HandleRequestsLoop();

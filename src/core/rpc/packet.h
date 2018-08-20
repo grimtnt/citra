@@ -2,7 +2,6 @@
 
 #include <array>
 #include <functional>
-
 #include "common/common_types.h"
 
 namespace RPC {
@@ -12,6 +11,9 @@ enum class PacketType {
     ReadMemory,
     WriteMemory,
     PadState,
+    TouchState,
+    MotionState,
+    CircleState,
 };
 
 struct PacketHeader {
@@ -67,6 +69,10 @@ private:
     void HandleReadMemory(u32 address, u32 data_size);
     void HandleWriteMemory(u32 address, const u8* data, u32 data_size);
     void HandlePadState(Packet& packet, u32 raw);
+    void HandleTouchState(Packet& packet, float x, float y, bool valid);
+    void HandleMotionState(Packet& packet, float x, float y, float z, float roll, float pitch,
+                           float yaw);
+    void HandleCircleState(Packet& packet, float x, float y);
 
     struct PacketHeader header;
     std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;
