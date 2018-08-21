@@ -221,7 +221,6 @@ void GMainWindow::InitializeHotkeys() {
                    Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Decrease Speed Limit", QKeySequence("-"),
                    Qt::ApplicationShortcut);
-
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), &QShortcut::activated, this,
