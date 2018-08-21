@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <chrono>
 #include <future>
 #include <QColor>
 #include <QImage>
@@ -23,7 +24,7 @@
 
 HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::HostRoom>()) {
+      ui(std::make_unique<Ui::HostRoom>()), timer(this) {
     ui->setupUi(this);
 
     // set up validation for all of the fields
@@ -49,6 +50,7 @@ HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list)
 
     // Connect all the widgets to the appropriate events
     connect(ui->host, &QPushButton::pressed, this, &HostRoomWindow::Host);
+    connect(&timer, &QTimer::timeout, this, &HostRoomWindow::Stop);
 
     // Restore the settings:
     ui->username->setText(UISettings::values.room_nickname);
@@ -116,8 +118,17 @@ void HostRoomWindow::Host() {
                                            ? ui->port->text()
                                            : QString::number(Network::DefaultRoomPort);
         Settings::Apply();
+        timer.start(std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::minutes(ui->minutes_spinbox->value()))
+                        .count());
         OnConnection();
     }
+}
+
+void HostRoomWindow::Stop() {
+    timer.stop();
+    auto parent = static_cast<MultiplayerState*>(parentWidget());
+    parent->OnCloseRoom();
 }
 
 void HostRoomWindow::OnConnection() {
