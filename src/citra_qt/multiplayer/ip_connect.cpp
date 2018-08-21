@@ -9,7 +9,6 @@
 #include <QString>
 #include <QtConcurrent/QtConcurrentRun>
 #include "citra_qt/main.h"
-#include "citra_qt/multiplayer/client_room.h"
 #include "citra_qt/multiplayer/ip_connect.h"
 #include "citra_qt/multiplayer/message.h"
 #include "citra_qt/multiplayer/state.h"
@@ -29,8 +28,6 @@ IpConnectWindow::IpConnectWindow(QWidget* parent)
     watcher = new QFutureWatcher<void>;
     connect(watcher, &QFutureWatcher<void>::finished, this, &IpConnectWindow::OnConnection);
 
-    ui->nickname->setValidator(validation.GetNickname());
-    ui->nickname->setText(UISettings::values.nickname);
     ui->ip->setValidator(validation.GetIP());
     ui->ip->setText(UISettings::values.ip);
     ui->port->setValidator(validation.GetPort());
@@ -42,19 +39,10 @@ IpConnectWindow::IpConnectWindow(QWidget* parent)
 IpConnectWindow::~IpConnectWindow() = default;
 
 void IpConnectWindow::Connect() {
-    if (!ui->nickname->hasAcceptableInput()) {
-        NetworkMessage::ShowError(NetworkMessage::USERNAME_NOT_VALID);
-        return;
-    }
     if (const auto member = Network::GetRoomMember().lock()) {
         // Prevent the user from trying to join a room while they are already joining.
         if (member->GetState() == Network::RoomMember::State::Joining) {
             return;
-        } else if (member->GetState() == Network::RoomMember::State::Joined) {
-            // And ask if they want to leave the room if they are already in one.
-            if (!NetworkMessage::WarnDisconnect()) {
-                return;
-            }
         }
     }
     if (!ui->ip->hasAcceptableInput()) {
@@ -67,7 +55,6 @@ void IpConnectWindow::Connect() {
     }
 
     // Store settings
-    UISettings::values.nickname = ui->nickname->text();
     UISettings::values.ip = ui->ip->text();
     UISettings::values.port = (ui->port->isModified() && !ui->port->text().isEmpty())
                                   ? ui->port->text()
@@ -78,9 +65,7 @@ void IpConnectWindow::Connect() {
     QFuture<void> f = QtConcurrent::run([&] {
         if (auto room_member = Network::GetRoomMember().lock()) {
             auto port = UISettings::values.port.toUInt();
-            room_member->Join(ui->nickname->text().toStdString(),
-                              ui->ip->text().toStdString().c_str(), port, 0,
-                              Network::NoPreferredMac, ui->password->text().toStdString().c_str());
+            room_member->Join(ui->ip->text().toStdString().c_str(), port, Network::NoPreferredMac);
         }
     });
     watcher->setFuture(f);

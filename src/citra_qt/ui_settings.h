@@ -64,14 +64,9 @@ struct Values {
     std::vector<Shortcut> shortcuts;
 
     // multiplayer settings
-    QString nickname;
     QString ip;
     QString port;
-    QString room_nickname;
-    QString room_name;
-    quint32 max_player;
-    QString room_port;
-    qulonglong game_id;
+    QString port_host;
 
     // logging
     bool show_console;

@@ -7,18 +7,15 @@
 #include <QMessageBox>
 #include <QStandardItemModel>
 #include "citra_qt/game_list.h"
-#include "citra_qt/multiplayer/client_room.h"
 #include "citra_qt/multiplayer/host_room.h"
 #include "citra_qt/multiplayer/ip_connect.h"
 #include "citra_qt/multiplayer/message.h"
 #include "citra_qt/multiplayer/state.h"
-#include "citra_qt/util/clickable_label.h"
 #include "common/logging/log.h"
 
 MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_list_model,
-                                   QAction* leave_room, QAction* show_room)
-    : QWidget(parent), game_list_model(game_list_model), leave_room(leave_room),
-      show_room(show_room), close_timer(this) {
+                                   QAction* leave_room)
+    : QWidget(parent), game_list_model(game_list_model), leave_room(leave_room), close_timer(this) {
     if (auto member = Network::GetRoomMember().lock()) {
         // register the network structs to use in slots and signals
         state_callback_handle = member->BindOnStateChanged(
@@ -29,10 +26,9 @@ MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_lis
 
     qRegisterMetaType<Network::RoomMember::State>();
 
-    status_icon = new ClickableLabel(this);
+    status_icon = new QLabel(this);
     status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
 
-    connect(status_icon, &ClickableLabel::clicked, this, &MultiplayerState::OnOpenNetworkRoom);
     connect(&close_timer, &QTimer::timeout, this, [&] {
         close_timer.stop();
         OnCloseRoom();
@@ -52,8 +48,6 @@ void MultiplayerState::Close() {
         host_room->close();
     if (ip_connect)
         ip_connect->close();
-    if (client_room)
-        client_room->close();
 }
 
 void MultiplayerState::UpdateThemedIcons() {
@@ -74,31 +68,22 @@ void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& s
     case Network::RoomMember::State::CouldNotConnect:
         NetworkMessage::ShowError(NetworkMessage::UNABLE_TO_CONNECT);
         break;
-    case Network::RoomMember::State::NameCollision:
-        NetworkMessage::ShowError(NetworkMessage::USERNAME_IN_USE);
-        break;
     case Network::RoomMember::State::MacCollision:
         NetworkMessage::ShowError(NetworkMessage::MAC_COLLISION);
-        break;
-    case Network::RoomMember::State::WrongPassword:
-        NetworkMessage::ShowError(NetworkMessage::WRONG_PASSWORD);
         break;
     case Network::RoomMember::State::Error:
         NetworkMessage::ShowError(NetworkMessage::UNABLE_TO_CONNECT);
         break;
     case Network::RoomMember::State::Joined:
         is_connected = true;
-        OnOpenNetworkRoom();
         break;
     }
     if (is_connected) {
         status_icon->setPixmap(QIcon::fromTheme("connected").pixmap(16));
         leave_room->setEnabled(true);
-        show_room->setEnabled(true);
     } else {
         status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
         leave_room->setEnabled(false);
-        show_room->setEnabled(false);
     }
 
     current_state = state;
@@ -112,14 +97,12 @@ static void BringWidgetToFront(QWidget* widget) {
 
 void MultiplayerState::OnCreateRoom() {
     if (host_room == nullptr) {
-        host_room = new HostRoomWindow(this, game_list_model);
+        host_room = new HostRoomWindow(this);
     }
     BringWidgetToFront(host_room);
 }
 
 bool MultiplayerState::OnCloseRoom() {
-    if (!NetworkMessage::WarnCloseRoom())
-        return false;
     if (auto room = Network::GetRoom().lock()) {
         // if you are in a room, leave it
         if (auto member = Network::GetRoomMember().lock()) {
@@ -136,18 +119,6 @@ bool MultiplayerState::OnCloseRoom() {
     }
     close_timer.stop();
     return true;
-}
-
-void MultiplayerState::OnOpenNetworkRoom() {
-    if (auto member = Network::GetRoomMember().lock()) {
-        if (member->IsConnected()) {
-            if (client_room == nullptr) {
-                client_room = new ClientRoomWindow(this);
-            }
-            BringWidgetToFront(client_room);
-            return;
-        }
-    }
 }
 
 void MultiplayerState::OnIpConnectToRoom() {

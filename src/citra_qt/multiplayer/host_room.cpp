@@ -6,9 +6,12 @@
 #include <future>
 #include <QColor>
 #include <QImage>
+#include <QInputDialog>
 #include <QList>
 #include <QLocale>
+#include <QMessageBox>
 #include <QMetaType>
+#include <QTableWidgetItem>
 #include <QTime>
 #include <QtConcurrent/QtConcurrentRun>
 #include "citra_qt/game_list_p.h"
@@ -22,58 +25,25 @@
 #include "core/settings.h"
 #include "ui_host_room.h"
 
-HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list)
+HostRoomWindow::HostRoomWindow(QWidget* parent)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
       ui(std::make_unique<Ui::HostRoom>()) {
     ui->setupUi(this);
 
     // set up validation for all of the fields
-    ui->room_name->setValidator(validation.GetRoomName());
-    ui->username->setValidator(validation.GetNickname());
     ui->port->setValidator(validation.GetPort());
     ui->port->setPlaceholderText(QString::number(Network::DefaultRoomPort));
-
-    // Create a proxy to the game list to display the list of preferred games
-    game_list = new QStandardItemModel;
-
-    for (int i = 0; i < list->rowCount(); i++) {
-        auto parent = list->item(i, 0);
-        for (int j = 0; j < parent->rowCount(); j++) {
-            game_list->appendRow(parent->child(j)->clone());
-        }
-    }
-
-    proxy = new ComboBoxProxyModel;
-    proxy->setSourceModel(game_list);
-    proxy->sort(0, Qt::AscendingOrder);
-    ui->game_list->setModel(proxy);
 
     // Connect all the widgets to the appropriate events
     connect(ui->host, &QPushButton::pressed, this, &HostRoomWindow::Host);
 
-    // Restore the settings:
-    ui->username->setText(UISettings::values.room_nickname);
-    ui->room_name->setText(UISettings::values.room_name);
-    ui->port->setText(UISettings::values.room_port);
-    ui->max_player->setValue(UISettings::values.max_player);
-    int index =
-        ui->game_list->findData(UISettings::values.game_id, GameListItemPath::ProgramIdRole);
-    if (index != -1) {
-        ui->game_list->setCurrentIndex(index);
-    }
+    // Restore the port:
+    ui->port->setText(UISettings::values.port);
 }
 
 HostRoomWindow::~HostRoomWindow() = default;
 
 void HostRoomWindow::Host() {
-    if (!ui->username->hasAcceptableInput()) {
-        NetworkMessage::ShowError(NetworkMessage::USERNAME_NOT_VALID);
-        return;
-    }
-    if (!ui->room_name->hasAcceptableInput()) {
-        NetworkMessage::ShowError(NetworkMessage::ROOMNAME_NOT_VALID);
-        return;
-    }
     if (!ui->port->hasAcceptableInput()) {
         NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
         return;
@@ -93,13 +63,9 @@ void HostRoomWindow::Host() {
         }
         ui->host->setDisabled(true);
 
-        auto game_name = ui->game_list->currentData(Qt::DisplayRole).toString();
-        auto game_id = ui->game_list->currentData(GameListItemPath::ProgramIdRole).toLongLong();
         auto port = ui->port->isModified() ? ui->port->text().toInt() : Network::DefaultRoomPort;
-        auto password = ui->password->text().toStdString();
         if (auto room = Network::GetRoom().lock()) {
-            bool created = room->Create(ui->room_name->text().toStdString(), "", port, password,
-                                        ui->max_player->value(), game_name.toStdString(), game_id);
+            bool created = room->Create(port);
             if (!created) {
                 NetworkMessage::ShowError(NetworkMessage::COULD_NOT_CREATE_ROOM);
                 LOG_ERROR(Network, "Could not create room!");
@@ -107,16 +73,10 @@ void HostRoomWindow::Host() {
                 return;
             }
         }
-        member->Join(ui->username->text().toStdString(), "127.0.0.1", port, 0,
-                     Network::NoPreferredMac, password);
+        member->Join("127.0.0.1", port, Network::NoPreferredMac);
 
-        // Store settings
-        UISettings::values.room_nickname = ui->username->text();
-        UISettings::values.room_name = ui->room_name->text();
-        UISettings::values.game_id =
-            ui->game_list->currentData(GameListItemPath::ProgramIdRole).toLongLong();
-        UISettings::values.max_player = ui->max_player->value();
-        UISettings::values.room_port = (ui->port->isModified() && !ui->port->text().isEmpty())
+        // Store port setting
+        UISettings::values.port_host = (ui->port->isModified() && !ui->port->text().isEmpty())
                                            ? ui->port->text()
                                            : QString::number(Network::DefaultRoomPort);
         Settings::Apply();
@@ -128,26 +88,4 @@ void HostRoomWindow::Host() {
 void HostRoomWindow::OnConnection() {
     ui->host->setEnabled(true);
     close();
-}
-
-QVariant ComboBoxProxyModel::data(const QModelIndex& idx, int role) const {
-    if (role != Qt::DisplayRole) {
-        auto val = QSortFilterProxyModel::data(idx, role);
-        // If its the icon, shrink it to 16x16
-        if (role == Qt::DecorationRole)
-            val = val.value<QImage>().scaled(16, 16, Qt::KeepAspectRatio);
-        return val;
-    }
-    std::string filename;
-    Common::SplitPath(
-        QSortFilterProxyModel::data(idx, GameListItemPath::FullPathRole).toString().toStdString(),
-        nullptr, &filename, nullptr);
-    QString title = QSortFilterProxyModel::data(idx, GameListItemPath::TitleRole).toString();
-    return title.isEmpty() ? QString::fromStdString(filename) : title;
-}
-
-bool ComboBoxProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const {
-    auto leftData = left.data(GameListItemPath::TitleRole).toString();
-    auto rightData = right.data(GameListItemPath::TitleRole).toString();
-    return leftData.compare(rightData) < 0;
 }

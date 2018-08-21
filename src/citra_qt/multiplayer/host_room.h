@@ -6,10 +6,6 @@
 
 #include <memory>
 #include <QDialog>
-#include <QSortFilterProxyModel>
-#include <QStandardItemModel>
-#include <QVariant>
-#include "citra_qt/multiplayer/chat_room.h"
 #include "citra_qt/multiplayer/validation.h"
 #include "network/network.h"
 
@@ -26,7 +22,7 @@ class HostRoomWindow : public QDialog {
     Q_OBJECT
 
 public:
-    explicit HostRoomWindow(QWidget* parent, QStandardItemModel* list);
+    explicit HostRoomWindow(QWidget* parent);
     ~HostRoomWindow();
 
 private slots:
@@ -39,25 +35,6 @@ private slots:
 private:
     void Host();
 
-    QStandardItemModel* game_list;
-    ComboBoxProxyModel* proxy;
     std::unique_ptr<Ui::HostRoom> ui;
     Validation validation;
-};
-
-/**
- * Proxy Model for the game list combo box so we can reuse the game list model while still
- * displaying the fields slightly differently
- */
-class ComboBoxProxyModel : public QSortFilterProxyModel {
-    Q_OBJECT
-
-public:
-    int columnCount(const QModelIndex& idx) const override {
-        return 1;
-    }
-
-    QVariant data(const QModelIndex& idx, int role) const override;
-
-    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
 };

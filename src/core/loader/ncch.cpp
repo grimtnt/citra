@@ -165,13 +165,6 @@ ResultStatus AppLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& process) {
         overlay_ncch = &update_ncch;
     }
 
-    if (auto room_member = Network::GetRoomMember().lock()) {
-        Network::GameInfo game_info;
-        ReadTitle(game_info.name);
-        game_info.id = ncch_program_id;
-        room_member->SendGameInfo(game_info);
-    }
-
     is_loaded = true; // Set state to loaded
 
     result = LoadExec(process); // Load the executable into memory for booting

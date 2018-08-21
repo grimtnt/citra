@@ -286,14 +286,8 @@ void Config::ReadValues() {
     UISettings::values.show_console = qt_config->value("showConsole", false).toBool();
 
     qt_config->beginGroup("Multiplayer");
-    UISettings::values.nickname = qt_config->value("nickname", "").toString();
     UISettings::values.ip = qt_config->value("ip", "").toString();
     UISettings::values.port = qt_config->value("port", Network::DefaultRoomPort).toString();
-    UISettings::values.room_nickname = qt_config->value("room_nickname", "").toString();
-    UISettings::values.room_name = qt_config->value("room_name", "").toString();
-    UISettings::values.room_port = qt_config->value("room_port", "24872").toString();
-    UISettings::values.max_player = qt_config->value("max_player", 8).toUInt();
-    UISettings::values.game_id = qt_config->value("game_id", 0).toULongLong();
     qt_config->endGroup();
 
     qt_config->endGroup();
@@ -461,14 +455,8 @@ void Config::SaveValues() {
     qt_config->setValue("showConsole", UISettings::values.show_console);
 
     qt_config->beginGroup("Multiplayer");
-    qt_config->setValue("nickname", UISettings::values.nickname);
     qt_config->setValue("ip", UISettings::values.ip);
     qt_config->setValue("port", UISettings::values.port);
-    qt_config->setValue("room_nickname", UISettings::values.room_nickname);
-    qt_config->setValue("room_name", UISettings::values.room_name);
-    qt_config->setValue("room_port", UISettings::values.room_port);
-    qt_config->setValue("max_player", UISettings::values.max_player);
-    qt_config->setValue("game_id", UISettings::values.game_id);
     qt_config->endGroup();
 
     qt_config->endGroup();

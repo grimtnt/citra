@@ -32,7 +32,6 @@
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/swkbd.h"
 #include "citra_qt/ui_settings.h"
-#include "citra_qt/util/clickable_label.h"
 #include "citra_qt/util/console.h"
 #include "common/common_paths.h"
 #include "common/logging/backend.h"
@@ -136,8 +135,7 @@ void GMainWindow::InitializeWidgets() {
     ui.horizontalLayout->addWidget(game_list_placeholder);
     game_list_placeholder->setVisible(false);
 
-    multiplayer_state = new MultiplayerState(this, game_list->GetModel(), ui.action_Leave_Room,
-                                             ui.action_Show_Room);
+    multiplayer_state = new MultiplayerState(this, game_list->GetModel(), ui.action_Leave_Room);
     multiplayer_state->setVisible(false);
 
     // Create status bar
@@ -404,8 +402,6 @@ void GMainWindow::ConnectMenuEvents() {
             &MultiplayerState::OnCloseRoom);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnIpConnectToRoom);
-    connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnOpenNetworkRoom);
 
     // Help
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);

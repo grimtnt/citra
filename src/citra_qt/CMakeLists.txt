@@ -45,10 +45,6 @@ add_executable(citra-qt
     configuration/configure_system.h
     configuration/configure_hacks.cpp
     configuration/configure_hacks.h
-    multiplayer/chat_room.cpp
-    multiplayer/chat_room.h
-    multiplayer/client_room.cpp
-    multiplayer/client_room.h
     multiplayer/ip_connect.cpp
     multiplayer/ip_connect.h
     multiplayer/host_room.cpp
@@ -67,12 +63,8 @@ add_executable(citra-qt
     main.h
     ui_settings.cpp
     ui_settings.h
-    util/spinbox.cpp
-    util/clickable_label.cpp
-    util/clickable_label.h
     util/console.cpp
     util/console.h
-    util/spinbox.h
     util/util.cpp
     util/util.h
     swkbd.cpp
@@ -99,8 +91,6 @@ set(UIS
     main.ui
     control_panel.ui
     multiplayer/ip_connect.ui
-    multiplayer/chat_room.ui
-    multiplayer/client_room.ui
     multiplayer/host_room.ui
 )
 
