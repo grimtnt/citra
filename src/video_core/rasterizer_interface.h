@@ -71,5 +71,7 @@ public:
     virtual bool AccelerateDrawBatch(bool is_indexed) {
         return false;
     }
+
+    virtual void BoostFPS() = 0;
 };
 } // namespace VideoCore

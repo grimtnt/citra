@@ -78,6 +78,7 @@
     <addaction name="action_Cheat_Search"/>
     <addaction name="action_Control_Panel"/>
     <addaction name="action_Dump_RAM"/>
+    <addaction name="action_Boost_FPS"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -374,6 +375,14 @@
   <action name="action_Set_Play_Coins">
    <property name="text">
     <string>Set Play Coins</string>
+   </property>
+  </action>
+  <action name="action_Boost_FPS">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Boost FPS</string>
    </property>
   </action>
  </widget>
