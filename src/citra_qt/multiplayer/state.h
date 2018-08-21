@@ -39,10 +39,6 @@ public:
         close_timer.start();
     }
 
-    void CloseTimer() {
-        close_timer.stop();
-    }
-
 public slots:
     void OnNetworkStateChanged(const Network::RoomMember::State& state);
     void OnCreateRoom();
