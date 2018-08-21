@@ -18,7 +18,7 @@
 MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_list_model,
                                    QAction* leave_room, QAction* show_room)
     : QWidget(parent), game_list_model(game_list_model), leave_room(leave_room),
-      show_room(show_room) {
+      show_room(show_room), close_timer(this) {
     if (auto member = Network::GetRoomMember().lock()) {
         // register the network structs to use in slots and signals
         state_callback_handle = member->BindOnStateChanged(
@@ -33,6 +33,10 @@ MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_lis
     status_icon->setPixmap(QIcon::fromTheme("disconnected").pixmap(16));
 
     connect(status_icon, &ClickableLabel::clicked, this, &MultiplayerState::OnOpenNetworkRoom);
+    connect(&close_timer, &QTimer::timeout, this, [&] {
+        close_timer.stop();
+        OnCloseRoom();
+    });
 }
 
 MultiplayerState::~MultiplayerState() {
@@ -130,6 +134,7 @@ bool MultiplayerState::OnCloseRoom() {
         room->Destroy();
         LOG_DEBUG(Frontend, "Closed the room (as a server)");
     }
+    close_timer.stop();
     return true;
 }
 

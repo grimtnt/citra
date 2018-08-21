@@ -24,7 +24,7 @@
 
 HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list)
     : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::HostRoom>()), timer(this) {
+      ui(std::make_unique<Ui::HostRoom>()) {
     ui->setupUi(this);
 
     // set up validation for all of the fields
@@ -50,7 +50,6 @@ HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list)
 
     // Connect all the widgets to the appropriate events
     connect(ui->host, &QPushButton::pressed, this, &HostRoomWindow::Host);
-    connect(&timer, &QTimer::timeout, this, &HostRoomWindow::Stop);
 
     // Restore the settings:
     ui->username->setText(UISettings::values.room_nickname);
@@ -79,11 +78,14 @@ void HostRoomWindow::Host() {
         NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
         return;
     }
+    auto parent = static_cast<MultiplayerState*>(parentWidget());
+    parent->SetCloseMs(std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::minutes(ui->minutes_spinbox->value()))
+                           .count());
     if (auto member = Network::GetRoomMember().lock()) {
         if (member->GetState() == Network::RoomMember::State::Joining) {
             return;
         } else if (member->GetState() == Network::RoomMember::State::Joined) {
-            auto parent = static_cast<MultiplayerState*>(parentWidget());
             if (!parent->OnCloseRoom()) {
                 close();
                 return;
@@ -118,17 +120,9 @@ void HostRoomWindow::Host() {
                                            ? ui->port->text()
                                            : QString::number(Network::DefaultRoomPort);
         Settings::Apply();
-        timer.start(std::chrono::duration_cast<std::chrono::milliseconds>(
-                        std::chrono::minutes(ui->minutes_spinbox->value()))
-                        .count());
         OnConnection();
+        parent->StartTimer();
     }
-}
-
-void HostRoomWindow::Stop() {
-    timer.stop();
-    auto parent = static_cast<MultiplayerState*>(parentWidget());
-    parent->OnCloseRoom();
 }
 
 void HostRoomWindow::OnConnection() {

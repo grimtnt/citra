@@ -8,7 +8,6 @@
 #include <QDialog>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
-#include <QTimer>
 #include <QVariant>
 #include "citra_qt/multiplayer/chat_room.h"
 #include "citra_qt/multiplayer/validation.h"
@@ -39,13 +38,11 @@ private slots:
 
 private:
     void Host();
-    void Stop();
 
     QStandardItemModel* game_list;
     ComboBoxProxyModel* proxy;
     std::unique_ptr<Ui::HostRoom> ui;
     Validation validation;
-    QTimer timer;
 };
 
 /**

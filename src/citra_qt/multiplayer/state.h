@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <QTimer>
 #include <QWidget>
 #include "network/network.h"
 
@@ -30,6 +31,18 @@ public:
         return status_icon;
     }
 
+    void SetCloseMs(int ms) {
+        close_timer.setInterval(ms);
+    }
+
+    void StartTimer() {
+        close_timer.start();
+    }
+
+    void CloseTimer() {
+        close_timer.stop();
+    }
+
 public slots:
     void OnNetworkStateChanged(const Network::RoomMember::State& state);
     void OnCreateRoom();
@@ -47,6 +60,7 @@ private:
     IpConnectWindow* ip_connect = nullptr;
     ClickableLabel* status_icon = nullptr;
     QStandardItemModel* game_list_model = nullptr;
+    QTimer close_timer;
     QAction* leave_room;
     QAction* show_room;
     Network::RoomMember::State current_state = Network::RoomMember::State::Uninitialized;
