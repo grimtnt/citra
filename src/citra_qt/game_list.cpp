@@ -686,17 +686,36 @@ void GameListWorker::run() {
     stop_processing = false;
     for (UISettings::GameDir& game_dir : game_dirs) {
         if (game_dir.path == "INSTALLED") {
-            QString path =
-                QString::fromStdString((Settings::values.sd_card_root.empty()
-                                            ? FileUtil::GetUserPath(D_SDMC_IDX)
-                                            : std::string(Settings::values.sd_card_root + "/")) +
-                                       "Nintendo "
-                                       "3DS/00000000000000000000000000000000/"
-                                       "00000000000000000000000000000000/title/00040000");
-            watch_list.append(path);
-            GameListDir* game_list_dir = new GameListDir(game_dir, GameListItemType::InstalledDir);
-            emit DirEntryReady({game_list_dir});
-            AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
+            // Add normal titles
+            {
+                QString path = QString::fromStdString(
+                    (Settings::values.sd_card_root.empty()
+                         ? FileUtil::GetUserPath(D_SDMC_IDX)
+                         : std::string(Settings::values.sd_card_root + "/")) +
+                    "Nintendo "
+                    "3DS/00000000000000000000000000000000/"
+                    "00000000000000000000000000000000/title/00040000");
+                watch_list.append(path);
+                GameListDir* game_list_dir =
+                    new GameListDir(game_dir, GameListItemType::InstalledDir);
+                emit DirEntryReady({game_list_dir});
+                AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
+            }
+            // Add demos
+            {
+                QString path = QString::fromStdString(
+                    (Settings::values.sd_card_root.empty()
+                         ? FileUtil::GetUserPath(D_SDMC_IDX)
+                         : std::string(Settings::values.sd_card_root + "/")) +
+                    "Nintendo "
+                    "3DS/00000000000000000000000000000000/"
+                    "00000000000000000000000000000000/title/00040002");
+                watch_list.append(path);
+                GameListDir* game_list_dir =
+                    new GameListDir(game_dir, GameListItemType::InstalledDir);
+                emit DirEntryReady({game_list_dir});
+                AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
+            }
         } else if (game_dir.path == "SYSTEM") {
             QString path = QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX)) +
                            "00000000000000000000000000000000/title/00040010";

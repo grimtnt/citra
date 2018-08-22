@@ -310,7 +310,7 @@ public:
                     sdmc_root +
                     "Nintendo "
                     "3DS/00000000000000000000000000000000/00000000000000000000000000000000/" +
-                    "title/0004000(0|e)/[0-9a-f]{8}/content/")
+                    "title/0004000(0|2|e)/[0-9a-f]{8}/content/")
                     .replace("\\", "\\\\"));
             static QRegExp system_pattern(
                 QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX) +
