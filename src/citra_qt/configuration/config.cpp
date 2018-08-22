@@ -288,6 +288,8 @@ void Config::ReadValues() {
     qt_config->beginGroup("Multiplayer");
     UISettings::values.ip = qt_config->value("ip", "").toString();
     UISettings::values.port = qt_config->value("port", Network::DefaultRoomPort).toString();
+    UISettings::values.port_host =
+        qt_config->value("port_host", Network::DefaultRoomPort).toString();
     qt_config->endGroup();
 
     qt_config->endGroup();
@@ -457,6 +459,7 @@ void Config::SaveValues() {
     qt_config->beginGroup("Multiplayer");
     qt_config->setValue("ip", UISettings::values.ip);
     qt_config->setValue("port", UISettings::values.port);
+    qt_config->setValue("port_host", UISettings::values.port_host);
     qt_config->endGroup();
 
     qt_config->endGroup();
