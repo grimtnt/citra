@@ -439,11 +439,12 @@ bool GMainWindow::LoadROM(const QString& filename) {
     render_window->InitRenderTarget();
     render_window->MakeCurrent();
 
+    const char* below_gl33_title = "OpenGL 3.3 Unsupported";
+    const char* below_gl33_message = "Your GPU may not support OpenGL 3.3, or you do not "
+                                     "have the latest graphics driver.";
+
     if (!gladLoadGL()) {
-        QMessageBox::critical(this, tr("Video Core Error!"),
-                              tr("Error while initializing the OpenGL 3.3 Core! Your GPU may not "
-                                 "support OpenGL 3.3, or you do not "
-                                 "have the latest graphics driver."));
+        QMessageBox::critical(this, tr(below_gl33_title), tr(below_gl33_message));
         return false;
     }
 
@@ -455,44 +456,66 @@ bool GMainWindow::LoadROM(const QString& filename) {
         switch (result) {
         case Core::System::ResultStatus::ErrorGetLoader:
             LOG_CRITICAL(Frontend, "Failed to obtain loader for {}!", filename.toStdString());
-            QMessageBox::critical(this, tr("Error while loading ROM!"),
-                                  tr("The ROM format is not supported."));
+            QMessageBox::critical(
+                this, tr("Invalid ROM Format"),
+                tr("Your ROM format is not supported.<br/>Please follow the guides to redump your "
+                   "<a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Game-Cartridges/'>game "
+                   "cartridges</a> or "
+                   "<a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Installed-Titles/'>installed "
+                   "titles</a>."));
             break;
 
         case Core::System::ResultStatus::ErrorSystemMode:
             LOG_CRITICAL(Frontend, "Failed to load ROM!");
-            QMessageBox::critical(this, tr("Error while loading ROM!"),
-                                  tr("Could not determine the system mode."));
+            QMessageBox::critical(
+                this, tr("ROM Corrupted"),
+                tr("Your ROM is corrupted. <br/>Please follow the guides to redump your "
+                   "<a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Game-Cartridges/'>game "
+                   "cartridges</a> or "
+                   "<a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Installed-Titles/'>installed "
+                   "titles</a>."));
             break;
 
         case Core::System::ResultStatus::ErrorLoader_ErrorEncrypted: {
             QMessageBox::critical(
-                this, tr("Error while loading ROM!"),
-                tr("The game that you are trying to load must be decrypted before being used with "
-                   "Citra. A real 3DS is required.<br/><br/>"
-                   "For more information on dumping and decrypting games, please see the following "
-                   "wiki pages: <ul>"
-                   "<li><a "
+                this, tr("ROM Encrypted"),
+                tr("Your ROM is encrypted. <br/>Please follow the guides to redump your "
+                   "<a "
                    "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Game-Cartridges'>Dumping Game "
-                   "Cartridges</a></li>"
-                   "<li><a "
+                   "Dumping-Game-Cartridges/'>game "
+                   "cartridges</a> or "
+                   "<a "
                    "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Installed-Titles'>Dumping "
-                   "Installed Titles</a></li>"
-                   "</ul>"));
+                   "Dumping-Installed-Titles/'>installed "
+                   "titles</a>."));
             break;
         }
         case Core::System::ResultStatus::ErrorLoader_ErrorInvalidFormat:
-            QMessageBox::critical(this, tr("Error while loading ROM!"),
-                                  tr("The ROM format is not supported."));
+            QMessageBox::critical(
+                this, tr("Invalid ROM Format"),
+                tr("Your ROM format is not supported.<br/>Please follow the guides to redump your "
+                   "<a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Game-Cartridges/'>game "
+                   "cartridges</a> or "
+                   "<a "
+                   "href='https://github.com/valentinvanelslande/citra/wiki/"
+                   "Dumping-Installed-Titles/'>installed "
+                   "titles</a>."));
             break;
 
         case Core::System::ResultStatus::ErrorVideoCore:
             QMessageBox::critical(
-                this, tr("Video Core Error!"),
-                tr("Citra has encountered an error while running the video core, please see the "
-                   "log for more details."
+                this, tr("Video Core Error"),
+                tr("An error has occured. Please see the log for more details."
                    "To access the log, Click Open Log Location in the general tab of the "
                    "configuration window.<br/><br/>"
                    "Ensure that you have the latest graphics drivers for your GPU."));
@@ -500,17 +523,14 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
         case Core::System::ResultStatus::ErrorVideoCore_ErrorGenericDrivers:
             QMessageBox::critical(
-                this, tr("Video Core Error!"),
-                tr("An error occured in the video core. You are running default Windows drivers "
+                this, tr("Video Core Error"),
+                tr("You are running default Windows drivers "
                    "for your GPU. You need to install the "
                    "proper drivers for your graphics card from the manufacturer's website."));
             break;
 
         case Core::System::ResultStatus::ErrorVideoCore_ErrorBelowGL33:
-            QMessageBox::critical(this, tr("Video Core Error!"),
-                                  tr("Error while initializing the OpenGL 3.3 Core! Your GPU may "
-                                     "not support OpenGL 3.3, or you do not "
-                                     "have the latest graphics driver."));
+            QMessageBox::critical(this, tr(below_gl33_title), tr(below_gl33_message));
             break;
 
         default:
@@ -528,6 +548,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
     SetupUIStrings();
 
     game_path = filename;
+
 #ifdef ENABLE_DISCORD_RPC
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
@@ -1265,36 +1286,29 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
     QMessageBox::StandardButton answer;
     QString status_message;
     const QString common_message =
-        tr("The game you are trying to load requires additional files from your 3DS to be dumped "
-           "before playing.<br/><br/>For more information on dumping these files, please see the "
-           "following wiki page: <a "
+        tr("%1 is missing. Please <a "
            "href='https://github.com/valentinvanelslande/citra/wiki/"
-           "Dumping-System-Archives-from-a-3DS-Console'>Dumping System "
-           "Archives from a 3DS Console</a>.<br/><br/>Would you like to quit "
-           "back to the game list? Continuing emulation may result in crashes, corrupted save "
-           "data, or other bugs.");
+           "Dumping-System-Archives-from-a-3DS-Console/'>dump your system "
+           "archives</a>.<br/>Continuing emulation may result in crashes and bugs.");
+    QString title, message;
     switch (result) {
     case Core::System::ResultStatus::ErrorSystemFiles: {
-        QString message = "Citra was unable to locate a 3DS system archive";
         if (!details.empty()) {
-            message.append(tr(": %1. ").arg(details.c_str()));
+            message = common_message.arg(QString::fromStdString(details));
         } else {
-            message.append(". ");
+            message = common_message.arg("A system archive");
         }
-        message.append(common_message);
 
-        answer = QMessageBox::question(this, tr("System Archive Not Found"), message,
-                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = tr("System Archive Missing");
+        title = tr("System Archive Not Found");
+        status_message = "System Archive Missing";
         break;
     }
 
     case Core::System::ResultStatus::ErrorSharedFont: {
-        QString message = tr("Citra was unable to locate the 3DS shared fonts. ");
+        message = tr("Shared fonts not found. ");
         message.append(common_message);
-        answer = QMessageBox::question(this, tr("Shared Fonts Not Found"), message,
-                                       QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = tr("Shared Font Missing");
+        title = tr("Shared Fonts Not Found");
+        status_message = "Shared Font Missing";
         break;
     }
 
@@ -1304,19 +1318,25 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
     }
 
     default:
-        answer = QMessageBox::question(
-            this, tr("Fatal Error"),
-            tr("Citra has encountered a fatal error, please see the log for more details.<br/>"
-               "To access the log, Click Open Log Location in the general tab of the configuration "
-               "window.<br/><br/>Would you like "
-               "to quit back to the game list? "
-               "Continuing emulation may result in crashes, corrupted save data, or other bugs."),
-            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        status_message = tr("Fatal Error encountered");
+        title = tr("Fatal Error");
+        message = tr("A fatal error occured. Check the log for details.<br/>To access the log, "
+                     "Click Open Log Location in the general tab of the configuration "
+                     "window.<br/>Continuing emulation may result in crashes and bugs.");
+        status_message = "Fatal Error encountered";
         break;
     }
 
-    if (answer == QMessageBox::Yes) {
+    QMessageBox message_box;
+    message_box.setWindowTitle(title);
+    message_box.setText(message);
+    message_box.setIcon(QMessageBox::Icon::Critical);
+    QPushButton* continue_button = message_box.addButton(tr("Continue"), QMessageBox::RejectRole);
+    QPushButton* abort_button = message_box.addButton(tr("Abort"), QMessageBox::AcceptRole);
+    if (result != Core::System::ResultStatus::ShutdownRequested)
+        message_box.exec();
+
+    if ((result == Core::System::ResultStatus::ShutdownRequested) ||
+        message_box.clickedButton() == abort_button) {
         if (emu_thread) {
             ShutdownGame();
         }
