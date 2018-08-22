@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <boost/algorithm/string.hpp>
 #include "common/logging/log.h"
 #include "common/string_util.h"
 #include "core/hle/ipc_helpers.h"
@@ -53,7 +52,7 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     case BlkID::NNID: {
         std::string nnid = Common::UTF16ToUTF8(CFG::GetCurrentModule()->GetUsername());
         nnid.resize(0x11);
-        boost::algorithm::replace_all(nnid, " ", "_");
+        nnid = Common::ReplaceAll(nnid, " ", "_");
         buffer.Write(nnid.c_str(), 0, nnid.length());
         break;
     }
