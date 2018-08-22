@@ -21,6 +21,8 @@ static int NetworkStateToIndex(SharedPage::NetworkState state) {
         return 1;
     case SharedPage::NetworkState::Enabled:
         return 0;
+    default:
+        UNREACHABLE();
     }
 }
 

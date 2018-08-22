@@ -382,7 +382,7 @@ void RasterizerMarkRegionCached(PAddr start, u32 size, bool cached) {
                 break;
             }
             default:
-                UNREACHABLE();
+                break;
             }
         }
     }
