@@ -22,7 +22,6 @@ private:
 
 extern const ConnectionError IP_ADDRESS_NOT_VALID;
 extern const ConnectionError PORT_NOT_VALID;
-extern const ConnectionError NO_INTERNET;
 extern const ConnectionError UNABLE_TO_CONNECT;
 extern const ConnectionError COULD_NOT_CREATE_ROOM;
 extern const ConnectionError LOST_CONNECTION;

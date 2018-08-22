@@ -10,8 +10,6 @@
 namespace NetworkMessage {
 const ConnectionError IP_ADDRESS_NOT_VALID(QT_TR_NOOP("IP is not a valid IPv4 address."));
 const ConnectionError PORT_NOT_VALID(QT_TR_NOOP("Port must be a number between 0 to 65535."));
-const ConnectionError NO_INTERNET(
-    QT_TR_NOOP("Unable to find an internet connection. Check your internet settings."));
 const ConnectionError UNABLE_TO_CONNECT(
     QT_TR_NOOP("Unable to connect to the host. Verify that the connection settings are correct. If "
                "you still cannot connect, contact the room host and verify that the host is "
