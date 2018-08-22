@@ -105,19 +105,12 @@ static void PriorityBoostStarvedThreads() {
     u64 current_ticks = CoreTiming::GetTicks();
 
     for (auto& thread : thread_list) {
-        // TODO(bunnei): Threads that have been waiting to be scheduled for `boost_ticks` (or
-        // longer) will have their priority temporarily adjusted to 1 higher than the highest
-        // priority thread to prevent thread starvation. This general behavior has been verified
-        // on hardware. However, this is almost certainly not perfect, and the real CTR OS scheduler
-        // should probably be reversed to verify this.
-
         const u64 boost_timeout = 2000000; // Boost threads that have been ready for > this long
 
         u64 delta = current_ticks - thread->last_running_ticks;
 
         if (thread->status == THREADSTATUS_READY && delta > boost_timeout) {
-            const s32 priority = std::max(ready_queue.get_first()->current_priority - 1,
-                                          static_cast<unsigned int>(0));
+            const s32 priority = std::max(ready_queue.get_first()->current_priority - 1, 0u);
             thread->BoostPriority(priority);
         }
     }
