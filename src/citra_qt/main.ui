@@ -78,7 +78,6 @@
     <addaction name="action_Cheat_Search"/>
     <addaction name="action_Control_Panel"/>
     <addaction name="action_Dump_RAM"/>
-    <addaction name="action_Boost_FPS"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">

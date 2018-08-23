@@ -9,11 +9,9 @@
 
 struct ScreenInfo;
 
-namespace Pica {
-namespace Shader {
+namespace Pica::Shader {
 struct OutputVertex;
-} // namespace Shader
-} // namespace Pica
+} // namespace Pica::Shader
 
 namespace VideoCore {
 
@@ -71,7 +69,5 @@ public:
     virtual bool AccelerateDrawBatch(bool is_indexed) {
         return false;
     }
-
-    virtual void BoostFPS() = 0;
 };
 } // namespace VideoCore

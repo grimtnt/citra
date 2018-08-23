@@ -360,8 +360,6 @@ void GMainWindow::ConnectMenuEvents() {
         file.WriteBytes(ram, 0x08000000);
         delete[] ram;
     });
-    connect(ui.action_Boost_FPS, &QAction::triggered, this,
-            [&] { VideoCore::g_renderer->Rasterizer()->BoostFPS(); });
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -646,7 +644,6 @@ void GMainWindow::ShutdownGame() {
     ui.action_Cheats->setEnabled(false);
     ui.action_Cheat_Search->setEnabled(false);
     ui.action_Dump_RAM->setEnabled(false);
-    ui.action_Boost_FPS->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
     render_window->hide();
     if (game_list->isEmpty())
@@ -970,7 +967,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Cheats->setEnabled(true);
     ui.action_Cheat_Search->setEnabled(true);
     ui.action_Dump_RAM->setEnabled(true);
-    ui.action_Boost_FPS->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
 }
 

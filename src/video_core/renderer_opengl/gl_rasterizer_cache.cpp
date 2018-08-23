@@ -1725,10 +1725,3 @@ void RasterizerCacheOpenGL::UpdatePagesCachedCount(PAddr addr, u32 size, int del
     if (delta < 0)
         cached_pages.add({pages_interval, delta});
 }
-
-void RasterizerCacheOpenGL::BoostFPS() {
-    FlushAll();
-    while (!surface_cache.empty())
-        UnregisterSurface(*surface_cache.begin()->second.begin());
-    texture_cube_cache.clear();
-}

@@ -393,10 +393,6 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
     return Draw(true, is_indexed);
 }
 
-void RasterizerOpenGL::BoostFPS() {
-    res_cache.BoostFPS();
-}
-
 static GLenum GetCurrentPrimitiveMode(bool use_gs) {
     const auto& regs = Pica::g_state.regs;
     if (use_gs) {
