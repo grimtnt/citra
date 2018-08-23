@@ -6,238 +6,256 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>264</width>
-    <height>115</height>
+    <width>457</width>
+    <height>117</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QTabWidget" name="tabs">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>267</width>
-     <height>117</height>
-    </rect>
-   </property>
-   <property name="currentIndex">
-    <number>0</number>
-   </property>
-   <widget class="QWidget" name="tabSharedPage">
-    <attribute name="title">
-     <string>Shared Page</string>
-    </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget_3">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>261</width>
-       <height>91</height>
-      </rect>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Battery</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label_power_battery_level">
+         <property name="text">
+          <string>Battery Level</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="power_battery_level">
+         <item>
+          <property name="text">
+           <string>Critical</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Low</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Half Full</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Mostly Full</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Completely Full</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QCheckBox" name="power_battery_charging">
+         <property name="text">
+          <string>Battery Charging</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="power_adapter_connected">
+         <property name="text">
+          <string>Adapter Connected</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="4">
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Shared Page</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QCheckBox" name="shared_page_enable_3d">
+         <property name="text">
+          <string>Enable 3D</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="2">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Internet</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_network_wifi_status">
+         <property name="text">
+          <string>Wi-Fi Status</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="network_wifi_status">
+         <item>
+          <property name="text">
+           <string>None</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Old 3DS Internet</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>New 3DS Internet</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_network_state">
+         <property name="text">
+          <string>State</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="network_state">
+         <item>
+          <property name="text">
+           <string>Enabled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Disabled</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Local</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Internet</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_network_link_level">
+         <property name="text">
+          <string>Wi-Fi Link Level</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="network_link_level">
+         <item>
+          <property name="text">
+           <string>Off</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Poor</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Good</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Best</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="1">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <layout class="QVBoxLayout" name="layoutSharedPage">
-      <item>
-       <widget class="QCheckBox" name="shared_page_enable_3d">
-        <property name="text">
-         <string>Enable 3D</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tabPower">
-    <attribute name="title">
-     <string>Power</string>
-    </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>261</width>
-       <height>91</height>
-      </rect>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
      </property>
-     <layout class="QVBoxLayout" name="layoutPower">
-      <item>
-       <layout class="QHBoxLayout" name="layoutPowerBatteryLevel">
-        <item>
-         <widget class="QLabel" name="label_power_battery_level">
-          <property name="text">
-           <string>Battery Level</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="power_battery_level">
-          <item>
-           <property name="text">
-            <string>Critical</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Low</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Half Full</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Mostly Full</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Completely Full</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="power_battery_charging">
-        <property name="text">
-         <string>Battery Charging</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="power_adapter_connected">
-        <property name="text">
-         <string>Adapter Connected</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tabNetwork">
-    <attribute name="title">
-     <string>Network</string>
-    </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget_2">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>261</width>
-       <height>91</height>
-      </rect>
+    </spacer>
+   </item>
+   <item row="0" column="3">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <layout class="QVBoxLayout" name="layoutNetwork">
-      <item>
-       <layout class="QHBoxLayout" name="layoutWifiStatus">
-        <item>
-         <widget class="QLabel" name="label_network_wifi_status">
-          <property name="text">
-           <string>Wi-Fi Status</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="network_wifi_status">
-          <item>
-           <property name="text">
-            <string>None</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Old 3DS Internet</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>New 3DS Internet</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="layoutNetworkState">
-        <item>
-         <widget class="QLabel" name="label_network_state">
-          <property name="text">
-           <string>State</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="network_state">
-          <item>
-           <property name="text">
-            <string>Enabled</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Disabled</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Local</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Internet</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="layoutWifiLinkLevel">
-        <item>
-         <widget class="QLabel" name="label_network_link_level">
-          <property name="text">
-           <string>Wi-Fi Link Level</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="network_link_level">
-          <item>
-           <property name="text">
-            <string>Off</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Poor</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Good</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Best</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-  </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
