@@ -1335,7 +1335,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
     if (result != Core::System::ResultStatus::ShutdownRequested)
         message_box.exec();
 
-    if ((result == Core::System::ResultStatus::ShutdownRequested) ||
+    if (result == Core::System::ResultStatus::ShutdownRequested ||
         message_box.clickedButton() == abort_button) {
         if (emu_thread) {
             ShutdownGame();
