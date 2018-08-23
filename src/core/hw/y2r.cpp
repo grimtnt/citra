@@ -14,8 +14,7 @@
 #include "core/hw/y2r.h"
 #include "core/memory.h"
 
-namespace HW {
-namespace Y2R {
+namespace HW::Y2R {
 
 using namespace Service::Y2R;
 
@@ -376,5 +375,4 @@ void PerformConversion(ConversionConfiguration& cvt) {
                  cvt.output_format, (u8)cvt.alpha);
     }
 }
-} // namespace Y2R
-} // namespace HW
+} // namespace HW::Y2R

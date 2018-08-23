@@ -8,11 +8,9 @@
 #include <QWidget>
 #include "common/common_types.h"
 
-namespace Service {
-namespace CFG {
+namespace Service::CFG {
 class Module;
-} // namespace CFG
-} // namespace Service
+} // namespace Service::CFG
 
 namespace Ui {
 class ConfigureSystem;

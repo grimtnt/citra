@@ -8,8 +8,7 @@
 #include <cstddef>
 #include "common/common_types.h"
 
-namespace HW {
-namespace AES {
+namespace HW::AES {
 
 enum KeySlotID : size_t {
     // AES keyslots used to decrypt NCCH
@@ -41,5 +40,4 @@ void SetNormalKey(size_t slot_id, const AESKey& key);
 bool IsNormalKeyAvailable(size_t slot_id);
 AESKey GetNormalKey(size_t slot_id);
 
-} // namespace AES
-} // namespace HW
+} // namespace HW::AES

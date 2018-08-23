@@ -13,8 +13,7 @@
 #include "core/hw/aes/arithmetic128.h"
 #include "core/hw/aes/key.h"
 
-namespace HW {
-namespace AES {
+namespace HW::AES {
 
 namespace {
 
@@ -165,5 +164,4 @@ AESKey GetNormalKey(size_t slot_id) {
     return key_slots.at(slot_id).normal.value_or(AESKey{});
 }
 
-} // namespace AES
-} // namespace HW
+} // namespace HW::AES

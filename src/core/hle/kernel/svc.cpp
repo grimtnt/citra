@@ -37,6 +37,7 @@
 #include "core/settings.h"
 
 namespace Kernel {
+
 static bool enable_higher_core_clock = false;
 static bool enable_additional_cache = false;
 

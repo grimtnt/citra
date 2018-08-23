@@ -19,7 +19,7 @@ enum {
     MaxConnectionsReached = 52,
     CommandTooLarge = 54,
 };
-}
+} // namespace ErrCodes
 
 // WARNING: The kernel is quite inconsistent in it's usage of errors code. Make sure to always
 // double check that the code matches before re-using the constant.

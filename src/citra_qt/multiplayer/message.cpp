@@ -20,12 +20,6 @@ const ConnectionError LOST_CONNECTION(QT_TR_NOOP("Connection to room lost. Try t
 const ConnectionError MAC_COLLISION(
     QT_TR_NOOP("MAC address is already in use. Please choose another."));
 
-static bool WarnMessage(const std::string& title, const std::string& text) {
-    return QMessageBox::Ok == QMessageBox::warning(nullptr, QObject::tr(title.c_str()),
-                                                   QObject::tr(text.c_str()),
-                                                   QMessageBox::Ok | QMessageBox::Cancel);
-}
-
 void ShowError(const ConnectionError& e) {
     QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr(e.GetString().c_str()));
 }

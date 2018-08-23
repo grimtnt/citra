@@ -14,8 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace HLE {
-namespace Applets {
+namespace HLE::Applets {
 
 ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
@@ -82,5 +81,4 @@ ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& pa
 }
 
 void MiiSelector::Update() {}
-} // namespace Applets
-} // namespace HLE
+} // namespace HLE::Applets

@@ -6,8 +6,7 @@
 #include "core/core.h"
 #include "core/hle/applets/erreula.h"
 
-namespace HLE {
-namespace Applets {
+namespace HLE::Applets {
 
 ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
@@ -99,5 +98,4 @@ void ErrEula::Finalize() {
 
     is_running = false;
 }
-} // namespace Applets
-} // namespace HLE
+} // namespace HLE::Applets

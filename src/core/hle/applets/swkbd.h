@@ -13,8 +13,7 @@
 #include "core/hle/result.h"
 #include "core/hle/service/apt/apt.h"
 
-namespace HLE {
-namespace Applets {
+namespace HLE::Applets {
 
 /// Maximum number of buttons that can be in the keyboard.
 #define SWKBD_MAX_BUTTON 3
@@ -252,5 +251,4 @@ private:
     /// Configuration of this instance of the SoftwareKeyboard, as received from the application
     SoftwareKeyboardConfig config;
 };
-} // namespace Applets
-} // namespace HLE
+} // namespace HLE::Applets

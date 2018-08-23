@@ -9,8 +9,7 @@
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/apt/apt.h"
 
-namespace HLE {
-namespace Applets {
+namespace HLE::Applets {
 
 enum class ErrEulaErrorType : u32 {
     ErrorCode,
@@ -67,5 +66,4 @@ private:
 
     ErrEulaConfig config;
 };
-} // namespace Applets
-} // namespace HLE
+} // namespace HLE::Applets

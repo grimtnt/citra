@@ -33,7 +33,7 @@ enum {
     IncorrectExeFSReadSize = 761,
     UnexpectedFileOrDirectory = 770,
 };
-}
+} // namespace ErrCodes
 
 constexpr ResultCode ERROR_INVALID_PATH(ErrCodes::InvalidPath, ErrorModule::FS,
                                         ErrorSummary::InvalidArgument, ErrorLevel::Usage);

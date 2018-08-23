@@ -22,8 +22,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace HLE {
-namespace Applets {
+namespace HLE::Applets {
 
 ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input) {
     if ((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
@@ -360,5 +359,4 @@ void SoftwareKeyboard::Finalize() {
 
     is_running = false;
 }
-} // namespace Applets
-} // namespace HLE
+} // namespace HLE::Applets

@@ -33,8 +33,7 @@ struct hash<Service::APT::AppletId> {
 };
 } // namespace std
 
-namespace HLE {
-namespace Applets {
+namespace HLE::Applets {
 
 static std::unordered_map<Service::APT::AppletId, std::shared_ptr<Applet>> applets;
 /// The CoreTiming event identifier for the Applet update callback.
@@ -134,5 +133,4 @@ void Init() {
 void Shutdown() {
     CoreTiming::RemoveEvent(applet_update_event);
 }
-} // namespace Applets
-} // namespace HLE
+} // namespace HLE::Applets
