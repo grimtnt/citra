@@ -4,16 +4,14 @@
 
 #pragma once
 
-namespace Pica {
-namespace Shader {
+namespace Pica::Shader {
 struct OutputVertex;
-}
+} // namespace Pica::Shader
 
-namespace Clipper {
+namespace Pica::Clipper {
 
 using Shader::OutputVertex;
 
 void ProcessTriangle(const OutputVertex& v0, const OutputVertex& v1, const OutputVertex& v2);
 
-} // namespace Clipper
-} // namespace Pica
+} // namespace Pica::Clipper

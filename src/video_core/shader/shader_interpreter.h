@@ -6,9 +6,7 @@
 
 #include "video_core/shader/shader.h"
 
-namespace Pica {
-
-namespace Shader {
+namespace Pica::Shader {
 
 class InterpreterEngine final : public ShaderEngine {
 public:
@@ -16,6 +14,4 @@ public:
     void Run(const ShaderSetup& setup, UnitState& state) const override;
 };
 
-} // namespace Shader
-
-} // namespace Pica
+} // namespace Pica::Shader

@@ -26,9 +26,7 @@
 #include "video_core/vertex_loader.h"
 #include "video_core/video_core.h"
 
-namespace Pica {
-
-namespace CommandProcessor {
+namespace Pica::CommandProcessor {
 
 static int vs_float_regs_counter = 0;
 static u32 vs_uniform_write_buffer[4];
@@ -603,6 +601,4 @@ void ProcessCommandList(const u32* list, u32 size) {
     }
 }
 
-} // namespace CommandProcessor
-
-} // namespace Pica
+} // namespace Pica::CommandProcessor

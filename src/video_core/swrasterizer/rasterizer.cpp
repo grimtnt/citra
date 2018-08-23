@@ -30,8 +30,7 @@
 #include "video_core/texture/texture_decode.h"
 #include "video_core/utils.h"
 
-namespace Pica {
-namespace Rasterizer {
+namespace Pica::Rasterizer {
 
 // NOTE: Assuming that rasterizer coordinates are 12.4 fixed-point values
 struct Fix12P4 {
@@ -887,5 +886,4 @@ void ProcessTriangle(const Vertex& v0, const Vertex& v1, const Vertex& v2) {
     ProcessTriangleInternal(v0, v1, v2);
 }
 
-} // namespace Rasterizer
-} // namespace Pica
+} // namespace Pica::Rasterizer

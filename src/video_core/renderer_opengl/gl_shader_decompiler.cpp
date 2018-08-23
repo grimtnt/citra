@@ -13,9 +13,7 @@
 #include "common/common_types.h"
 #include "video_core/renderer_opengl/gl_shader_decompiler.h"
 
-namespace Pica {
-namespace Shader {
-namespace Decompiler {
+namespace Pica::Shader::Decompiler {
 
 using nihstro::Instruction;
 using nihstro::OpCode;
@@ -926,6 +924,4 @@ boost::optional<std::string> DecompileProgram(const ProgramCode& program_code,
     }
 }
 
-} // namespace Decompiler
-} // namespace Shader
-} // namespace Pica
+} // namespace Pica::Shader::Decompiler

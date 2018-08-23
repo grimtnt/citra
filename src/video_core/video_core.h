@@ -27,9 +27,6 @@ extern std::atomic<bool> g_hw_shader_enabled;
 extern std::atomic<bool> g_hw_shader_accurate_gs;
 extern std::atomic<bool> g_hw_shader_accurate_mul;
 
-/// Start the video core
-void Start();
-
 /// Initialize the video core
 Core::System::ResultStatus Init(EmuWindow* emu_window);
 
