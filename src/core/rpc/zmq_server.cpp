@@ -21,6 +21,8 @@ ZMQServer::~ZMQServer() {
     // Triggering the zmq_context destructor will cancel
     // any blocking calls to zmq_socket->recv()
     running = false;
+    zmq_socket->close();
+    zmq_context->close();
     zmq_context.reset();
     worker_thread.join();
 

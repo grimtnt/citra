@@ -210,6 +210,7 @@ void System::Shutdown() {
     CoreTiming::Shutdown();
     app_loader.reset();
     qt_callbacks.reset();
+    rpc_server.reset();
 
     LOG_DEBUG(Core, "Shutdown OK");
 }
