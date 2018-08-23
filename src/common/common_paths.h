@@ -4,13 +4,9 @@
 
 #pragma once
 
-// Directory separators, do we need this?
+// Directory separators
 #define DIR_SEP "/"
 #define DIR_SEP_CHR '/'
-
-#ifndef MAX_PATH
-#define MAX_PATH 260
-#endif
 
 // The user data dir
 #define ROOT_DIR "."
@@ -25,11 +21,6 @@
 #endif
 #endif
 
-// Dirs in both User and Sys
-#define EUR_DIR "EUR"
-#define USA_DIR "USA"
-#define JAP_DIR "JAP"
-
 // Subdirs in the User dir returned by GetUserPath(D_USER_IDX)
 #define CONFIG_DIR "config"
 #define CACHE_DIR "cache"
@@ -41,11 +32,6 @@
 // Filenames
 // Files in the directory returned by GetUserPath(D_LOGS_IDX)
 #define LOG_FILE "citra_log.txt"
-
-// Files in the directory returned by GetUserPath(D_CONFIG_IDX)
-#define EMU_CONFIG "emu.ini"
-#define DEBUGGER_CONFIG "debugger.ini"
-#define LOGGER_CONFIG "logger.ini"
 
 // Sys files
 #define SHARED_FONT "shared_font.bin"
