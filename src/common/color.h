@@ -5,7 +5,6 @@
 #pragma once
 
 #include <cstring>
-
 #include "common/common_types.h"
 #include "common/swap.h"
 #include "common/vector_math.h"
