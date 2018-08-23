@@ -922,7 +922,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
                 std::u16string u16_filename;
 
                 /// Loop through entries but don't add mboxlist____ to itself.
-                for (auto i = 0; i < entry_count; i++) {
+                for (u32 i = 0; i < entry_count; i++) {
                     u16_filename = std::u16string(entries[i].filename);
                     file_name = Common::UTF16ToUTF8(u16_filename);
 

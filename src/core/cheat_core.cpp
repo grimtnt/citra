@@ -144,9 +144,9 @@ void GatewayCheat::Execute() {
     u32 reg = 0;
     u32 offset = 0;
     u32 val = 0;
-    int if_flag = 0;
-    int loop_count = 0;
-    s32 loopbackline = 0;
+    bool if_flag = false;
+    u32 loop_count = 0;
+    size_t loopbackline = 0;
     u32 counter = 0;
     bool loop_flag = false;
     for (size_t i = 0; i < cheat_lines.size(); i++) {
@@ -155,13 +155,13 @@ void GatewayCheat::Execute() {
             continue;
         addr = line.address;
         val = line.value;
-        if (if_flag > 0) {
+        if (if_flag) {
             if (line.type == CheatType::Patch)
                 i += (line.value + 7) / 8;
             if (line.type == CheatType::Terminator)
-                if_flag--;                              // ENDIF
-            if (line.type == CheatType::FullTerminator) // NEXT & Flush
-            {
+                if_flag = false; // ENDIF
+            if (line.type == CheatType::FullTerminator) {
+                // NEXT & Flush
                 if (loop_flag)
                     i = loopbackline - 1;
                 else {
@@ -169,8 +169,8 @@ void GatewayCheat::Execute() {
                     reg = 0;
                     loop_count = 0;
                     counter = 0;
-                    if_flag = 0;
-                    loop_flag = 0;
+                    if_flag = false;
+                    loop_flag = false;
                 }
             }
             continue;
@@ -201,10 +201,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value > val) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -213,10 +213,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value < val) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -225,10 +225,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value == val) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -237,10 +237,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value != val) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -253,10 +253,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y > (u16)((~z) & val)) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -269,10 +269,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y < (u16)((~z) & val)) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -284,10 +284,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y == (u16)((~z) & val)) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -300,10 +300,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y != (u16)((~z) & val)) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }
@@ -314,9 +314,9 @@ void GatewayCheat::Execute() {
         }
         case CheatType::Loop: {
             if (loop_count < (line.value + 1))
-                loop_flag = 1;
+                loop_flag = true;
             else
-                loop_flag = 0;
+                loop_flag = false;
             loop_count++;
             loopbackline = i;
             break;
@@ -337,8 +337,8 @@ void GatewayCheat::Execute() {
                 reg = 0;
                 loop_count = 0;
                 counter = 0;
-                if_flag = 0;
-                loop_flag = 0;
+                if_flag = false;
+                loop_flag = false;
             }
             break;
         }
@@ -395,10 +395,10 @@ void GatewayCheat::Execute() {
             auto state = Service::HID::GetInputsThisFrame();
             auto result = (state.hex & line.value) == line.value;
             if (result) {
-                if (if_flag > 0)
-                    if_flag--;
+                if (if_flag)
+                    if_flag = false;
             } else {
-                if_flag++;
+                if_flag = true;
             }
             break;
         }

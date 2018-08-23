@@ -2,7 +2,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <future>
 #include <string>
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/ipc.h"
@@ -144,11 +143,9 @@ void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    std::async(std::launch::async, [&] {
-        context->second.state = Context::State::InProgress;
-        context->second.Send();
-        context->second.state = Context::State::ReadyToDownloadContent;
-    });
+    context->second.state = Context::State::InProgress;
+    context->second.Send();
+    context->second.state = Context::State::ReadyToDownloadContent;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);
@@ -168,11 +165,9 @@ void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    std::async(std::launch::async, [&] {
-        context->second.state = Context::State::InProgress;
-        context->second.Send();
-        context->second.state = Context::State::ReadyToDownloadContent;
-    });
+    context->second.state = Context::State::InProgress;
+    context->second.Send();
+    context->second.state = Context::State::ReadyToDownloadContent;
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
     rb.Push(RESULT_SUCCESS);

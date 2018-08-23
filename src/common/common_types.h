@@ -32,23 +32,22 @@
 #endif
 #endif
 
-typedef std::uint8_t u8;   ///< 8-bit unsigned byte
-typedef std::uint16_t u16; ///< 16-bit unsigned short
-typedef std::uint32_t u32; ///< 32-bit unsigned word
-typedef std::uint64_t u64; ///< 64-bit unsigned int
+using u8 = std::uint8_t;   ///< 8-bit unsigned byte
+using u16 = std::uint16_t; ///< 16-bit unsigned short
+using u32 = std::uint32_t; ///< 32-bit unsigned word
+using u64 = std::uint64_t; ///< 64-bit unsigned int
 
-typedef std::int8_t s8;   ///< 8-bit signed byte
-typedef std::int16_t s16; ///< 16-bit signed short
-typedef std::int32_t s32; ///< 32-bit signed word
-typedef std::int64_t s64; ///< 64-bit signed int
+using s8 = std::int8_t;   ///< 8-bit signed byte
+using s16 = std::int16_t; ///< 16-bit signed short
+using s32 = std::int32_t; ///< 32-bit signed word
+using s64 = std::int64_t; ///< 64-bit signed int
 
-typedef float f32;  ///< 32-bit floating point
-typedef double f64; ///< 64-bit floating point
+using f32 = float; ///< 32-bit floating point
 
 // TODO: It would be nice to eventually replace these with strong types that prevent accidental
 // conversion between each other.
-typedef u32 VAddr; ///< Represents a pointer in the userspace virtual address space.
-typedef u32 PAddr; ///< Represents a pointer in the ARM11 physical address space.
+using VAddr = u32; ///< Represents a pointer in the userspace virtual address space.
+using PAddr = u32; ///< Represents a pointer in the ARM11 physical address space.
 
 // An inheritable class to disallow the copy constructor and operator= functions
 class NonCopyable {
