@@ -24,15 +24,13 @@ enum class Level : u8 {
     Count ///< Total number of logging levels
 };
 
-typedef u8 ClassType;
-
 /**
  * Specifies the sub-system that generated the log message.
  *
  * @note If you add a new entry here, also add a corresponding one to `ALL_LOG_CLASSES` in
  * backend.cpp.
  */
-enum class Class : ClassType {
+enum class Class : u8 {
     Log,               ///< Messages about the log system itself
     Common,            ///< Library routines
     Common_Filesystem, ///< Filesystem interface library

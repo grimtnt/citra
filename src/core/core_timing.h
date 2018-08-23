@@ -123,7 +123,7 @@ namespace CoreTiming {
 
 struct EventType;
 
-using TimedCallback = std::function<void(u64 userdata, int cycles_late)>;
+using TimedCallback = std::function<void(u64 userdata, s64 cycles_late)>;
 
 /**
  * CoreTiming begins at the boundary of timing slice -1. An initial call to Advance() is

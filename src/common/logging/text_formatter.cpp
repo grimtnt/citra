@@ -25,7 +25,7 @@ std::string FormatLogMessage(const Entry& entry) {
     const char* class_name = GetLogClassName(entry.log_class);
     const char* level_name = GetLevelName(entry.log_level);
 
-    return fmt::format("[{:4d}.{:06d}] {} <{}> {}:{}:{}: {}", time_seconds, time_fractional,
+    return fmt::format("[{:d}.{:d}] {} <{}> {}:{}:{}: {}", time_seconds, time_fractional,
                        class_name, level_name, entry.filename, entry.function, entry.line_num,
                        entry.message);
 }
@@ -42,7 +42,7 @@ void PrintColoredMessage(const Entry& entry) {
         return;
     }
 
-    CONSOLE_SCREEN_BUFFER_INFO original_info = {0};
+    CONSOLE_SCREEN_BUFFER_INFO original_info = {};
     GetConsoleScreenBufferInfo(console_handle, &original_info);
 
     WORD color = 0;
