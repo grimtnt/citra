@@ -217,7 +217,7 @@ void GameList::onTextChanged(const QString& newText) {
                 QString file_name = file_path.mid(file_path.lastIndexOf("/") + 1);
                 const QString file_title =
                     child->data(GameListItemPath::TitleRole).toString().toLower();
-                const QString file_programmid =
+                const QString file_programid =
                     child->data(GameListItemPath::ProgramIdRole).toString().toLower();
 
                 // Only items which filename in combination with its title contains all words
@@ -226,7 +226,7 @@ void GameList::onTextChanged(const QString& newText) {
                 // I decided not to use Qt::CaseInsensitive in ContainsAllWords to prevent
                 // multiple conversions of edit_filter_text for each game in the gamelist
                 if (ContainsAllWords(file_name.append(' ').append(file_title), edit_filter_text) ||
-                    (file_programmid.count() == 16 && edit_filter_text.contains(file_programmid))) {
+                    (file_programid.count() == 16 && edit_filter_text.contains(file_programid))) {
                     tree_view->setRowHidden(j, folder_index, false);
                     ++result_count;
                 } else {
