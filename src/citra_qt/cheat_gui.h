@@ -37,7 +37,7 @@ private slots:
     void OnSave();
     void OnCancel();
     void OnRowSelected(int row, int column);
-    void OnDetailsChanged();
+    void OnLinesChanged();
     void OnCheckChanged(int state);
     void OnDelete();
 };

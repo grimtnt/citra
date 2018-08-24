@@ -12,17 +12,14 @@ CheatDialog::CheatDialog(QWidget* parent)
     : QDialog(parent), ui(std::make_unique<Ui::CheatDialog>()) {
     // Setup gui control settings
     setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
-    setSizeGripEnabled(false);
     ui->setupUi(this);
-    setFixedSize(size());
     ui->tableCheats->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableCheats->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->tableCheats->setColumnWidth(0, 30);
     ui->tableCheats->setColumnWidth(2, 85);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-    ui->tableCheats->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->tableCheats->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
-    ui->textDetails->setEnabled(false);
+    ui->textLines->setEnabled(false);
     ui->labelTitle->setText(tr("Title ID: %1")
                                 .arg(QString::fromStdString(Common::StringFromFormat(
                                     "%016llX", Kernel::g_current_process->codeset->program_id))));
@@ -32,7 +29,7 @@ CheatDialog::CheatDialog(QWidget* parent)
     connect(ui->buttonSave, &QPushButton::clicked, this, &CheatDialog::OnSave);
     connect(ui->buttonDelete, &QPushButton::clicked, this, &CheatDialog::OnDelete);
     connect(ui->tableCheats, &QTableWidget::cellClicked, this, &CheatDialog::OnRowSelected);
-    connect(ui->textDetails, &QPlainTextEdit::textChanged, this, &CheatDialog::OnDetailsChanged);
+    connect(ui->textLines, &QPlainTextEdit::textChanged, this, &CheatDialog::OnLinesChanged);
 
     LoadCheats();
 }
@@ -74,34 +71,34 @@ void CheatDialog::OnCancel() {
 void CheatDialog::OnRowSelected(int row, int column) {
     selection_changing = true;
     if (row == -1) {
-        ui->textDetails->setPlainText("");
+        ui->textLines->setPlainText("");
         current_row = -1;
         selection_changing = false;
-        ui->textDetails->setEnabled(false);
+        ui->textLines->setEnabled(false);
         return;
     }
 
-    ui->textDetails->setEnabled(true);
+    ui->textLines->setEnabled(true);
     const auto& current_cheat = cheats[row];
 
-    std::vector<std::string> details;
+    std::vector<std::string> lines;
     for (const auto& line : current_cheat->GetCheatLines())
-        details.push_back(line.cheat_line);
-    ui->textDetails->setPlainText(QString::fromStdString(Common::Join(details, "\n")));
+        lines.push_back(line.cheat_line);
+    ui->textLines->setPlainText(QString::fromStdString(Common::Join(lines, "\n")));
 
     current_row = row;
 
     selection_changing = false;
 }
 
-void CheatDialog::OnDetailsChanged() {
+void CheatDialog::OnLinesChanged() {
     if (selection_changing)
         return;
-    auto details = ui->textDetails->toPlainText();
-    std::vector<std::string> detail_lines;
-    Common::SplitString(details.toStdString(), '\n', detail_lines);
+    auto lines = ui->textLines->toPlainText();
+    std::vector<std::string> lines_vec;
+    Common::SplitString(lines.toStdString(), '\n', lines_vec);
     auto new_lines = std::vector<CheatEngine::CheatLine>();
-    for (const auto& line : detail_lines) {
+    for (const auto& line : lines_vec) {
         new_lines.emplace_back(line);
     }
     cheats[current_row]->SetCheatLines(new_lines);
@@ -162,7 +159,6 @@ NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
     resize(166, 115);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
     setWindowTitle(tr("New Cheat"));
-    setSizeGripEnabled(false);
     auto mainLayout = new QVBoxLayout(this);
 
     QHBoxLayout* namePanel = new QHBoxLayout();

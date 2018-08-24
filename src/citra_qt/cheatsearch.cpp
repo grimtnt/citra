@@ -21,9 +21,6 @@ CheatSearch::CheatSearch(QWidget* parent)
     ui->txtSearchTo->setVisible(false);
     ui->tableFound->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableFound->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    previous_found.clear();
-
     connect(ui->btnNextScan, &QPushButton::clicked, this, [this] { OnScan(true); });
     connect(ui->btnFirstScan, &QPushButton::clicked, this, [this] { OnScan(false); });
     connect(ui->cbScanType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
