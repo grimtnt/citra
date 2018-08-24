@@ -119,6 +119,14 @@ public:
         void RegisterDisconnectEvent(Kernel::HLERequestContext& ctx);
 
         /**
+         * AC::GetConnectingSsidLength service function
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         *      2 : Length of connected network SSID
+         */
+        void GetConnectingSsidLength(Kernel::HLERequestContext& ctx);
+
+        /**
          * AC::IsConnected service function
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -151,6 +159,8 @@ protected:
     Kernel::SharedPtr<Kernel::Event> close_event;
     Kernel::SharedPtr<Kernel::Event> connect_event;
     Kernel::SharedPtr<Kernel::Event> disconnect_event;
+
+    std::string connected_network_name{"3ds"};
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);

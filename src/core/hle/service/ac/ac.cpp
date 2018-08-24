@@ -138,6 +138,16 @@ void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) 
     LOG_WARNING(Service_AC, "(STUBBED) called");
 }
 
+void Module::Interface::GetConnectingSsidLength(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x35, 0, 0);
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    rb.Push(RESULT_SUCCESS);
+    rb.Push<u32>(static_cast<u32>(ac->connected_network_name.length()));
+
+    LOG_WARNING(Service_AC, "(STUBBED) called");
+}
+
 void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x3E, 1, 2);
     u32 unk = rp.Pop<u32>();

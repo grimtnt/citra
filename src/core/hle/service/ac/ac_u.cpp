@@ -60,7 +60,7 @@ AC_U::AC_U(std::shared_ptr<Module> ac) : Module::Interface(std::move(ac), "ac:u"
         {0x00320042, nullptr, "SetAuthServerType"},
         {0x00330000, nullptr, "GetConnectingSecurityMode"},
         {0x00340000, nullptr, "GetConnectingSsid"},
-        {0x00350000, nullptr, "GetConnectingSsidLength"},
+        {0x00350000, &AC_U::GetConnectingSsidLength, "GetConnectingSsidLength"},
         {0x00360000, nullptr, "GetConnectingProxyEnable"},
         {0x00370000, nullptr, "GetConnectingProxyAuthType"},
         {0x00380000, nullptr, "GetConnectingProxyPort"},

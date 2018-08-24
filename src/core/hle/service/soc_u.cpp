@@ -747,7 +747,7 @@ void SOC_U::ShutdownSockets(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::CloseSockets(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x21, 0, 2);
-    rp.PopPID();
+    rp.Skip(2, false);
     CleanupSockets();
 
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
