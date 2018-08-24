@@ -7,9 +7,6 @@
 [submodule "soundtouch"]
     path = externals/soundtouch
     url = https://github.com/citra-emu/ext-soundtouch.git
-[submodule "catch"]
-    path = externals/catch
-    url = https://github.com/philsquared/Catch.git
 [submodule "dynarmic"]
     path = externals/dynarmic
     url = https://github.com/MerryMage/dynarmic.git
@@ -25,9 +22,6 @@
 [submodule "enet"]
     path = externals/enet
     url = https://github.com/lsalzman/enet.git
-[submodule "inih"]
-    path = externals/inih/inih
-    url = https://github.com/benhoyt/inih.git
 [submodule "libressl"]
     path = externals/libressl
     url = https://github.com/citra-emu/ext-libressl-portable.git
@@ -37,9 +31,9 @@
 [submodule "discord-rpc"]
     path = externals/discord-rpc
     url = https://github.com/discordapp/discord-rpc.git
-[submodule "externals/libzmq"]
+[submodule "libzmq"]
 	path = externals/libzmq
 	url = https://github.com/zeromq/libzmq
-[submodule "externals/cppzmq"]
+[submodule "cppzmq"]
 	path = externals/cppzmq
 	url = https://github.com/zeromq/cppzmq

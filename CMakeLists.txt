@@ -203,7 +203,7 @@ endif()
 
 if (ENABLE_QT)
     if (CITRA_USE_BUNDLED_QT)
-        if (MSVC14 AND ARCHITECTURE_x86_64)
+        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920) AND ARCHITECTURE_x86_64)
             set(QT_VER qt-5.10.0-msvc2017_64)
         else()
             message(FATAL_ERROR "No bundled Qt binaries for your toolchain. Disable CITRA_USE_BUNDLED_QT and provide your own.")
@@ -235,7 +235,7 @@ endif()
 # ======================================
 
 IF (APPLE)
-    FIND_LIBRARY(COCOA_LIBRARY Cocoa)           # Umbrella framework for everything GUI-related
+    find_library(COCOA_LIBRARY Cocoa)           # Umbrella framework for everything GUI-related
     set(PLATFORM_LIBRARIES ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)

@@ -4,10 +4,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/CMakeModules)
 include(DownloadExternals)
 include(ExternalProject)
 
-# Catch
-add_library(catch-single-include INTERFACE)
-target_include_directories(catch-single-include INTERFACE catch/single_include)
-
 # Crypto++
 add_subdirectory(cryptopp)
 
@@ -24,16 +20,8 @@ endif()
 add_subdirectory(fmt)
 add_library(fmt::fmt ALIAS fmt)
 
-# getopt
-if (MSVC)
-    add_subdirectory(getopt)
-endif()
-
 # Glad
 add_subdirectory(glad)
-
-# inih
-add_subdirectory(inih)
 
 # Nihstro
 add_library(nihstro-headers INTERFACE)
