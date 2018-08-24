@@ -49,7 +49,6 @@ struct Values {
     bool show_status_bar;
 
     bool confirm_before_closing;
-    bool first_start;
 
     QString roms_path;
     QString game_dir_deprecated;

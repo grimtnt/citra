@@ -745,6 +745,15 @@ void SOC_U::ShutdownSockets(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 }
 
+void SOC_U::CloseSockets(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp(ctx, 0x21, 0, 2);
+    rp.PopPID();
+    CleanupSockets();
+
+    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    rb.Push(RESULT_SUCCESS);
+}
+
 void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp(ctx, 0x11, 4, 2);
     u32 socket_handle = rp.Pop<u32>();
@@ -842,7 +851,7 @@ SOC_U::SOC_U() : ServiceFramework("soc:U") {
         {0x001D0040, nullptr, "ICMPCancel"},
         {0x001E0040, nullptr, "ICMPClose"},
         {0x001F0040, nullptr, "GetResolverInfo"},
-        {0x00210002, nullptr, "CloseSockets"},
+        {0x00210002, &SOC_U::CloseSockets, "CloseSockets"},
         {0x00230040, nullptr, "AddGlobalSocket"},
     };
 

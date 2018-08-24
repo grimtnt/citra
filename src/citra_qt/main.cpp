@@ -1377,7 +1377,6 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
     UISettings::values.display_titlebar = ui.action_Display_Dock_Widget_Headers->isChecked();
     UISettings::values.show_filter_bar = ui.action_Show_Filter_Bar->isChecked();
     UISettings::values.show_status_bar = ui.action_Show_Status_Bar->isChecked();
-    UISettings::values.first_start = false;
 
     game_list->SaveInterfaceLayout();
     SaveHotkeys();

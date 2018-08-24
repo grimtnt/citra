@@ -37,6 +37,7 @@ private:
     void Connect(Kernel::HLERequestContext& ctx);
     void InitializeSockets(Kernel::HLERequestContext& ctx);
     void ShutdownSockets(Kernel::HLERequestContext& ctx);
+    void CloseSockets(Kernel::HLERequestContext& ctx);
     void GetSockOpt(Kernel::HLERequestContext& ctx);
     void SetSockOpt(Kernel::HLERequestContext& ctx);
 
