@@ -65,7 +65,6 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
 
     std::string code_type =
         "Gateway"; // If more cheat types added, need to specify which type in parsing.
-    std::vector<std::string> notes;
     std::vector<CheatLine> cheat_lines;
     std::vector<std::shared_ptr<CheatBase>> cheats;
     std::string name;
@@ -78,35 +77,30 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
                 if (!cheat_lines.empty()) {
                     if (code_type == "Gateway")
                         cheats.push_back(
-                            std::make_shared<GatewayCheat>(cheat_lines, notes, enabled, name));
+                            std::make_shared<GatewayCheat>(cheat_lines, enabled, name));
                 }
                 name = current_line.substr(2, current_line.length() - 3);
                 cheat_lines.clear();
-                notes.clear();
                 enabled = true;
                 continue;
             } else if (current_line.front() == '[') { // Disabled code
                 if (!cheat_lines.empty()) {
                     if (code_type == "Gateway")
                         cheats.push_back(
-                            std::make_shared<GatewayCheat>(cheat_lines, notes, enabled, name));
+                            std::make_shared<GatewayCheat>(cheat_lines, enabled, name));
                 }
                 name = current_line.substr(1, current_line.length() - 2);
                 cheat_lines.clear();
-                notes.clear();
                 enabled = false;
                 continue;
-            } else if (current_line.front() == '*') { // Comment
-                notes.push_back(std::move(current_line));
-            } else {
+            } else if (current_line.front() != '*') {
                 cheat_lines.emplace_back(std::move(current_line));
             }
         }
         if (i == lines.size() - 1) { // End of file
             if (!cheat_lines.empty()) {
                 if (code_type == "Gateway")
-                    cheats.push_back(
-                        std::make_shared<GatewayCheat>(cheat_lines, notes, enabled, name));
+                    cheats.push_back(std::make_shared<GatewayCheat>(cheat_lines, enabled, name));
             }
         }
     }
@@ -114,18 +108,16 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
 }
 
 void CheatEngine::Save(std::vector<std::shared_ptr<CheatBase>> cheats) {
-    const auto file_path = GetFilePath();
-    FileUtil::IOFile file = FileUtil::IOFile(file_path, "w+");
+    std::string file_path{GetFilePath()};
+    FileUtil::IOFile file{file_path, "w+"};
     for (auto& cheat : cheats) {
-        if (cheat->GetType() == "Gateway") {
-            std::string str = cheat->ToString();
-            file.WriteBytes(str.c_str(), str.length());
-        }
+        std::string str{cheat->ToString()};
+        file.WriteBytes(str.c_str(), str.length());
     }
 }
 
 void CheatEngine::RefreshCheats() {
-    const auto file_path = GetFilePath();
+    std::string file_path{GetFilePath()};
     if (!FileUtil::Exists(file_path))
         FileUtil::CreateEmptyFile(file_path);
     cheats_list = ReadFileContents();
@@ -140,26 +132,25 @@ void CheatEngine::Run() {
 void GatewayCheat::Execute() {
     if (enabled == false)
         return;
-    u32 addr = 0;
-    u32 reg = 0;
-    u32 offset = 0;
-    u32 val = 0;
-    bool if_flag = false;
-    u32 loop_count = 0;
-    size_t loopbackline = 0;
-    u32 counter = 0;
-    bool loop_flag = false;
+    u32 addr{0};
+    u32 reg{0};
+    u32 offset{0};
+    u32 val{0};
+    int if_flag{0};
+    u32 loop_count{0};
+    size_t loopbackline{0};
+    bool loop_flag{false};
     for (size_t i = 0; i < cheat_lines.size(); i++) {
-        auto line = cheat_lines[i];
+        CheatLine line{cheat_lines[i]};
         if (line.type == CheatType::Null)
             continue;
         addr = line.address;
         val = line.value;
-        if (if_flag) {
+        if (if_flag > 0) {
             if (line.type == CheatType::Patch)
                 i += (line.value + 7) / 8;
             if (line.type == CheatType::Terminator)
-                if_flag = false; // ENDIF
+                if_flag--; // ENDIF
             if (line.type == CheatType::FullTerminator) {
                 // NEXT & Flush
                 if (loop_flag)
@@ -168,8 +159,7 @@ void GatewayCheat::Execute() {
                     offset = 0;
                     reg = 0;
                     loop_count = 0;
-                    counter = 0;
-                    if_flag = false;
+                    if_flag = 0;
                     loop_flag = false;
                 }
             }
@@ -201,10 +191,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value > val) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -213,10 +203,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value < val) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -225,10 +215,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value == val) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -237,10 +227,10 @@ void GatewayCheat::Execute() {
                 line.address = offset;
             val = Memory::Read32(line.address);
             if (line.value != val) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -253,10 +243,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y > (u16)((~z) & val)) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -269,10 +259,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y < (u16)((~z) & val)) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -284,10 +274,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y == (u16)((~z) & val)) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -300,10 +290,10 @@ void GatewayCheat::Execute() {
             int z = line.value >> 16;
             val = Memory::Read16(x);
             if (y != (u16)((~z) & val)) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -336,8 +326,7 @@ void GatewayCheat::Execute() {
                 offset = 0;
                 reg = 0;
                 loop_count = 0;
-                counter = 0;
-                if_flag = false;
+                if_flag = 0;
                 loop_flag = false;
             }
             break;
@@ -395,10 +384,10 @@ void GatewayCheat::Execute() {
             auto state = Service::HID::GetInputsThisFrame();
             auto result = (state.hex & line.value) == line.value;
             if (result) {
-                if (if_flag)
-                    if_flag = false;
+                if (if_flag > 0)
+                    if_flag--;
             } else {
-                if_flag = true;
+                if_flag++;
             }
             break;
         }
@@ -443,13 +432,6 @@ std::string GatewayCheat::ToString() {
     if (enabled)
         result += '+';
     result += '[' + name + "]\n";
-    for (auto& str : notes) {
-        if (str.front() == '*')
-            str.insert(0, 1, '*');
-    }
-    result += Common::Join(notes, "\n");
-    if (!notes.empty())
-        result += '\n';
     for (const auto& line : cheat_lines)
         result += line.cheat_line + '\n';
     result += '\n';

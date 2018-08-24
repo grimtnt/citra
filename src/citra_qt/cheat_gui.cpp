@@ -2,6 +2,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QTableWidgetItem>
 #include "citra_qt/cheat_gui.h"
 #include "common/string_util.h"
@@ -10,7 +11,6 @@
 
 CheatDialog::CheatDialog(QWidget* parent)
     : QDialog(parent), ui(std::make_unique<Ui::CheatDialog>()) {
-    // Setup gui control settings
     setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
     ui->setupUi(this);
     ui->tableCheats->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -23,14 +23,12 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->labelTitle->setText(tr("Title ID: %1")
                                 .arg(QString::fromStdString(Common::StringFromFormat(
                                     "%016llX", Kernel::g_current_process->codeset->program_id))));
-
     connect(ui->buttonClose, &QPushButton::clicked, this, &CheatDialog::OnCancel);
     connect(ui->buttonNewCheat, &QPushButton::clicked, this, &CheatDialog::OnAddCheat);
     connect(ui->buttonSave, &QPushButton::clicked, this, &CheatDialog::OnSave);
     connect(ui->buttonDelete, &QPushButton::clicked, this, &CheatDialog::OnDelete);
     connect(ui->tableCheats, &QTableWidget::cellClicked, this, &CheatDialog::OnRowSelected);
     connect(ui->textLines, &QPlainTextEdit::textChanged, this, &CheatDialog::OnLinesChanged);
-
     LoadCheats();
 }
 
@@ -59,6 +57,20 @@ void CheatDialog::LoadCheats() {
 }
 
 void CheatDialog::OnSave() {
+    bool error{false};
+    QString error_message{tr("The following cheats are empty:\n\n%1")};
+    QStringList empty_cheat_names{};
+    for (auto& cheat : cheats) {
+        if (cheat->GetCheatLines().empty()) {
+            empty_cheat_names.append(QString::fromStdString(cheat->GetName()));
+            error = true;
+        }
+    }
+    if (error) {
+        QMessageBox::critical(this, tr("Error"), error_message.arg(empty_cheat_names.join('\n')));
+        return;
+    }
+
     CheatEngine::CheatEngine::Save(cheats);
     CheatCore::RefreshCheats();
     close();

@@ -93,28 +93,12 @@ public:
     virtual ~CheatBase() = default;
     virtual std::string ToString() = 0;
 
-    const std::vector<std::string>& GetNotes() const {
-        return notes;
-    }
-
-    void SetNotes(std::vector<std::string> new_notes) {
-        notes = std::move(new_notes);
-    }
-
     bool GetEnabled() const {
         return enabled;
     }
 
     void SetEnabled(bool enabled) {
         this->enabled = enabled;
-    }
-
-    const std::string& GetType() const {
-        return type;
-    }
-
-    void SetType(std::string new_type) {
-        type = std::move(new_type);
     }
 
     const std::vector<CheatLine>& GetCheatLines() const {
@@ -133,10 +117,10 @@ public:
         name = std::move(new_name);
     }
 
+    virtual std::string GetType() = 0;
+
 protected:
-    std::vector<std::string> notes;
     bool enabled = false;
-    std::string type;
     std::vector<CheatLine> cheat_lines;
     std::string name;
 };
@@ -144,21 +128,22 @@ protected:
 /// Implements support for Gateway (GateShark) cheats.
 class GatewayCheat : public CheatBase {
 public:
-    GatewayCheat(std::string name) {
+    explicit GatewayCheat(std::string name) {
         this->name = std::move(name);
-        type = "Gateway";
     }
 
-    GatewayCheat(std::vector<CheatLine> cheat_lines, std::vector<std::string> notes, bool enabled,
-                 std::string name)
-        : GatewayCheat{std::move(name)} {
+    explicit GatewayCheat(std::vector<CheatLine> cheat_lines, bool enabled, std::string name) {
+        this->name = std::move(name);
         this->cheat_lines = std::move(cheat_lines);
-        this->notes = std::move(notes);
         this->enabled = enabled;
     }
 
     void Execute() override;
     std::string ToString() override;
+
+    std::string GetType() override {
+        return "Gateway";
+    }
 };
 
 /// Handles loading/saving of cheats and executing them.
