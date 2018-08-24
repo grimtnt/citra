@@ -90,7 +90,7 @@ bool Exists(const std::string& filename) {
     StripTailDirSlashes(copy);
 
 #ifdef _WIN32
-    // Windows needs a slash to identify a driver root
+    // Windows needs a slash to identify a drive root
     if (copy.size() != 0 && copy.back() == ':')
         copy += DIR_SEP_CHR;
 
@@ -544,7 +544,7 @@ std::string GetCurrentDir() {
     char* dir;
     if (!(dir = getcwd(nullptr, 0))) {
 #endif
-        LOG_ERROR(Common_Filesystem, "GetCurrentDirectory failed: {}", GetLastErrorMsg());
+        LOG_ERROR(Common_Filesystem, "GetCurrentDir failed: {}", GetLastErrorMsg());
         return nullptr;
     }
 #ifdef _WIN32

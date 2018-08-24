@@ -738,7 +738,7 @@ void Module::Interface::DeleteUserProgram(Kernel::HLERequestContext& ctx) {
     am->ScanForAllTitles();
     rb.Push(RESULT_SUCCESS);
     if (!success)
-        LOG_ERROR(Service_AM, "FileUtil::DeleteDirRecursively unexpectedly failed");
+        LOG_ERROR(Service_AM, "DeleteDirRecursively failed: {}", GetLastErrorMsg());
 }
 
 void Module::Interface::GetProductCode(Kernel::HLERequestContext& ctx) {
@@ -1243,7 +1243,7 @@ void Module::Interface::DeleteProgram(Kernel::HLERequestContext& ctx) {
     am->ScanForAllTitles();
     rb.Push(RESULT_SUCCESS);
     if (!success)
-        LOG_ERROR(Service_AM, "FileUtil::DeleteDirRecursively unexpectedly failed");
+        LOG_ERROR(Service_AM, "DeleteDirRecursively failed: {}", GetLastErrorMsg());
 }
 
 void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
