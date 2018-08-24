@@ -33,15 +33,6 @@ public:
     void run() override;
 
     /**
-     * Steps the emulation thread by a single CPU instruction (if the CPU is not already running)
-     * @note This function is thread-safe
-     */
-    void ExecStep() {
-        exec_step = true;
-        running_cv.notify_all();
-    }
-
-    /**
      * Sets whether the emulation thread is running or not
      * @param running Boolean value, set the emulation thread to running if true
      * @note This function is thread-safe
@@ -71,7 +62,6 @@ public:
     };
 
 private:
-    bool exec_step = false;
     bool running = false;
     std::atomic<bool> stop_run{false};
     std::mutex running_mutex;
@@ -80,24 +70,6 @@ private:
     GRenderWindow* render_window;
 
 signals:
-    /**
-     * Emitted when the CPU has halted execution
-     *
-     * @warning When connecting to this signal from other threads, make sure to specify either
-     * Qt::QueuedConnection (invoke slot within the destination object's message thread) or even
-     * Qt::BlockingQueuedConnection (additionally block source thread until slot returns)
-     */
-    void DebugModeEntered();
-
-    /**
-     * Emitted right before the CPU continues execution
-     *
-     * @warning When connecting to this signal from other threads, make sure to specify either
-     * Qt::QueuedConnection (invoke slot within the destination object's message thread) or even
-     * Qt::BlockingQueuedConnection (additionally block source thread until slot returns)
-     */
-    void DebugModeLeft();
-
     void ErrorThrown(Core::System::ResultStatus, std::string);
 };
 

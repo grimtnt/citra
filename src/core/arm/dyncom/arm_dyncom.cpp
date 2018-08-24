@@ -78,10 +78,6 @@ void ARM_DynCom::Run() {
     ExecuteInstructions(std::max<s64>(CoreTiming::GetDowncount(), 0));
 }
 
-void ARM_DynCom::Step() {
-    ExecuteInstructions(1);
-}
-
 void ARM_DynCom::ClearInstructionCache() {
     state->instruction_cache.clear();
     trans_cache_buf_top = 0;

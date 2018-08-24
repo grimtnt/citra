@@ -16,44 +16,31 @@ public:
     /// Used to reference a framebuffer
     enum kFramebuffer { kFramebuffer_VirtualXFB = 0, kFramebuffer_EFB, kFramebuffer_Texture };
 
-    virtual ~RendererBase() {}
+    explicit RendererBase(EmuWindow& window);
+    virtual ~RendererBase();
 
     /// Swap buffers (render frame)
     virtual void SwapBuffers() = 0;
 
-    /**
-     * Set the emulator window to use for renderer
-     * @param window EmuWindow handle to emulator window to use for rendering
-     */
-    virtual void SetWindow(EmuWindow* window) = 0;
-
     /// Initialize the renderer
     virtual Core::System::ResultStatus Init() = 0;
 
-    /// Shutdown the renderer
-    virtual void ShutDown() = 0;
-
-    // Getter/setter functions:
-    // ------------------------
-
-    f32 GetCurrentFPS() const {
-        return m_current_fps;
-    }
-
-    int GetCurrentFrame() const {
-        return m_current_frame;
-    }
+    /// Updates the framebuffer layout of the contained render window handle.
+    void UpdateCurrentFramebufferLayout();
 
     VideoCore::RasterizerInterface* Rasterizer() const {
         return rasterizer.get();
     }
 
+    EmuWindow& GetRenderWindow() const {
+        return render_window;
+    }
+
     void RefreshRasterizerSetting();
 
 protected:
+    EmuWindow& render_window; ///< Reference to the render window handle.
     std::unique_ptr<VideoCore::RasterizerInterface> rasterizer;
-    f32 m_current_fps = 0.0f; ///< Current framerate, should be set by the renderer
-    int m_current_frame = 0;  ///< Current frame, should be set by the renderer
 
 private:
     bool opengl_rasterizer_active = false;

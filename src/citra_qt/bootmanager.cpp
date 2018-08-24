@@ -20,14 +20,8 @@ void EmuThread::run() {
     render_window->MakeCurrent();
     stop_run = false;
 
-    // Holds whether the cpu was running during the last iteration,
-    // so that the DebugModeLeft signal can be emitted before the
-    // next execution step.
-    bool was_active = false;
     while (!stop_run) {
         if (running) {
-            if (!was_active)
-                emit DebugModeLeft();
             Core::System::ResultStatus result = Core::System::GetInstance().RunLoop();
             if (result == Core::System::ResultStatus::ShutdownRequested) {
                 // Notify frontend we shutdown
@@ -39,23 +33,9 @@ void EmuThread::run() {
                 this->SetRunning(false);
                 emit ErrorThrown(result, Core::System::GetInstance().GetStatusDetails());
             }
-
-            was_active = running || exec_step;
-            if (!was_active && !stop_run)
-                emit DebugModeEntered();
-        } else if (exec_step) {
-            if (!was_active)
-                emit DebugModeLeft();
-
-            exec_step = false;
-            Core::System::GetInstance().SingleStep();
-            emit DebugModeEntered();
-            yieldCurrentThread();
-
-            was_active = false;
         } else {
             std::unique_lock<std::mutex> lock(running_mutex);
-            running_cv.wait(lock, [this] { return IsRunning() || exec_step || stop_run; });
+            running_cv.wait(lock, [this] { return IsRunning() || stop_run; });
         }
     }
 

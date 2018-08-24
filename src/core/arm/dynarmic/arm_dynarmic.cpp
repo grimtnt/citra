@@ -191,10 +191,6 @@ void ARM_Dynarmic::Run() {
     jit->Run();
 }
 
-void ARM_Dynarmic::Step() {
-    cb->InterpreterFallback(jit->Regs()[15], 1);
-}
-
 void ARM_Dynarmic::SetPC(u32 pc) {
     jit->Regs()[15] = pc;
 }

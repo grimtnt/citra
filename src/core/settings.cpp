@@ -4,10 +4,10 @@
 
 #include "audio_core/dsp_interface.h"
 #include "core/core.h"
-#include "core/frontend/emu_window.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir.h"
 #include "core/settings.h"
+#include "video_core/renderer_base.h"
 #include "video_core/video_core.h"
 
 namespace Settings {
@@ -21,9 +21,8 @@ void Apply() {
     VideoCore::g_hw_shader_accurate_gs = values.shaders_accurate_gs;
     VideoCore::g_hw_shader_accurate_mul = values.shaders_accurate_mul;
 
-    if (VideoCore::g_emu_window) {
-        auto layout = VideoCore::g_emu_window->GetFramebufferLayout();
-        VideoCore::g_emu_window->UpdateCurrentFramebufferLayout(layout.width, layout.height);
+    if (VideoCore::g_renderer) {
+        VideoCore::g_renderer->UpdateCurrentFramebufferLayout();
     }
 
     if (Core::System::GetInstance().IsPoweredOn()) {

@@ -16,7 +16,6 @@ public:
     ~ARM_DynCom();
 
     void Run() override;
-    void Step() override;
 
     void ClearInstructionCache() override;
     void InvalidateCacheRange(u32 start_address, size_t length) override;

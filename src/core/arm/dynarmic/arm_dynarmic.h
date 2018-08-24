@@ -23,7 +23,6 @@ public:
     ~ARM_Dynarmic();
 
     void Run() override;
-    void Step() override;
 
     void SetPC(u32 pc) override;
     u32 GetPC() const override;

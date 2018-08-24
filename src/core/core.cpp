@@ -35,8 +35,7 @@ namespace Core {
 
 /*static*/ System System::s_instance;
 
-System::ResultStatus System::RunLoop(bool tight_loop) {
-    status = ResultStatus::Success;
+System::ResultStatus System::RunLoop() {
     if (!cpu_core) {
         return ResultStatus::ErrorNotInitialized;
     }
@@ -50,11 +49,7 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         PrepareReschedule();
     } else {
         CoreTiming::Advance();
-        if (tight_loop) {
-            cpu_core->Run();
-        } else {
-            cpu_core->Step();
-        }
+        cpu_core->Run();
     }
 
     HW::Update();
@@ -66,14 +61,10 @@ System::ResultStatus System::RunLoop(bool tight_loop) {
         return ResultStatus::ShutdownRequested;
     }
 
-    return status;
+    return ResultStatus::Success;
 }
 
-System::ResultStatus System::SingleStep() {
-    return RunLoop(false);
-}
-
-System::ResultStatus System::Load(EmuWindow* emu_window, const std::string& filepath) {
+System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& filepath) {
     app_loader = Loader::GetLoader(filepath);
 
     if (!app_loader) {
@@ -121,7 +112,7 @@ System::ResultStatus System::Load(EmuWindow* emu_window, const std::string& file
     }
     Memory::SetCurrentPageTable(&Kernel::g_current_process->vm_manager.page_table);
     status = ResultStatus::Success;
-    m_emu_window = emu_window;
+    m_emu_window = &emu_window;
     m_filepath = filepath;
     return status;
 }
@@ -144,7 +135,7 @@ void System::Reschedule() {
     Kernel::Reschedule();
 }
 
-System::ResultStatus System::Init(EmuWindow* emu_window, u32 system_mode) {
+System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     LOG_DEBUG(HW_Memory, "initialized OK");
 
     CoreTiming::Init();
@@ -218,11 +209,11 @@ void System::Shutdown() {
 void System::Jump() {
     Shutdown();
     if (jump_tid == 0) {
-        Load(m_emu_window, m_filepath);
+        Load(*m_emu_window, m_filepath);
         return;
     }
     auto path = Service::AM::GetTitleContentPath(jump_media, jump_tid);
-    Load(m_emu_window, path);
+    Load(*m_emu_window, path);
 }
 
 } // namespace Core
