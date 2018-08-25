@@ -96,15 +96,6 @@ public:
         CEC_STATE_IDLE = 26
     };
 
-    /// Need to confirm if CecStateAbbreviated is up-to-date and valid
-    enum class CecStateAbbreviated : u32 {
-        CEC_STATE_ABBREV_IDLE = 1,      /// Relates to CEC_STATE_IDLE
-        CEC_STATE_ABBREV_NOT_LOCAL = 2, /// Relates to CEC_STATEs *FINISH*, *POST, and OVER_BOSS
-        CEC_STATE_ABBREV_SCANNING = 3,  /// Relates to CEC_STATE_SCANNING
-        CEC_STATE_ABBREV_WLREADY = 4,   /// Relates to CEC_STATE_WIRELESS_READY when a bool is true
-        CEC_STATE_ABBREV_OTHER = 5,     /// Relates to CEC_STATEs besides *FINISH*, *POST, and
-    };                                  /// OVER_BOSS and those listed here
-
     enum class CecSystemInfoType : u32 { EulaVersion = 1, Eula = 2, ParentControl = 3 };
 
     struct CecInOutBoxInfoHeader {
@@ -201,7 +192,7 @@ public:
     };
     static_assert(sizeof(CecOBIndexHeader) == 0x08, "CecOBIndexHeader struct has incorrect size.");
 
-    enum class CecNdmStatus : u32 {
+    enum class CecdState : u32 {
         NDM_STATUS_WORKING = 0,
         NDM_STATUS_IDLE = 1,
         NDM_STATUS_SUSPENDING = 2,
@@ -264,7 +255,7 @@ public:
         void Open(Kernel::HLERequestContext& ctx);
 
         /**
-         * CECD::ReadFile service function
+         * CECD::Read service function
          *  Inputs:
          *      0 : Header Code[0x00020042]
          *      1 : Buffer size (unused)
@@ -276,7 +267,7 @@ public:
          *      3 : Descriptor for mapping a write-only buffer in the target process
          *      4 : Buffer address
          */
-        void ReadFile(Kernel::HLERequestContext& ctx);
+        void Read(Kernel::HLERequestContext& ctx);
 
         /**
          * CECD::ReadMessage service function
@@ -327,7 +318,7 @@ public:
         void ReadMessageWithHMAC(Kernel::HLERequestContext& ctx);
 
         /**
-         * CECD::WriteFile service function
+         * CECD::Write service function
          *  Inputs:
          *      0 : Header Code[0x00050042]
          *      1 : Buffer size(unused)
@@ -338,7 +329,7 @@ public:
          *      2 : Descriptor for mapping a read-only buffer in the target process
          *      3 : Buffer address
          */
-        void WriteFile(Kernel::HLERequestContext& ctx);
+        void Write(Kernel::HLERequestContext& ctx);
 
         /**
          * CECD::WriteMessage service function
@@ -404,7 +395,7 @@ public:
         void Delete(Kernel::HLERequestContext& ctx);
 
         /**
-         * CECD::Cecd_0x000900C2 service function
+         * CECD::SetData service function
          *  Inputs:
          *      0 : Header Code[0x000900C2]
          *      1 : NCCH Program ID
@@ -417,10 +408,10 @@ public:
          *      2 : Descriptor for mapping a read-only buffer in the target process
          *      3 : Message ID address
          */
-        void Cecd_0x000900C2(Kernel::HLERequestContext& ctx);
+        void SetData(Kernel::HLERequestContext& ctx);
 
         /**
-         * CECD::GetSystemInfo service function
+         * CECD::ReadData service function
          *  Inputs:
          *      0 : Header Code[0x000A00C4]
          *      1 : Destination buffer size (unused)
@@ -437,51 +428,51 @@ public:
          *      4 : Descriptor for mapping a write-only buffer in the target process
          *      5 : Destination buffer address
          */
-        void GetSystemInfo(Kernel::HLERequestContext& ctx);
+        void ReadData(Kernel::HLERequestContext& ctx);
 
         /**
-         * CECD::RunCommand service function
+         * CECD::Start service function
          *  Inputs:
          *      0 : Header Code[0x000B0040]
          *      1 : Command
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          */
-        void RunCommand(Kernel::HLERequestContext& ctx);
+        void Start(Kernel::HLERequestContext& ctx);
 
         /**
-         * CECD::RunCommandAlt service function
+         * CECD::Stop service function
          *  Inputs:
          *      0 : Header Code[0x000C0040]
          *      1 : Command
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          */
-        void RunCommandAlt(Kernel::HLERequestContext& ctx);
+        void Stop(Kernel::HLERequestContext& ctx);
 
         /**
          * CECD::GetCecInfoBuffer service function
          *  Inputs:
          *      0 : Header Code[0x000D0082]
          *      1 : unknown
-         *      2 : unknown
-         *      3 : buffer descriptor
-         *      4 : buffer address
+         *      2 : unknown, buffer size?
+         *      3 : Descriptor for mapping a write-only buffer in the target process
+         *      4 : Destination buffer address
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
-         *      2 :
+         *    2-3 : MappedBuffer
          */
         void GetCecInfoBuffer(Kernel::HLERequestContext& ctx);
 
         /**
-         * GetCecStateAbbreviated service function
+         * GetCecdState service function
          *  Inputs:
          *      0: Header Code[0x000E0000]
          *  Outputs:
          *      1: ResultCode
-         *      2: CecStateAbbreviated
+         *      2: CecdState
          */
-        void GetCecStateAbbreviated(Kernel::HLERequestContext& ctx);
+        void GetCecdState(Kernel::HLERequestContext& ctx);
 
         /**
          * GetCecInfoEventHandle service function
@@ -565,6 +556,16 @@ public:
          *      2 : unknown
          */
         void GetEventLogStart(Kernel::HLERequestContext& ctx);
+
+        /**
+         * GetCecInfoEventHandleSys service function
+         *  Inputs:
+         *      0: Header Code[0x40020002]
+         *  Outputs:
+         *      1: ResultCode
+         *      3: Event Handle
+         */
+        void GetCecInfoEventHandleSys(Kernel::HLERequestContext& ctx);
 
     private:
         std::shared_ptr<Module> cecd;
