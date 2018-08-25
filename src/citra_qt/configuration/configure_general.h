@@ -31,7 +31,5 @@ signals:
 
 private:
     void setConfiguration();
-
-private:
     std::unique_ptr<Ui::ConfigureGeneral> ui;
 };
