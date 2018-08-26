@@ -132,7 +132,7 @@ public:
             return *this;
         }
         Iterator operator++(int _) {
-            Iterator other(*this);
+            Iterator other{*this};
             ++*this;
             return other;
         }
