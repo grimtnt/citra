@@ -14,6 +14,8 @@
 #include "input_common/motion_emu.h"
 #include "network/network.h"
 
+constexpr const char WINDOW_TITLE_FORMAT[] = "Citra %s| %s-%s";
+
 EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window) {}
 
 void EmuThread::run() {
@@ -22,7 +24,7 @@ void EmuThread::run() {
 
     while (!stop_run) {
         if (running) {
-            Core::System::ResultStatus result = Core::System::GetInstance().RunLoop();
+            Core::System::ResultStatus result{Core::System::GetInstance().RunLoop()};
             if (result == Core::System::ResultStatus::ShutdownRequested) {
                 // Notify frontend we shutdown
                 emit ErrorThrown(result, "");
@@ -54,7 +56,7 @@ public:
 
     void paintEvent(QPaintEvent* ev) override {
         if (do_painting) {
-            QPainter painter(this);
+            QPainter painter{this};
         }
     }
 
@@ -78,8 +80,8 @@ private:
 GRenderWindow::GRenderWindow(QWidget* parent, EmuThread* emu_thread)
     : QWidget(parent), child(nullptr), emu_thread(emu_thread) {
 
-    std::string window_title = Common::StringFromFormat("Citra %s| %s-%s", Common::g_build_name,
-                                                        Common::g_scm_branch, Common::g_scm_desc);
+    std::string window_title{Common::StringFromFormat(WINDOW_TITLE_FORMAT, Common::g_build_name,
+                                                      Common::g_scm_branch, Common::g_scm_desc)};
     setWindowTitle(QString::fromStdString(window_title));
 
     InputCommon::Init();
@@ -94,9 +96,9 @@ void GRenderWindow::moveContext() {
 
     // If the thread started running, move the GL Context to the new thread. Otherwise, move it
     // back.
-    auto thread = (QThread::currentThread() == qApp->thread() && emu_thread != nullptr)
-                      ? emu_thread
-                      : qApp->thread();
+    auto thread{(QThread::currentThread() == qApp->thread() && emu_thread != nullptr)
+                    ? emu_thread
+                    : qApp->thread()};
     child->context()->moveToThread(thread);
 }
 
@@ -108,7 +110,6 @@ void GRenderWindow::SwapBuffers() {
     // since the last time `swapBuffers` was executed;
     // - On macOS, if `makeCurrent` isn't called explicitely, resizing the buffer breaks.
     child->makeCurrent();
-
     child->swapBuffers();
 }
 
@@ -130,9 +131,9 @@ void GRenderWindow::PollEvents() {}
 void GRenderWindow::OnFramebufferSizeChanged() {
     // Screen changes potentially incur a change in screen DPI, hence we should update the
     // framebuffer size
-    qreal pixelRatio = windowPixelRatio();
-    unsigned width = child->QPaintDevice::width() * pixelRatio;
-    unsigned height = child->QPaintDevice::height() * pixelRatio;
+    qreal pixel_ratio = windowPixelRatio();
+    unsigned width = child->QPaintDevice::width() * pixel_ratio;
+    unsigned height = child->QPaintDevice::height() * pixel_ratio;
     UpdateCurrentFramebufferLayout(width, height);
 }
 
@@ -181,9 +182,9 @@ void GRenderWindow::keyReleaseEvent(QKeyEvent* event) {
 void GRenderWindow::mousePressEvent(QMouseEvent* event) {
     auto pos = event->pos();
     if (event->button() == Qt::LeftButton) {
-        qreal pixelRatio = windowPixelRatio();
-        this->TouchPressed(static_cast<unsigned>(pos.x() * pixelRatio),
-                           static_cast<unsigned>(pos.y() * pixelRatio));
+        qreal pixel_ratio = windowPixelRatio();
+        this->TouchPressed(static_cast<unsigned>(pos.x() * pixel_ratio),
+                           static_cast<unsigned>(pos.y() * pixel_ratio));
     } else if (event->button() == Qt::RightButton) {
         InputCommon::GetMotionEmu()->BeginTilt(pos.x(), pos.y());
     }
@@ -191,9 +192,9 @@ void GRenderWindow::mousePressEvent(QMouseEvent* event) {
 
 void GRenderWindow::mouseMoveEvent(QMouseEvent* event) {
     auto pos = event->pos();
-    qreal pixelRatio = windowPixelRatio();
-    this->TouchMoved(std::max(static_cast<unsigned>(pos.x() * pixelRatio), 0u),
-                     std::max(static_cast<unsigned>(pos.y() * pixelRatio), 0u));
+    qreal pixel_ratio = windowPixelRatio();
+    this->TouchMoved(std::max(static_cast<unsigned>(pos.x() * pixel_ratio), 0u),
+                     std::max(static_cast<unsigned>(pos.y() * pixel_ratio), 0u));
     InputCommon::GetMotionEmu()->Tilt(pos.x(), pos.y());
 }
 
@@ -224,7 +225,7 @@ void GRenderWindow::InitRenderTarget() {
 
     // TODO: One of these flags might be interesting: WA_OpaquePaintEvent, WA_NoBackground,
     // WA_DontShowOnScreen, WA_DeleteOnClose
-    QGLFormat fmt;
+    QGLFormat fmt{};
     fmt.setVersion(3, 3);
     fmt.setProfile(QGLFormat::CoreProfile);
     fmt.setSwapInterval(Settings::values.use_vsync);
