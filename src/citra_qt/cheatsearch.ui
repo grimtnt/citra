@@ -68,6 +68,13 @@
        <item>
         <widget class="QLineEdit" name="txtSearch"/>
        </item>
+       <item>
+        <widget class="QCheckBox" name="chkHex">
+         <property name="text">
+          <string>Hex</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -147,21 +154,14 @@
          </item>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="chkNot">
+         <property name="text">
+          <string>Not</string>
+         </property>
+        </widget>
+       </item>
       </layout>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="chkHex">
-       <property name="text">
-        <string>Hex</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="chkNot">
-       <property name="text">
-        <string>NOT</string>
-       </property>
-      </widget>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
