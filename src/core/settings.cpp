@@ -51,7 +51,6 @@ void LogSettings() {
     LogSetting("Renderer_UseShaderJit", Settings::values.use_shader_jit);
     LogSetting("Renderer_UseResolutionFactor", Settings::values.resolution_factor);
     LogSetting("Renderer_UseVsync", Settings::values.use_vsync);
-    LogSetting("Renderer_UseBos", Settings::values.use_bos);
     LogSetting("Renderer_UseFrameLimit", Settings::values.use_frame_limit);
     LogSetting("Renderer_FrameLimit", Settings::values.frame_limit);
     LogSetting("Layout_Toggle3d", Settings::values.toggle_3d);
@@ -72,9 +71,12 @@ void LogSettings() {
     LogSetting("Camera_OuterLeftConfig", Settings::values.camera_config[OuterLeftCamera]);
     LogSetting("Camera_OuterLeftFlip", Settings::values.camera_flip[OuterLeftCamera]);
     LogSetting("DataStorage_UseVirtualSd", Settings::values.use_virtual_sd);
-    LogSetting("System_EnableNewMode", Settings::values.enable_new_mode);
     LogSetting("System_RegionValue", Settings::values.region_value);
+    LogSetting("System_EnableNewMode", Settings::values.enable_new_mode);
     LogSetting("Hacks_PriorityBoost", Settings::values.priority_boost);
+    LogSetting("Hacks_Ticks", Settings::values.ticks);
+    LogSetting("Hacks_TicksMode", Settings::values.ticks_mode);
+    LogSetting("Hacks_UseBos", Settings::values.use_bos);
 }
 
 } // namespace Settings
