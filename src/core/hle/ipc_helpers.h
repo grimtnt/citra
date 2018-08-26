@@ -206,12 +206,12 @@ public:
     }
 
     ResponseBuilder MakeBuilder(u32 normal_params_size, u32 translate_params_size,
-                                bool validateHeader = true) {
-        if (validateHeader)
+                                bool validate_header = true) {
+        if (validate_header)
             ValidateHeader();
-        Header builderHeader{MakeHeader(static_cast<u16>(header.command_id), normal_params_size,
-                                        translate_params_size)};
-        return {*context, builderHeader};
+        Header builder_header{MakeHeader(static_cast<u16>(header.command_id), normal_params_size,
+                                         translate_params_size)};
+        return {*context, builder_header};
     }
 
     template <typename T>
