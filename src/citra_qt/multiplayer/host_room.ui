@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>234</width>
-    <height>80</height>
+    <width>314</width>
+    <height>88</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,14 +56,17 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="label_7">
+      <widget class="QCheckBox" name="stop_in_checkbox">
        <property name="text">
-        <string>Stop in</string>
+        <string>Stop In</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QSpinBox" name="minutes_spinbox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="minimum">
         <number>1</number>
        </property>
@@ -73,7 +76,10 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_8">
+      <widget class="QLabel" name="minutes_label">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>minute(s)</string>
        </property>

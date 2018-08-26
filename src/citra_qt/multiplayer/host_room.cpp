@@ -36,6 +36,10 @@ HostRoomWindow::HostRoomWindow(QWidget* parent)
 
     // Connect all the widgets to the appropriate events
     connect(ui->host, &QPushButton::pressed, this, &HostRoomWindow::Host);
+    connect(ui->stop_in_checkbox, &QCheckBox::stateChanged, this, [&](bool state) {
+        ui->minutes_label->setEnabled(state);
+        ui->minutes_spinbox->setEnabled(state);
+    });
 
     // Restore the port:
     ui->port->setText(UISettings::values.port);
@@ -49,9 +53,12 @@ void HostRoomWindow::Host() {
         return;
     }
     auto parent = static_cast<MultiplayerState*>(parentWidget());
-    parent->SetCloseMs(std::chrono::duration_cast<std::chrono::milliseconds>(
-                           std::chrono::minutes(ui->minutes_spinbox->value()))
-                           .count());
+    bool stop_in_checked = ui->stop_in_checkbox->isChecked();
+    if (stop_in_checked) {
+        parent->SetCloseMs(std::chrono::duration_cast<std::chrono::milliseconds>(
+                               std::chrono::minutes(ui->minutes_spinbox->value()))
+                               .count());
+    }
     if (auto member = Network::GetRoomMember().lock()) {
         if (member->GetState() == Network::RoomMember::State::Joining) {
             return;
@@ -81,7 +88,8 @@ void HostRoomWindow::Host() {
                                            : QString::number(Network::DefaultRoomPort);
         Settings::Apply();
         OnConnection();
-        parent->StartTimer();
+        if (stop_in_checked)
+            parent->StartTimer();
     }
 }
 
