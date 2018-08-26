@@ -19,8 +19,7 @@ enum class DeviceType;
 } // namespace Polling
 } // namespace InputCommon
 
-namespace InputCommon {
-namespace SDL {
+namespace InputCommon::SDL {
 
 /// Initializes and registers SDL device factories
 void Init();
@@ -38,5 +37,4 @@ void GetPollers(InputCommon::Polling::DeviceType type,
                 std::vector<std::unique_ptr<InputCommon::Polling::DevicePoller>>& pollers);
 
 } // namespace Polling
-} // namespace SDL
-} // namespace InputCommon
+} // namespace InputCommon::SDL

@@ -14,9 +14,7 @@
 #include "input_common/main.h"
 #include "input_common/sdl/sdl.h"
 
-namespace InputCommon {
-
-namespace SDL {
+namespace InputCommon::SDL {
 
 class SDLJoystick;
 class SDLButtonFactory;
@@ -51,8 +49,8 @@ public:
     }
 
     std::tuple<float, float> GetAnalog(int axis_x, int axis_y) const {
-        float x = GetAxis(axis_x);
-        float y = GetAxis(axis_y);
+        float x{GetAxis(axis_x)};
+        float y{GetAxis(axis_y)};
         y = -y; // 3DS uses an y-axis inverse from SDL
 
         // Make sure the coordinates are in the unit circle,
@@ -116,7 +114,7 @@ public:
           trigger_if_greater(trigger_if_greater_) {}
 
     bool GetStatus() const override {
-        float axis_value = joystick->GetAxis(axis);
+        float axis_value{joystick->GetAxis(axis)};
         if (trigger_if_greater)
             return axis_value > threshold;
         return axis_value < threshold;
@@ -145,7 +143,7 @@ private:
 };
 
 static std::shared_ptr<SDLJoystick> GetJoystick(int joystick_index) {
-    std::shared_ptr<SDLJoystick> joystick = joystick_list[joystick_index].lock();
+    std::shared_ptr<SDLJoystick> joystick{joystick_list[joystick_index].lock()};
     if (!joystick) {
         joystick = std::make_shared<SDLJoystick>(joystick_index);
         joystick_list[joystick_index] = joystick;
@@ -172,12 +170,12 @@ public:
      *         is smaller than the threshold
      */
     std::unique_ptr<Input::ButtonDevice> Create(const Common::ParamPackage& params) override {
-        const int joystick_index = params.Get("joystick", 0);
+        const int joystick_index{params.Get("joystick", 0)};
 
         if (params.Has("hat")) {
-            const int hat = params.Get("hat", 0);
-            const std::string direction_name = params.Get("direction", "");
-            Uint8 direction;
+            const int hat{params.Get("hat", 0)};
+            const std::string direction_name{params.Get("direction", "")};
+            Uint8 direction{};
             if (direction_name == "up") {
                 direction = SDL_HAT_UP;
             } else if (direction_name == "down") {
@@ -194,10 +192,10 @@ public:
         }
 
         if (params.Has("axis")) {
-            const int axis = params.Get("axis", 0);
-            const float threshold = params.Get("threshold", 0.5f);
-            const std::string direction_name = params.Get("direction", "");
-            bool trigger_if_greater;
+            const int axis{params.Get("axis", 0)};
+            const float threshold{params.Get("threshold", 0.5f)};
+            const std::string direction_name{params.Get("direction", "")};
+            bool trigger_if_greater{};
             if (direction_name == "+") {
                 trigger_if_greater = true;
             } else if (direction_name == "-") {
@@ -210,7 +208,7 @@ public:
                                                    trigger_if_greater);
         }
 
-        const int button = params.Get("button", 0);
+        const int button{params.Get("button", 0)};
         return std::make_unique<SDLButton>(GetJoystick(joystick_index), button);
     }
 };
@@ -226,9 +224,9 @@ public:
      *     - "axis_y": the index of the axis to be bind as y-axis
      */
     std::unique_ptr<Input::AnalogDevice> Create(const Common::ParamPackage& params) override {
-        const int joystick_index = params.Get("joystick", 0);
-        const int axis_x = params.Get("axis_x", 0);
-        const int axis_y = params.Get("axis_y", 1);
+        const int joystick_index{params.Get("joystick", 0)};
+        const int axis_x{params.Get("axis_x", 0)};
+        const int axis_y{params.Get("axis_y", 1)};
         return std::make_unique<SDLAnalog>(GetJoystick(joystick_index), axis_x, axis_y);
     }
 };
@@ -258,9 +256,9 @@ void Shutdown() {
  * because Citra opens joysticks using their indices, not their IDs.
  */
 static int JoystickIDToDeviceIndex(SDL_JoystickID id) {
-    int num_joysticks = SDL_NumJoysticks();
+    int num_joysticks{SDL_NumJoysticks()};
     for (int i = 0; i < num_joysticks; i++) {
-        auto joystick = GetJoystick(i);
+        auto joystick{GetJoystick(i)};
         if (joystick->GetJoystickID() == id) {
             return i;
         }
@@ -269,7 +267,7 @@ static int JoystickIDToDeviceIndex(SDL_JoystickID id) {
 }
 
 Common::ParamPackage SDLEventToButtonParamPackage(const SDL_Event& event) {
-    Common::ParamPackage params({{"engine", "sdl"}});
+    Common::ParamPackage params{{{"engine", "sdl"}}};
     switch (event.type) {
     case SDL_JOYAXISMOTION:
         params.Set("joystick", JoystickIDToDeviceIndex(event.jaxis.which));
@@ -414,5 +412,4 @@ void GetPollers(InputCommon::Polling::DeviceType type,
     }
 }
 } // namespace Polling
-} // namespace SDL
-} // namespace InputCommon
+} // namespace InputCommon::SDL

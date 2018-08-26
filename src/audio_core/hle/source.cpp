@@ -29,7 +29,7 @@ void Source::MixInto(QuadFrame32& dest, size_t intermediate_mix_id) const {
     if (!state.enabled)
         return;
 
-    const std::array<float, 4>& gains = state.gain.at(intermediate_mix_id);
+    const std::array<float, 4>& gains{state.gain.at(intermediate_mix_id)};
     for (size_t samplei = 0; samplei < samples_per_frame; samplei++) {
         // Conversion from stereo (current_frame) to quadraphonic (dest) occurs here.
         dest[samplei][0] += static_cast<s32>(gains[0] * current_frame[samplei][0]);
@@ -235,7 +235,7 @@ void Source::GenerateFrame() {
         return;
     }
 
-    size_t frame_position = 0;
+    size_t frame_position{};
 
     state.current_sample_number = state.next_sample_number;
     while (frame_position < current_frame.size()) {
@@ -275,7 +275,7 @@ bool Source::DequeueBuffer() {
     if (state.input_queue.empty())
         return false;
 
-    Buffer buf = state.input_queue.top();
+    Buffer buf{state.input_queue.top()};
     state.input_queue.pop();
 
     if (buf.adpcm_dirty) {
@@ -283,9 +283,10 @@ bool Source::DequeueBuffer() {
         state.adpcm_state.yn2 = buf.adpcm_yn[1];
     }
 
-    const u8* const memory = Memory::GetPhysicalPointer(buf.physical_address);
+    const u8* const memory{Memory::GetPhysicalPointer(buf.physical_address)};
     if (memory) {
-        const unsigned num_channels = buf.mono_or_stereo == MonoOrStereo::Stereo ? 2 : 1;
+        const unsigned num_channels{
+            static_cast<unsigned>(buf.mono_or_stereo == MonoOrStereo::Stereo ? 2 : 1)};
         switch (buf.format) {
         case Format::PCM8:
             state.current_buffer = Codec::DecodePCM8(num_channels, memory, buf.length);
@@ -327,7 +328,7 @@ bool Source::DequeueBuffer() {
 }
 
 SourceStatus::Status Source::GetCurrentStatus() {
-    SourceStatus::Status ret;
+    SourceStatus::Status ret{};
 
     // Applications depend on the correct emulation of
     // current_buffer_id_dirty and current_buffer_id to synchronise

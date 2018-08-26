@@ -104,9 +104,9 @@ void Mixers::DownmixAndMixIntoCurrentFrame(float gain, const QuadFrame32& sample
             [gain](const std::array<s16, 2>& accumulator,
                    const std::array<s32, 4>& sample) -> std::array<s16, 2> {
                 // Downmix to mono
-                s16 mono = ClampToS16(static_cast<s32>(
+                s16 mono{ClampToS16(static_cast<s32>(
                     (gain * sample[0] + gain * sample[1] + gain * sample[2] + gain * sample[3]) /
-                    2));
+                    2))};
                 // Mix into current frame
                 return AddAndClampToS16(accumulator, {mono, mono});
             });
@@ -122,8 +122,8 @@ void Mixers::DownmixAndMixIntoCurrentFrame(float gain, const QuadFrame32& sample
             [gain](const std::array<s16, 2>& accumulator,
                    const std::array<s32, 4>& sample) -> std::array<s16, 2> {
                 // Downmix to stereo
-                s16 left = ClampToS16(static_cast<s32>(gain * sample[0] + gain * sample[2]));
-                s16 right = ClampToS16(static_cast<s32>(gain * sample[1] + gain * sample[3]));
+                s16 left{ClampToS16(static_cast<s32>(gain * sample[0] + gain * sample[2]))};
+                s16 right{ClampToS16(static_cast<s32>(gain * sample[1] + gain * sample[3]))};
                 // Mix into current frame
                 return AddAndClampToS16(accumulator, {left, right});
             });
@@ -196,7 +196,7 @@ void Mixers::MixCurrentFrame() {
 }
 
 DspStatus Mixers::GetCurrentStatus() const {
-    DspStatus status;
+    DspStatus status{};
     status.unknown = 0;
     status.dropped_frames = 0;
     return status;

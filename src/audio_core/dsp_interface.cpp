@@ -45,7 +45,7 @@ void DspInterface::OutputFrame(StereoFrame16& frame) {
         return;
 
     // Implementation of the hardware volume slider with a dynamic range of 60 dB
-    double volume_scale_factor = std::exp(6.90775 * Settings::values.volume) * 0.001;
+    double volume_scale_factor{std::exp(6.90775 * Settings::values.volume) * 0.001};
     for (size_t i = 0; i < frame.size(); i++) {
         frame[i][0] = static_cast<s16>(frame[i][0] * volume_scale_factor);
         frame[i][1] = static_cast<s16>(frame[i][1] * volume_scale_factor);
@@ -53,10 +53,10 @@ void DspInterface::OutputFrame(StereoFrame16& frame) {
 
     if (perform_time_stretching) {
         time_stretcher.AddSamples(&frame[0][0], frame.size());
-        std::vector<s16> stretched_samples = time_stretcher.Process(sink->SamplesInQueue());
+        std::vector<s16> stretched_samples{time_stretcher.Process(sink->SamplesInQueue())};
         sink->EnqueueSamples(stretched_samples.data(), stretched_samples.size() / 2);
     } else {
-        constexpr size_t maximum_sample_latency = 2048; // about 64 miliseconds
+        constexpr size_t maximum_sample_latency{2048}; // about 64 miliseconds
         if (sink->SamplesInQueue() > maximum_sample_latency) {
             // This can occur if we're running too fast and samples are starting to back up.
             // Just drop the samples.

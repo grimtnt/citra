@@ -10,8 +10,8 @@ namespace AudioCore::AudioInterp {
 
 // Calculations are done in fixed point with 24 fractional bits.
 // (This is not verified. This was chosen for minimal error.)
-constexpr u64 scale_factor = 1 << 24;
-constexpr u64 scale_mask = scale_factor - 1;
+constexpr u64 scale_factor{1 << 24};
+constexpr u64 scale_mask{scale_factor - 1};
 
 /// Here we step over the input in steps of rate, until we consume all of the input.
 /// Three adjacent samples are passed to fn each step.
@@ -25,9 +25,9 @@ static void StepOverSamples(State& state, StereoBuffer16& input, float rate, Ste
 
     input.insert(input.begin(), {state.xn2, state.xn1});
 
-    const u64 step_size = static_cast<u64>(rate * scale_factor);
-    u64 fposition = state.fposition;
-    size_t inputi = 0;
+    const u64 step_size{static_cast<u64>(rate * scale_factor)};
+    u64 fposition{state.fposition};
+    size_t inputi{};
 
     while (outputi < output.size()) {
         inputi = static_cast<size_t>(fposition / scale_factor);
@@ -37,7 +37,7 @@ static void StepOverSamples(State& state, StereoBuffer16& input, float rate, Ste
             break;
         }
 
-        u64 fraction = fposition & scale_mask;
+        u64 fraction{fposition & scale_mask};
         output[outputi++] = fn(fraction, input[inputi], input[inputi + 1], input[inputi + 2]);
 
         fposition += step_size;

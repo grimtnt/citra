@@ -19,7 +19,7 @@ using Service::DSP::DSP_DSP;
 
 namespace AudioCore {
 
-static constexpr u64 audio_frame_ticks = 1310252ull; ///< Units: ARM11 cycles
+static constexpr u64 audio_frame_ticks{1310252ull}; ///< Units: ARM11 cycles
 
 struct DspHle::Impl final {
 public:
@@ -49,10 +49,10 @@ private:
     bool Tick();
     void AudioTickCallback(s64 cycles_late);
 
-    DspState dsp_state = DspState::Off;
-    std::array<std::vector<u8>, num_dsp_pipe> pipe_data;
+    DspState dsp_state{DspState::Off};
+    std::array<std::vector<u8>, num_dsp_pipe> pipe_data{};
 
-    HLE::DspMemory dsp_memory;
+    HLE::DspMemory dsp_memory{};
     std::array<HLE::Source, HLE::num_sources> sources{{
         HLE::Source(0),  HLE::Source(1),  HLE::Source(2),  HLE::Source(3),  HLE::Source(4),
         HLE::Source(5),  HLE::Source(6),  HLE::Source(7),  HLE::Source(8),  HLE::Source(9),
@@ -60,12 +60,12 @@ private:
         HLE::Source(15), HLE::Source(16), HLE::Source(17), HLE::Source(18), HLE::Source(19),
         HLE::Source(20), HLE::Source(21), HLE::Source(22), HLE::Source(23),
     }};
-    HLE::Mixers mixers;
+    HLE::Mixers mixers{};
 
     DspHle& parent;
-    CoreTiming::EventType* tick_event;
+    CoreTiming::EventType* tick_event{};
 
-    std::weak_ptr<DSP_DSP> dsp_dsp;
+    std::weak_ptr<DSP_DSP> dsp_dsp{};
 };
 
 DspHle::Impl::Impl(DspHle& parent_) : parent(parent_) {
@@ -99,7 +99,7 @@ std::vector<u8> DspHle::Impl::PipeRead(DspPipe pipe_number, u32 length) {
         return {};
     }
 
-    std::vector<u8>& data = pipe_data[pipe_index];
+    std::vector<u8>& data{pipe_data[pipe_index]};
 
     if (length > data.size()) {
         LOG_WARNING(
@@ -112,13 +112,13 @@ std::vector<u8> DspHle::Impl::PipeRead(DspPipe pipe_number, u32 length) {
     if (length == 0)
         return {};
 
-    std::vector<u8> ret(data.begin(), data.begin() + length);
+    std::vector<u8> ret{data.begin(), data.begin() + length};
     data.erase(data.begin(), data.begin() + length);
     return ret;
 }
 
 size_t DspHle::Impl::GetPipeReadableSize(DspPipe pipe_number) const {
-    const size_t pipe_index = static_cast<size_t>(pipe_number);
+    const size_t pipe_index{static_cast<size_t>(pipe_number)};
 
     if (pipe_index >= num_dsp_pipe) {
         LOG_ERROR(Audio_DSP, "pipe_number = {} invalid", pipe_index);
@@ -211,7 +211,7 @@ void DspHle::Impl::ResetPipes() {
 void DspHle::Impl::WriteU16(DspPipe pipe_number, u16 value) {
     const size_t pipe_index = static_cast<size_t>(pipe_number);
 
-    std::vector<u8>& data = pipe_data.at(pipe_index);
+    std::vector<u8>& data{pipe_data.at(pipe_index)};
     // Little endian
     data.emplace_back(value & 0xFF);
     data.emplace_back(value >> 8);
@@ -278,8 +278,8 @@ HLE::SharedMemory& DspHle::Impl::WriteRegion() {
 }
 
 StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
-    HLE::SharedMemory& read = ReadRegion();
-    HLE::SharedMemory& write = WriteRegion();
+    HLE::SharedMemory& read{ReadRegion()};
+    HLE::SharedMemory& write{WriteRegion()};
 
     std::array<QuadFrame32, 3> intermediate_mixes = {};
 
@@ -296,7 +296,7 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
     write.dsp_status = mixers.Tick(read.dsp_configuration, read.intermediate_mix_samples,
                                    write.intermediate_mix_samples, intermediate_mixes);
 
-    StereoFrame16 output_frame = mixers.GetOutput();
+    StereoFrame16 output_frame{mixers.GetOutput()};
 
     // Write current output frame to the shared memory region
     for (size_t samplei = 0; samplei < output_frame.size(); samplei++) {

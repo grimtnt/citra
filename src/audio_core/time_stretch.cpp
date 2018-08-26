@@ -16,18 +16,18 @@ using steady_clock = std::chrono::steady_clock;
 
 namespace AudioCore {
 
-constexpr double MIN_RATIO = 0.1;
-constexpr double MAX_RATIO = 100.0;
+constexpr double MIN_RATIO{0.1};
+constexpr double MAX_RATIO{100.0};
 
 static double ClampRatio(double ratio) {
     return std::clamp(ratio, MIN_RATIO, MAX_RATIO);
 }
 
-constexpr double MIN_DELAY_TIME = 0.05;            // Units: seconds
-constexpr double MAX_DELAY_TIME = 0.25;            // Units: seconds
-constexpr size_t DROP_FRAMES_SAMPLE_DELAY = 16000; // Units: samples
+constexpr double MIN_DELAY_TIME{0.05};            // Units: seconds
+constexpr double MAX_DELAY_TIME{0.25};            // Units: seconds
+constexpr size_t DROP_FRAMES_SAMPLE_DELAY{16000}; // Units: samples
 
-constexpr double SMOOTHING_FACTOR = 0.007;
+constexpr double SMOOTHING_FACTOR{0.007};
 
 struct TimeStretcher::Impl {
     soundtouch::SoundTouch soundtouch;
@@ -35,15 +35,15 @@ struct TimeStretcher::Impl {
     steady_clock::time_point frame_timer = steady_clock::now();
     size_t samples_queued = 0;
 
-    double smoothed_ratio = 1.0;
+    double smoothed_ratio{1.0};
 
-    double sample_rate = static_cast<double>(native_sample_rate);
+    double sample_rate{static_cast<double>(native_sample_rate)};
 };
 
 std::vector<s16> TimeStretcher::Process(size_t samples_in_queue) {
     // This is a very simple algorithm without any fancy control theory. It works and is stable.
 
-    double ratio = CalculateCurrentRatio();
+    double ratio{CalculateCurrentRatio()};
     ratio = CorrectForUnderAndOverflow(ratio, samples_in_queue);
     impl->smoothed_ratio =
         (1.0 - SMOOTHING_FACTOR) * impl->smoothed_ratio + SMOOTHING_FACTOR * ratio;
@@ -52,7 +52,7 @@ std::vector<s16> TimeStretcher::Process(size_t samples_in_queue) {
     // SoundTouch's tempo definition the inverse of our ratio definition.
     impl->soundtouch.setTempo(1.0 / impl->smoothed_ratio);
 
-    std::vector<s16> samples = GetSamples();
+    std::vector<s16> samples{GetSamples()};
     if (samples_in_queue >= DROP_FRAMES_SAMPLE_DELAY) {
         samples.clear();
         LOG_DEBUG(Audio, "Dropping frames!");
@@ -95,14 +95,14 @@ void TimeStretcher::Reset() {
 }
 
 double TimeStretcher::CalculateCurrentRatio() {
-    const steady_clock::time_point now = steady_clock::now();
-    const std::chrono::duration<double> duration = now - impl->frame_timer;
+    const steady_clock::time_point now{steady_clock::now()};
+    const std::chrono::duration<double> duration{now - impl->frame_timer};
 
-    const double expected_time =
-        static_cast<double>(impl->samples_queued) / static_cast<double>(native_sample_rate);
-    const double actual_time = duration.count();
+    const double expected_time{static_cast<double>(impl->samples_queued) /
+                               static_cast<double>(native_sample_rate)};
+    const double actual_time{duration.count()};
 
-    double ratio;
+    double ratio{};
     if (expected_time != 0) {
         ratio = ClampRatio(actual_time / expected_time);
     } else {
@@ -116,8 +116,8 @@ double TimeStretcher::CalculateCurrentRatio() {
 }
 
 double TimeStretcher::CorrectForUnderAndOverflow(double ratio, size_t sample_delay) const {
-    const size_t min_sample_delay = static_cast<size_t>(MIN_DELAY_TIME * impl->sample_rate);
-    const size_t max_sample_delay = static_cast<size_t>(MAX_DELAY_TIME * impl->sample_rate);
+    const size_t min_sample_delay{static_cast<size_t>(MIN_DELAY_TIME * impl->sample_rate)};
+    const size_t max_sample_delay{static_cast<size_t>(MAX_DELAY_TIME * impl->sample_rate)};
 
     if (sample_delay < min_sample_delay) {
         // Make the ratio bigger.
@@ -131,7 +131,7 @@ double TimeStretcher::CorrectForUnderAndOverflow(double ratio, size_t sample_del
 }
 
 std::vector<s16> TimeStretcher::GetSamples() {
-    uint available = impl->soundtouch.numSamples();
+    uint available{impl->soundtouch.numSamples()};
 
     std::vector<s16> output(static_cast<size_t>(available) * 2);
 
