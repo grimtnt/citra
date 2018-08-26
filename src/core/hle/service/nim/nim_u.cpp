@@ -27,7 +27,7 @@ NIM_U::~NIM_U() = default;
 
 void NIM_U::CheckForSysUpdateEvent(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 0, 0}; // 0x50000
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(nim_system_update_event);
     LOG_TRACE(Service_NIM, "called");
@@ -36,7 +36,7 @@ void NIM_U::CheckForSysUpdateEvent(Kernel::HLERequestContext& ctx) {
 void NIM_U::CheckSysUpdateAvailable(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 0, 0}; // 0x90000
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(false); // No update available
 

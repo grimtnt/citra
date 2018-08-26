@@ -57,7 +57,7 @@ void RO::Initialize(Kernel::HLERequestContext& ctx) {
     // All other service functions below have the same issue.
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs != 0) {
@@ -161,7 +161,7 @@ void RO::LoadCRR(Kernel::HLERequestContext& ctx) {
     u32 crr_size = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_LDR, "(STUBBED) called, crr_buffer_ptr=0x{:08X}, crr_size=0x{:08X}",
@@ -173,7 +173,7 @@ void RO::UnloadCRR(Kernel::HLERequestContext& ctx) {
     u32 crr_buffer_ptr = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_LDR, "(STUBBED) called, crr_buffer_ptr=0x{:08X}", crr_buffer_ptr);
@@ -203,7 +203,7 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
               data_segment_address, zero, data_segment_size, bss_segment_address, bss_segment_size,
               auto_link ? "true" : "false", fix_level, crr_address);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -388,7 +388,7 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
 
     CROHelper cro(cro_address);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -460,7 +460,7 @@ void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
 
     CROHelper cro(cro_address);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -502,7 +502,7 @@ void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
 
     CROHelper cro(cro_address);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -542,7 +542,7 @@ void RO::Shutdown(Kernel::HLERequestContext& ctx) {
 
     LOG_DEBUG(Service_LDR, "called, crs_buffer_ptr=0x{:08X}", crs_buffer_ptr);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {

@@ -332,7 +332,7 @@ void SOC_U::Socket(Kernel::HLERequestContext& ctx) {
     u32 protocol = rp.Pop<u32>();
     rp.PopPID();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
 
     // Only 0 is allowed according to 3dbrew, using 0 will let the OS decide which protocol to use
     if (protocol != 0) {
@@ -382,7 +382,7 @@ void SOC_U::Bind(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -396,7 +396,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
 
     u32 posix_ret = 0; // TODO: Check what hardware returns for F_SETFL (unspecified by POSIX)
     SCOPE_EXIT({
-        IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
         rb.Push(RESULT_SUCCESS);
         rb.Push(posix_ret);
     });
@@ -462,7 +462,7 @@ void SOC_U::Listen(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -491,7 +491,7 @@ void SOC_U::Accept(Kernel::HLERequestContext& ctx) {
         std::memcpy(ctr_addr_buf.data(), &ctr_addr, sizeof(ctr_addr));
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(ctr_addr_buf, 0);
@@ -510,7 +510,7 @@ void SOC_U::GetHostId(Kernel::HLERequestContext& ctx) {
     sockaddr_in* sock_addr = reinterpret_cast<sockaddr_in*>(res->ai_addr);
     in_addr* addr = &sock_addr->sin_addr;
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(static_cast<u32>(addr->s_addr));
     freeaddrinfo(res);
@@ -529,7 +529,7 @@ void SOC_U::Close(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -560,7 +560,7 @@ void SOC_U::SendTo(Kernel::HLERequestContext& ctx) {
     if (ret == SOCKET_ERROR_VALUE)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -599,7 +599,7 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
     // Write only the data we received to avoid overwriting parts of the buffer with zeros
     output_buff.resize(total_received);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(3, 4)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(3, 4)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.Push(total_received);
@@ -635,7 +635,7 @@ void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
     if (ret == SOCKET_ERROR_VALUE)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(output_fds, 0);
@@ -658,7 +658,7 @@ void SOC_U::GetSockName(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(dest_addr_buff, 0);
@@ -673,7 +673,7 @@ void SOC_U::Shutdown(Kernel::HLERequestContext& ctx) {
     s32 ret = ::shutdown(socket_handle, how);
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -696,7 +696,7 @@ void SOC_U::GetPeerName(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(dest_addr_buff, 0);
@@ -720,7 +720,7 @@ void SOC_U::Connect(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -732,7 +732,7 @@ void SOC_U::InitializeSockets(Kernel::HLERequestContext& ctx) {
     rp.PopPID();
     rp.PopObject<Kernel::SharedMemory>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -741,7 +741,7 @@ void SOC_U::ShutdownSockets(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x19, 0, 0};
     CleanupSockets();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -750,7 +750,7 @@ void SOC_U::CloseSockets(Kernel::HLERequestContext& ctx) {
     rp.Skip(2, false);
     CleanupSockets();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -780,7 +780,7 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
         }
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(3, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(err);
     rb.Push(static_cast<u32>(optlen));
@@ -813,7 +813,7 @@ void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
         }
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(err);
 }

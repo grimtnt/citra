@@ -26,7 +26,7 @@ void Module::Interface::GetMyPresence(Kernel::HLERequestContext& ctx) {
     std::vector<u8> buffer(sizeof(MyPresence));
     std::memcpy(buffer.data(), &frd->my_presence, buffer.size());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(buffer, 0);
 
@@ -40,7 +40,7 @@ void Module::Interface::GetFriendKeyList(Kernel::HLERequestContext& ctx) {
 
     std::vector<u8> buffer(sizeof(FriendKey) * frd_count, 0);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0); // 0 friends
     rb.PushStaticBuffer(buffer, 0);
@@ -56,7 +56,7 @@ void Module::Interface::GetFriendProfile(Kernel::HLERequestContext& ctx) {
 
     std::vector<u8> buffer(sizeof(Profile) * count, 0);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(buffer, 0);
 
@@ -71,7 +71,7 @@ void Module::Interface::GetFriendAttributeFlags(Kernel::HLERequestContext& ctx) 
 
     // TODO:(mailwl) figure out AttributeFlag size and zero all buffer. Assume 1 byte
     std::vector<u8> buffer(1 * count, 0);
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(buffer, 0);
 
@@ -80,7 +80,7 @@ void Module::Interface::GetFriendAttributeFlags(Kernel::HLERequestContext& ctx) 
 
 void Module::Interface::GetMyFriendKey(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 0, 0};
-    IPC::RequestBuilder rb{rp.MakeBuilder(5, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(5, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.PushRaw(frd->my_friend_key);
 
@@ -89,7 +89,7 @@ void Module::Interface::GetMyFriendKey(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetMyScreenName(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 0, 0};
-    IPC::RequestBuilder rb{rp.MakeBuilder(7, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(7, 0)};
 
     struct ScreenName {
         std::array<char16_t, 12> name;
@@ -129,7 +129,7 @@ void Module::Interface::UnscrambleLocalFriendCode(Kernel::HLERequestContext& ctx
     // scambled_friend_code[5]; unscrambled_friend_code[3] = scambled_friend_code[3] ^
     // scambled_friend_code[5];
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(unscrambled_friend_codes, 0);
 
@@ -141,7 +141,7 @@ void Module::Interface::SetClientSdkVersion(Kernel::HLERequestContext& ctx) {
     u32 version = rp.Pop<u32>();
     rp.PopPID();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_FRD, "(STUBBED) called, version: 0x{:08X}", version);

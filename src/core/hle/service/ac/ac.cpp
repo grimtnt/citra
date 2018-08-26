@@ -24,7 +24,7 @@ void Module::Interface::CreateDefaultConfig(Kernel::HLERequestContext& ctx) {
     std::vector<u8> buffer(sizeof(ACConfig));
     std::memcpy(buffer.data(), &ac->default_config, buffer.size());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(std::move(buffer), 0);
 
@@ -43,7 +43,7 @@ void Module::Interface::ConnectAsync(Kernel::HLERequestContext& ctx) {
         ac->ac_connected = true;
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
@@ -53,7 +53,7 @@ void Module::Interface::GetConnectResult(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 0, 2};
     rp.Skip(2, false); // ProcessId descriptor
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -74,7 +74,7 @@ void Module::Interface::CloseAsync(Kernel::HLERequestContext& ctx) {
 
     ac->ac_connected = false;
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -82,7 +82,7 @@ void Module::Interface::GetCloseResult(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 0, 2};
     rp.Skip(2, false); // ProcessId descriptor
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
@@ -90,7 +90,7 @@ void Module::Interface::GetCloseResult(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetWifiStatus(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xD, 0, 0};
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(Settings::values.n_wifi_status);
 }
@@ -99,7 +99,7 @@ void Module::Interface::GetInfraPriority(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x27, 0, 2};
     const std::vector<u8>& ac_config = rp.PopStaticBuffer();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0); // Infra Priority, default 0
 
@@ -116,7 +116,7 @@ void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
 
     // TODO(Subv): Copy over the input ACConfig to the stored ACConfig.
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(std::move(ac_config), 0);
 
@@ -132,7 +132,7 @@ void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) 
         ac->disconnect_event->SetName("AC:disconnect_event");
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_AC, "(STUBBED) called");
@@ -141,7 +141,7 @@ void Module::Interface::RegisterDisconnectEvent(Kernel::HLERequestContext& ctx) 
 void Module::Interface::GetConnectingSsidLength(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x35, 0, 0};
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(static_cast<u32>(ac->connected_network_name.length()));
 
@@ -154,7 +154,7 @@ void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
     u32 unk_descriptor = rp.Pop<u32>();
     u32 unk_param = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ac->ac_connected);
 
@@ -168,7 +168,7 @@ void Module::Interface::SetClientVersion(Kernel::HLERequestContext& ctx) {
     u32 version = rp.Pop<u32>();
     rp.Skip(2, false); // ProcessId descriptor
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_AC, "(STUBBED) called, version: 0x{:08X}", version);

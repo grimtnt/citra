@@ -67,7 +67,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     }
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(result);
 }
 } // namespace Service::NWM

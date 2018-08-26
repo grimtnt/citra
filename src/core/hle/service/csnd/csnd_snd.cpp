@@ -23,7 +23,7 @@ void CSND_SND::Initialize(Kernel::HLERequestContext& ctx) {
                                                  MemoryPermission::ReadWrite, 0,
                                                  Kernel::MemoryRegion::BASE, "CSND:SharedMemory");
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 3)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 3)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(mutex, shared_memory);
 
@@ -41,7 +41,7 @@ void CSND_SND::Shutdown(Kernel::HLERequestContext& ctx) {
     if (shared_memory)
         shared_memory = nullptr;
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CSND, "(STUBBED) called");
@@ -51,7 +51,7 @@ void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x03, 1, 0};
     const u32 addr = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (!shared_memory) {
         rb.Push<u32>(1);
         LOG_ERROR(Service_CSND, "called, shared memory not allocated");
@@ -72,7 +72,7 @@ void CSND_SND::ExecuteCommands(Kernel::HLERequestContext& ctx) {
 void CSND_SND::AcquireSoundChannels(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 0, 0};
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0xFFFFFF00);
 
@@ -82,7 +82,7 @@ void CSND_SND::AcquireSoundChannels(Kernel::HLERequestContext& ctx) {
 void CSND_SND::ReleaseSoundChannels(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x06, 0, 0};
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CSND, "(STUBBED) called");
@@ -91,7 +91,7 @@ void CSND_SND::ReleaseSoundChannels(Kernel::HLERequestContext& ctx) {
 void CSND_SND::AcquireCapUnit(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x7, 0, 0};
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     if (capture_units[0] && capture_units[1]) {
         LOG_WARNING(Service_CSND, "No more capture units available");
         rb.Push(ResultCode(ErrorDescription::InvalidResultValue, ErrorModule::CSND,
@@ -118,7 +118,7 @@ void CSND_SND::ReleaseCapUnit(Kernel::HLERequestContext& ctx) {
 
     capture_units[index] = false;
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CSND, "(STUBBED) called, capture_unit_index={}", index);
@@ -130,7 +130,7 @@ void CSND_SND::FlushDataCache(Kernel::HLERequestContext& ctx) {
     const u32 size = rp.Pop<u32>();
     const auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_TRACE(Service_CSND, "(STUBBED) called address=0x{:08X}, size=0x{:08X}, process={}", address,
@@ -143,7 +143,7 @@ void CSND_SND::StoreDataCache(Kernel::HLERequestContext& ctx) {
     const u32 size = rp.Pop<u32>();
     const auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_TRACE(Service_CSND, "(STUBBED) called address=0x{:08X}, size=0x{:08X}, process={}", address,
@@ -156,7 +156,7 @@ void CSND_SND::InvalidateDataCache(Kernel::HLERequestContext& ctx) {
     const u32 size = rp.Pop<u32>();
     const auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_TRACE(Service_CSND, "(STUBBED) called address=0x{:08X}, size=0x{:08X}, process={}", address,
@@ -166,7 +166,7 @@ void CSND_SND::InvalidateDataCache(Kernel::HLERequestContext& ctx) {
 void CSND_SND::Reset(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xC, 0, 0};
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CSND, "(STUBBED) called");

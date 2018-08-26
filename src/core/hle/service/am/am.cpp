@@ -495,7 +495,7 @@ void Module::Interface::GetNumPrograms(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0001, 1, 0}; // 0x00010040
     u32 media_type = rp.Pop<u8>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(static_cast<u32>(am->am_title_list[media_type].size()));
 }
@@ -512,7 +512,7 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
     // Validate that only DLC TIDs are passed in
     u32 tid_high = static_cast<u32>(title_id >> 32);
     if (tid_high != TID_HIGH_DLC) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
         rb.Push(ResultCode(ErrCodes::InvalidTIDInList, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Usage));
         rb.PushMappedBuffer(content_requested_in);
@@ -539,7 +539,7 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
                           "Attempted to get info for non-existent content index {:04x}.",
                           content_requested[i]);
 
-                IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
+                IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
                 rb.Push<u32>(-1); // TODO(Steveice10): Find the right error code
                 rb.PushMappedBuffer(content_requested_in);
                 rb.PushMappedBuffer(content_info_out);
@@ -564,7 +564,7 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
         }
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(content_requested_in);
     rb.PushMappedBuffer(content_info_out);
@@ -582,7 +582,7 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
     // Validate that only DLC TIDs are passed in
     u32 tid_high = static_cast<u32>(title_id >> 32);
     if (tid_high != TID_HIGH_DLC) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidTIDInList, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Usage));
         rb.Push<u32>(0);
@@ -620,7 +620,7 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
         }
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(copied);
     rb.PushMappedBuffer(content_info_out);
@@ -633,7 +633,7 @@ void Module::Interface::DeleteContents(Kernel::HLERequestContext& ctx) {
     u32 content_count = rp.Pop<u32>();
     auto& content_ids_in = rp.PopMappedBuffer();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(content_ids_in);
     LOG_WARNING(Service_AM, "(STUBBED) media_type={}, title_id=0x{:016x}, content_count={}",
@@ -648,7 +648,7 @@ void Module::Interface::GetProgramList(Kernel::HLERequestContext& ctx) {
     auto& title_ids_output = rp.PopMappedBuffer();
 
     if (media_type > 2) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
         rb.Push<u32>(-1); // TODO(shinyquagsire23): Find the right error code
         rb.Push<u32>(0);
         rb.PushMappedBuffer(title_ids_output);
@@ -660,7 +660,7 @@ void Module::Interface::GetProgramList(Kernel::HLERequestContext& ctx) {
 
     title_ids_output.Write(am->am_title_list[media_type].data(), 0, copied * sizeof(u64));
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(copied);
     rb.PushMappedBuffer(title_ids_output);
@@ -707,7 +707,7 @@ void Module::Interface::GetProgramInfos(Kernel::HLERequestContext& ctx) {
 
     ResultCode result = GetTitleInfoFromList(title_id_list, media_type, title_info_out);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     rb.Push(result);
     rb.PushMappedBuffer(title_id_list_buffer);
     rb.PushMappedBuffer(title_info_out);
@@ -717,7 +717,7 @@ void Module::Interface::DeleteUserProgram(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0004, 3, 0};
     auto media_type = rp.PopEnum<FS::MediaType>();
     u64 title_id = rp.Pop<u64>();
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     u16 category = static_cast<u16>((title_id >> 32) & 0xFFFF);
     u8 variation = static_cast<u8>(title_id & 0xFF);
     if (category & CATEGORY_SYSTEM || category & CATEGORY_DLP || variation & VARIATION_SYSTEM) {
@@ -748,7 +748,7 @@ void Module::Interface::GetProductCode(Kernel::HLERequestContext& ctx) {
     std::string path = GetTitleContentPath(media_type, title_id);
 
     if (!FileUtil::Exists(path)) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::AM, ErrorSummary::InvalidState,
                            ErrorLevel::Permanent));
     } else {
@@ -758,7 +758,7 @@ void Module::Interface::GetProductCode(Kernel::HLERequestContext& ctx) {
 
         ProductCode product_code;
 
-        IPC::RequestBuilder rb{rp.MakeBuilder(6, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(6, 0)};
         FileSys::NCCHContainer ncch(path);
         ncch.Load();
         std::memcpy(&product_code.code, &ncch.ncch_header.product_code, 0x10);
@@ -794,7 +794,7 @@ void Module::Interface::GetDLCTitleInfos(Kernel::HLERequestContext& ctx) {
         result = GetTitleInfoFromList(title_id_list, media_type, title_info_out);
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     rb.Push(result);
     rb.PushMappedBuffer(title_id_list_buffer);
     rb.PushMappedBuffer(title_info_out);
@@ -827,7 +827,7 @@ void Module::Interface::GetPatchTitleInfos(Kernel::HLERequestContext& ctx) {
         result = GetTitleInfoFromList(title_id_list, media_type, title_info_out);
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     rb.Push(result);
     rb.PushMappedBuffer(title_id_list_buffer);
     rb.PushMappedBuffer(title_info_out);
@@ -851,7 +851,7 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
         write_offset += sizeof(TicketInfo);
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ticket_count);
     rb.PushMappedBuffer(ticket_info_out);
@@ -869,14 +869,14 @@ void Module::Interface::GetDLCContentInfoCount(Kernel::HLERequestContext& ctx) {
     // Validate that only DLC TIDs are passed in
     u32 tid_high = static_cast<u32>(title_id >> 32);
     if (tid_high != TID_HIGH_DLC) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidTID, ErrorModule::AM, ErrorSummary::InvalidArgument,
                            ErrorLevel::Usage));
         rb.Push<u32>(0);
         return;
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
 
     std::string tmd_path = GetTitleMetadataPath(media_type, title_id);
@@ -895,7 +895,7 @@ void Module::Interface::DeleteTicket(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0007, 2, 0}; // 0x00070080
     u64 title_id = rp.Pop<u64>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_AM, "(STUBBED) called title_id=0x{:016x}", title_id);
 }
@@ -904,7 +904,7 @@ void Module::Interface::GetNumTickets(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0008, 0, 0}; // 0x00080000
     u32 ticket_count = 0;
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ticket_count);
     LOG_WARNING(Service_AM, "(STUBBED) called ticket_count=0x{:08x}", ticket_count);
@@ -916,7 +916,7 @@ void Module::Interface::GetTicketList(Kernel::HLERequestContext& ctx) {
     u32 ticket_index = rp.Pop<u32>();
     auto& ticket_tids_out = rp.PopMappedBuffer();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ticket_list_count);
     rb.PushMappedBuffer(ticket_tids_out);
@@ -928,7 +928,7 @@ void Module::Interface::QueryAvailableTitleDatabase(Kernel::HLERequestContext& c
     IPC::RequestParser rp{ctx, 0x0019, 1, 0}; // 0x190040
     u8 media_type = rp.Pop<u8>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push(true);
 
@@ -944,7 +944,7 @@ void Module::Interface::CheckContentRights(Kernel::HLERequestContext& ctx) {
     bool has_rights =
         FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index));
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push(has_rights);
 
@@ -960,7 +960,7 @@ void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestConte
     bool has_rights =
         FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index));
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
     rb.Push(has_rights);
 
@@ -972,7 +972,7 @@ void Module::Interface::BeginImportProgram(Kernel::HLERequestContext& ctx) {
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
 
     if (am->cia_installing) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::CIACurrentlyInstalling, ErrorModule::AM,
                            ErrorSummary::InvalidState, ErrorLevel::Permanent));
         return;
@@ -986,7 +986,7 @@ void Module::Interface::BeginImportProgram(Kernel::HLERequestContext& ctx) {
 
     am->cia_installing = true;
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS); // No error
     rb.PushCopyObjects(file->Connect());
 
@@ -1000,7 +1000,7 @@ void Module::Interface::EndImportProgram(Kernel::HLERequestContext& ctx) {
     am->ScanForAllTitles();
 
     am->cia_installing = false;
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -1044,7 +1044,7 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
@@ -1052,7 +1052,7 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
@@ -1070,7 +1070,7 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     title_info.version = tmd.GetTitleVersion();
     title_info.type = tmd.GetTitleType();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(8, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(8, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.PushRaw<TitleInfo>(title_info);
 }
@@ -1082,7 +1082,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(file_res.Code());
         rb.PushMappedBuffer(output_buffer);
         return;
@@ -1093,7 +1093,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         rb.PushMappedBuffer(output_buffer);
@@ -1105,7 +1105,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
     auto read_result = file->backend->Read(
         container.GetMetadataOffset() + FileSys::CIA_METADATA_SIZE, temp.size(), temp.data());
     if (read_result.Failed() || *read_result != temp.size()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         rb.PushMappedBuffer(output_buffer);
@@ -1114,7 +1114,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
 
     output_buffer.Write(temp.data(), 0, temp.size());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(output_buffer);
 }
@@ -1125,7 +1125,7 @@ void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx)
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
@@ -1133,7 +1133,7 @@ void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx)
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
@@ -1142,7 +1142,7 @@ void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx)
     std::vector<u8> buffer(FileSys::CIA_DEPENDENCY_SIZE);
     std::memcpy(buffer.data(), container.GetDependencies().data(), buffer.size());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(buffer, 0);
 }
@@ -1153,7 +1153,7 @@ void Module::Interface::GetTransferSizeFromCia(Kernel::HLERequestContext& ctx) {
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
@@ -1161,13 +1161,13 @@ void Module::Interface::GetTransferSizeFromCia(Kernel::HLERequestContext& ctx) {
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(container.GetMetadataOffset());
 }
@@ -1178,7 +1178,7 @@ void Module::Interface::GetCoreVersionFromCia(Kernel::HLERequestContext& ctx) {
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
@@ -1186,13 +1186,13 @@ void Module::Interface::GetCoreVersionFromCia(Kernel::HLERequestContext& ctx) {
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(container.GetCoreVersion());
 }
@@ -1204,7 +1204,7 @@ void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
@@ -1212,7 +1212,7 @@ void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
@@ -1221,7 +1221,7 @@ void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
     // TODO(shinyquagsire23): Sizes allegedly depend on the mediatype, and will double
     // on some mediatypes. Since this is more of a required install size we'll report
     // what Citra needs, but it would be good to be more accurate here.
-    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(container.GetTitleMetadata().GetContentSizeByIndex(FileSys::TMDContentIndex::Main));
 }
@@ -1232,7 +1232,7 @@ void Module::Interface::DeleteProgram(Kernel::HLERequestContext& ctx) {
     u64 title_id = rp.Pop<u64>();
     LOG_INFO(Service_AM, "Deleting title 0x{:016x}", title_id);
     std::string path = GetTitlePath(media_type, title_id);
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (!FileUtil::Exists(path)) {
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::AM, ErrorSummary::InvalidState,
                            ErrorLevel::Permanent));
@@ -1252,7 +1252,7 @@ void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
@@ -1261,13 +1261,13 @@ void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
 
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(container.GetMetadataSize());
 }
@@ -1282,7 +1282,7 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
 
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(file_res.Code());
         rb.PushMappedBuffer(output_buffer);
         return;
@@ -1293,7 +1293,7 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     auto file = file_res.Unwrap();
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         rb.PushMappedBuffer(output_buffer);
@@ -1304,14 +1304,14 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     std::vector<u8> temp(output_size);
     auto read_result = file->backend->Read(container.GetMetadataOffset(), output_size, temp.data());
     if (read_result.Failed() || *read_result != output_size) {
-        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+        IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
         return;
     }
 
     output_buffer.Write(temp.data(), 0, output_size);
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(output_buffer);
 }

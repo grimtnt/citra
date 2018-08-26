@@ -43,9 +43,9 @@ public:
     }
 };
 
-class RequestBuilder : public RequestHelperBase {
+class ResponseBuilder : public RequestHelperBase {
 public:
-    RequestBuilder(Kernel::HLERequestContext& context, Header command_header)
+    ResponseBuilder(Kernel::HLERequestContext& context, Header command_header)
         : RequestHelperBase(context, command_header) {
         // From this point we will start overwriting the existing command buffer, so it's safe to
         // release all previous incoming Object pointers since they won't be usable anymore.
@@ -53,13 +53,13 @@ public:
         cmdbuf[0] = header.raw;
     }
 
-    RequestBuilder(Kernel::HLERequestContext& context, u16 command_id, unsigned normal_params_size,
-                   unsigned translate_params_size)
-        : RequestBuilder(
+    ResponseBuilder(Kernel::HLERequestContext& context, u16 command_id, unsigned normal_params_size,
+                    unsigned translate_params_size)
+        : ResponseBuilder(
               context, Header{MakeHeader(command_id, normal_params_size, translate_params_size)}) {}
 
     // Validate on destruction, as there shouldn't be any case where we don't want it
-    ~RequestBuilder() {
+    ~ResponseBuilder() {
         ValidateHeader();
     }
 
@@ -109,77 +109,77 @@ private:
 /// Push ///
 
 template <>
-inline void RequestBuilder::Push(u32 value) {
+inline void ResponseBuilder::Push(u32 value) {
     cmdbuf[index++] = value;
 }
 
 template <>
-inline void RequestBuilder::Push(s32 value) {
+inline void ResponseBuilder::Push(s32 value) {
     cmdbuf[index++] = static_cast<u32>(value);
 }
 
 template <typename T>
-void RequestBuilder::PushRaw(const T& value) {
+void ResponseBuilder::PushRaw(const T& value) {
     static_assert(std::is_trivially_copyable<T>(), "Raw types should be trivially copyable");
     std::memcpy(cmdbuf + index, &value, sizeof(T));
     index += (sizeof(T) + 3) / 4; // round up to word length
 }
 
 template <>
-inline void RequestBuilder::Push(u8 value) {
+inline void ResponseBuilder::Push(u8 value) {
     PushRaw(value);
 }
 
 template <>
-inline void RequestBuilder::Push(u16 value) {
+inline void ResponseBuilder::Push(u16 value) {
     PushRaw(value);
 }
 
 template <>
-inline void RequestBuilder::Push(u64 value) {
+inline void ResponseBuilder::Push(u64 value) {
     Push(static_cast<u32>(value));
     Push(static_cast<u32>(value >> 32));
 }
 
 template <>
-inline void RequestBuilder::Push(bool value) {
+inline void ResponseBuilder::Push(bool value) {
     Push(static_cast<u8>(value));
 }
 
 template <>
-inline void RequestBuilder::Push(ResultCode value) {
+inline void ResponseBuilder::Push(ResultCode value) {
     Push(value.raw);
 }
 
 template <typename First, typename... Other>
-void RequestBuilder::Push(const First& first_value, const Other&... other_values) {
+void ResponseBuilder::Push(const First& first_value, const Other&... other_values) {
     Push(first_value);
     Push(other_values...);
 }
 
 template <typename... H>
-inline void RequestBuilder::PushCopyHLEHandles(H... handles) {
+inline void ResponseBuilder::PushCopyHLEHandles(H... handles) {
     Push(CopyHandleDesc(sizeof...(H)));
     Push(static_cast<u32>(handles)...);
 }
 
 template <typename... H>
-inline void RequestBuilder::PushMoveHLEHandles(H... handles) {
+inline void ResponseBuilder::PushMoveHLEHandles(H... handles) {
     Push(MoveHandleDesc(sizeof...(H)));
     Push(static_cast<u32>(handles)...);
 }
 
 template <typename... O>
-inline void RequestBuilder::PushCopyObjects(Kernel::SharedPtr<O>... pointers) {
+inline void ResponseBuilder::PushCopyObjects(Kernel::SharedPtr<O>... pointers) {
     PushCopyHLEHandles(context->AddOutgoingHandle(std::move(pointers))...);
 }
 
 template <typename... O>
-inline void RequestBuilder::PushMoveObjects(Kernel::SharedPtr<O>... pointers) {
+inline void ResponseBuilder::PushMoveObjects(Kernel::SharedPtr<O>... pointers) {
     PushMoveHLEHandles(context->AddOutgoingHandle(std::move(pointers))...);
 }
 
-inline void RequestBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 buffer_id) {
+inline void ResponseBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 buffer_id) {
     ASSERT_MSG(buffer_id < MAX_STATIC_BUFFERS, "Invalid static buffer id");
 
     Push(StaticBufferDesc(buffer.size(), buffer_id));
@@ -189,7 +189,7 @@ inline void RequestBuilder::PushStaticBuffer(const std::vector<u8>& buffer, u8 b
     context->AddStaticBuffer(buffer_id, buffer);
 }
 
-inline void RequestBuilder::PushMappedBuffer(const Kernel::MappedBuffer& mapped_buffer) {
+inline void ResponseBuilder::PushMappedBuffer(const Kernel::MappedBuffer& mapped_buffer) {
     Push(mapped_buffer.GenerateDescriptor());
     Push(mapped_buffer.GetId());
 }
@@ -205,8 +205,8 @@ public:
                         Header{MakeHeader(command_id, normal_params_size, translate_params_size)}) {
     }
 
-    RequestBuilder MakeBuilder(u32 normal_params_size, u32 translate_params_size,
-                               bool validateHeader = true) {
+    ResponseBuilder MakeBuilder(u32 normal_params_size, u32 translate_params_size,
+                                bool validateHeader = true) {
         if (validateHeader)
             ValidateHeader();
         Header builderHeader{MakeHeader(static_cast<u16>(header.command_id), normal_params_size,

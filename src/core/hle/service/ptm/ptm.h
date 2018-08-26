@@ -36,7 +36,7 @@ struct GameCoin {
     u8 day;
 };
 
-void CheckNew3DS(IPC::RequestBuilder& rb);
+void CheckNew3DS(IPC::ResponseBuilder& rb);
 
 class Module final {
 public:

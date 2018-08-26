@@ -91,7 +91,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
                   offset, length, backend->GetSize());
     }
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
 
     std::vector<u8> data(length);
     ResultVal<size_t> read = backend->Read(offset, data.size(), data.data());
@@ -122,7 +122,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
     LOG_TRACE(Service_FS, "Write {}: offset=0x{:X}, length={}, flush=0x{:x}", GetName(), offset,
               length, flush);
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
@@ -152,7 +152,7 @@ void File::GetSize(Kernel::HLERequestContext& ctx) {
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u64>(file->size);
 }
@@ -163,7 +163,7 @@ void File::SetSize(Kernel::HLERequestContext& ctx) {
 
     FileSessionSlot* file = GetSessionData(ctx.Session());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     // SetSize can not be called on subfiles.
     if (file->subfile) {
@@ -185,14 +185,14 @@ void File::Close(Kernel::HLERequestContext& ctx) {
                     connected_sessions.size());
 
     backend->Close();
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void File::Flush(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0809, 0, 0};
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
@@ -212,7 +212,7 @@ void File::SetPriority(Kernel::HLERequestContext& ctx) {
     FileSessionSlot* file = GetSessionData(ctx.Session());
     file->priority = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
@@ -220,7 +220,7 @@ void File::GetPriority(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x080B, 0, 0};
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(file->priority);
 }
@@ -230,7 +230,7 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
     using Kernel::ServerSession;
     using Kernel::SharedPtr;
     IPC::RequestParser rp{ctx, 0x080C, 0, 0};
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     auto sessions = ServerSession::CreateSessionPair(GetName());
     auto server = std::get<SharedPtr<ServerSession>>(sessions);
     ClientConnected(server);
@@ -254,7 +254,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
     s64 offset = rp.PopRaw<s64>();
     s64 size = rp.PopRaw<s64>();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
 
     const FileSessionSlot* original_file = GetSessionData(ctx.Session());
 
@@ -333,7 +333,7 @@ void Directory::Read(Kernel::HLERequestContext& ctx) {
     u32 read = backend->Read(static_cast<u32>(entries.size()), entries.data());
     buffer.Write(entries.data(), 0, read * sizeof(FileSys::Entry));
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(read);
     rb.PushMappedBuffer(buffer);
@@ -344,7 +344,7 @@ void Directory::Close(Kernel::HLERequestContext& ctx) {
     LOG_TRACE(Service_FS, "Close {}", GetName());
     backend->Close();
 
-    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
