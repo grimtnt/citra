@@ -99,8 +99,8 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Core");
     Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
-    Settings::values.swkbd_implementation = static_cast<Settings::SwkbdImplementation>(
-        qt_config->value("swkbd_implementation", 1).toInt());
+    Settings::values.keyboard_mode =
+        static_cast<Settings::KeyboardMode>(qt_config->value("keyboard_mode", 1).toInt());
     qt_config->endGroup();
 
     qt_config->beginGroup("LLE");
@@ -323,8 +323,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Core");
     qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
-    qt_config->setValue("swkbd_implementation",
-                        static_cast<int>(Settings::values.swkbd_implementation));
+    qt_config->setValue("keyboard_mode", static_cast<int>(Settings::values.keyboard_mode));
     qt_config->endGroup();
 
     qt_config->beginGroup("LLE");

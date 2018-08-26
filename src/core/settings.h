@@ -12,7 +12,7 @@
 
 namespace Settings {
 
-enum class SwkbdImplementation { StdIn, Qt };
+enum class KeyboardMode { StdIn, Qt };
 
 enum class TicksMode { Auto, Accurate, Custom };
 
@@ -118,7 +118,7 @@ struct Values {
 
     // Core
     bool use_cpu_jit;
-    SwkbdImplementation swkbd_implementation;
+    KeyboardMode keyboard_mode;
 
     // LLE
     std::unordered_map<std::string, bool> lle_modules;

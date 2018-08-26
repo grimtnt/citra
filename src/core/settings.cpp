@@ -43,7 +43,7 @@ void LogSetting(const std::string& name, const T& value) {
 void LogSettings() {
     LOG_INFO(Config, "Citra Configuration:");
     LogSetting("Core_UseCpuJit", Settings::values.use_cpu_jit);
-    LogSetting("Core_SwkbdImplementation", static_cast<int>(Settings::values.swkbd_implementation));
+    LogSetting("Core_KeyboardMode", static_cast<int>(Settings::values.keyboard_mode));
     LogSetting("Renderer_UseHwRenderer", Settings::values.use_hw_renderer);
     LogSetting("Renderer_UseHwShader", Settings::values.use_hw_shader);
     LogSetting("Renderer_ShadersAccurateGs", Settings::values.shaders_accurate_gs);

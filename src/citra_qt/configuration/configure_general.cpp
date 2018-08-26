@@ -85,8 +85,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->language_combobox->setCurrentIndex(
         ui->language_combobox->findData(UISettings::values.language));
-    ui->combobox_swkbd_implementation->setCurrentIndex(
-        static_cast<int>(Settings::values.swkbd_implementation));
+    ui->combobox_keyboard_mode->setCurrentIndex(static_cast<int>(Settings::values.keyboard_mode));
     ui->toggle_console->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_console->setChecked(UISettings::values.show_console);
     ui->log_filter_edit->setText(QString::fromStdString(Settings::values.log_filter));
@@ -95,8 +94,8 @@ void ConfigureGeneral::setConfiguration() {
 void ConfigureGeneral::applyConfiguration() {
     UISettings::values.confirm_before_closing = ui->toggle_check_exit->isChecked();
     Settings::values.enable_new_mode = ui->toggle_new_mode->isChecked();
-    Settings::values.swkbd_implementation = static_cast<Settings::SwkbdImplementation>(
-        ui->combobox_swkbd_implementation->currentIndex());
+    Settings::values.keyboard_mode =
+        static_cast<Settings::KeyboardMode>(ui->combobox_keyboard_mode->currentIndex());
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     sd_card_root_changed = Settings::values.sd_card_root != ui->sd_card_root->text().toStdString();

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
-    <height>532</height>
+    <width>361</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,6 +45,13 @@
             </property>
             <property name="text">
              <string>Show Console</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="toggle_cpu_jit">
+            <property name="text">
+             <string>Enable CPU JIT</string>
             </property>
            </widget>
           </item>
@@ -98,16 +105,16 @@
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="layout_swkbd_implementation">
+           <layout class="QHBoxLayout" name="layout_keyboard_mode">
             <item>
-             <widget class="QLabel" name="label_swkbd_implementation">
+             <widget class="QLabel" name="label_keyboard_mode">
               <property name="text">
-               <string>Software keyboard implementation</string>
+               <string>Keyboard Mode</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="combobox_swkbd_implementation">
+             <widget class="QComboBox" name="combobox_keyboard_mode">
               <item>
                <property name="text">
                 <string>StdIn</string>
@@ -122,45 +129,26 @@
             </item>
            </layout>
           </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox_2">
-       <property name="title">
-        <string>Performance</string>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_7">
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QCheckBox" name="toggle_cpu_jit">
-            <property name="text">
-             <string>Enable CPU JIT</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="layout_theme">
+            <item>
+             <widget class="QLabel" name="theme_label">
+              <property name="text">
+               <string>Theme</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="theme_combobox"/>
+            </item>
+           </layout>
           </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="groupBox_4">
-       <property name="title">
-        <string>Emulation</string>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>Region:</string>
+               <string>Region</string>
               </property>
              </widget>
             </item>
@@ -207,33 +195,6 @@
                </property>
               </item>
              </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="QGroupBox" name="theme_group_box">
-       <property name="title">
-        <string>Theme</string>
-       </property>
-       <layout class="QHBoxLayout" name="theme_qhbox_layout">
-        <item>
-         <layout class="QVBoxLayout" name="theme_qvbox_layout">
-          <item>
-           <layout class="QHBoxLayout" name="theme_qhbox_layout_2">
-            <item>
-             <widget class="QLabel" name="theme_label">
-              <property name="text">
-               <string>Theme:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="theme_combobox"/>
             </item>
            </layout>
           </item>

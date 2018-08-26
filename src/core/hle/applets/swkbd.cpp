@@ -202,7 +202,7 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 void SoftwareKeyboard::Update() {
     auto cb = Core::System::GetInstance().GetQtCallbacks().swkbd;
 
-    if (Settings::values.swkbd_implementation == Settings::SwkbdImplementation::Qt && cb) {
+    if (Settings::values.keyboard_mode == Settings::KeyboardMode::Qt && cb) {
         // Call the function registered by the Qt frontend
         std::u16string text;
         cb(config, text);
