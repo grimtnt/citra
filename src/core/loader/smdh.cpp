@@ -22,8 +22,8 @@ bool IsValidSMDH(const std::vector<u8>& smdh_data) {
 }
 
 std::vector<u16> SMDH::GetIcon(bool large) const {
-    u32 size;
-    const u8* icon_data;
+    u32 size{};
+    const u8* icon_data{};
 
     if (large) {
         size = 48;
@@ -53,9 +53,8 @@ SMDH::GameRegion SMDH::GetRegion() const {
         return GameRegion::RegionFree;
     }
 
-    constexpr u32 REGION_COUNT = 7;
-    u32 region = 0;
-    for (; region < REGION_COUNT; ++region) {
+    constexpr u32 REGION_COUNT{7};
+    for (u32 region = 0; region < REGION_COUNT; ++region) {
         if (region_lockout & (1 << region)) {
             return static_cast<GameRegion>(region);
         }

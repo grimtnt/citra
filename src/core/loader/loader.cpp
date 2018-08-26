@@ -22,7 +22,7 @@ const std::initializer_list<Kernel::AddressMapping> default_address_mappings = {
 };
 
 FileType IdentifyFile(FileUtil::IOFile& file) {
-    FileType type;
+    FileType type{};
 
 #define CHECK_TYPE(loader)                                                                         \
     type = AppLoader_##loader::IdentifyType(file);                                                 \
@@ -39,7 +39,7 @@ FileType IdentifyFile(FileUtil::IOFile& file) {
 }
 
 FileType IdentifyFile(const std::string& file_name) {
-    FileUtil::IOFile file(file_name, "rb");
+    FileUtil::IOFile file{file_name, "rb"};
     if (!file.IsOpen()) {
         LOG_ERROR(Loader, "Failed to load file {}", file_name);
         return FileType::Unknown;
@@ -49,7 +49,7 @@ FileType IdentifyFile(const std::string& file_name) {
 }
 
 FileType GuessFromExtension(const std::string& extension_) {
-    std::string extension = Common::ToLower(extension_);
+    std::string extension{Common::ToLower(extension_)};
 
     if (extension == ".elf" || extension == ".axf")
         return FileType::ELF;
@@ -121,17 +121,17 @@ static std::unique_ptr<AppLoader> GetFileLoader(FileUtil::IOFile&& file, FileTyp
 }
 
 std::unique_ptr<AppLoader> GetLoader(const std::string& filename) {
-    FileUtil::IOFile file(filename, "rb");
+    FileUtil::IOFile file{filename, "rb"};
     if (!file.IsOpen()) {
         LOG_ERROR(Loader, "Failed to load file {}", filename);
         return nullptr;
     }
 
-    std::string filename_filename, filename_extension;
+    std::string filename_filename{}, filename_extension{};
     Common::SplitPath(filename, nullptr, &filename_filename, &filename_extension);
 
-    FileType type = IdentifyFile(file);
-    FileType filename_type = GuessFromExtension(filename_extension);
+    FileType type{IdentifyFile(file)};
+    FileType filename_type{GuessFromExtension(filename_extension)};
 
     if (type != filename_type) {
         LOG_WARNING(Loader, "File {} has a different type than its extension.", filename);

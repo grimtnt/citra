@@ -37,8 +37,8 @@ namespace Loader {
 
 enum THREEDSX_Error { ERROR_NONE = 0, ERROR_READ = 1, ERROR_FILE = 2, ERROR_ALLOC = 3 };
 
-static const u32 RELOCBUFSIZE = 512;
-static const unsigned int NUM_SEGMENTS = 3;
+static const u32 RELOCBUFSIZE{512};
+static const unsigned int NUM_SEGMENTS{3};
 
 // File header
 #pragma pack(1)
@@ -102,17 +102,17 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
     // Reset read pointer in case this file has been read before.
     file.Seek(0, SEEK_SET);
 
-    THREEDSX_Header hdr;
+    THREEDSX_Header hdr{};
     if (file.ReadBytes(&hdr, sizeof(hdr)) != sizeof(hdr))
         return ERROR_READ;
 
-    THREEloadinfo loadinfo;
+    THREEloadinfo loadinfo{};
     // loadinfo segments must be a multiple of 0x1000
     loadinfo.seg_sizes[0] = (hdr.code_seg_size + 0xFFF) & ~0xFFF;
     loadinfo.seg_sizes[1] = (hdr.rodata_seg_size + 0xFFF) & ~0xFFF;
     loadinfo.seg_sizes[2] = (hdr.data_seg_size + 0xFFF) & ~0xFFF;
     u32 offsets[2] = {loadinfo.seg_sizes[0], loadinfo.seg_sizes[0] + loadinfo.seg_sizes[1]};
-    u32 n_reloc_tables = hdr.reloc_hdr_size / sizeof(u32);
+    u32 n_reloc_tables{static_cast<u32>(hdr.reloc_hdr_size / sizeof(u32))};
     std::vector<u8> program_image(loadinfo.seg_sizes[0] + loadinfo.seg_sizes[1] +
                                   loadinfo.seg_sizes[2]);
 
@@ -127,7 +127,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
     file.Seek(hdr.header_size, SEEK_SET);
 
     // Read the relocation headers
-    std::vector<u32> relocs(n_reloc_tables * NUM_SEGMENTS);
+    std::vector<u32> relocs{n_reloc_tables * NUM_SEGMENTS};
     for (unsigned int current_segment = 0; current_segment < NUM_SEGMENTS; ++current_segment) {
         size_t size = n_reloc_tables * sizeof(u32);
         if (file.ReadBytes(&relocs[current_segment * n_reloc_tables], size) != size)
@@ -162,7 +162,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
             const u32* end_pos = pos + (loadinfo.seg_sizes[current_segment] / 4);
 
             while (n_relocs) {
-                u32 remaining = std::min(RELOCBUFSIZE, n_relocs);
+                u32 remaining{std::min(RELOCBUFSIZE, n_relocs)};
                 n_relocs -= remaining;
 
                 if (file.ReadBytes(reloc_table, remaining * sizeof(THREEDSX_Reloc)) !=
@@ -175,13 +175,13 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
                     LOG_TRACE(Loader, "(t={},skip={},patch={})", current_segment_reloc_table,
                               static_cast<u32>(table.skip), static_cast<u32>(table.patch));
                     pos += table.skip;
-                    s32 num_patches = table.patch;
+                    s32 num_patches{table.patch};
                     while (0 < num_patches && pos < end_pos) {
                         u32 in_addr = base_addr + static_cast<u32>(reinterpret_cast<u8*>(pos) -
                                                                    program_image.data());
-                        u32 orig_data = *pos;
-                        u32 sub_type = orig_data >> (32 - 4);
-                        u32 addr = TranslateAddr(orig_data & ~0xF0000000, &loadinfo, offsets);
+                        u32 orig_data{*pos};
+                        u32 sub_type{orig_data >> (32 - 4)};
+                        u32 addr{TranslateAddr(orig_data & ~0xF0000000, &loadinfo, offsets)};
                         LOG_TRACE(Loader, "Patching {:08X} <-- rel({:08X},{}) ({:08X})", in_addr,
                                   addr, current_segment_reloc_table, *pos);
                         switch (current_segment_reloc_table) {
@@ -192,7 +192,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
                             break;
                         }
                         case 1: {
-                            u32 data = addr - in_addr;
+                            u32 data{addr - in_addr};
                             switch (sub_type) {
                             case 0: // 32-bit signed offset
                                 *pos = data;
@@ -217,7 +217,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
     }
 
     // Create the CodeSet
-    SharedPtr<CodeSet> code_set = CodeSet::Create("", 0);
+    SharedPtr<CodeSet> code_set{CodeSet::Create("", 0)};
 
     code_set->CodeSegment().offset = loadinfo.seg_ptrs[0] - program_image.data();
     code_set->CodeSegment().addr = loadinfo.seg_addrs[0];
@@ -244,7 +244,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
 }
 
 FileType AppLoader_THREEDSX::IdentifyType(FileUtil::IOFile& file) {
-    u32 magic;
+    u32 magic{};
     file.Seek(0, SEEK_SET);
     if (1 != file.ReadArray<u32>(&magic, 1))
         return FileType::Error;
@@ -262,7 +262,7 @@ ResultStatus AppLoader_THREEDSX::Load(Kernel::SharedPtr<Kernel::Process>& proces
     if (!file.IsOpen())
         return ResultStatus::Error;
 
-    SharedPtr<CodeSet> codeset;
+    SharedPtr<CodeSet> codeset{};
     if (Load3DSXFile(file, Memory::PROCESS_IMAGE_VADDR, &codeset) != ERROR_NONE)
         return ResultStatus::Error;
     codeset->name = filename;
@@ -290,7 +290,7 @@ ResultStatus AppLoader_THREEDSX::ReadRomFS(std::shared_ptr<FileSys::RomFSReader>
     // Reset read pointer in case this file has been read before.
     file.Seek(0, SEEK_SET);
 
-    THREEDSX_Header hdr;
+    THREEDSX_Header hdr{};
     if (file.ReadBytes(&hdr, sizeof(THREEDSX_Header)) != sizeof(THREEDSX_Header))
         return ResultStatus::Error;
 
@@ -299,14 +299,14 @@ ResultStatus AppLoader_THREEDSX::ReadRomFS(std::shared_ptr<FileSys::RomFSReader>
 
     // Check if the 3DSX has a RomFS...
     if (hdr.fs_offset != 0) {
-        u32 romfs_offset = hdr.fs_offset;
-        u32 romfs_size = static_cast<u32>(file.GetSize()) - hdr.fs_offset;
+        u32 romfs_offset{hdr.fs_offset};
+        u32 romfs_size{static_cast<u32>(file.GetSize()) - hdr.fs_offset};
 
         LOG_DEBUG(Loader, "RomFS offset:           {:#010X}", romfs_offset);
         LOG_DEBUG(Loader, "RomFS size:             {:#010X}", romfs_size);
 
         // We reopen the file, to allow its position to be independent from file's
-        FileUtil::IOFile romfs_file_inner(filepath, "rb");
+        FileUtil::IOFile romfs_file_inner{filepath, "rb"};
         if (!romfs_file_inner.IsOpen())
             return ResultStatus::Error;
 
@@ -326,7 +326,7 @@ ResultStatus AppLoader_THREEDSX::ReadIcon(std::vector<u8>& buffer) {
     // Reset read pointer in case this file has been read before.
     file.Seek(0, SEEK_SET);
 
-    THREEDSX_Header hdr;
+    THREEDSX_Header hdr{};
     if (file.ReadBytes(&hdr, sizeof(THREEDSX_Header)) != sizeof(THREEDSX_Header))
         return ResultStatus::Error;
 

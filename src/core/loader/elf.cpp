@@ -297,18 +297,18 @@ SharedPtr<CodeSet> ElfReader::LoadInto(u32 vaddr) {
     }
 
     std::vector<u8> program_image(total_image_size);
-    size_t current_image_position = 0;
+    size_t current_image_position{};
 
-    SharedPtr<CodeSet> codeset = CodeSet::Create("", 0);
+    SharedPtr<CodeSet> codeset{CodeSet::Create("", 0)};
 
     for (unsigned int i = 0; i < header->e_phnum; ++i) {
-        Elf32_Phdr* p = &segments[i];
+        Elf32_Phdr* p{&segments[i]};
         LOG_DEBUG(Loader, "Type: {} Vaddr: {:08X} Filesz: {:08X} Memsz: {:08X} ", p->p_type,
                   p->p_vaddr, p->p_filesz, p->p_memsz);
 
         if (p->p_type == PT_LOAD) {
-            CodeSet::Segment* codeset_segment;
-            u32 permission_flags = p->p_flags & (PF_R | PF_W | PF_X);
+            CodeSet::Segment* codeset_segment{};
+            u32 permission_flags{p->p_flags & (PF_R | PF_W | PF_X)};
             if (permission_flags == (PF_R | PF_X)) {
                 codeset_segment = &codeset->CodeSegment();
             } else if (permission_flags == (PF_R)) {
@@ -329,8 +329,8 @@ SharedPtr<CodeSet> ElfReader::LoadInto(u32 vaddr) {
                 continue;
             }
 
-            u32 segment_addr = base_addr + p->p_vaddr;
-            u32 aligned_size = (p->p_memsz + 0xFFF) & ~0xFFF;
+            u32 segment_addr{base_addr + p->p_vaddr};
+            u32 aligned_size{(p->p_memsz + 0xFFF) & ~0xFFF};
 
             codeset_segment->offset = current_image_position;
             codeset_segment->addr = segment_addr;
@@ -351,7 +351,7 @@ SharedPtr<CodeSet> ElfReader::LoadInto(u32 vaddr) {
 
 SectionID ElfReader::GetSectionByName(const char* name, int firstSection) const {
     for (int i = firstSection; i < header->e_shnum; i++) {
-        const char* secname = GetSectionName(i);
+        const char* secname{GetSectionName(i)};
 
         if (secname != nullptr && strcmp(name, secname) == 0)
             return i;
@@ -365,7 +365,7 @@ SectionID ElfReader::GetSectionByName(const char* name, int firstSection) const 
 namespace Loader {
 
 FileType AppLoader_ELF::IdentifyType(FileUtil::IOFile& file) {
-    u32 magic;
+    u32 magic{};
     file.Seek(0, SEEK_SET);
     if (1 != file.ReadArray<u32>(&magic, 1))
         return FileType::Error;
@@ -386,13 +386,13 @@ ResultStatus AppLoader_ELF::Load(Kernel::SharedPtr<Kernel::Process>& process) {
     // Reset read pointer in case this file has been read before.
     file.Seek(0, SEEK_SET);
 
-    size_t size = file.GetSize();
-    std::unique_ptr<u8[]> buffer(new u8[size]);
+    size_t size{file.GetSize()};
+    std::unique_ptr<u8[]> buffer{new u8[size]};
     if (file.ReadBytes(&buffer[0], size) != size)
         return ResultStatus::Error;
 
-    ElfReader elf_reader(&buffer[0]);
-    SharedPtr<CodeSet> codeset = elf_reader.LoadInto(Memory::PROCESS_IMAGE_VADDR);
+    ElfReader elf_reader{&buffer[0]};
+    SharedPtr<CodeSet> codeset{elf_reader.LoadInto(Memory::PROCESS_IMAGE_VADDR)};
     codeset->name = filename;
 
     process = Kernel::Process::Create(std::move(codeset));

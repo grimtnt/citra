@@ -33,7 +33,7 @@ namespace Loader {
 static const u64 UPDATE_MASK = 0x0000000e00000000;
 
 FileType AppLoader_NCCH::IdentifyType(FileUtil::IOFile& file) {
-    u32 magic;
+    u32 magic{};
     file.Seek(0x100, SEEK_SET);
     if (1 != file.ReadArray<u32>(&magic, 1))
         return FileType::Error;
@@ -49,7 +49,7 @@ FileType AppLoader_NCCH::IdentifyType(FileUtil::IOFile& file) {
 
 std::pair<boost::optional<u32>, ResultStatus> AppLoader_NCCH::LoadKernelSystemMode() {
     if (!is_loaded) {
-        ResultStatus res = base_ncch.Load();
+        ResultStatus res{base_ncch.Load()};
         if (res != ResultStatus::Success) {
             return std::make_pair(boost::none, res);
         }
@@ -67,14 +67,14 @@ ResultStatus AppLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& proces
     if (!is_loaded)
         return ResultStatus::ErrorNotLoaded;
 
-    std::vector<u8> code;
-    u64_le program_id;
+    std::vector<u8> code{};
+    u64_le program_id{};
     if (ResultStatus::Success == ReadCode(code) &&
         ResultStatus::Success == ReadProgramId(program_id)) {
-        std::string process_name = Common::StringFromFixedZeroTerminatedBuffer(
-            (const char*)overlay_ncch->exheader_header.codeset_info.name, 8);
+        std::string process_name{Common::StringFromFixedZeroTerminatedBuffer(
+            (const char*)overlay_ncch->exheader_header.codeset_info.name, 8)};
 
-        SharedPtr<CodeSet> codeset = CodeSet::Create(process_name, program_id);
+        SharedPtr<CodeSet> codeset{CodeSet::Create(process_name, program_id)};
 
         codeset->CodeSegment().offset = 0;
         codeset->CodeSegment().addr = overlay_ncch->exheader_header.codeset_info.text.address;
@@ -89,7 +89,7 @@ ResultStatus AppLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& proces
 
         // TODO(yuriks): Not sure if the bss size is added to the page-aligned .data size or just
         //               to the regular size. Playing it safe for now.
-        u32 bss_page_size = (overlay_ncch->exheader_header.codeset_info.bss_size + 0xFFF) & ~0xFFF;
+        u32 bss_page_size{(overlay_ncch->exheader_header.codeset_info.bss_size + 0xFFF) & ~0xFFF};
         code.resize(code.size() + bss_page_size, 0);
 
         codeset->DataSegment().offset =
@@ -120,8 +120,8 @@ ResultStatus AppLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& proces
                     begin(kernel_caps));
         process->ParseKernelCaps(kernel_caps.data(), kernel_caps.size());
 
-        s32 priority = overlay_ncch->exheader_header.arm11_system_local_caps.priority;
-        u32 stack_size = overlay_ncch->exheader_header.codeset_info.stack_size;
+        s32 priority{overlay_ncch->exheader_header.arm11_system_local_caps.priority};
+        u32 stack_size{overlay_ncch->exheader_header.codeset_info.stack_size};
         process->Run(priority, stack_size);
         return ResultStatus::Success;
     }
@@ -129,9 +129,9 @@ ResultStatus AppLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& proces
 }
 
 void AppLoader_NCCH::ParseRegionLockoutInfo() {
-    std::vector<u8> smdh_buffer;
+    std::vector<u8> smdh_buffer{};
     if (ReadIcon(smdh_buffer) == ResultStatus::Success && smdh_buffer.size() >= sizeof(SMDH)) {
-        SMDH smdh;
+        SMDH smdh{};
         memcpy(&smdh, smdh_buffer.data(), sizeof(SMDH));
         u32 region_lockout = smdh.region_lockout;
         constexpr u32 REGION_COUNT = 7;
@@ -146,12 +146,12 @@ void AppLoader_NCCH::ParseRegionLockoutInfo() {
 }
 
 ResultStatus AppLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& process) {
-    u64_le ncch_program_id;
+    u64_le ncch_program_id{};
 
     if (is_loaded)
         return ResultStatus::ErrorAlreadyLoaded;
 
-    ResultStatus result = base_ncch.Load();
+    ResultStatus result{base_ncch.Load()};
     if (result != ResultStatus::Success)
         return result;
 
@@ -209,7 +209,7 @@ ResultStatus AppLoader_NCCH::ReadRomFS(std::shared_ptr<FileSys::RomFSReader>& ro
 }
 
 ResultStatus AppLoader_NCCH::ReadUpdateRomFS(std::shared_ptr<FileSys::RomFSReader>& romfs_file) {
-    ResultStatus result = update_ncch.ReadRomFS(romfs_file);
+    ResultStatus result{update_ncch.ReadRomFS(romfs_file)};
 
     if (result != ResultStatus::Success)
         return base_ncch.ReadRomFS(romfs_file);
@@ -218,8 +218,8 @@ ResultStatus AppLoader_NCCH::ReadUpdateRomFS(std::shared_ptr<FileSys::RomFSReade
 }
 
 ResultStatus AppLoader_NCCH::ReadTitle(std::string& title) {
-    std::vector<u8> data;
-    Loader::SMDH smdh;
+    std::vector<u8> data{};
+    Loader::SMDH smdh{};
     ReadIcon(data);
 
     if (!Loader::IsValidSMDH(data)) {
@@ -228,8 +228,8 @@ ResultStatus AppLoader_NCCH::ReadTitle(std::string& title) {
 
     memcpy(&smdh, data.data(), sizeof(Loader::SMDH));
 
-    const auto& short_title = smdh.GetShortTitle(SMDH::TitleLanguage::English);
-    auto title_end = std::find(short_title.begin(), short_title.end(), u'\0');
+    const auto& short_title{smdh.GetShortTitle(SMDH::TitleLanguage::English)};
+    auto title_end{std::find(short_title.begin(), short_title.end(), u'\0')};
     title = Common::UTF16ToUTF8(std::u16string{short_title.begin(), title_end});
 
     return ResultStatus::Success;
