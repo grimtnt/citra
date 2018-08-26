@@ -363,5 +363,5 @@ void SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
 /// Sets the circle state. Used by RPC for CircleState requests.
 void SetCircleState(s16 x, s16 y);
 
-PadState& GetInputsThisFrame();
+const PadState& GetInputsThisFrame();
 } // namespace Service::HID

@@ -130,7 +130,7 @@ void CheatEngine::Run() {
 }
 
 void GatewayCheat::Execute() {
-    if (enabled == false)
+    if (!enabled)
         return;
     u32 addr{0};
     u32 reg{0};
@@ -238,9 +238,9 @@ void GatewayCheat::Execute() {
                                          // half[XXXXXXX])
             if (line.address == 0)
                 line.address = offset;
-            int x = line.address & 0x0FFFFFFF;
-            int y = line.value & 0xFFFF;
-            int z = line.value >> 16;
+            u32 x{line.address & 0x0FFFFFFF};
+            u32 y{line.value & 0xFFFF};
+            u32 z{line.value >> 16};
             val = Memory::Read16(x);
             if (y > (u16)((~z) & val)) {
                 if (if_flag > 0)
@@ -254,9 +254,9 @@ void GatewayCheat::Execute() {
                                       // half[XXXXXXX])
             if (line.address == 0)
                 line.address = offset;
-            int x = line.address & 0x0FFFFFFF;
-            int y = line.value & 0xFFFF;
-            int z = line.value >> 16;
+            u32 x{line.address & 0x0FFFFFFF};
+            u32 y{line.value & 0xFFFF};
+            u32 z{line.value >> 16};
             val = Memory::Read16(x);
             if (y < (u16)((~z) & val)) {
                 if (if_flag > 0)
@@ -269,9 +269,9 @@ void GatewayCheat::Execute() {
         case CheatType::EqualTo16: { // 9XXXXXXX ZZZZYYYY   IF YYYY = ((not ZZZZ) AND half[XXXXXXX])
             if (line.address == 0)
                 line.address = offset;
-            int x = line.address & 0x0FFFFFFF;
-            int y = line.value & 0xFFFF;
-            int z = line.value >> 16;
+            u32 x{line.address & 0x0FFFFFFF};
+            u32 y{line.value & 0xFFFF};
+            u32 z{line.value >> 16};
             val = Memory::Read16(x);
             if (y == (u16)((~z) & val)) {
                 if (if_flag > 0)
@@ -285,9 +285,9 @@ void GatewayCheat::Execute() {
                                         // half[XXXXXXX])
             if (line.address == 0)
                 line.address = offset;
-            int x = line.address & 0x0FFFFFFF;
-            int y = line.value & 0xFFFF;
-            int z = line.value >> 16;
+            u32 x{line.address & 0x0FFFFFFF};
+            u32 y{line.value & 0xFFFF};
+            u32 z{line.value >> 16};
             val = Memory::Read16(x);
             if (y != (u16)((~z) & val)) {
                 if (if_flag > 0)
@@ -381,8 +381,8 @@ void GatewayCheat::Execute() {
             break;
         }
         case CheatType::Joker: {
-            auto state = Service::HID::GetInputsThisFrame();
-            auto result = (state.hex & line.value) == line.value;
+            auto state{Service::HID::GetInputsThisFrame()};
+            bool result{(state.hex & line.value) == line.value};
             if (result) {
                 if (if_flag > 0)
                     if_flag--;
@@ -395,15 +395,15 @@ void GatewayCheat::Execute() {
             // Patch Code (Miscellaneous Memory Manipulation Codes)
             // EXXXXXXX YYYYYYYY
             // Copies YYYYYYYY bytes from (current code location + 8) to [XXXXXXXX + offset].
-            auto x = line.address & 0x0FFFFFFF;
-            auto y = line.value;
+            u32 x{line.address & 0x0FFFFFFF};
+            u32 y{line.value};
             addr = x + offset;
             {
                 u32 j = 0, t = 0, b = 0;
                 if (y > 0)
                     i++; // skip over the current code
                 while (y >= 4) {
-                    u32 tmp = (t == 0) ? cheat_lines[i].address : cheat_lines[i].value;
+                    u32 tmp{(t == 0) ? cheat_lines[i].address : cheat_lines[i].value};
                     if (t == 1)
                         i++;
                     t ^= 1;
@@ -412,7 +412,7 @@ void GatewayCheat::Execute() {
                     y -= 4;
                 }
                 while (y > 0) {
-                    u32 tmp = ((t == 0) ? cheat_lines[i].address : cheat_lines[i].value) >> b;
+                    u32 tmp{((t == 0) ? cheat_lines[i].address : cheat_lines[i].value) >> b};
                     Memory::Write8(addr, tmp);
                     addr += 1;
                     y -= 1;

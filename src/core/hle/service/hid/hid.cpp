@@ -233,7 +233,7 @@ void Module::UpdateAccelerometerCallback(u64 userdata, s64 cycles_late) {
     CoreTiming::ScheduleEvent(accelerometer_update_ticks - cycles_late, accelerometer_update_event);
 }
 
-PadState& GetInputsThisFrame() {
+const PadState& GetInputsThisFrame() {
     return inputs_this_frame;
 }
 
