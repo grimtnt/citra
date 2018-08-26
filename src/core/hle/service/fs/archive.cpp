@@ -70,9 +70,9 @@ File::File(std::unique_ptr<FileSys::FileBackend>&& backend, const FileSys::Path&
 
 void File::Read(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0802, 3, 2};
-    u64 offset = rp.Pop<u64>();
-    u32 length = rp.Pop<u32>();
-    auto& buffer = rp.PopMappedBuffer();
+    u64 offset{rp.Pop<u64>()};
+    u32 length{rp.Pop<u32>()};
+    auto& buffer{rp.PopMappedBuffer()};
     LOG_TRACE(Service_FS, "Read {}: offset=0x{:X} length=0x{:08X}", GetName(), offset, length);
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
@@ -115,10 +115,10 @@ void File::Read(Kernel::HLERequestContext& ctx) {
 
 void File::Write(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0803, 4, 2};
-    u64 offset = rp.Pop<u64>();
-    u32 length = rp.Pop<u32>();
-    u32 flush = rp.Pop<u32>();
-    auto& buffer = rp.PopMappedBuffer();
+    u64 offset{rp.Pop<u64>()};
+    u32 length{rp.Pop<u32>()};
+    u32 flush{rp.Pop<u32>()};
+    auto& buffer{rp.PopMappedBuffer()};
     LOG_TRACE(Service_FS, "Write {}: offset=0x{:X}, length={}, flush=0x{:x}", GetName(), offset,
               length, flush);
 
@@ -159,7 +159,7 @@ void File::GetSize(Kernel::HLERequestContext& ctx) {
 
 void File::SetSize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0805, 2, 0};
-    u64 size = rp.Pop<u64>();
+    u64 size{rp.Pop<u64>()};
 
     FileSessionSlot* file = GetSessionData(ctx.Session());
 
@@ -251,8 +251,8 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
 
 void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0801, 4, 0};
-    s64 offset = rp.PopRaw<s64>();
-    s64 size = rp.PopRaw<s64>();
+    s64 offset{rp.PopRaw<s64>()};
+    s64 size{rp.PopRaw<s64>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
 
@@ -325,8 +325,8 @@ Directory::~Directory() {}
 
 void Directory::Read(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0801, 1, 2};
-    u32 count = rp.Pop<u32>();
-    auto& buffer = rp.PopMappedBuffer();
+    u32 count{rp.Pop<u32>()};
+    auto& buffer{rp.PopMappedBuffer()};
     std::vector<FileSys::Entry> entries(count);
     LOG_TRACE(Service_FS, "Read {}: count={}", GetName(), count);
     // Number of entries actually read

@@ -12,7 +12,7 @@ namespace Service::NFC {
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 1, 0};
-    u8 param = rp.Pop<u8>();
+    u8 param{rp.Pop<u8>()};
 
     nfc->nfc_tag_state = TagState::NotScanning;
 
@@ -23,7 +23,7 @@ void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::Shutdown(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x02, 1, 0};
-    u8 param = rp.Pop<u8>();
+    u8 param{rp.Pop<u8>()};
 
     nfc->nfc_tag_state = TagState::NotInitialized;
 
@@ -50,7 +50,7 @@ void Module::Interface::StopCommunication(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::StartTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 1, 0}; // 0x00050040
-    u16 in_val = rp.Pop<u16>();
+    u16 in_val{rp.Pop<u16>()};
 
     ResultCode result = RESULT_SUCCESS;
 

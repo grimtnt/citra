@@ -198,9 +198,9 @@ static ResultCode WriteHWRegsWithMask(u32 base_address, u32 size_in_bytes,
 
 void GSP_GPU::WriteHWRegs(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1, 2, 2};
-    u32 reg_addr = rp.Pop<u32>();
-    u32 size = rp.Pop<u32>();
-    std::vector<u8> src_data = rp.PopStaticBuffer();
+    u32 reg_addr{rp.Pop<u32>()};
+    u32 size{rp.Pop<u32>()};
+    std::vector<u8> src_data{rp.PopStaticBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(GSP::WriteHWRegs(reg_addr, size, src_data));
@@ -208,11 +208,11 @@ void GSP_GPU::WriteHWRegs(Kernel::HLERequestContext& ctx) {
 
 void GSP_GPU::WriteHWRegsWithMask(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x2, 2, 4};
-    u32 reg_addr = rp.Pop<u32>();
-    u32 size = rp.Pop<u32>();
+    u32 reg_addr{rp.Pop<u32>()};
+    u32 size{rp.Pop<u32>()};
 
-    std::vector<u8> src_data = rp.PopStaticBuffer();
-    std::vector<u8> mask_data = rp.PopStaticBuffer();
+    std::vector<u8> src_data{rp.PopStaticBuffer()};
+    std::vector<u8> mask_data{rp.PopStaticBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(GSP::WriteHWRegsWithMask(reg_addr, size, src_data, mask_data));
@@ -220,8 +220,8 @@ void GSP_GPU::WriteHWRegsWithMask(Kernel::HLERequestContext& ctx) {
 
 void GSP_GPU::ReadHWRegs(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x4, 2, 0};
-    u32 reg_addr = rp.Pop<u32>();
-    u32 input_size = rp.Pop<u32>();
+    u32 reg_addr{rp.Pop<u32>()};
+    u32 input_size{rp.Pop<u32>()};
 
     static constexpr u32 MaxReadSize = 0x80;
     u32 size = std::min(input_size, MaxReadSize);
@@ -289,8 +289,8 @@ ResultCode SetBufferSwap(u32 screen_id, const FrameBufferInfo& info) {
 
 void GSP_GPU::SetBufferSwap(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 8, 0};
-    u32 screen_id = rp.Pop<u32>();
-    auto fb_info = rp.PopRaw<FrameBufferInfo>();
+    u32 screen_id{rp.Pop<u32>()};
+    auto fb_info{rp.PopRaw<FrameBufferInfo>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(GSP::SetBufferSwap(screen_id, fb_info));
@@ -298,9 +298,9 @@ void GSP_GPU::SetBufferSwap(Kernel::HLERequestContext& ctx) {
 
 void GSP_GPU::FlushDataCache(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 2, 2};
-    u32 address = rp.Pop<u32>();
-    u32 size = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    u32 address{rp.Pop<u32>()};
+    u32 size{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     // TODO(purpasmart96): Verify return header on HW
 
@@ -313,7 +313,7 @@ void GSP_GPU::FlushDataCache(Kernel::HLERequestContext& ctx) {
 
 void GSP_GPU::SetAxiConfigQoSMode(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x10, 1, 0};
-    u32 mode = rp.Pop<u32>();
+    u32 mode{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -323,9 +323,9 @@ void GSP_GPU::SetAxiConfigQoSMode(Kernel::HLERequestContext& ctx) {
 
 void GSP_GPU::RegisterInterruptRelayQueue(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x13, 1, 2};
-    u32 flags = rp.Pop<u32>();
+    u32 flags{rp.Pop<u32>()};
 
-    auto interrupt_event = rp.PopObject<Kernel::Event>();
+    auto interrupt_event{rp.PopObject<Kernel::Event>()};
     // TODO(mailwl): return right error code instead assert
     ASSERT_MSG((interrupt_event != nullptr), "handle is not valid!");
 
@@ -559,7 +559,7 @@ static void ExecuteCommand(const Command& command, u32 thread_id) {
 void GSP_GPU::SetLcdForceBlack(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xB, 1, 0};
 
-    bool enable_black = rp.Pop<bool>();
+    bool enable_black{rp.Pop<bool>()};
     LCD::Regs::ColorFill data = {0};
 
     // Since data is already zeroed, there is no need to explicitly set
@@ -637,8 +637,8 @@ void GSP_GPU::ImportDisplayCaptureInfo(Kernel::HLERequestContext& ctx) {
 void GSP_GPU::AcquireRight(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x16, 1, 2};
 
-    u32 flag = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    u32 flag{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     SessionData* session_data = GetSessionData(ctx.Session());
 
@@ -682,9 +682,9 @@ void GSP_GPU::ReleaseRight(Kernel::HLERequestContext& ctx) {
 void GSP_GPU::StoreDataCache(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1F, 2, 2};
 
-    u32 address = rp.Pop<u32>();
-    u32 size = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    u32 address{rp.Pop<u32>()};
+    u32 size{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -696,7 +696,7 @@ void GSP_GPU::StoreDataCache(Kernel::HLERequestContext& ctx) {
 void GSP_GPU::SetLedForceOff(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1C, 1, 0};
 
-    u8 state = rp.Pop<u8>();
+    u8 state{rp.Pop<u8>()};
 
     Settings::values.sp_enable_3d = state == 0;
     Core::System::GetInstance().GetSharedPageHandler()->Set3DLed(state);

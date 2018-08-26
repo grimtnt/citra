@@ -19,7 +19,7 @@ const ResultCode RESULT_DOWNLOADPENDING = // 0xD840A02B
 
 void HTTP_C::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1, 1, 4};
-    const u32 shmem_size = rp.Pop<u32>();
+    const u32 shmem_size{rp.Pop<u32>()};
     rp.PopPID();
     shared_memory = rp.PopObject<Kernel::SharedMemory>();
     if (shared_memory) {
@@ -34,11 +34,11 @@ void HTTP_C::Initialize(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x2, 2, 2};
-    const u32 url_size = rp.Pop<u32>();
+    const u32 url_size{rp.Pop<u32>()};
     std::string url(url_size, '\0');
-    RequestMethod method = rp.PopEnum<RequestMethod>();
+    RequestMethod method{rp.PopEnum<RequestMethod>()};
 
-    Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
+    Kernel::MappedBuffer& buffer{rp.PopMappedBuffer()};
     buffer.Read(&url[0], 0, url_size - 1);
 
     Context context;
@@ -56,7 +56,7 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::CloseContext(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x3, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     if (contexts.find(context_id) == contexts.end()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -74,7 +74,7 @@ void HTTP_C::CloseContext(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::GetRequestState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -93,7 +93,7 @@ void HTTP_C::GetRequestState(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x6, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -113,7 +113,7 @@ void HTTP_C::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x8, 1, 2};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
     rp.PopPID();
 
     const auto context = contexts.find(context_id);
@@ -133,7 +133,7 @@ void HTTP_C::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -155,7 +155,7 @@ void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -177,9 +177,9 @@ void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xB, 2, 2};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 buffer_size = rp.Pop<u32>();
-    Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 buffer_size{rp.Pop<u32>()};
+    Kernel::MappedBuffer& buffer{rp.PopMappedBuffer()};
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -204,10 +204,10 @@ void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xC, 4, 2};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 buffer_size = rp.Pop<u32>();
-    const u64 timeout = rp.Pop<u64>();
-    Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 buffer_size{rp.Pop<u32>()};
+    const u64 timeout{rp.Pop<u64>()};
+    Kernel::MappedBuffer& buffer{rp.PopMappedBuffer()};
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -233,7 +233,7 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::SetProxyDefault(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xE, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -252,8 +252,8 @@ void HTTP_C::SetProxyDefault(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x10, 2, 0};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 val = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 val{rp.Pop<u32>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -273,11 +273,11 @@ void HTTP_C::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x11, 3, 4};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 name_size = rp.Pop<u32>();
-    const u32 value_size = rp.Pop<u32>();
-    const std::vector<u8> name_buffer = rp.PopStaticBuffer();
-    Kernel::MappedBuffer& value_buffer = rp.PopMappedBuffer();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 name_size{rp.Pop<u32>()};
+    const u32 value_size{rp.Pop<u32>()};
+    const std::vector<u8> name_buffer{rp.PopStaticBuffer()};
+    Kernel::MappedBuffer& value_buffer{rp.PopMappedBuffer()};
     const std::string name(name_buffer.begin(), name_buffer.end() - 1);
     std::string value(value_size - 1, '\0');
     value_buffer.Read(&value[0], 0, value_size - 1);
@@ -300,9 +300,9 @@ void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x14, 2, 2};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 length = rp.Pop<u32>();
-    auto buffer = rp.PopMappedBuffer();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 length{rp.Pop<u32>()};
+    auto buffer{rp.PopMappedBuffer()};
     std::string data(length, '\0');
     buffer.Read(&data[0], 0, length);
     auto context = contexts.find(context_id);
@@ -323,11 +323,11 @@ void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1E, 3, 4};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 name_size = rp.Pop<u32>();
-    const u32 value_size = rp.Pop<u32>();
-    const std::vector<u8> name_buffer = rp.PopStaticBuffer();
-    Kernel::MappedBuffer& value_buffer = rp.PopMappedBuffer();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 name_size{rp.Pop<u32>()};
+    const u32 value_size{rp.Pop<u32>()};
+    const std::vector<u8> name_buffer{rp.PopStaticBuffer()};
+    Kernel::MappedBuffer& value_buffer{rp.PopMappedBuffer()};
     const std::string name(name_buffer.begin(), name_buffer.end() - 1);
 
     auto context = contexts.find(context_id);
@@ -355,7 +355,7 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x22, 1, 0};
-    const u32 context_id = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -375,8 +375,8 @@ void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x23, 3, 0};
-    const u32 context_id = rp.Pop<u32>();
-    const u64 timeout = rp.Pop<u64>();
+    const u32 context_id{rp.Pop<u32>()};
+    const u64 timeout{rp.Pop<u64>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -395,8 +395,8 @@ void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::SetSSLOpt(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x2B, 2, 0};
-    const u32 context_id = rp.Pop<u32>();
-    const u32 ssl_options = rp.Pop<u32>();
+    const u32 context_id{rp.Pop<u32>()};
+    const u32 ssl_options{rp.Pop<u32>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
@@ -415,8 +415,8 @@ void HTTP_C::SetSSLOpt(Kernel::HLERequestContext& ctx) {
 
 void HTTP_C::SetKeepAlive(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x37, 2, 0};
-    const u32 context_id = rp.Pop<u32>();
-    const bool keep_alive = rp.Pop<bool>();
+    const u32 context_id{rp.Pop<u32>()};
+    const bool keep_alive{rp.Pop<bool>()};
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {

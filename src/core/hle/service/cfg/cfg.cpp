@@ -126,7 +126,7 @@ Module::Interface::~Interface() = default;
 
 void Module::Interface::GetCountryCodeString(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x09, 1, 0};
-    u16 country_code_id = rp.Pop<u16>();
+    u16 country_code_id{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     if (country_code_id >= country_codes.size() || 0 == country_codes[country_code_id]) {
@@ -144,7 +144,7 @@ void Module::Interface::GetCountryCodeString(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetCountryCodeID(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0A, 1, 0};
-    u16 country_code = rp.Pop<u16>();
+    u16 country_code{rp.Pop<u16>()};
     u16 country_code_id = 0;
 
     // The following algorithm will fail if the first country code isn't 0.
@@ -188,7 +188,7 @@ void Module::Interface::SecureInfoGetRegion(Kernel::HLERequestContext& ctx, u16 
 
 void Module::Interface::GenHashConsoleUnique(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x03, 1, 0};
-    const u32 app_id_salt = rp.Pop<u32>() & 0x000FFFFF;
+    const u32 app_id_salt{rp.Pop<u32>() & 0x000FFFFF};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
 
@@ -260,9 +260,9 @@ void Module::Interface::GetModelNintendo2DS(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetConfigInfoBlk2(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 2, 2};
-    u32 size = rp.Pop<u32>();
-    u32 block_id = rp.Pop<u32>();
-    auto& buffer = rp.PopMappedBuffer();
+    u32 size{rp.Pop<u32>()};
+    u32 block_id{rp.Pop<u32>()};
+    auto& buffer{rp.PopMappedBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     std::vector<u8> data(size);
@@ -273,9 +273,9 @@ void Module::Interface::GetConfigInfoBlk2(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetConfigInfoBlk8(Kernel::HLERequestContext& ctx, u16 id) {
     IPC::RequestParser rp{ctx, id, 2, 2};
-    u32 size = rp.Pop<u32>();
-    u32 block_id = rp.Pop<u32>();
-    auto& buffer = rp.PopMappedBuffer();
+    u32 size{rp.Pop<u32>()};
+    u32 block_id{rp.Pop<u32>()};
+    auto& buffer{rp.PopMappedBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     std::vector<u8> data(size);
@@ -286,9 +286,9 @@ void Module::Interface::GetConfigInfoBlk8(Kernel::HLERequestContext& ctx, u16 id
 
 void Module::Interface::SetConfigInfoBlk4(Kernel::HLERequestContext& ctx, u16 id) {
     IPC::RequestParser rp{ctx, id, 2, 2};
-    u32 block_id = rp.Pop<u32>();
-    u32 size = rp.Pop<u32>();
-    auto& buffer = rp.PopMappedBuffer();
+    u32 block_id{rp.Pop<u32>()};
+    u32 size{rp.Pop<u32>()};
+    auto& buffer{rp.PopMappedBuffer()};
 
     std::vector<u8> data(size);
     buffer.Read(data.data(), 0, data.size());

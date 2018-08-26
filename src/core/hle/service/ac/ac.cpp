@@ -97,7 +97,7 @@ void Module::Interface::GetWifiStatus(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetInfraPriority(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x27, 0, 2};
-    const std::vector<u8>& ac_config = rp.PopStaticBuffer();
+    const std::vector<u8>& ac_config{rp.PopStaticBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -109,10 +109,10 @@ void Module::Interface::GetInfraPriority(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetRequestEulaVersion(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x2D, 2, 2};
 
-    u32 major = rp.Pop<u8>();
-    u32 minor = rp.Pop<u8>();
+    u32 major{rp.Pop<u8>()};
+    u32 minor{rp.Pop<u8>()};
 
-    const std::vector<u8>& ac_config = rp.PopStaticBuffer();
+    const std::vector<u8>& ac_config{rp.PopStaticBuffer()};
 
     // TODO(Subv): Copy over the input ACConfig to the stored ACConfig.
 
@@ -150,9 +150,9 @@ void Module::Interface::GetConnectingSsidLength(Kernel::HLERequestContext& ctx) 
 
 void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x3E, 1, 2};
-    u32 unk = rp.Pop<u32>();
-    u32 unk_descriptor = rp.Pop<u32>();
-    u32 unk_param = rp.Pop<u32>();
+    u32 unk{rp.Pop<u32>()};
+    u32 unk_descriptor{rp.Pop<u32>()};
+    u32 unk_param{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -165,7 +165,7 @@ void Module::Interface::IsConnected(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetClientVersion(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x40, 1, 2};
 
-    u32 version = rp.Pop<u32>();
+    u32 version{rp.Pop<u32>()};
     rp.Skip(2, false); // ProcessId descriptor
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};

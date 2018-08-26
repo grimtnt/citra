@@ -49,13 +49,13 @@ static bool VerifyBufferState(Kernel::Process& process, VAddr buffer_ptr, u32 si
 
 void RO::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 3, 2};
-    VAddr crs_buffer_ptr = rp.Pop<u32>();
-    u32 crs_size = rp.Pop<u32>();
-    VAddr crs_address = rp.Pop<u32>();
+    VAddr crs_buffer_ptr{rp.Pop<u32>()};
+    u32 crs_size{rp.Pop<u32>()};
+    VAddr crs_address{rp.Pop<u32>()};
     // TODO (wwylele): RO service checks the descriptor here and return error 0xD9001830 for
     // incorrect descriptor. This error return should be probably built in IPC::RequestParser.
     // All other service functions below have the same issue.
-    auto process = rp.PopObject<Kernel::Process>();
+    auto process{rp.PopObject<Kernel::Process>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
@@ -157,9 +157,9 @@ void RO::Initialize(Kernel::HLERequestContext& ctx) {
 
 void RO::LoadCRR(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x02, 2, 2};
-    VAddr crr_buffer_ptr = rp.Pop<u32>();
-    u32 crr_size = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    VAddr crr_buffer_ptr{rp.Pop<u32>()};
+    u32 crr_size{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -170,8 +170,8 @@ void RO::LoadCRR(Kernel::HLERequestContext& ctx) {
 
 void RO::UnloadCRR(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x03, 1, 2};
-    u32 crr_buffer_ptr = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    u32 crr_buffer_ptr{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -181,18 +181,18 @@ void RO::UnloadCRR(Kernel::HLERequestContext& ctx) {
 
 void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
     IPC::RequestParser rp{ctx, static_cast<u16>(link_on_load_bug_fix ? 0x09 : 0x04), 11, 2};
-    VAddr cro_buffer_ptr = rp.Pop<u32>();
-    VAddr cro_address = rp.Pop<u32>();
-    u32 cro_size = rp.Pop<u32>();
-    VAddr data_segment_address = rp.Pop<u32>();
-    u32 zero = rp.Pop<u32>();
-    u32 data_segment_size = rp.Pop<u32>();
-    u32 bss_segment_address = rp.Pop<u32>();
-    u32 bss_segment_size = rp.Pop<u32>();
-    bool auto_link = rp.Pop<bool>();
-    u32 fix_level = rp.Pop<u32>();
-    VAddr crr_address = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    VAddr cro_buffer_ptr{rp.Pop<u32>()};
+    VAddr cro_address{rp.Pop<u32>()};
+    u32 cro_size{rp.Pop<u32>()};
+    VAddr data_segment_address{rp.Pop<u32>()};
+    u32 zero{rp.Pop<u32>()};
+    u32 data_segment_size{rp.Pop<u32>()};
+    u32 bss_segment_address{rp.Pop<u32>()};
+    u32 bss_segment_size{rp.Pop<u32>()};
+    bool auto_link{rp.Pop<bool>()};
+    u32 fix_level{rp.Pop<u32>()};
+    VAddr crr_address{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     LOG_DEBUG(Service_LDR,
               "called ({}), cro_buffer_ptr=0x{:08X}, cro_address=0x{:08X}, cro_size={:X}, "
@@ -378,10 +378,10 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
 
 void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 3, 2};
-    VAddr cro_address = rp.Pop<u32>();
-    u32 zero = rp.Pop<u32>();
-    VAddr cro_buffer_ptr = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    VAddr cro_address{rp.Pop<u32>()};
+    u32 zero{rp.Pop<u32>()};
+    VAddr cro_buffer_ptr{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     LOG_DEBUG(Service_LDR, "called, cro_address=0x{:08X}, zero={}, cro_buffer_ptr=0x{:08X}",
               cro_address, zero, cro_buffer_ptr);
@@ -453,8 +453,8 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
 
 void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x06, 1, 2};
-    VAddr cro_address = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    VAddr cro_address{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     LOG_DEBUG(Service_LDR, "called, cro_address=0x{:08X}", cro_address);
 
@@ -495,8 +495,8 @@ void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
 
 void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x07, 1, 2};
-    VAddr cro_address = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    VAddr cro_address{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     LOG_DEBUG(Service_LDR, "called, cro_address=0x{:08X}", cro_address);
 
@@ -537,8 +537,8 @@ void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
 
 void RO::Shutdown(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x08, 1, 2};
-    VAddr crs_buffer_ptr = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    VAddr crs_buffer_ptr{rp.Pop<u32>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     LOG_DEBUG(Service_LDR, "called, crs_buffer_ptr=0x{:08X}", crs_buffer_ptr);
 

@@ -493,7 +493,7 @@ Module::Interface::~Interface() = default;
 
 void Module::Interface::GetNumPrograms(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0001, 1, 0}; // 0x00010040
-    u32 media_type = rp.Pop<u8>();
+    u32 media_type{rp.Pop<u8>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -504,10 +504,10 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1002, 4, 4}; // 0x10020104
 
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    u64 title_id = rp.Pop<u64>();
-    u32 content_count = rp.Pop<u32>();
-    auto& content_requested_in = rp.PopMappedBuffer();
-    auto& content_info_out = rp.PopMappedBuffer();
+    u64 title_id{rp.Pop<u64>()};
+    u32 content_count{rp.Pop<u32>()};
+    auto& content_requested_in{rp.PopMappedBuffer()};
+    auto& content_info_out{rp.PopMappedBuffer()};
 
     // Validate that only DLC TIDs are passed in
     u32 tid_high = static_cast<u32>(title_id >> 32);
@@ -573,11 +573,11 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
 void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1003, 5, 2}; // 0x10030142
 
-    u32 content_count = rp.Pop<u32>();
+    u32 content_count{rp.Pop<u32>()};
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    u64 title_id = rp.Pop<u64>();
-    u32 start_index = rp.Pop<u32>();
-    auto& content_info_out = rp.PopMappedBuffer();
+    u64 title_id{rp.Pop<u64>()};
+    u32 start_index{rp.Pop<u32>()};
+    auto& content_info_out{rp.PopMappedBuffer()};
 
     // Validate that only DLC TIDs are passed in
     u32 tid_high = static_cast<u32>(title_id >> 32);
@@ -628,10 +628,10 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::DeleteContents(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1004, 4, 2}; // 0x10040102
-    u8 media_type = rp.Pop<u8>();
-    u64 title_id = rp.Pop<u64>();
-    u32 content_count = rp.Pop<u32>();
-    auto& content_ids_in = rp.PopMappedBuffer();
+    u8 media_type{rp.Pop<u8>()};
+    u64 title_id{rp.Pop<u64>()};
+    u32 content_count{rp.Pop<u32>()};
+    auto& content_ids_in{rp.PopMappedBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
@@ -643,9 +643,9 @@ void Module::Interface::DeleteContents(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetProgramList(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0002, 2, 2}; // 0x00020082
 
-    u32 count = rp.Pop<u32>();
-    u8 media_type = rp.Pop<u8>();
-    auto& title_ids_output = rp.PopMappedBuffer();
+    u32 count{rp.Pop<u32>()};
+    u8 media_type{rp.Pop<u8>()};
+    auto& title_ids_output{rp.PopMappedBuffer()};
 
     if (media_type > 2) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
@@ -698,9 +698,9 @@ void Module::Interface::GetProgramInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0003, 2, 4}; // 0x00030084
 
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    u32 title_count = rp.Pop<u32>();
-    auto& title_id_list_buffer = rp.PopMappedBuffer();
-    auto& title_info_out = rp.PopMappedBuffer();
+    u32 title_count{rp.Pop<u32>()};
+    auto& title_id_list_buffer{rp.PopMappedBuffer()};
+    auto& title_info_out{rp.PopMappedBuffer()};
 
     std::vector<u64> title_id_list(title_count);
     title_id_list_buffer.Read(title_id_list.data(), 0, title_count * sizeof(u64));
@@ -715,8 +715,8 @@ void Module::Interface::GetProgramInfos(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::DeleteUserProgram(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0004, 3, 0};
-    auto media_type = rp.PopEnum<FS::MediaType>();
-    u64 title_id = rp.Pop<u64>();
+    auto media_type{rp.PopEnum<FS::MediaType>()};
+    u64 title_id{rp.Pop<u64>()};
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     u16 category = static_cast<u16>((title_id >> 32) & 0xFFFF);
     u8 variation = static_cast<u8>(title_id & 0xFF);
@@ -743,8 +743,8 @@ void Module::Interface::DeleteUserProgram(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetProductCode(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0005, 3, 0};
-    FS::MediaType media_type = rp.PopEnum<FS::MediaType>();
-    u64 title_id = rp.Pop<u64>();
+    FS::MediaType media_type{rp.PopEnum<FS::MediaType>()};
+    u64 title_id{rp.Pop<u64>()};
     std::string path = GetTitleContentPath(media_type, title_id);
 
     if (!FileUtil::Exists(path)) {
@@ -771,9 +771,9 @@ void Module::Interface::GetDLCTitleInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1005, 2, 4}; // 0x10050084
 
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    u32 title_count = rp.Pop<u32>();
-    auto& title_id_list_buffer = rp.PopMappedBuffer();
-    auto& title_info_out = rp.PopMappedBuffer();
+    u32 title_count{rp.Pop<u32>()};
+    auto& title_id_list_buffer{rp.PopMappedBuffer()};
+    auto& title_info_out{rp.PopMappedBuffer()};
 
     std::vector<u64> title_id_list(title_count);
     title_id_list_buffer.Read(title_id_list.data(), 0, title_count * sizeof(u64));
@@ -804,9 +804,9 @@ void Module::Interface::GetPatchTitleInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x100D, 2, 4}; // 0x100D0084
 
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    u32 title_count = rp.Pop<u32>();
-    auto& title_id_list_buffer = rp.PopMappedBuffer();
-    auto& title_info_out = rp.PopMappedBuffer();
+    u32 title_count{rp.Pop<u32>()};
+    auto& title_id_list_buffer{rp.PopMappedBuffer()};
+    auto& title_info_out{rp.PopMappedBuffer()};
 
     std::vector<u64> title_id_list(title_count);
     title_id_list_buffer.Read(title_id_list.data(), 0, title_count * sizeof(u64));
@@ -835,10 +835,10 @@ void Module::Interface::GetPatchTitleInfos(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1007, 4, 2}; // 0x10070102
-    u32 ticket_count = rp.Pop<u32>();
-    u64 title_id = rp.Pop<u64>();
-    u32 start_index = rp.Pop<u32>();
-    auto& ticket_info_out = rp.PopMappedBuffer();
+    u32 ticket_count{rp.Pop<u32>()};
+    u64 title_id{rp.Pop<u64>()};
+    u32 start_index{rp.Pop<u32>()};
+    auto& ticket_info_out{rp.PopMappedBuffer()};
 
     std::size_t write_offset = 0;
     for (u32 i = 0; i < ticket_count; i++) {
@@ -864,7 +864,7 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
 void Module::Interface::GetDLCContentInfoCount(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1001, 3, 0}; // 0x100100C0
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    u64 title_id = rp.Pop<u64>();
+    u64 title_id{rp.Pop<u64>()};
 
     // Validate that only DLC TIDs are passed in
     u32 tid_high = static_cast<u32>(title_id >> 32);
@@ -893,7 +893,7 @@ void Module::Interface::GetDLCContentInfoCount(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::DeleteTicket(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0007, 2, 0}; // 0x00070080
-    u64 title_id = rp.Pop<u64>();
+    u64 title_id{rp.Pop<u64>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -912,9 +912,9 @@ void Module::Interface::GetNumTickets(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetTicketList(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0009, 2, 2}; // 0x00090082
-    u32 ticket_list_count = rp.Pop<u32>();
-    u32 ticket_index = rp.Pop<u32>();
-    auto& ticket_tids_out = rp.PopMappedBuffer();
+    u32 ticket_list_count{rp.Pop<u32>()};
+    u32 ticket_index{rp.Pop<u32>()};
+    auto& ticket_tids_out{rp.PopMappedBuffer()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
@@ -926,7 +926,7 @@ void Module::Interface::GetTicketList(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::QueryAvailableTitleDatabase(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0019, 1, 0}; // 0x190040
-    u8 media_type = rp.Pop<u8>();
+    u8 media_type{rp.Pop<u8>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
@@ -937,8 +937,8 @@ void Module::Interface::QueryAvailableTitleDatabase(Kernel::HLERequestContext& c
 
 void Module::Interface::CheckContentRights(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0025, 3, 0}; // 0x2500C0
-    u64 tid = rp.Pop<u64>();
-    u16 content_index = rp.Pop<u16>();
+    u64 tid{rp.Pop<u64>()};
+    u16 content_index{rp.Pop<u16>()};
 
     // TODO(shinyquagsire23): Read tickets for this instead?
     bool has_rights =
@@ -953,8 +953,8 @@ void Module::Interface::CheckContentRights(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x002D, 3, 0}; // 0x2D00C0
-    u64 tid = rp.Pop<u64>();
-    u16 content_index = rp.Pop<u16>();
+    u64 tid{rp.Pop<u64>()};
+    u16 content_index{rp.Pop<u16>()};
 
     // TODO(shinyquagsire23): Read tickets for this instead?
     bool has_rights =
@@ -995,7 +995,7 @@ void Module::Interface::BeginImportProgram(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::EndImportProgram(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0405, 0, 2}; // 0x04050002
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     am->ScanForAllTitles();
 
@@ -1040,7 +1040,7 @@ ResultVal<std::shared_ptr<Service::FS::File>> GetFileFromSession(
 void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0408, 1, 2}; // 0x04080042
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1077,8 +1077,8 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0409, 0, 4}; // 0x04090004
-    auto cia = rp.PopObject<Kernel::ClientSession>();
-    auto& output_buffer = rp.PopMappedBuffer();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
+    auto& output_buffer{rp.PopMappedBuffer()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1121,7 +1121,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
 
 void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040A, 0, 2}; // 0x040A0002
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1149,7 +1149,7 @@ void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx)
 
 void Module::Interface::GetTransferSizeFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040B, 0, 2}; // 0x040B0002
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1174,7 +1174,7 @@ void Module::Interface::GetTransferSizeFromCia(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetCoreVersionFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040C, 0, 2}; // 0x040C0002
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1200,7 +1200,7 @@ void Module::Interface::GetCoreVersionFromCia(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040D, 1, 2}; // 0x040D0042
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1228,8 +1228,8 @@ void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::DeleteProgram(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0410, 3, 0};
-    auto media_type = rp.PopEnum<FS::MediaType>();
-    u64 title_id = rp.Pop<u64>();
+    auto media_type{rp.PopEnum<FS::MediaType>()};
+    u64 title_id{rp.Pop<u64>()};
     LOG_INFO(Service_AM, "Deleting title 0x{:016x}", title_id);
     std::string path = GetTitlePath(media_type, title_id);
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -1248,7 +1248,7 @@ void Module::Interface::DeleteProgram(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0413, 0, 2}; // 0x04130002
-    auto cia = rp.PopObject<Kernel::ClientSession>();
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {
@@ -1275,9 +1275,9 @@ void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0414, 1, 4}; // 0x04140044
 
-    u32 output_size = rp.Pop<u32>();
-    auto cia = rp.PopObject<Kernel::ClientSession>();
-    auto& output_buffer = rp.PopMappedBuffer();
+    u32 output_size{rp.Pop<u32>()};
+    auto cia{rp.PopObject<Kernel::ClientSession>()};
+    auto& output_buffer{rp.PopMappedBuffer()};
 
     auto file_res = GetFileFromSession(cia);
     if (!file_res.Succeeded()) {

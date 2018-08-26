@@ -19,7 +19,7 @@ void NEWS_S::GetTotalNotifications(Kernel::HLERequestContext& ctx) {
 
 void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xE, 1, 0};
-    u32 array_index = rp.Pop<u32>();
+    u32 array_index{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);

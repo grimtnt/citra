@@ -152,7 +152,7 @@ void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 1, 32, 0};
 
     LOG_CRITICAL(Service_ERR, "Fatal error");
-    const ErrInfo errinfo = rp.PopRaw<ErrInfo>();
+    const ErrInfo errinfo{rp.PopRaw<ErrInfo>()};
     LOG_CRITICAL(Service_ERR, "Fatal error type: {}", GetErrType(errinfo.errinfo_common.specifier));
     Core::System::GetInstance().SetStatus(Core::System::ResultStatus::ErrorUnknown);
 

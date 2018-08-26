@@ -229,12 +229,12 @@ void IR_USER::PutToReceive(const std::vector<u8>& payload) {
 
 void IR_USER::InitializeIrNopShared(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x18, 6, 2};
-    const u32 shared_buff_size = rp.Pop<u32>();
-    const u32 recv_buff_size = rp.Pop<u32>();
-    const u32 recv_buff_packet_count = rp.Pop<u32>();
-    const u32 send_buff_size = rp.Pop<u32>();
-    const u32 send_buff_packet_count = rp.Pop<u32>();
-    const u8 baud_rate = rp.Pop<u8>();
+    const u32 shared_buff_size{rp.Pop<u32>()};
+    const u32 recv_buff_size{rp.Pop<u32>()};
+    const u32 recv_buff_packet_count{rp.Pop<u32>()};
+    const u32 send_buff_size{rp.Pop<u32>()};
+    const u32 send_buff_packet_count{rp.Pop<u32>()};
+    const u8 baud_rate{rp.Pop<u8>()};
     shared_memory = rp.PopObject<Kernel::SharedMemory>();
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -259,7 +259,7 @@ void IR_USER::InitializeIrNopShared(Kernel::HLERequestContext& ctx) {
 
 void IR_USER::RequireConnection(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x06, 1, 0};
-    const u8 device_id = rp.Pop<u8>();
+    const u8 device_id{rp.Pop<u8>()};
 
     u8* shared_memory_ptr = shared_memory->GetPointer();
     if (device_id == 1) {
@@ -345,8 +345,8 @@ void IR_USER::FinalizeIrNop(Kernel::HLERequestContext& ctx) {
 
 void IR_USER::SendIrNop(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0D, 1, 2};
-    const u32 size = rp.Pop<u32>();
-    std::vector<u8> buffer = rp.PopStaticBuffer();
+    const u32 size{rp.Pop<u32>()};
+    std::vector<u8> buffer{rp.PopStaticBuffer()};
     ASSERT(size == buffer.size());
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -365,7 +365,7 @@ void IR_USER::SendIrNop(Kernel::HLERequestContext& ctx) {
 
 void IR_USER::ReleaseReceivedData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x19, 1, 0};
-    u32 count = rp.Pop<u32>();
+    u32 count{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 

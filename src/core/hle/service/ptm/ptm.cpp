@@ -78,9 +78,9 @@ void Module::Interface::GetPedometerState(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xB, 3, 2};
 
-    u32 hours = rp.Pop<u32>();
-    u64 start_time = rp.Pop<u64>();
-    auto& buffer = rp.PopMappedBuffer();
+    u32 hours{rp.Pop<u32>()};
+    u64 start_time{rp.Pop<u64>()};
+    auto& buffer{rp.PopMappedBuffer()};
     ASSERT_MSG(sizeof(u16) * hours == buffer.GetSize(),
                "Buffer for steps count has incorrect size");
 
@@ -133,7 +133,7 @@ void CheckNew3DS(IPC::ResponseBuilder& rb) {
 
 void Module::Interface::ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x818, 1, 0};
-    u8 value = rp.Pop<u8>() & 0xF;
+    u8 value{static_cast<u8>(rp.Pop<u8>() & 0xF)};
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(Kernel::KernelSetState(static_cast<u32>(Kernel::KernelSetStateType::ConfigureNew3DSCPU),
                                    value, 0, 0));

@@ -223,7 +223,7 @@ void Y2R_U::SetSendingY(Kernel::HLERequestContext& ctx) {
     conversion.src_Y.image_size = rp.Pop<u32>();
     conversion.src_Y.transfer_unit = rp.Pop<u32>();
     conversion.src_Y.gap = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    auto process{rp.PopObject<Kernel::Process>()};
     // TODO (wwylele): pass process handle to y2r engine or convert VAddr to PAddr
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -242,7 +242,7 @@ void Y2R_U::SetSendingU(Kernel::HLERequestContext& ctx) {
     conversion.src_U.image_size = rp.Pop<u32>();
     conversion.src_U.transfer_unit = rp.Pop<u32>();
     conversion.src_U.gap = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    auto process{rp.PopObject<Kernel::Process>()};
     // TODO (wwylele): pass the process handle to y2r engine or convert VAddr to PAddr
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -262,7 +262,7 @@ void Y2R_U::SetSendingV(Kernel::HLERequestContext& ctx) {
     conversion.src_V.image_size = rp.Pop<u32>();
     conversion.src_V.transfer_unit = rp.Pop<u32>();
     conversion.src_V.gap = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    auto process{rp.PopObject<Kernel::Process>()};
     // TODO (wwylele): pass the process handle to y2r engine or convert VAddr to PAddr
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -282,7 +282,7 @@ void Y2R_U::SetSendingYUYV(Kernel::HLERequestContext& ctx) {
     conversion.src_YUYV.image_size = rp.Pop<u32>();
     conversion.src_YUYV.transfer_unit = rp.Pop<u32>();
     conversion.src_YUYV.gap = rp.Pop<u32>();
-    auto process = rp.PopObject<Kernel::Process>();
+    auto process{rp.PopObject<Kernel::Process>()};
     // TODO (wwylele): pass the process handle to y2r engine or convert VAddr to PAddr
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -342,7 +342,7 @@ void Y2R_U::SetReceiving(Kernel::HLERequestContext& ctx) {
     conversion.dst.image_size = rp.Pop<u32>();
     conversion.dst.transfer_unit = rp.Pop<u32>();
     conversion.dst.gap = rp.Pop<u32>();
-    auto dst_process = rp.PopObject<Kernel::Process>();
+    auto dst_process{rp.PopObject<Kernel::Process>()};
     // TODO (wwylele): pass the process handle to y2r engine or convert VAddr to PAddr
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -367,7 +367,7 @@ void Y2R_U::IsFinishedReceiving(Kernel::HLERequestContext& ctx) {
 
 void Y2R_U::SetInputLineWidth(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1A, 1, 0};
-    u32 input_line_width = rp.Pop<u32>();
+    u32 input_line_width{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(conversion.SetInputLineWidth(input_line_width));
@@ -387,7 +387,7 @@ void Y2R_U::GetInputLineWidth(Kernel::HLERequestContext& ctx) {
 
 void Y2R_U::SetInputLines(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1C, 1, 0};
-    u32 input_lines = rp.Pop<u32>();
+    u32 input_lines{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(conversion.SetInputLines(input_lines));
@@ -431,7 +431,7 @@ void Y2R_U::GetCoefficient(Kernel::HLERequestContext& ctx) {
 
 void Y2R_U::SetStandardCoefficient(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x20, 1, 0};
-    u32 index = rp.Pop<u32>();
+    u32 index{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(conversion.SetStandardCoefficient(static_cast<StandardCoefficient>(index)));
@@ -441,7 +441,7 @@ void Y2R_U::SetStandardCoefficient(Kernel::HLERequestContext& ctx) {
 
 void Y2R_U::GetStandardCoefficient(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x21, 1, 0};
-    u32 index = rp.Pop<u32>();
+    u32 index{rp.Pop<u32>()};
 
     if (index < ARRAY_SIZE(standard_coefficients)) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(5, 0)};
@@ -537,7 +537,7 @@ void Y2R_U::IsBusyConversion(Kernel::HLERequestContext& ctx) {
 
 void Y2R_U::SetPackageParameter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x29, 7, 0};
-    auto params = rp.PopRaw<ConversionParameters>();
+    auto params{rp.PopRaw<ConversionParameters>()};
 
     conversion.input_format = params.input_format;
     conversion.output_format = params.output_format;

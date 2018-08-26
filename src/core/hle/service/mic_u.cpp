@@ -30,7 +30,7 @@ enum class SampleRate : u8 {
 struct MIC_U::Impl {
     void MapSharedMem(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x01, 1, 2};
-        const u32 size = rp.Pop<u32>();
+        const u32 size{rp.Pop<u32>()};
         shared_memory = rp.PopObject<Kernel::SharedMemory>();
 
         if (shared_memory) {
@@ -148,8 +148,8 @@ struct MIC_U::Impl {
 
     void SetIirFilterMic(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x0C, 1, 2};
-        const u32 size = rp.Pop<u32>();
-        const Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
+        const u32 size{rp.Pop<u32>()};
+        const Kernel::MappedBuffer& buffer{rp.PopMappedBuffer()};
 
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(RESULT_SUCCESS);
@@ -190,7 +190,7 @@ struct MIC_U::Impl {
 
     void SetClientVersion(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x10, 1, 0};
-        const u32 version = rp.Pop<u32>();
+        const u32 version{rp.Pop<u32>()};
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 

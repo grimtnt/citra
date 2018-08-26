@@ -21,7 +21,7 @@ NWM_EXT::~NWM_EXT() = default;
 
 void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0008, 1, 0};
-    u8 enabled = rp.Pop<u8>();
+    u8 enabled{rp.Pop<u8>()};
 
     ResultCode result = RESULT_SUCCESS;
 

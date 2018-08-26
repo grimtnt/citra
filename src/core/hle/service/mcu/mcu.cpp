@@ -51,7 +51,7 @@ void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
 void Module::Interface::Set3DLEDState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0009, 1, 0};
 
-    u8 state = rp.Pop<u8>();
+    u8 state{rp.Pop<u8>()};
 
     Core::System::GetInstance().GetSharedPageHandler()->Set3DLed(state);
     Settings::values.sp_enable_3d = static_cast<bool>(state);

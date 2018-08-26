@@ -565,24 +565,24 @@ void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0F, 16, 4};
 
-    u32 out_buffer_size = rp.Pop<u32>();
-    u32 unk1 = rp.Pop<u32>();
-    u32 unk2 = rp.Pop<u32>();
+    u32 out_buffer_size{rp.Pop<u32>()};
+    u32 unk1{rp.Pop<u32>()};
+    u32 unk2{rp.Pop<u32>()};
 
     MacAddress mac_address;
     rp.PopRaw(mac_address);
 
     rp.Skip(9, false);
 
-    u32 wlan_comm_id = rp.Pop<u32>();
-    u32 id = rp.Pop<u32>();
+    u32 wlan_comm_id{rp.Pop<u32>()};
+    u32 id{rp.Pop<u32>()};
     // From 3dbrew:
     // 'Official user processes create a new event handle which is then passed to this command.
     // However, those user processes don't save that handle anywhere afterwards.'
     // So we don't save/use that event too.
-    Kernel::SharedPtr<Kernel::Event> input_event = rp.PopObject<Kernel::Event>();
+    Kernel::SharedPtr<Kernel::Event> input_event{rp.PopObject<Kernel::Event>()};
 
-    Kernel::MappedBuffer out_buffer = rp.PopMappedBuffer();
+    Kernel::MappedBuffer out_buffer{rp.PopMappedBuffer()};
     ASSERT(out_buffer.GetSize() == out_buffer_size);
 
     size_t cur_buffer_size = sizeof(BeaconDataReplyHeader);
@@ -630,12 +630,12 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1B, 12, 2};
 
-    u32 sharedmem_size = rp.Pop<u32>();
+    u32 sharedmem_size{rp.Pop<u32>()};
 
     // Update the node information with the data the game gave us.
     rp.PopRaw(current_node);
 
-    u16 version = rp.Pop<u16>();
+    u16 version{rp.Pop<u16>()};
 
     recv_buffer_memory = rp.PopObject<Kernel::SharedMemory>();
 
@@ -689,7 +689,7 @@ void NWM_UDS::GetConnectionStatus(Kernel::HLERequestContext& ctx) {
 
 void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xD, 1, 0};
-    u16 network_node_id = rp.Pop<u16>();
+    u16 network_node_id{rp.Pop<u16>()};
 
     if (!initialized) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -722,10 +722,10 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x12, 4, 0};
 
-    u32 bind_node_id = rp.Pop<u32>();
-    u32 recv_buffer_size = rp.Pop<u32>();
-    u8 data_channel = rp.Pop<u8>();
-    u16 network_node_id = rp.Pop<u16>();
+    u32 bind_node_id{rp.Pop<u32>()};
+    u32 recv_buffer_size{rp.Pop<u32>()};
+    u8 data_channel{rp.Pop<u8>()};
+    u16 network_node_id{rp.Pop<u16>()};
 
     if (data_channel == 0 || bind_node_id == 0) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -773,7 +773,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x12, 1, 0};
 
-    u32 bind_node_id = rp.Pop<u32>();
+    u32 bind_node_id{rp.Pop<u32>()};
     if (bind_node_id == 0) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
@@ -804,11 +804,11 @@ void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1D, 1, 4};
 
-    const u32 passphrase_size = rp.Pop<u32>();
+    const u32 passphrase_size{rp.Pop<u32>()};
 
-    const std::vector<u8> network_info_buffer = rp.PopStaticBuffer();
+    const std::vector<u8> network_info_buffer{rp.PopStaticBuffer()};
     ASSERT(network_info_buffer.size() == sizeof(NetworkInfo));
-    const std::vector<u8> passphrase = rp.PopStaticBuffer();
+    const std::vector<u8> passphrase{rp.PopStaticBuffer()};
     ASSERT(passphrase.size() == passphrase_size);
 
     // TODO(Subv): Store the passphrase and verify it when attempting a connection.
@@ -972,16 +972,16 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x17, 6, 2};
 
     rp.Skip(1, false);
-    u16 dest_node_id = rp.Pop<u16>();
-    u8 data_channel = rp.Pop<u8>();
+    u16 dest_node_id{rp.Pop<u16>()};
+    u8 data_channel{rp.Pop<u8>()};
     rp.Skip(1, false);
-    u32 data_size = rp.Pop<u32>();
-    u8 flags = rp.Pop<u8>();
+    u32 data_size{rp.Pop<u32>()};
+    u8 flags{rp.Pop<u8>()};
 
     // There should never be a dest_node_id of 0
     ASSERT(dest_node_id != 0);
 
-    std::vector<u8> input_buffer = rp.PopStaticBuffer();
+    std::vector<u8> input_buffer{rp.PopStaticBuffer()};
     ASSERT(input_buffer.size() >= data_size);
     input_buffer.resize(data_size);
 
@@ -1059,9 +1059,9 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x14, 3, 0};
 
-    u32 bind_node_id = rp.Pop<u32>();
-    u32 max_out_buff_size_aligned = rp.Pop<u32>();
-    u32 max_out_buff_size = rp.Pop<u32>();
+    u32 bind_node_id{rp.Pop<u32>()};
+    u32 max_out_buff_size_aligned{rp.Pop<u32>()};
+    u32 max_out_buff_size{rp.Pop<u32>()};
 
     // This size is hard coded into the uds module. We don't know the meaning yet.
     u32 buff_size = std::min<u32>(max_out_buff_size_aligned, 0x172) << 2;
@@ -1143,13 +1143,13 @@ void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1E, 2, 4};
 
-    u8 connection_type = rp.Pop<u8>();
-    u32 passphrase_size = rp.Pop<u32>();
+    u8 connection_type{rp.Pop<u8>()};
+    u32 passphrase_size{rp.Pop<u32>()};
 
-    const std::vector<u8> network_struct_buffer = rp.PopStaticBuffer();
+    const std::vector<u8> network_struct_buffer{rp.PopStaticBuffer()};
     ASSERT(network_struct_buffer.size() == sizeof(NetworkInfo));
 
-    const std::vector<u8> passphrase = rp.PopStaticBuffer();
+    const std::vector<u8> passphrase{rp.PopStaticBuffer()};
 
     std::memcpy(&network_info, network_struct_buffer.data(), sizeof(network_info));
 
@@ -1176,9 +1176,9 @@ void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x10, 1, 2};
 
-    u32 size = rp.Pop<u32>();
+    u32 size{rp.Pop<u32>()};
 
-    const std::vector<u8> application_data = rp.PopStaticBuffer();
+    const std::vector<u8> application_data{rp.PopStaticBuffer()};
     ASSERT(application_data.size() == size);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -1200,11 +1200,11 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
 void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1F, 0, 6};
 
-    const std::vector<u8> network_struct_buffer = rp.PopStaticBuffer();
+    const std::vector<u8> network_struct_buffer{rp.PopStaticBuffer()};
     ASSERT(network_struct_buffer.size() == sizeof(NetworkInfo));
 
-    const std::vector<u8> encrypted_data0_buffer = rp.PopStaticBuffer();
-    const std::vector<u8> encrypted_data1_buffer = rp.PopStaticBuffer();
+    const std::vector<u8> encrypted_data0_buffer{rp.PopStaticBuffer()};
+    const std::vector<u8> encrypted_data1_buffer{rp.PopStaticBuffer()};
 
     NetworkInfo net_info;
     std::memcpy(&net_info, network_struct_buffer.data(), sizeof(net_info));

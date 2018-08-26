@@ -329,11 +329,11 @@ void Module::Interface::GetBufferErrorInterruptEvent(Kernel::HLERequestContext& 
 
 void Module::Interface::SetReceiving(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x07, 4, 2};
-    const VAddr dest = rp.Pop<u32>();
+    const VAddr dest{rp.Pop<u32>()};
     const PortSet port_select(rp.Pop<u8>());
-    const u32 image_size = rp.Pop<u32>();
-    const u16 trans_unit = rp.Pop<u16>();
-    auto process = rp.PopObject<Kernel::Process>();
+    const u32 image_size{rp.Pop<u32>()};
+    const u16 trans_unit{rp.Pop<u16>()};
+    auto process{rp.PopObject<Kernel::Process>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     if (port_select.IsSingle()) {
@@ -385,9 +385,9 @@ void Module::Interface::IsFinishedReceiving(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetTransferLines(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x09, 4, 0};
     const PortSet port_select(rp.Pop<u8>());
-    const u16 transfer_lines = rp.Pop<u16>();
-    const u16 width = rp.Pop<u16>();
-    const u16 height = rp.Pop<u16>();
+    const u16 transfer_lines{rp.Pop<u16>()};
+    const u16 width{rp.Pop<u16>()};
+    const u16 height{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
@@ -406,8 +406,8 @@ void Module::Interface::SetTransferLines(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetMaxLines(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0A, 2, 0};
-    const u16 width = rp.Pop<u16>();
-    const u16 height = rp.Pop<u16>();
+    const u16 width{rp.Pop<u16>()};
+    const u16 height{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
 
@@ -440,9 +440,9 @@ void Module::Interface::GetMaxLines(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetTransferBytes(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0B, 4, 0};
     const PortSet port_select(rp.Pop<u8>());
-    const u16 transfer_bytes = rp.Pop<u16>();
-    const u16 width = rp.Pop<u16>();
-    const u16 height = rp.Pop<u16>();
+    const u16 transfer_bytes{rp.Pop<u16>()};
+    const u16 width{rp.Pop<u16>()};
+    const u16 height{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
@@ -479,8 +479,8 @@ void Module::Interface::GetTransferBytes(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetMaxBytes(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0D, 2, 0};
-    const u16 width = rp.Pop<u16>();
-    const u16 height = rp.Pop<u16>();
+    const u16 width{rp.Pop<u16>()};
+    const u16 height{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
 
@@ -507,7 +507,7 @@ void Module::Interface::GetMaxBytes(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetTrimming(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0E, 2, 0};
     const PortSet port_select(rp.Pop<u8>());
-    const bool trim = rp.Pop<bool>();
+    const bool trim{rp.Pop<bool>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
@@ -544,10 +544,10 @@ void Module::Interface::IsTrimming(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetTrimmingParams(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x10, 5, 0};
     const PortSet port_select(rp.Pop<u8>());
-    const u16 x0 = rp.Pop<u16>();
-    const u16 y0 = rp.Pop<u16>();
-    const u16 x1 = rp.Pop<u16>();
-    const u16 y1 = rp.Pop<u16>();
+    const u16 x0{rp.Pop<u16>()};
+    const u16 y0{rp.Pop<u16>()};
+    const u16 x1{rp.Pop<u16>()};
+    const u16 y1{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
@@ -591,10 +591,10 @@ void Module::Interface::GetTrimmingParams(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetTrimmingParamsCenter(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x12, 5, 0};
     const PortSet port_select(rp.Pop<u8>());
-    const u16 trim_w = rp.Pop<u16>();
-    const u16 trim_h = rp.Pop<u16>();
-    const u16 cam_w = rp.Pop<u16>();
-    const u16 cam_h = rp.Pop<u16>();
+    const u16 trim_w{rp.Pop<u16>()};
+    const u16 trim_h{rp.Pop<u16>()};
+    const u16 cam_w{rp.Pop<u16>()};
+    const u16 cam_h{rp.Pop<u16>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
@@ -746,7 +746,7 @@ void Module::Interface::SetDetailSize(Kernel::HLERequestContext& ctx) {
 void Module::Interface::SetSize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1F, 3, 0};
     const CameraSet camera_select(rp.Pop<u8>());
-    const u8 size = rp.Pop<u8>();
+    const u8 size{rp.Pop<u8>()};
     const ContextSet context_select(rp.Pop<u8>());
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -847,8 +847,8 @@ void Module::Interface::SetOutputFormat(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::SynchronizeVsyncTiming(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x29, 2, 0};
-    const u8 camera_select1 = rp.Pop<u8>();
-    const u8 camera_select2 = rp.Pop<u8>();
+    const u8 camera_select1{rp.Pop<u8>()};
+    const u8 camera_select2{rp.Pop<u8>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -964,7 +964,7 @@ void Module::Interface::GetSuitableY2rStandardCoefficient(Kernel::HLERequestCont
 
 void Module::Interface::PlayShutterSound(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x38, 1, 0};
-    u8 sound_id = rp.Pop<u8>();
+    u8 sound_id{rp.Pop<u8>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);

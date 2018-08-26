@@ -37,13 +37,13 @@ constexpr int MAX_PENDING_NOTIFICATIONS = 16;
 void SRV::RegisterClient(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1, 0, 2};
 
-    u32 pid_descriptor = rp.Pop<u32>();
+    u32 pid_descriptor{rp.Pop<u32>()};
     if (pid_descriptor != IPC::CallingPidDesc()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(IPC::ERR_INVALID_BUFFER_DESCRIPTOR);
         return;
     }
-    u32 caller_pid = rp.Pop<u32>();
+    u32 caller_pid{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -85,9 +85,9 @@ void SRV::EnableNotification(Kernel::HLERequestContext& ctx) {
  */
 void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 4, 0};
-    auto name_buf = rp.PopRaw<std::array<char, 8>>();
-    size_t name_len = rp.Pop<u32>();
-    u32 flags = rp.Pop<u32>();
+    auto name_buf{rp.PopRaw<std::array<char, 8>>()};
+    size_t name_len{rp.Pop<u32>()};
+    u32 flags{rp.Pop<u32>()};
 
     bool wait_until_available = (flags & 1) == 0;
 
@@ -187,7 +187,7 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
  */
 void SRV::Subscribe(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x9, 1, 0};
-    u32 notification_id = rp.Pop<u32>();
+    u32 notification_id{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -205,7 +205,7 @@ void SRV::Subscribe(Kernel::HLERequestContext& ctx) {
  */
 void SRV::Unsubscribe(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xA, 1, 0};
-    u32 notification_id = rp.Pop<u32>();
+    u32 notification_id{rp.Pop<u32>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -224,8 +224,8 @@ void SRV::Unsubscribe(Kernel::HLERequestContext& ctx) {
  */
 void SRV::PublishToSubscriber(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xC, 2, 0};
-    u32 notification_id = rp.Pop<u32>();
-    u8 flags = rp.Pop<u8>();
+    u32 notification_id{rp.Pop<u32>()};
+    u8 flags{rp.Pop<u8>()};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -236,9 +236,9 @@ void SRV::PublishToSubscriber(Kernel::HLERequestContext& ctx) {
 void SRV::RegisterService(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x3, 4, 0};
 
-    auto name_buf = rp.PopRaw<std::array<char, 8>>();
-    size_t name_len = rp.Pop<u32>();
-    u32 max_sessions = rp.Pop<u32>();
+    auto name_buf{rp.PopRaw<std::array<char, 8>>()};
+    size_t name_len{rp.Pop<u32>()};
+    u32 max_sessions{rp.Pop<u32>()};
 
     std::string name(name_buf.data(), std::min(name_len, name_buf.size()));
 

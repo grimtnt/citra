@@ -327,9 +327,9 @@ void SOC_U::CleanupSockets() {
 
 void SOC_U::Socket(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x02, 3, 2};
-    u32 domain = rp.Pop<u32>(); // Address family
-    u32 type = rp.Pop<u32>();
-    u32 protocol = rp.Pop<u32>();
+    u32 domain{rp.Pop<u32>()}; // Address family
+    u32 type{rp.Pop<u32>()};
+    u32 protocol{rp.Pop<u32>()};
     rp.PopPID();
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
@@ -367,10 +367,10 @@ void SOC_U::Socket(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::Bind(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 2, 4};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 len = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 len{rp.Pop<u32>()};
     rp.PopPID();
-    auto sock_addr_buf = rp.PopStaticBuffer();
+    auto sock_addr_buf{rp.PopStaticBuffer()};
 
     CTRSockAddr ctr_sock_addr;
     std::memcpy(&ctr_sock_addr, sock_addr_buf.data(), sizeof(CTRSockAddr));
@@ -389,9 +389,9 @@ void SOC_U::Bind(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x13, 3, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 ctr_cmd = rp.Pop<u32>();
-    u32 ctr_arg = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 ctr_cmd{rp.Pop<u32>()};
+    u32 ctr_arg{rp.Pop<u32>()};
     rp.PopPID();
 
     u32 posix_ret = 0; // TODO: Check what hardware returns for F_SETFL (unspecified by POSIX)
@@ -454,8 +454,8 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::Listen(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x03, 2, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 backlog = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 backlog{rp.Pop<u32>()};
     rp.PopPID();
 
     s32 ret = ::listen(socket_handle, backlog);
@@ -472,7 +472,7 @@ void SOC_U::Accept(Kernel::HLERequestContext& ctx) {
     // preventing graceful shutdown when closing the emulator, this can be fixed by always
     // performing nonblocking operations and spinlock until the data is available
     IPC::RequestParser rp{ctx, 0x04, 2, 2};
-    u32 socket_handle = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
     socklen_t max_addr_len = static_cast<socklen_t>(rp.Pop<u32>());
     rp.PopPID();
     sockaddr addr;
@@ -518,7 +518,7 @@ void SOC_U::GetHostId(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::Close(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0B, 1, 2};
-    u32 socket_handle = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
     rp.PopPID();
 
     s32 ret = 0;
@@ -536,13 +536,13 @@ void SOC_U::Close(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::SendTo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0A, 4, 6};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 len = rp.Pop<u32>();
-    u32 flags = rp.Pop<u32>();
-    u32 addr_len = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 len{rp.Pop<u32>()};
+    u32 flags{rp.Pop<u32>()};
+    u32 addr_len{rp.Pop<u32>()};
     rp.PopPID();
-    auto input_buff = rp.PopStaticBuffer();
-    auto dest_addr_buff = rp.PopStaticBuffer();
+    auto input_buff{rp.PopStaticBuffer()};
+    auto dest_addr_buff{rp.PopStaticBuffer()};
 
     CTRSockAddr ctr_dest_addr;
     std::memcpy(&ctr_dest_addr, dest_addr_buff.data(), sizeof(ctr_dest_addr));
@@ -570,10 +570,10 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
     // preventing graceful shutdown when closing the emulator, this can be fixed by always
     // performing nonblocking operations and spinlock until the data is available
     IPC::RequestParser rp{ctx, 0x08, 4, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 len = rp.Pop<u32>();
-    u32 flags = rp.Pop<u32>();
-    u32 addr_len = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 len{rp.Pop<u32>()};
+    u32 flags{rp.Pop<u32>()};
+    u32 addr_len{rp.Pop<u32>()};
     rp.PopPID();
 
     CTRSockAddr ctr_src_addr;
@@ -609,10 +609,10 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x14, 2, 4};
-    u32 nfds = rp.Pop<u32>();
-    s32 timeout = rp.Pop<s32>();
+    u32 nfds{rp.Pop<u32>()};
+    s32 timeout{rp.Pop<s32>()};
     rp.PopPID();
-    auto input_fds = rp.PopStaticBuffer();
+    auto input_fds{rp.PopStaticBuffer()};
 
     std::vector<CTRPollFD> ctr_fds(nfds);
     std::memcpy(ctr_fds.data(), input_fds.data(), nfds * sizeof(CTRPollFD));
@@ -643,8 +643,8 @@ void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::GetSockName(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x17, 2, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 max_addr_len = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 max_addr_len{rp.Pop<u32>()};
     rp.PopPID();
 
     sockaddr dest_addr;
@@ -666,8 +666,8 @@ void SOC_U::GetSockName(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::Shutdown(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0C, 2, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    s32 how = rp.Pop<s32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    s32 how{rp.Pop<s32>()};
     rp.PopPID();
 
     s32 ret = ::shutdown(socket_handle, how);
@@ -680,8 +680,8 @@ void SOC_U::Shutdown(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::GetPeerName(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x18, 2, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 max_addr_len = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 max_addr_len{rp.Pop<u32>()};
     rp.PopPID();
 
     sockaddr dest_addr;
@@ -707,10 +707,10 @@ void SOC_U::Connect(Kernel::HLERequestContext& ctx) {
     // preventing graceful shutdown when closing the emulator, this can be fixed by always
     // performing nonblocking operations and spinlock until the data is available
     IPC::RequestParser rp{ctx, 0x06, 2, 4};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 input_addr_len = rp.Pop<u32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 input_addr_len{rp.Pop<u32>()};
     rp.PopPID();
-    auto input_addr_buf = rp.PopStaticBuffer();
+    auto input_addr_buf{rp.PopStaticBuffer()};
 
     CTRSockAddr ctr_input_addr;
     std::memcpy(&ctr_input_addr, input_addr_buf.data(), sizeof(ctr_input_addr));
@@ -728,7 +728,7 @@ void SOC_U::Connect(Kernel::HLERequestContext& ctx) {
 void SOC_U::InitializeSockets(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Implement
     IPC::RequestParser rp{ctx, 0x01, 1, 4};
-    u32 memory_block_size = rp.Pop<u32>();
+    u32 memory_block_size{rp.Pop<u32>()};
     rp.PopPID();
     rp.PopObject<Kernel::SharedMemory>();
 
@@ -756,9 +756,9 @@ void SOC_U::CloseSockets(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x11, 4, 2};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 level = rp.Pop<u32>();
-    s32 optname = rp.Pop<s32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 level{rp.Pop<u32>()};
+    s32 optname{rp.Pop<s32>()};
     socklen_t optlen = static_cast<socklen_t>(rp.Pop<u32>());
     rp.PopPID();
 
@@ -789,12 +789,12 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
 
 void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x12, 4, 4};
-    u32 socket_handle = rp.Pop<u32>();
-    u32 level = rp.Pop<u32>();
-    s32 optname = rp.Pop<s32>();
+    u32 socket_handle{rp.Pop<u32>()};
+    u32 level{rp.Pop<u32>()};
+    s32 optname{rp.Pop<s32>()};
     socklen_t optlen = static_cast<socklen_t>(rp.Pop<u32>());
     rp.PopPID();
-    auto optval = rp.PopStaticBuffer();
+    auto optval{rp.PopStaticBuffer()};
 
     s32 err = 0;
 
