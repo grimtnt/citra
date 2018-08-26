@@ -180,7 +180,7 @@ void RO::UnloadCRR(Kernel::HLERequestContext& ctx) {
 }
 
 void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
-    IPC::RequestParser rp{ctx, link_on_load_bug_fix ? 0x09 : 0x04, 11, 2};
+    IPC::RequestParser rp{ctx, static_cast<u16>(link_on_load_bug_fix ? 0x09 : 0x04), 11, 2};
     VAddr cro_buffer_ptr = rp.Pop<u32>();
     VAddr cro_address = rp.Pop<u32>();
     u32 cro_size = rp.Pop<u32>();
