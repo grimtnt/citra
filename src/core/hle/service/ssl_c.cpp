@@ -10,7 +10,7 @@
 namespace Service::SSL {
 
 void SSL_C::Initialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x01, 0, 2);
+    IPC::RequestParser rp{ctx, 0x01, 0, 2};
     rp.PopPID();
 
     // Seed random number generator when the SSL service is initialized
@@ -18,12 +18,12 @@ void SSL_C::Initialize(Kernel::HLERequestContext& ctx) {
     rand_gen.seed(rand_device());
 
     // Stub, return success
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void SSL_C::GenerateRandomData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x11, 1, 2);
+    IPC::RequestParser rp{ctx, 0x11, 1, 2};
     u32 size = rp.Pop<u32>();
     auto buffer = rp.PopMappedBuffer();
 
@@ -51,7 +51,7 @@ void SSL_C::GenerateRandomData(Kernel::HLERequestContext& ctx) {
     }
 
     // Stub, return success
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 }

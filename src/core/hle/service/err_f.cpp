@@ -149,7 +149,7 @@ static void LogGenericInfo(const ErrInfo::ErrInfoCommon& errinfo_common) {
 }
 
 void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 1, 32, 0);
+    IPC::RequestParser rp{ctx, 1, 32, 0};
 
     LOG_CRITICAL(Service_ERR, "Fatal error");
     const ErrInfo errinfo = rp.PopRaw<ErrInfo>();
@@ -228,7 +228,7 @@ void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
     }
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 

@@ -18,7 +18,7 @@ const ResultCode RESULT_DOWNLOADPENDING = // 0xD840A02B
                ErrorLevel::Permanent);
 
 void HTTP_C::Initialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1, 1, 4);
+    IPC::RequestParser rp{ctx, 0x1, 1, 4};
     const u32 shmem_size = rp.Pop<u32>();
     rp.PopPID();
     shared_memory = rp.PopObject<Kernel::SharedMemory>();
@@ -26,14 +26,14 @@ void HTTP_C::Initialize(Kernel::HLERequestContext& ctx) {
         shared_memory->name = "HTTP_C:shared_memory";
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, shmem_size={}", shmem_size);
 }
 
 void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x2, 2, 2);
+    IPC::RequestParser rp{ctx, 0x2, 2, 2};
     const u32 url_size = rp.Pop<u32>();
     std::string url(url_size, '\0');
     RequestMethod method = rp.PopEnum<RequestMethod>();
@@ -46,7 +46,7 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
     context.SetMethod(method);
     contexts[++context_counter] = std::move(context);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(context_counter);
     rb.PushMappedBuffer(buffer);
@@ -55,36 +55,36 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::CloseContext(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x3, 1, 0);
+    IPC::RequestParser rp{ctx, 0x3, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     if (contexts.find(context_id) == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     contexts.erase(context_id);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::GetRequestState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x5, 1, 0);
+    IPC::RequestParser rp{ctx, 0x5, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum<Context::State>(context->second.state);
 
@@ -92,18 +92,18 @@ void HTTP_C::GetRequestState(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x6, 1, 0);
+    IPC::RequestParser rp{ctx, 0x6, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(context->second.current_offset);
     rb.Push<u32>(context->second.GetResponseContentLength());
@@ -112,32 +112,32 @@ void HTTP_C::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x8, 1, 2);
+    IPC::RequestParser rp{ctx, 0x8, 1, 2};
     const u32 context_id = rp.Pop<u32>();
     rp.PopPID();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.Initialize();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x9, 1, 0);
+    IPC::RequestParser rp{ctx, 0x9, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
@@ -147,19 +147,19 @@ void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
     context->second.Send();
     context->second.state = Context::State::ReadyToDownloadContent;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x9, 1, 0);
+    IPC::RequestParser rp{ctx, 0x9, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
@@ -169,21 +169,21 @@ void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
     context->second.Send();
     context->second.state = Context::State::ReadyToDownloadContent;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xB, 2, 2);
+    IPC::RequestParser rp{ctx, 0xB, 2, 2};
     const u32 context_id = rp.Pop<u32>();
     const u32 buffer_size = rp.Pop<u32>();
     Kernel::MappedBuffer& buffer = rp.PopMappedBuffer();
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
@@ -193,7 +193,7 @@ void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
     buffer.Write(&context->second.response->body[context->second.current_offset], 0, size);
     context->second.current_offset += size;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(context->second.current_offset < context->second.GetResponseContentLength()
                 ? RESULT_DOWNLOADPENDING
                 : RESULT_SUCCESS);
@@ -203,7 +203,7 @@ void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xC, 4, 2);
+    IPC::RequestParser rp{ctx, 0xC, 4, 2};
     const u32 context_id = rp.Pop<u32>();
     const u32 buffer_size = rp.Pop<u32>();
     const u64 timeout = rp.Pop<u64>();
@@ -211,7 +211,7 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
@@ -222,7 +222,7 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
     buffer.Write(&context->second.response->body[context->second.current_offset], 0, size);
     context->second.current_offset += size;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(context->second.current_offset < context->second.GetResponseContentLength()
                 ? RESULT_DOWNLOADPENDING
                 : RESULT_SUCCESS);
@@ -232,32 +232,32 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::SetProxyDefault(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xE, 1, 0);
+    IPC::RequestParser rp{ctx, 0xE, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.proxy_default = true;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x10, 2, 0);
+    IPC::RequestParser rp{ctx, 0x10, 2, 0};
     const u32 context_id = rp.Pop<u32>();
     const u32 val = rp.Pop<u32>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
@@ -265,14 +265,14 @@ void HTTP_C::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
 
     // TODO: Implement
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "(STUBBED) called, val={}", val);
 }
 
 void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x11, 3, 4);
+    IPC::RequestParser rp{ctx, 0x11, 3, 4};
     const u32 context_id = rp.Pop<u32>();
     const u32 name_size = rp.Pop<u32>();
     const u32 value_size = rp.Pop<u32>();
@@ -284,14 +284,14 @@ void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.request_headers.emplace(name, value);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(value_buffer);
 
@@ -299,7 +299,7 @@ void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x14, 2, 2);
+    IPC::RequestParser rp{ctx, 0x14, 2, 2};
     const u32 context_id = rp.Pop<u32>();
     const u32 length = rp.Pop<u32>();
     auto buffer = rp.PopMappedBuffer();
@@ -307,14 +307,14 @@ void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     buffer.Read(&data[0], 0, length);
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.body = data;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
@@ -322,7 +322,7 @@ void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1E, 3, 4);
+    IPC::RequestParser rp{ctx, 0x1E, 3, 4};
     const u32 context_id = rp.Pop<u32>();
     const u32 name_size = rp.Pop<u32>();
     const u32 value_size = rp.Pop<u32>();
@@ -332,7 +332,7 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
 
     auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
@@ -343,7 +343,7 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     u32 size = static_cast<u32>(value.size());
     value_buffer.Write(value.c_str(), 0, size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(size);
     rb.PushMappedBuffer(value_buffer);
@@ -354,19 +354,19 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x22, 1, 0);
+    IPC::RequestParser rp{ctx, 0x22, 1, 0};
     const u32 context_id = rp.Pop<u32>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     const u32 status_code = context->second.GetResponseStatusCode();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(status_code);
 
@@ -374,19 +374,19 @@ void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x23, 3, 0);
+    IPC::RequestParser rp{ctx, 0x23, 3, 0};
     const u32 context_id = rp.Pop<u32>();
     const u64 timeout = rp.Pop<u64>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.timeout = timeout;
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(contexts[context_id].GetResponseStatusCode());
 
@@ -394,51 +394,51 @@ void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
 }
 
 void HTTP_C::SetSSLOpt(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x2B, 2, 0);
+    IPC::RequestParser rp{ctx, 0x2B, 2, 0};
     const u32 context_id = rp.Pop<u32>();
     const u32 ssl_options = rp.Pop<u32>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.SetSSLOptions(ssl_options);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}, ssl_options=0x{:X}", context_id, ssl_options);
 }
 
 void HTTP_C::SetKeepAlive(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x37, 2, 0);
+    IPC::RequestParser rp{ctx, 0x37, 2, 0};
     const u32 context_id = rp.Pop<u32>();
     const bool keep_alive = rp.Pop<bool>();
 
     const auto context = contexts.find(context_id);
     if (context == contexts.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ERROR_CONTEXT_ERROR);
         LOG_ERROR(Service_HTTP, "called, context {} not found", context_id);
         return;
     }
     context->second.SetKeepAlive(keep_alive);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}, keep_alive={}", context_id, keep_alive);
 }
 
 void HTTP_C::Finalize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x39, 0, 0);
+    IPC::RequestParser rp{ctx, 0x39, 0, 0};
 
     contexts.clear();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 

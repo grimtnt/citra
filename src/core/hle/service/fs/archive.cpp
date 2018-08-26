@@ -69,7 +69,7 @@ File::File(std::unique_ptr<FileSys::FileBackend>&& backend, const FileSys::Path&
 }
 
 void File::Read(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0802, 3, 2);
+    IPC::RequestParser rp{ctx, 0x0802, 3, 2};
     u64 offset = rp.Pop<u64>();
     u32 length = rp.Pop<u32>();
     auto& buffer = rp.PopMappedBuffer();
@@ -91,7 +91,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
                   offset, length, backend->GetSize());
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
 
     std::vector<u8> data(length);
     ResultVal<size_t> read = backend->Read(offset, data.size(), data.data());
@@ -114,7 +114,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
 }
 
 void File::Write(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0803, 4, 2);
+    IPC::RequestParser rp{ctx, 0x0803, 4, 2};
     u64 offset = rp.Pop<u64>();
     u32 length = rp.Pop<u32>();
     u32 flush = rp.Pop<u32>();
@@ -122,7 +122,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
     LOG_TRACE(Service_FS, "Write {}: offset=0x{:X}, length={}, flush=0x{:x}", GetName(), offset,
               length, flush);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
@@ -148,22 +148,22 @@ void File::Write(Kernel::HLERequestContext& ctx) {
 }
 
 void File::GetSize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0804, 0, 0);
+    IPC::RequestParser rp{ctx, 0x0804, 0, 0};
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u64>(file->size);
 }
 
 void File::SetSize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0805, 2, 0);
+    IPC::RequestParser rp{ctx, 0x0805, 2, 0};
     u64 size = rp.Pop<u64>();
 
     FileSessionSlot* file = GetSessionData(ctx.Session());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     // SetSize can not be called on subfiles.
     if (file->subfile) {
@@ -177,7 +177,7 @@ void File::SetSize(Kernel::HLERequestContext& ctx) {
 }
 
 void File::Close(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0808, 0, 0);
+    IPC::RequestParser rp{ctx, 0x0808, 0, 0};
 
     // TODO(Subv): Only close the backend if this client is the only one left.
     if (connected_sessions.size() > 1)
@@ -185,14 +185,14 @@ void File::Close(Kernel::HLERequestContext& ctx) {
                     connected_sessions.size());
 
     backend->Close();
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void File::Flush(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0809, 0, 0);
+    IPC::RequestParser rp{ctx, 0x0809, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
@@ -207,20 +207,20 @@ void File::Flush(Kernel::HLERequestContext& ctx) {
 }
 
 void File::SetPriority(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x080A, 1, 0);
+    IPC::RequestParser rp{ctx, 0x080A, 1, 0};
 
     FileSessionSlot* file = GetSessionData(ctx.Session());
     file->priority = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void File::GetPriority(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x080B, 0, 0);
+    IPC::RequestParser rp{ctx, 0x080B, 0, 0};
     const FileSessionSlot* file = GetSessionData(ctx.Session());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(file->priority);
 }
@@ -229,8 +229,8 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
     using Kernel::ClientSession;
     using Kernel::ServerSession;
     using Kernel::SharedPtr;
-    IPC::RequestParser rp(ctx, 0x080C, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestParser rp{ctx, 0x080C, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     auto sessions = ServerSession::CreateSessionPair(GetName());
     auto server = std::get<SharedPtr<ServerSession>>(sessions);
     ClientConnected(server);
@@ -250,11 +250,11 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
 }
 
 void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0801, 4, 0);
+    IPC::RequestParser rp{ctx, 0x0801, 4, 0};
     s64 offset = rp.PopRaw<s64>();
     s64 size = rp.PopRaw<s64>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
 
     const FileSessionSlot* original_file = GetSessionData(ctx.Session());
 
@@ -324,7 +324,7 @@ Directory::Directory(std::unique_ptr<FileSys::DirectoryBackend>&& backend,
 Directory::~Directory() {}
 
 void Directory::Read(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0801, 1, 2);
+    IPC::RequestParser rp{ctx, 0x0801, 1, 2};
     u32 count = rp.Pop<u32>();
     auto& buffer = rp.PopMappedBuffer();
     std::vector<FileSys::Entry> entries(count);
@@ -333,18 +333,18 @@ void Directory::Read(Kernel::HLERequestContext& ctx) {
     u32 read = backend->Read(static_cast<u32>(entries.size()), entries.data());
     buffer.Write(entries.data(), 0, read * sizeof(FileSys::Entry));
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(read);
     rb.PushMappedBuffer(buffer);
 }
 
 void Directory::Close(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0802, 0, 0);
+    IPC::RequestParser rp{ctx, 0x0802, 0, 0};
     LOG_TRACE(Service_FS, "Close {}", GetName());
     backend->Close();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 

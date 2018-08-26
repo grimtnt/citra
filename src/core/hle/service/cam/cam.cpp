@@ -200,10 +200,10 @@ Module::Interface::Interface(std::shared_ptr<Module> cam, const char* name, u32 
 Module::Interface::~Interface() = default;
 
 void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x01, 1, 0);
+    IPC::RequestParser rp{ctx, 0x01, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     if (port_select.IsValid()) {
         for (int i : port_select) {
@@ -234,10 +234,10 @@ void Module::Interface::StartCapture(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::StopCapture(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x02, 1, 0);
+    IPC::RequestParser rp{ctx, 0x02, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     if (port_select.IsValid()) {
         for (int i : port_select) {
@@ -259,10 +259,10 @@ void Module::Interface::StopCapture(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::IsBusy(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x03, 1, 0);
+    IPC::RequestParser rp{ctx, 0x03, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     if (port_select.IsValid()) {
         bool is_busy = true;
@@ -282,20 +282,20 @@ void Module::Interface::IsBusy(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::ClearBuffer(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x04, 1, 0);
+    IPC::RequestParser rp{ctx, 0x04, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, port_select={}", port_select.m_val);
 }
 
 void Module::Interface::GetVsyncInterruptEvent(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x05, 1, 0);
+    IPC::RequestParser rp{ctx, 0x05, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     if (port_select.IsSingle()) {
         int port = *port_select.begin();
         rb.Push(RESULT_SUCCESS);
@@ -310,10 +310,10 @@ void Module::Interface::GetVsyncInterruptEvent(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetBufferErrorInterruptEvent(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x06, 1, 0);
+    IPC::RequestParser rp{ctx, 0x06, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     if (port_select.IsSingle()) {
         int port = *port_select.begin();
         rb.Push(RESULT_SUCCESS);
@@ -328,14 +328,14 @@ void Module::Interface::GetBufferErrorInterruptEvent(Kernel::HLERequestContext& 
 }
 
 void Module::Interface::SetReceiving(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x07, 4, 2);
+    IPC::RequestParser rp{ctx, 0x07, 4, 2};
     const VAddr dest = rp.Pop<u32>();
     const PortSet port_select(rp.Pop<u8>());
     const u32 image_size = rp.Pop<u32>();
     const u16 trans_unit = rp.Pop<u16>();
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     if (port_select.IsSingle()) {
         int port_id = *port_select.begin();
         PortConfig& port = cam->ports[port_id];
@@ -364,10 +364,10 @@ void Module::Interface::SetReceiving(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::IsFinishedReceiving(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x08, 1, 0);
+    IPC::RequestParser rp{ctx, 0x08, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     if (port_select.IsSingle()) {
         int port = *port_select.begin();
         bool is_busy = cam->ports[port].is_receiving || cam->ports[port].is_pending_receiving;
@@ -383,13 +383,13 @@ void Module::Interface::IsFinishedReceiving(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetTransferLines(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x09, 4, 0);
+    IPC::RequestParser rp{ctx, 0x09, 4, 0};
     const PortSet port_select(rp.Pop<u8>());
     const u16 transfer_lines = rp.Pop<u16>();
     const u16 width = rp.Pop<u16>();
     const u16 height = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
         for (int i : port_select) {
             cam->ports[i].transfer_bytes = transfer_lines * width * 2;
@@ -405,11 +405,11 @@ void Module::Interface::SetTransferLines(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetMaxLines(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0A, 2, 0);
+    IPC::RequestParser rp{ctx, 0x0A, 2, 0};
     const u16 width = rp.Pop<u16>();
     const u16 height = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     // Note: the result of the algorithm below are hwtested with width < 640 and with height < 480
     constexpr u32 MIN_TRANSFER_UNIT = 256;
@@ -438,13 +438,13 @@ void Module::Interface::GetMaxLines(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetTransferBytes(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0B, 4, 0);
+    IPC::RequestParser rp{ctx, 0x0B, 4, 0};
     const PortSet port_select(rp.Pop<u8>());
     const u16 transfer_bytes = rp.Pop<u16>();
     const u16 width = rp.Pop<u16>();
     const u16 height = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
         for (int i : port_select) {
             cam->ports[i].transfer_bytes = transfer_bytes;
@@ -460,10 +460,10 @@ void Module::Interface::SetTransferBytes(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetTransferBytes(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0C, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0C, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     if (port_select.IsSingle()) {
         int port = *port_select.begin();
         rb.Push(RESULT_SUCCESS);
@@ -478,11 +478,11 @@ void Module::Interface::GetTransferBytes(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetMaxBytes(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0D, 2, 0);
+    IPC::RequestParser rp{ctx, 0x0D, 2, 0};
     const u16 width = rp.Pop<u16>();
     const u16 height = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     // Note: the result of the algorithm below are hwtested with width < 640 and with height < 480
     constexpr u32 MIN_TRANSFER_UNIT = 256;
@@ -505,11 +505,11 @@ void Module::Interface::GetMaxBytes(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetTrimming(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0E, 2, 0);
+    IPC::RequestParser rp{ctx, 0x0E, 2, 0};
     const PortSet port_select(rp.Pop<u8>());
     const bool trim = rp.Pop<bool>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
         for (int i : port_select) {
             cam->ports[i].is_trimming = trim;
@@ -524,10 +524,10 @@ void Module::Interface::SetTrimming(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::IsTrimming(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0F, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0F, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     if (port_select.IsSingle()) {
         int port = *port_select.begin();
         rb.Push(RESULT_SUCCESS);
@@ -542,14 +542,14 @@ void Module::Interface::IsTrimming(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetTrimmingParams(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x10, 5, 0);
+    IPC::RequestParser rp{ctx, 0x10, 5, 0};
     const PortSet port_select(rp.Pop<u8>());
     const u16 x0 = rp.Pop<u16>();
     const u16 y0 = rp.Pop<u16>();
     const u16 x1 = rp.Pop<u16>();
     const u16 y1 = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
         for (int i : port_select) {
             cam->ports[i].x0 = x0;
@@ -568,10 +568,10 @@ void Module::Interface::SetTrimmingParams(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetTrimmingParams(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x11, 1, 0);
+    IPC::RequestParser rp{ctx, 0x11, 1, 0};
     const PortSet port_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(5, 0)};
     if (port_select.IsSingle()) {
         int port = *port_select.begin();
         rb.Push(RESULT_SUCCESS);
@@ -589,14 +589,14 @@ void Module::Interface::GetTrimmingParams(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetTrimmingParamsCenter(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x12, 5, 0);
+    IPC::RequestParser rp{ctx, 0x12, 5, 0};
     const PortSet port_select(rp.Pop<u8>());
     const u16 trim_w = rp.Pop<u16>();
     const u16 trim_h = rp.Pop<u16>();
     const u16 cam_w = rp.Pop<u16>();
     const u16 cam_h = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (port_select.IsValid()) {
         for (int i : port_select) {
             cam->ports[i].x0 = (cam_w - trim_w) / 2;
@@ -615,10 +615,10 @@ void Module::Interface::SetTrimmingParamsCenter(Kernel::HLERequestContext& ctx) 
 }
 
 void Module::Interface::Activate(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x13, 1, 0);
+    IPC::RequestParser rp{ctx, 0x13, 1, 0};
     const CameraSet camera_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid()) {
         if (camera_select.m_val == 0) { // deactive all
             for (int i = 0; i < 2; ++i) {
@@ -654,11 +654,11 @@ void Module::Interface::Activate(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SwitchContext(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x14, 2, 0);
+    IPC::RequestParser rp{ctx, 0x14, 2, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     const ContextSet context_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid() && context_select.IsSingle()) {
         int context = *context_select.begin();
         for (int camera : camera_select) {
@@ -681,12 +681,12 @@ void Module::Interface::SwitchContext(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::FlipImage(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1D, 3, 0);
+    IPC::RequestParser rp{ctx, 0x1D, 3, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     const Flip flip = static_cast<Flip>(rp.Pop<u8>());
     const ContextSet context_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid() && context_select.IsValid()) {
         for (int camera : camera_select) {
             for (int context : context_select) {
@@ -708,7 +708,7 @@ void Module::Interface::FlipImage(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetDetailSize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1E, 8, 0);
+    IPC::RequestParser rp{ctx, 0x1E, 8, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     Resolution resolution;
     resolution.width = rp.Pop<u16>();
@@ -719,7 +719,7 @@ void Module::Interface::SetDetailSize(Kernel::HLERequestContext& ctx) {
     resolution.crop_y1 = rp.Pop<u16>();
     const ContextSet context_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid() && context_select.IsValid()) {
         for (int camera : camera_select) {
             for (int context : context_select) {
@@ -744,12 +744,12 @@ void Module::Interface::SetDetailSize(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetSize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1F, 3, 0);
+    IPC::RequestParser rp{ctx, 0x1F, 3, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     const u8 size = rp.Pop<u8>();
     const ContextSet context_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid() && context_select.IsValid()) {
         for (int camera : camera_select) {
             for (int context : context_select) {
@@ -771,11 +771,11 @@ void Module::Interface::SetSize(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetFrameRate(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x20, 2, 0);
+    IPC::RequestParser rp{ctx, 0x20, 2, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     const FrameRate frame_rate = static_cast<FrameRate>(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid()) {
         for (int camera : camera_select) {
             cam->cameras[camera].frame_rate = frame_rate;
@@ -792,12 +792,12 @@ void Module::Interface::SetFrameRate(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetEffect(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x22, 3, 0);
+    IPC::RequestParser rp{ctx, 0x22, 3, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     const Effect effect = static_cast<Effect>(rp.Pop<u8>());
     const ContextSet context_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid() && context_select.IsValid()) {
         for (int camera : camera_select) {
             for (int context : context_select) {
@@ -819,12 +819,12 @@ void Module::Interface::SetEffect(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SetOutputFormat(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x25, 3, 0);
+    IPC::RequestParser rp{ctx, 0x25, 3, 0};
     const CameraSet camera_select(rp.Pop<u8>());
     const OutputFormat format = static_cast<OutputFormat>(rp.Pop<u8>());
     const ContextSet context_select(rp.Pop<u8>());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid() && context_select.IsValid()) {
         for (int camera : camera_select) {
             for (int context : context_select) {
@@ -846,11 +846,11 @@ void Module::Interface::SetOutputFormat(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::SynchronizeVsyncTiming(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x29, 2, 0);
+    IPC::RequestParser rp{ctx, 0x29, 2, 0};
     const u8 camera_select1 = rp.Pop<u8>();
     const u8 camera_select2 = rp.Pop<u8>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, camera_select1={}, camera_select2={}",
@@ -884,12 +884,12 @@ void Module::Interface::GetStereoCameraCalibrationData(Kernel::HLERequestContext
 }
 
 void Module::Interface::SetPackageParameterWithoutContext(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x33, 11, 0);
+    IPC::RequestParser rp{ctx, 0x33, 11, 0};
 
     PackageParameterWithoutContext package;
     rp.PopRaw(package);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CAM, "(STUBBED) called");
@@ -928,12 +928,12 @@ Resolution PackageParameterWithContext::GetResolution() const {
 }
 
 void Module::Interface::SetPackageParameterWithContext(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x34, 5, 0);
+    IPC::RequestParser rp{ctx, 0x34, 5, 0};
 
     PackageParameterWithContext package;
     rp.PopRaw(package);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     ResultCode result = cam->SetPackageParameter(package);
     rb.Push(result);
 
@@ -941,12 +941,12 @@ void Module::Interface::SetPackageParameterWithContext(Kernel::HLERequestContext
 }
 
 void Module::Interface::SetPackageParameterWithContextDetail(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x35, 7, 0);
+    IPC::RequestParser rp{ctx, 0x35, 7, 0};
 
     PackageParameterWithContextDetail package;
     rp.PopRaw(package);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     ResultCode result = cam->SetPackageParameter(package);
     rb.Push(result);
 
@@ -954,8 +954,8 @@ void Module::Interface::SetPackageParameterWithContextDetail(Kernel::HLERequestC
 }
 
 void Module::Interface::GetSuitableY2rStandardCoefficient(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x36, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestParser rp{ctx, 0x36, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
 
@@ -963,18 +963,18 @@ void Module::Interface::GetSuitableY2rStandardCoefficient(Kernel::HLERequestCont
 }
 
 void Module::Interface::PlayShutterSound(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x38, 1, 0);
+    IPC::RequestParser rp{ctx, 0x38, 1, 0};
     u8 sound_id = rp.Pop<u8>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CAM, "(STUBBED) called, sound_id={}", sound_id);
 }
 
 void Module::Interface::DriverInitialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x39, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestParser rp{ctx, 0x39, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     for (int camera_id = 0; camera_id < NumCameras; ++camera_id) {
         CameraConfig& camera = cam->cameras[camera_id];
@@ -1001,8 +1001,8 @@ void Module::Interface::DriverInitialize(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::DriverFinalize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x3A, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestParser rp{ctx, 0x3A, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     cam->CancelReceiving(0);
     cam->CancelReceiving(1);

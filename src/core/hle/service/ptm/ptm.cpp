@@ -34,41 +34,41 @@ std::shared_ptr<Module> GetCurrentModule() {
 }
 
 void Module::Interface::GetAdapterState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x5, 0, 0);
+    IPC::RequestParser rp{ctx, 0x5, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(Settings::values.p_adapter_connected);
 }
 
 void Module::Interface::GetShellState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x6, 0, 0);
+    IPC::RequestParser rp{ctx, 0x6, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ptm->shell_open);
 }
 
 void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x7, 0, 0);
+    IPC::RequestParser rp{ctx, 0x7, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(Settings::values.p_battery_level);
 }
 
 void Module::Interface::GetBatteryChargeState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x8, 0, 0);
+    IPC::RequestParser rp{ctx, 0x8, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(Settings::values.p_battery_charging);
 }
 
 void Module::Interface::GetPedometerState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x9, 0, 0);
+    IPC::RequestParser rp{ctx, 0x9, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ptm->pedometer_is_counting);
 
@@ -76,7 +76,7 @@ void Module::Interface::GetPedometerState(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xB, 3, 2);
+    IPC::RequestParser rp{ctx, 0xB, 3, 2};
 
     u32 hours = rp.Pop<u32>();
     u64 start_time = rp.Pop<u64>();
@@ -90,7 +90,7 @@ void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
         buffer.Write(&steps_per_hour, i * sizeof(u16), sizeof(u16));
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
@@ -99,9 +99,9 @@ void Module::Interface::GetStepHistory(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetTotalStepCount(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xC, 0, 0);
+    IPC::RequestParser rp{ctx, 0xC, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
 
@@ -109,9 +109,9 @@ void Module::Interface::GetTotalStepCount(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x80F, 0, 0);
+    IPC::RequestParser rp{ctx, 0x80F, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(false);
 
@@ -132,18 +132,18 @@ void CheckNew3DS(IPC::RequestBuilder& rb) {
 }
 
 void Module::Interface::ConfigureNew3DSCPU(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x818, 1, 0);
+    IPC::RequestParser rp{ctx, 0x818, 1, 0};
     u8 value = rp.Pop<u8>() & 0xF;
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(Kernel::KernelSetState(static_cast<u32>(Kernel::KernelSetStateType::ConfigureNew3DSCPU),
                                    value, 0, 0));
     LOG_WARNING(Service_PTM, "(STUBBED) called");
 }
 
 void Module::Interface::CheckNew3DS(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x40A, 0, 0);
+    IPC::RequestParser rp{ctx, 0x40A, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     Service::PTM::CheckNew3DS(rb);
 }
 

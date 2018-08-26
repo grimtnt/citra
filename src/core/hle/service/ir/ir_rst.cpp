@@ -109,14 +109,14 @@ void IR_RST::UpdateCallback(u64 userdata, s64 cycles_late) {
 }
 
 void IR_RST::GetHandles(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x01, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 3);
+    IPC::RequestParser rp{ctx, 0x01, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 3)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMoveObjects(shared_memory, update_event);
 }
 
 void IR_RST::Initialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x02, 2, 0);
+    IPC::RequestParser rp{ctx, 0x02, 2, 0};
     update_period = static_cast<int>(rp.Pop<u32>());
     raw_c_stick = rp.Pop<bool>();
 
@@ -127,19 +127,19 @@ void IR_RST::Initialize(Kernel::HLERequestContext& ctx) {
     is_device_reload_pending.store(true);
     CoreTiming::ScheduleEvent(msToCycles(update_period), update_callback_id);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_IR, "called. update_period={}, raw_c_stick={}", update_period, raw_c_stick);
 }
 
 void IR_RST::Shutdown(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x03, 0, 0);
+    IPC::RequestParser rp{ctx, 0x03, 0, 0};
 
     CoreTiming::UnscheduleEvent(update_callback_id, 0);
     UnloadInputDevices();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_DEBUG(Service_IR, "called");
 }

@@ -20,7 +20,7 @@ NWM_EXT::NWM_EXT() : ServiceFramework("nwm::EXT") {
 NWM_EXT::~NWM_EXT() = default;
 
 void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0008, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0008, 1, 0};
     u8 enabled = rp.Pop<u8>();
 
     ResultCode result = RESULT_SUCCESS;
@@ -67,7 +67,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     }
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(result);
 }
 } // namespace Service::NWM

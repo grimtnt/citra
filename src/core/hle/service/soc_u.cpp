@@ -326,13 +326,13 @@ void SOC_U::CleanupSockets() {
 }
 
 void SOC_U::Socket(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x02, 3, 2);
+    IPC::RequestParser rp{ctx, 0x02, 3, 2};
     u32 domain = rp.Pop<u32>(); // Address family
     u32 type = rp.Pop<u32>();
     u32 protocol = rp.Pop<u32>();
     rp.PopPID();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     // Only 0 is allowed according to 3dbrew, using 0 will let the OS decide which protocol to use
     if (protocol != 0) {
@@ -366,7 +366,7 @@ void SOC_U::Socket(Kernel::HLERequestContext& ctx) {
 }
 
 void SOC_U::Bind(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x05, 2, 4);
+    IPC::RequestParser rp{ctx, 0x05, 2, 4};
     u32 socket_handle = rp.Pop<u32>();
     u32 len = rp.Pop<u32>();
     rp.PopPID();
@@ -382,13 +382,13 @@ void SOC_U::Bind(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
 
 void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x13, 3, 2);
+    IPC::RequestParser rp{ctx, 0x13, 3, 2};
     u32 socket_handle = rp.Pop<u32>();
     u32 ctr_cmd = rp.Pop<u32>();
     u32 ctr_arg = rp.Pop<u32>();
@@ -396,7 +396,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
 
     u32 posix_ret = 0; // TODO: Check what hardware returns for F_SETFL (unspecified by POSIX)
     SCOPE_EXIT({
-        IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
         rb.Push(RESULT_SUCCESS);
         rb.Push(posix_ret);
     });
@@ -453,7 +453,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
 }
 
 void SOC_U::Listen(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x03, 2, 2);
+    IPC::RequestParser rp{ctx, 0x03, 2, 2};
     u32 socket_handle = rp.Pop<u32>();
     u32 backlog = rp.Pop<u32>();
     rp.PopPID();
@@ -462,7 +462,7 @@ void SOC_U::Listen(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -471,7 +471,7 @@ void SOC_U::Accept(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Calling this function on a blocking socket will block the emu thread,
     // preventing graceful shutdown when closing the emulator, this can be fixed by always
     // performing nonblocking operations and spinlock until the data is available
-    IPC::RequestParser rp(ctx, 0x04, 2, 2);
+    IPC::RequestParser rp{ctx, 0x04, 2, 2};
     u32 socket_handle = rp.Pop<u32>();
     socklen_t max_addr_len = static_cast<socklen_t>(rp.Pop<u32>());
     rp.PopPID();
@@ -491,14 +491,14 @@ void SOC_U::Accept(Kernel::HLERequestContext& ctx) {
         std::memcpy(ctr_addr_buf.data(), &ctr_addr, sizeof(ctr_addr));
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(ctr_addr_buf, 0);
 }
 
 void SOC_U::GetHostId(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x16, 0, 0);
+    IPC::RequestParser rp{ctx, 0x16, 0, 0};
 
     char name[128];
     gethostname(name, sizeof(name));
@@ -510,14 +510,14 @@ void SOC_U::GetHostId(Kernel::HLERequestContext& ctx) {
     sockaddr_in* sock_addr = reinterpret_cast<sockaddr_in*>(res->ai_addr);
     in_addr* addr = &sock_addr->sin_addr;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(static_cast<u32>(addr->s_addr));
     freeaddrinfo(res);
 }
 
 void SOC_U::Close(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0B, 1, 2);
+    IPC::RequestParser rp{ctx, 0x0B, 1, 2};
     u32 socket_handle = rp.Pop<u32>();
     rp.PopPID();
 
@@ -529,13 +529,13 @@ void SOC_U::Close(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
 
 void SOC_U::SendTo(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0A, 4, 6);
+    IPC::RequestParser rp{ctx, 0x0A, 4, 6};
     u32 socket_handle = rp.Pop<u32>();
     u32 len = rp.Pop<u32>();
     u32 flags = rp.Pop<u32>();
@@ -560,7 +560,7 @@ void SOC_U::SendTo(Kernel::HLERequestContext& ctx) {
     if (ret == SOCKET_ERROR_VALUE)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
@@ -569,7 +569,7 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Calling this function on a blocking socket will block the emu thread,
     // preventing graceful shutdown when closing the emulator, this can be fixed by always
     // performing nonblocking operations and spinlock until the data is available
-    IPC::RequestParser rp(ctx, 0x08, 4, 2);
+    IPC::RequestParser rp{ctx, 0x08, 4, 2};
     u32 socket_handle = rp.Pop<u32>();
     u32 len = rp.Pop<u32>();
     u32 flags = rp.Pop<u32>();
@@ -599,7 +599,7 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
     // Write only the data we received to avoid overwriting parts of the buffer with zeros
     output_buff.resize(total_received);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 4);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 4)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.Push(total_received);
@@ -608,7 +608,7 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
 }
 
 void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x14, 2, 4);
+    IPC::RequestParser rp{ctx, 0x14, 2, 4};
     u32 nfds = rp.Pop<u32>();
     s32 timeout = rp.Pop<s32>();
     rp.PopPID();
@@ -635,14 +635,14 @@ void SOC_U::Poll(Kernel::HLERequestContext& ctx) {
     if (ret == SOCKET_ERROR_VALUE)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(output_fds, 0);
 }
 
 void SOC_U::GetSockName(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x17, 2, 2);
+    IPC::RequestParser rp{ctx, 0x17, 2, 2};
     u32 socket_handle = rp.Pop<u32>();
     u32 max_addr_len = rp.Pop<u32>();
     rp.PopPID();
@@ -658,14 +658,14 @@ void SOC_U::GetSockName(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(dest_addr_buff, 0);
 }
 
 void SOC_U::Shutdown(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0C, 2, 2);
+    IPC::RequestParser rp{ctx, 0x0C, 2, 2};
     u32 socket_handle = rp.Pop<u32>();
     s32 how = rp.Pop<s32>();
     rp.PopPID();
@@ -673,13 +673,13 @@ void SOC_U::Shutdown(Kernel::HLERequestContext& ctx) {
     s32 ret = ::shutdown(socket_handle, how);
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
 
 void SOC_U::GetPeerName(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x18, 2, 2);
+    IPC::RequestParser rp{ctx, 0x18, 2, 2};
     u32 socket_handle = rp.Pop<u32>();
     u32 max_addr_len = rp.Pop<u32>();
     rp.PopPID();
@@ -696,7 +696,7 @@ void SOC_U::GetPeerName(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
     rb.PushStaticBuffer(dest_addr_buff, 0);
@@ -706,7 +706,7 @@ void SOC_U::Connect(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Calling this function on a blocking socket will block the emu thread,
     // preventing graceful shutdown when closing the emulator, this can be fixed by always
     // performing nonblocking operations and spinlock until the data is available
-    IPC::RequestParser rp(ctx, 0x06, 2, 4);
+    IPC::RequestParser rp{ctx, 0x06, 2, 4};
     u32 socket_handle = rp.Pop<u32>();
     u32 input_addr_len = rp.Pop<u32>();
     rp.PopPID();
@@ -720,42 +720,42 @@ void SOC_U::Connect(Kernel::HLERequestContext& ctx) {
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(ret);
 }
 
 void SOC_U::InitializeSockets(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Implement
-    IPC::RequestParser rp(ctx, 0x01, 1, 4);
+    IPC::RequestParser rp{ctx, 0x01, 1, 4};
     u32 memory_block_size = rp.Pop<u32>();
     rp.PopPID();
     rp.PopObject<Kernel::SharedMemory>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void SOC_U::ShutdownSockets(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Implement
-    IPC::RequestParser rp(ctx, 0x19, 0, 0);
+    IPC::RequestParser rp{ctx, 0x19, 0, 0};
     CleanupSockets();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void SOC_U::CloseSockets(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x21, 0, 2);
+    IPC::RequestParser rp{ctx, 0x21, 0, 2};
     rp.Skip(2, false);
     CleanupSockets();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x11, 4, 2);
+    IPC::RequestParser rp{ctx, 0x11, 4, 2};
     u32 socket_handle = rp.Pop<u32>();
     u32 level = rp.Pop<u32>();
     s32 optname = rp.Pop<s32>();
@@ -780,7 +780,7 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
         }
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(err);
     rb.Push(static_cast<u32>(optlen));
@@ -788,7 +788,7 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
 }
 
 void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x12, 4, 4);
+    IPC::RequestParser rp{ctx, 0x12, 4, 4};
     u32 socket_handle = rp.Pop<u32>();
     u32 level = rp.Pop<u32>();
     s32 optname = rp.Pop<s32>();
@@ -813,7 +813,7 @@ void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
         }
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(err);
 }

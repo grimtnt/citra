@@ -48,7 +48,7 @@ static bool VerifyBufferState(Kernel::Process& process, VAddr buffer_ptr, u32 si
 }
 
 void RO::Initialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x01, 3, 2);
+    IPC::RequestParser rp{ctx, 0x01, 3, 2};
     VAddr crs_buffer_ptr = rp.Pop<u32>();
     u32 crs_size = rp.Pop<u32>();
     VAddr crs_address = rp.Pop<u32>();
@@ -57,7 +57,7 @@ void RO::Initialize(Kernel::HLERequestContext& ctx) {
     // All other service functions below have the same issue.
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs != 0) {
@@ -156,12 +156,12 @@ void RO::Initialize(Kernel::HLERequestContext& ctx) {
 }
 
 void RO::LoadCRR(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x02, 2, 2);
+    IPC::RequestParser rp{ctx, 0x02, 2, 2};
     VAddr crr_buffer_ptr = rp.Pop<u32>();
     u32 crr_size = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_LDR, "(STUBBED) called, crr_buffer_ptr=0x{:08X}, crr_size=0x{:08X}",
@@ -169,18 +169,18 @@ void RO::LoadCRR(Kernel::HLERequestContext& ctx) {
 }
 
 void RO::UnloadCRR(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x03, 1, 2);
+    IPC::RequestParser rp{ctx, 0x03, 1, 2};
     u32 crr_buffer_ptr = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_LDR, "(STUBBED) called, crr_buffer_ptr=0x{:08X}", crr_buffer_ptr);
 }
 
 void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
-    IPC::RequestParser rp(ctx, link_on_load_bug_fix ? 0x09 : 0x04, 11, 2);
+    IPC::RequestParser rp{ctx, link_on_load_bug_fix ? 0x09 : 0x04, 11, 2};
     VAddr cro_buffer_ptr = rp.Pop<u32>();
     VAddr cro_address = rp.Pop<u32>();
     u32 cro_size = rp.Pop<u32>();
@@ -203,7 +203,7 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
               data_segment_address, zero, data_segment_size, bss_segment_address, bss_segment_size,
               auto_link ? "true" : "false", fix_level, crr_address);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -377,7 +377,7 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
 }
 
 void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x05, 3, 2);
+    IPC::RequestParser rp{ctx, 0x05, 3, 2};
     VAddr cro_address = rp.Pop<u32>();
     u32 zero = rp.Pop<u32>();
     VAddr cro_buffer_ptr = rp.Pop<u32>();
@@ -388,7 +388,7 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
 
     CROHelper cro(cro_address);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -452,7 +452,7 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
 }
 
 void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x06, 1, 2);
+    IPC::RequestParser rp{ctx, 0x06, 1, 2};
     VAddr cro_address = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
@@ -460,7 +460,7 @@ void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
 
     CROHelper cro(cro_address);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -494,7 +494,7 @@ void RO::LinkCRO(Kernel::HLERequestContext& ctx) {
 }
 
 void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x07, 1, 2);
+    IPC::RequestParser rp{ctx, 0x07, 1, 2};
     VAddr cro_address = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
@@ -502,7 +502,7 @@ void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
 
     CROHelper cro(cro_address);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {
@@ -536,13 +536,13 @@ void RO::UnlinkCRO(Kernel::HLERequestContext& ctx) {
 }
 
 void RO::Shutdown(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x08, 1, 2);
+    IPC::RequestParser rp{ctx, 0x08, 1, 2};
     VAddr crs_buffer_ptr = rp.Pop<u32>();
     auto process = rp.PopObject<Kernel::Process>();
 
     LOG_DEBUG(Service_LDR, "called, crs_buffer_ptr=0x{:08X}", crs_buffer_ptr);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     ClientSlot* slot = GetSessionData(ctx.Session());
     if (slot->loaded_crs == 0) {

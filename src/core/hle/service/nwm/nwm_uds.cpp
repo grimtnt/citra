@@ -543,7 +543,7 @@ void OnWifiPacketReceived(const Network::WifiPacket& packet) {
 }
 
 void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x03, 0, 0);
+    IPC::RequestParser rp{ctx, 0x03, 0, 0};
 
     if (auto room_member = Network::GetRoomMember().lock())
         room_member->Unbind(wifi_packet_received);
@@ -556,14 +556,14 @@ void NWM_UDS::Shutdown(Kernel::HLERequestContext& ctx) {
 
     recv_buffer_memory.reset();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_NWM, "called");
 }
 
 void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0F, 16, 4);
+    IPC::RequestParser rp{ctx, 0x0F, 16, 4};
 
     u32 out_buffer_size = rp.Pop<u32>();
     u32 unk1 = rp.Pop<u32>();
@@ -617,7 +617,7 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
     data_reply_header.total_size = static_cast<u32>(cur_buffer_size);
     out_buffer.Write(&data_reply_header, 0, sizeof(BeaconDataReplyHeader));
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(out_buffer);
 
@@ -628,7 +628,7 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1B, 12, 2);
+    IPC::RequestParser rp{ctx, 0x1B, 12, 2};
 
     u32 sharedmem_size = rp.Pop<u32>();
 
@@ -660,7 +660,7 @@ void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
         node_info.push_back(current_node);
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(connection_status_event);
 
@@ -669,8 +669,8 @@ void NWM_UDS::InitializeWithVersion(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::GetConnectionStatus(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xB, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(13, 0);
+    IPC::RequestParser rp{ctx, 0xB, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(13, 0)};
 
     rb.Push(RESULT_SUCCESS);
     {
@@ -688,11 +688,11 @@ void NWM_UDS::GetConnectionStatus(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xD, 1, 0);
+    IPC::RequestParser rp{ctx, 0xD, 1, 0};
     u16 network_node_id = rp.Pop<u16>();
 
     if (!initialized) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotInitialized, ErrorModule::UDS,
                            ErrorSummary::StatusChanged, ErrorLevel::Status));
         return;
@@ -705,13 +705,13 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
                                     return node.network_node_id == network_node_id;
                                 });
         if (itr == node_info.end()) {
-            IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+            IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
             rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
                                ErrorSummary::WrongArgument, ErrorLevel::Status));
             return;
         }
 
-        IPC::RequestBuilder rb = rp.MakeBuilder(11, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(11, 0)};
         rb.Push(RESULT_SUCCESS);
         rb.PushRaw<NodeInfo>(*itr);
     }
@@ -720,7 +720,7 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x12, 4, 0);
+    IPC::RequestParser rp{ctx, 0x12, 4, 0};
 
     u32 bind_node_id = rp.Pop<u32>();
     u32 recv_buffer_size = rp.Pop<u32>();
@@ -728,7 +728,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     u16 network_node_id = rp.Pop<u16>();
 
     if (data_channel == 0 || bind_node_id == 0) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         LOG_WARNING(Service_NWM, "data_channel = {}, bind_node_id = {}", data_channel,
@@ -738,7 +738,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
 
     constexpr size_t MaxBindNodes = 16;
     if (channel_data.size() >= MaxBindNodes) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
                            ErrorSummary::OutOfResource, ErrorLevel::Status));
         LOG_WARNING(Service_NWM, "max bind nodes");
@@ -747,7 +747,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
 
     constexpr u32 MinRecvBufferSize = 0x5F4;
     if (recv_buffer_size < MinRecvBufferSize) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         LOG_WARNING(Service_NWM, "MinRecvBufferSize");
@@ -763,7 +763,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     // TODO(B3N30): Support more than one bind node per channel.
     channel_data[data_channel] = {bind_node_id, data_channel, network_node_id, event};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(event);
 
@@ -771,11 +771,11 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x12, 1, 0);
+    IPC::RequestParser rp{ctx, 0x12, 1, 0};
 
     u32 bind_node_id = rp.Pop<u32>();
     if (bind_node_id == 0) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
@@ -792,7 +792,7 @@ void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
         channel_data.erase(itr);
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(5, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(bind_node_id);
     // TODO(B3N30): Find out what the other return values are
@@ -802,7 +802,7 @@ void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1D, 1, 4);
+    IPC::RequestParser rp{ctx, 0x1D, 1, 4};
 
     const u32 passphrase_size = rp.Pop<u32>();
 
@@ -871,23 +871,23 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
     CoreTiming::ScheduleEvent(msToCycles(DefaultBeaconInterval * MillisecondsPerTU),
                               beacon_broadcast_event, 0);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_NWM, "An UDS network has been created.");
 }
 
 void NWM_UDS::UpdateNetworkAttribute(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x07, 2, 0);
+    IPC::RequestParser rp{ctx, 0x07, 2, 0};
     rp.Skip(2, false);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_NWM, "(STUBBED) called");
 }
 
 void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x08, 0, 0);
+    IPC::RequestParser rp{ctx, 0x08, 0, 0};
 
     // Unschedule the beacon broadcast event.
     CoreTiming::UnscheduleEvent(beacon_broadcast_event, 0);
@@ -895,7 +895,7 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
     // Only a host can destroy
     std::lock_guard<std::mutex> lock(connection_status_mutex);
     if (connection_status.status != static_cast<u8>(NetworkStatus::ConnectedAsHost)) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::WrongStatus, ErrorModule::UDS, ErrorSummary::InvalidState,
                            ErrorLevel::Status));
         LOG_WARNING(Service_NWM, "called with status {}", connection_status.status);
@@ -911,7 +911,7 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
     node_map.clear();
     connection_status_event->Signal();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     for (auto bind_node : channel_data) {
         bind_node.second.event->Signal();
@@ -924,8 +924,8 @@ void NWM_UDS::DestroyNetwork(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xA, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestParser rp{ctx, 0xA, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     using Network::WifiPacket;
     WifiPacket deauth;
@@ -969,7 +969,7 @@ void NWM_UDS::DisconnectNetwork(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x17, 6, 2);
+    IPC::RequestParser rp{ctx, 0x17, 6, 2};
 
     rp.Skip(1, false);
     u16 dest_node_id = rp.Pop<u16>();
@@ -985,7 +985,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     ASSERT(input_buffer.size() >= data_size);
     input_buffer.resize(data_size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
     if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsClient) &&
@@ -1057,7 +1057,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x14, 3, 0);
+    IPC::RequestParser rp{ctx, 0x14, 3, 0};
 
     u32 bind_node_id = rp.Pop<u32>();
     u32 max_out_buff_size_aligned = rp.Pop<u32>();
@@ -1070,7 +1070,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost) &&
         connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsClient) &&
         connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsSpectator)) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::InvalidState, ErrorLevel::Status));
         return;
@@ -1082,7 +1082,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         });
 
     if (channel == channel_data.end()) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::NotAuthorized, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
@@ -1090,7 +1090,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
 
     if (channel->second.received_packets.empty()) {
         std::vector<u8> output_buffer(buff_size, 0);
-        IPC::RequestBuilder rb = rp.MakeBuilder(3, 2);
+        IPC::RequestBuilder rb{rp.MakeBuilder(3, 2)};
         rb.Push(RESULT_SUCCESS);
         rb.Push<u32>(0);
         rb.Push<u16>(0);
@@ -1104,13 +1104,13 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     auto data_size = secure_data.GetActualDataSize();
 
     if (data_size > max_out_buff_size) {
-        IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+        IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
         return;
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 2)};
 
     std::vector<u8> output_buffer(buff_size, 0);
     // Write the actual data.
@@ -1126,8 +1126,8 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1A, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestParser rp{ctx, 0x1A, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     std::lock_guard<std::mutex> lock(connection_status_mutex);
     bool is_connected = connection_status.status != static_cast<u32>(NetworkStatus::NotConnected);
@@ -1141,7 +1141,7 @@ void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1E, 2, 4);
+    IPC::RequestParser rp{ctx, 0x1E, 2, 4};
 
     u8 connection_type = rp.Pop<u8>();
     u32 passphrase_size = rp.Pop<u32>();
@@ -1174,14 +1174,14 @@ void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x10, 1, 2);
+    IPC::RequestParser rp{ctx, 0x10, 1, 2};
 
     u32 size = rp.Pop<u32>();
 
     const std::vector<u8> application_data = rp.PopStaticBuffer();
     ASSERT(application_data.size() == size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     if (size > ApplicationDataSize) {
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
@@ -1198,7 +1198,7 @@ void NWM_UDS::SetApplicationData(Kernel::HLERequestContext& ctx) {
 }
 
 void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1F, 0, 6);
+    IPC::RequestParser rp{ctx, 0x1F, 0, 6};
 
     const std::vector<u8> network_struct_buffer = rp.PopStaticBuffer();
     ASSERT(network_struct_buffer.size() == sizeof(NetworkInfo));
@@ -1253,7 +1253,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
         nodes.push_back(node);
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
 
     std::vector<u8> output_buffer(sizeof(NodeInfo) * UDSMaxNodes, 0);

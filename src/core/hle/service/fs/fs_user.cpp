@@ -31,15 +31,15 @@ using Kernel::SharedPtr;
 namespace Service::FS {
 
 void FS_USER::Initialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0801, 0, 2);
+    IPC::RequestParser rp{ctx, 0x0801, 0, 2};
     rp.PopPID();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0802, 7, 2);
+    IPC::RequestParser rp{ctx, 0x0802, 7, 2};
     rp.Skip(1, false); // Transaction.
 
     ArchiveHandle archive_handle = rp.Pop<u64>();
@@ -55,7 +55,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
 
     ResultVal<std::shared_ptr<File>> file_res =
         OpenFileFromArchive(archive_handle, file_path, mode);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(file_res.Code());
     if (file_res.Succeeded()) {
         std::shared_ptr<File> file = *file_res;
@@ -74,7 +74,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x803, 8, 4);
+    IPC::RequestParser rp{ctx, 0x803, 8, 4};
     rp.Skip(1, false); // Transaction
 
     auto archive_id = rp.PopEnum<FS::ArchiveIdCode>();
@@ -95,7 +95,7 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
               static_cast<u32>(archive_id), archive_path.DebugStr(), file_path.DebugStr(), mode.hex,
               attributes);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
 
     ResultVal<ArchiveHandle> archive_handle = Service::FS::OpenArchive(archive_id, archive_path);
     if (archive_handle.Failed()) {
@@ -122,7 +122,7 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::DeleteFile(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x804, 5, 2);
+    IPC::RequestParser rp{ctx, 0x804, 5, 2};
     rp.Skip(1, false); // TransactionId
     ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
     auto filename_type = rp.PopEnum<FileSys::LowPathType>();
@@ -135,12 +135,12 @@ void FS_USER::DeleteFile(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "type={} size={} data={}", static_cast<u32>(filename_type), filename_size,
               file_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(DeleteFileFromArchive(archive_handle, file_path));
 }
 
 void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x805, 9, 4);
+    IPC::RequestParser rp{ctx, 0x805, 9, 4};
     rp.Skip(1, false); // TransactionId
 
     ArchiveHandle src_archive_handle = rp.PopRaw<ArchiveHandle>();
@@ -162,13 +162,13 @@ void FS_USER::RenameFile(Kernel::HLERequestContext& ctx) {
               static_cast<u32>(src_filename_type), src_filename_size, src_file_path.DebugStr(),
               static_cast<u32>(dest_filename_type), dest_filename_size, dest_file_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RenameFileBetweenArchives(src_archive_handle, src_file_path, dest_archive_handle,
                                       dest_file_path));
 }
 
 void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x806, 5, 2);
+    IPC::RequestParser rp{ctx, 0x806, 5, 2};
 
     rp.Skip(1, false); // TransactionId
     ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
@@ -182,12 +182,12 @@ void FS_USER::DeleteDirectory(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "type={} size={} data={}", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(DeleteDirectoryFromArchive(archive_handle, dir_path));
 }
 
 void FS_USER::DeleteDirectoryRecursively(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x807, 5, 2);
+    IPC::RequestParser rp{ctx, 0x807, 5, 2};
 
     rp.Skip(1, false); // TransactionId
     ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
@@ -201,12 +201,12 @@ void FS_USER::DeleteDirectoryRecursively(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "type={} size={} data={}", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(DeleteDirectoryRecursivelyFromArchive(archive_handle, dir_path));
 }
 
 void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x808, 8, 2);
+    IPC::RequestParser rp{ctx, 0x808, 8, 2};
 
     rp.Skip(1, false); // TransactionId
     ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
@@ -222,12 +222,12 @@ void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "type={} attributes={} size={:x} data={}",
               static_cast<u32>(filename_type), attributes, file_size, file_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(CreateFileInArchive(archive_handle, file_path, file_size));
 }
 
 void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x809, 6, 2);
+    IPC::RequestParser rp{ctx, 0x809, 6, 2};
     rp.Skip(1, false); // TransactionId
     ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
     auto dirname_type = rp.PopEnum<FileSys::LowPathType>();
@@ -240,12 +240,12 @@ void FS_USER::CreateDirectory(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "type={} size={} data={}", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(CreateDirectoryFromArchive(archive_handle, dir_path));
 }
 
 void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x80A, 9, 4);
+    IPC::RequestParser rp{ctx, 0x80A, 9, 4};
     rp.Skip(1, false); // TransactionId
     ArchiveHandle src_archive_handle = rp.PopRaw<ArchiveHandle>();
     auto src_dirname_type = rp.PopEnum<FileSys::LowPathType>();
@@ -266,13 +266,13 @@ void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
               static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr(),
               static_cast<u32>(dest_dirname_type), dest_dirname_size, dest_dir_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RenameDirectoryBetweenArchives(src_archive_handle, src_dir_path, dest_archive_handle,
                                            dest_dir_path));
 }
 
 void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x80B, 4, 2);
+    IPC::RequestParser rp{ctx, 0x80B, 4, 2};
     auto archive_handle = rp.PopRaw<ArchiveHandle>();
     auto dirname_type = rp.PopEnum<FileSys::LowPathType>();
     u32 dirname_size = rp.Pop<u32>();
@@ -284,7 +284,7 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "type={} size={} data={}", static_cast<u32>(dirname_type), dirname_size,
               dir_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     ResultVal<std::shared_ptr<Directory>> dir_res =
         OpenDirectoryFromArchive(archive_handle, dir_path);
     rb.Push(dir_res.Code());
@@ -301,7 +301,7 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x80C, 3, 2);
+    IPC::RequestParser rp{ctx, 0x80C, 3, 2};
     auto archive_id = rp.PopEnum<FS::ArchiveIdCode>();
     auto archivename_type = rp.PopEnum<FileSys::LowPathType>();
     u32 archivename_size = rp.Pop<u32>();
@@ -312,7 +312,7 @@ void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_FS, "archive_id=0x{:08X} archive_path={}", static_cast<u32>(archive_id),
               archive_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
     ResultVal<ArchiveHandle> handle = Service::FS::OpenArchive(archive_id, archive_path);
     rb.Push(handle.Code());
     if (handle.Succeeded()) {
@@ -326,23 +326,23 @@ void FS_USER::OpenArchive(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::CloseArchive(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x80E, 2, 0);
+    IPC::RequestParser rp{ctx, 0x80E, 2, 0};
     auto archive_handle = rp.PopRaw<ArchiveHandle>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(Service::FS::CloseArchive(archive_handle));
 }
 
 void FS_USER::IsSdmcDetected(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x817, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestParser rp{ctx, 0x817, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(Settings::values.use_virtual_sd);
 }
 
 void FS_USER::IsSdmcWriteable(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x818, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestParser rp{ctx, 0x818, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     // If the SD isn't enabled, it can't be writeable...else, stubbed true
     rb.Push(Settings::values.use_virtual_sd);
@@ -352,7 +352,7 @@ void FS_USER::IsSdmcWriteable(Kernel::HLERequestContext& ctx) {
 void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_FS, "(STUBBED)");
 
-    IPC::RequestParser rp(ctx, 0x84C, 9, 2);
+    IPC::RequestParser rp{ctx, 0x84C, 9, 2};
     auto archive_id = rp.PopEnum<FS::ArchiveIdCode>();
     auto archivename_type = rp.PopEnum<FileSys::LowPathType>();
     u32 archivename_size = rp.Pop<u32>();
@@ -368,7 +368,7 @@ void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
 
     LOG_DEBUG(Service_FS, "archive_path={}", archive_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (archive_id != FS::ArchiveIdCode::SaveData) {
         LOG_ERROR(Service_FS, "tried to format an archive different than SaveData, {}",
                   static_cast<u32>(archive_id));
@@ -393,7 +393,7 @@ void FS_USER::FormatSaveData(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::FormatThisUserSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x80F, 6, 0);
+    IPC::RequestParser rp{ctx, 0x80F, 6, 0};
     u32 block_size = rp.Pop<u32>();
     u32 number_directories = rp.Pop<u32>();
     u32 number_files = rp.Pop<u32>();
@@ -407,18 +407,18 @@ void FS_USER::FormatThisUserSaveData(Kernel::HLERequestContext& ctx) {
     format_info.number_files = number_files;
     format_info.total_size = block_size * 512;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(FormatArchive(ArchiveIdCode::SaveData, format_info));
 
     LOG_TRACE(Service_FS, "called");
 }
 
 void FS_USER::GetFreeBytes(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x812, 2, 0);
+    IPC::RequestParser rp{ctx, 0x812, 2, 0};
     ArchiveHandle archive_handle = rp.PopRaw<ArchiveHandle>();
     ResultVal<u64> bytes_res = GetFreeBytesInArchive(archive_handle);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(3, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(bytes_res.Code());
     if (bytes_res.Succeeded()) {
         rb.Push<u64>(bytes_res.Unwrap());
@@ -429,7 +429,7 @@ void FS_USER::GetFreeBytes(Kernel::HLERequestContext& ctx) {
 
 void FS_USER::CreateExtSaveData(Kernel::HLERequestContext& ctx) {
     // TODO(Subv): Figure out the other parameters.
-    IPC::RequestParser rp(ctx, 0x0851, 9, 2);
+    IPC::RequestParser rp{ctx, 0x0851, 9, 2};
     MediaType media_type = static_cast<MediaType>(rp.Pop<u32>()); // the other bytes are unknown
     u32 save_low = rp.Pop<u32>();
     u32 save_high = rp.Pop<u32>();
@@ -449,7 +449,7 @@ void FS_USER::CreateExtSaveData(Kernel::HLERequestContext& ctx) {
     format_info.duplicate_data = false;
     format_info.total_size = 0;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(Service::FS::CreateExtSaveData(media_type, save_high, save_low, icon, format_info));
     rb.PushMappedBuffer(icon_buffer);
 
@@ -460,13 +460,13 @@ void FS_USER::CreateExtSaveData(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::DeleteExtSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x852, 4, 0);
+    IPC::RequestParser rp{ctx, 0x852, 4, 0};
     MediaType media_type = static_cast<MediaType>(rp.Pop<u32>()); // the other bytes are unknown
     u32 save_low = rp.Pop<u32>();
     u32 save_high = rp.Pop<u32>();
     u32 unknown = rp.Pop<u32>(); // TODO(Subv): Figure out what this is
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(Service::FS::DeleteExtSaveData(media_type, save_high, save_low));
 
     LOG_DEBUG(Service_FS,
@@ -475,24 +475,24 @@ void FS_USER::DeleteExtSaveData(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::CardSlotIsInserted(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x821, 0, 0);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestParser rp{ctx, 0x821, 0, 0};
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(false);
     LOG_WARNING(Service_FS, "(STUBBED) called");
 }
 
 void FS_USER::DeleteSystemSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x857, 2, 0);
+    IPC::RequestParser rp{ctx, 0x857, 2, 0};
     u32 savedata_high = rp.Pop<u32>();
     u32 savedata_low = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(Service::FS::DeleteSystemSaveData(savedata_high, savedata_low));
 }
 
 void FS_USER::CreateSystemSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x856, 9, 0);
+    IPC::RequestParser rp{ctx, 0x856, 9, 0};
     u32 savedata_high = rp.Pop<u32>();
     u32 savedata_low = rp.Pop<u32>();
     u32 total_size = rp.Pop<u32>();
@@ -510,12 +510,12 @@ void FS_USER::CreateSystemSaveData(Kernel::HLERequestContext& ctx) {
         savedata_high, savedata_low, total_size, block_size, directories, files, directory_buckets,
         file_buckets, duplicate);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(Service::FS::CreateSystemSaveData(savedata_high, savedata_low));
 }
 
 void FS_USER::CreateLegacySystemSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x810, 8, 0);
+    IPC::RequestParser rp{ctx, 0x810, 8, 0};
     u32 savedata_id = rp.Pop<u32>();
     u32 total_size = rp.Pop<u32>();
     u32 block_size = rp.Pop<u32>();
@@ -531,41 +531,41 @@ void FS_USER::CreateLegacySystemSaveData(Kernel::HLERequestContext& ctx) {
                 savedata_id, total_size, block_size, directories, files, directory_buckets,
                 file_buckets, duplicate);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     // With this command, the SystemSaveData always has save_high = 0 (Always created in the NAND)
     rb.Push(Service::FS::CreateSystemSaveData(0, savedata_id));
 }
 
 void FS_USER::InitializeWithSdkVersion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x861, 1, 2);
+    IPC::RequestParser rp{ctx, 0x861, 1, 2};
     const u32 version = rp.Pop<u32>();
     rp.PopPID();
 
     LOG_WARNING(Service_FS, "(STUBBED) called, version: 0x{:08X}", version);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void FS_USER::SetPriority(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x862, 1, 0);
+    IPC::RequestParser rp{ctx, 0x862, 1, 0};
 
     priority = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_FS, "called priority=0x{:X}", priority);
 }
 
 void FS_USER::GetPriority(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x863, 0, 0);
+    IPC::RequestParser rp{ctx, 0x863, 0, 0};
 
     if (priority == -1) {
         LOG_INFO(Service_FS, "priority was not set, priority=0x{:X}", priority);
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(priority);
 
@@ -573,12 +573,12 @@ void FS_USER::GetPriority(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::GetArchiveResource(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x849, 1, 0);
+    IPC::RequestParser rp{ctx, 0x849, 1, 0};
     u32 system_media_type = rp.Pop<u32>();
 
     LOG_WARNING(Service_FS, "(STUBBED) called Media type=0x{:08X}", system_media_type);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(5, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(512);
     rb.Push<u32>(16384);
@@ -587,7 +587,7 @@ void FS_USER::GetArchiveResource(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::GetFormatInfo(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x845, 3, 2);
+    IPC::RequestParser rp{ctx, 0x845, 3, 2};
     auto archive_id = rp.PopEnum<FS::ArchiveIdCode>();
     auto archivename_type = rp.PopEnum<FileSys::LowPathType>();
     u32 archivename_size = rp.Pop<u32>();
@@ -598,7 +598,7 @@ void FS_USER::GetFormatInfo(Kernel::HLERequestContext& ctx) {
 
     LOG_DEBUG(Service_FS, "archive_path={}", archive_path.DebugStr());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(5, 0)};
 
     auto format_info = GetArchiveFormatInfo(archive_id, archive_path);
     rb.Push(format_info.Code());
@@ -615,7 +615,7 @@ void FS_USER::GetFormatInfo(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::GetProgramLaunchInfo(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x82F, 1, 0);
+    IPC::RequestParser rp{ctx, 0x82F, 1, 0};
 
     u32 process_id = rp.Pop<u32>();
 
@@ -625,7 +625,7 @@ void FS_USER::GetProgramLaunchInfo(Kernel::HLERequestContext& ctx) {
     // that were registered with the 'fs:REG' service.
     auto process = Kernel::GetProcessById(process_id);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(5, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(5, 0)};
 
     if (process == nullptr) {
         // Note: In this case, the rest of the parameters are not changed but the command header
@@ -649,7 +649,7 @@ void FS_USER::GetProgramLaunchInfo(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::ObsoletedCreateExtSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x830, 6, 2);
+    IPC::RequestParser rp{ctx, 0x830, 6, 2};
     MediaType media_type = static_cast<MediaType>(rp.Pop<u8>());
     u32 save_low = rp.Pop<u32>();
     u32 save_high = rp.Pop<u32>();
@@ -667,7 +667,7 @@ void FS_USER::ObsoletedCreateExtSaveData(Kernel::HLERequestContext& ctx) {
     format_info.duplicate_data = false;
     format_info.total_size = 0;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(Service::FS::CreateExtSaveData(media_type, save_high, save_low, icon, format_info));
     rb.PushMappedBuffer(icon_buffer);
 
@@ -678,11 +678,11 @@ void FS_USER::ObsoletedCreateExtSaveData(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::ObsoletedDeleteExtSaveData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x835, 2, 0);
+    IPC::RequestParser rp{ctx, 0x835, 2, 0};
     MediaType media_type = static_cast<MediaType>(rp.Pop<u8>());
     u32 save_low = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(Service::FS::DeleteExtSaveData(media_type, 0, save_low));
 
     LOG_DEBUG(Service_FS, "called, save_low={:08X} media_type={:08X}", save_low,
@@ -690,18 +690,18 @@ void FS_USER::ObsoletedDeleteExtSaveData(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::GetNumSeeds(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x87D, 0, 0);
+    IPC::RequestParser rp{ctx, 0x87D, 0, 0};
 
     LOG_WARNING(Service_FS, "(STUBBED) called");
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
 
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
 }
 
 void FS_USER::SetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x865, 5, 0);
+    IPC::RequestParser rp{ctx, 0x865, 5, 0};
     u64 value = rp.Pop<u64>();
     u32 secure_value_slot = rp.Pop<u32>();
     u32 unique_id = rp.Pop<u32>();
@@ -714,13 +714,13 @@ void FS_USER::SetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
                 "unqiue_id=0x{:08X} title_variation=0x{:02X}",
                 value, secure_value_slot, unique_id, title_variation);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     rb.Push(RESULT_SUCCESS);
 }
 
 void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x866, 3, 0);
+    IPC::RequestParser rp{ctx, 0x866, 3, 0};
 
     u32 secure_value_slot = rp.Pop<u32>();
     u32 unique_id = rp.Pop<u32>();
@@ -731,7 +731,7 @@ void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
         "(STUBBED) called secure_value_slot=0x{:08X} unqiue_id=0x{:08X} title_variation=0x{:02X}",
         secure_value_slot, unique_id, title_variation);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(4, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(4, 0)};
 
     rb.Push(RESULT_SUCCESS);
 
@@ -742,13 +742,13 @@ void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::GetThisSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x86F, 1, 0);
+    IPC::RequestParser rp{ctx, 0x86F, 1, 0};
 
     u32 secure_value_slot = rp.Pop<u32>();
 
     LOG_WARNING(Service_FS, "(STUBBED) called, secure_value_slot={}", secure_value_slot);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(4, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(4, 0)};
 
     rb.Push(RESULT_SUCCESS);
 

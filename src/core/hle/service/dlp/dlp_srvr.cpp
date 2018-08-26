@@ -11,10 +11,10 @@
 namespace Service::DLP {
 
 void DLP_SRVR::IsChild(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0E, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0E, 1, 0};
     rp.Skip(1, false);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(false);
 

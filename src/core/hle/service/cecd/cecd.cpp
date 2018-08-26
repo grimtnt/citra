@@ -28,7 +28,7 @@ using CecOpenMode = Module::CecOpenMode;
 using CecSystemInfoType = Module::CecSystemInfoType;
 
 void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x01, 3, 2);
+    IPC::RequestParser rp{ctx, 0x01, 3, 2};
     const u32 ncch_program_id = rp.Pop<u32>();
     const CecDataPathType path_type = rp.PopEnum<CecDataPathType>();
     CecOpenMode open_mode;
@@ -47,7 +47,7 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
     session_data->data_path_type = path_type;
     session_data->path = path;
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     switch (path_type) {
     case CecDataPathType::CEC_PATH_ROOT_DIR:
     case CecDataPathType::CEC_PATH_MBOX_DIR:
@@ -114,7 +114,7 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::Read(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x02, 1, 2);
+    IPC::RequestParser rp{ctx, 0x02, 1, 2};
     const u32 write_buffer_size = rp.Pop<u32>();
     auto& write_buffer = rp.PopMappedBuffer();
 
@@ -128,7 +128,7 @@ void Module::Interface::Read(Kernel::HLERequestContext& ctx) {
               session_data->open_mode.write, session_data->open_mode.create,
               session_data->open_mode.check);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     switch (session_data->data_path_type) {
     case CecDataPathType::CEC_PATH_ROOT_DIR:
     case CecDataPathType::CEC_PATH_MBOX_DIR:
@@ -156,7 +156,7 @@ void Module::Interface::Read(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::ReadMessage(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x03, 4, 4);
+    IPC::RequestParser rp{ctx, 0x03, 4, 4};
     const u32 ncch_program_id = rp.Pop<u32>();
     const bool is_outbox = rp.Pop<bool>();
     const u32 message_id_size = rp.Pop<u32>();
@@ -184,7 +184,7 @@ void Module::Interface::ReadMessage(Kernel::HLERequestContext& ctx) {
     auto message_result =
         Service::FS::OpenFileFromArchive(cecd->cecd_system_save_data_archive, message_path, mode);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 4);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 4)};
     if (message_result.Succeeded()) {
         auto message = message_result.Unwrap();
         std::vector<u8> buffer(buffer_size);
@@ -210,7 +210,7 @@ void Module::Interface::ReadMessage(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x04, 4, 6);
+    IPC::RequestParser rp{ctx, 0x04, 4, 6};
     const u32 ncch_program_id = rp.Pop<u32>();
     const bool is_outbox = rp.Pop<bool>();
     const u32 message_id_size = rp.Pop<u32>();
@@ -239,7 +239,7 @@ void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
     auto message_result =
         Service::FS::OpenFileFromArchive(cecd->cecd_system_save_data_archive, message_path, mode);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 6);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 6)};
     if (message_result.Succeeded()) {
         auto message = message_result.Unwrap();
         std::vector<u8> buffer(buffer_size);
@@ -267,7 +267,7 @@ void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::Write(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x05, 1, 2);
+    IPC::RequestParser rp{ctx, 0x05, 1, 2};
     const u32 read_buffer_size = rp.Pop<u32>();
     auto& read_buffer = rp.PopMappedBuffer();
 
@@ -281,7 +281,7 @@ void Module::Interface::Write(Kernel::HLERequestContext& ctx) {
               session_data->open_mode.write, session_data->open_mode.create,
               session_data->open_mode.check);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     switch (session_data->data_path_type) {
     case CecDataPathType::CEC_PATH_ROOT_DIR:
     case CecDataPathType::CEC_PATH_MBOX_DIR:
@@ -311,7 +311,7 @@ void Module::Interface::Write(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::WriteMessage(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x06, 4, 4);
+    IPC::RequestParser rp{ctx, 0x06, 4, 4};
     const u32 ncch_program_id = rp.Pop<u32>();
     const bool is_outbox = rp.Pop<bool>();
     const u32 message_id_size = rp.Pop<u32>();
@@ -340,7 +340,7 @@ void Module::Interface::WriteMessage(Kernel::HLERequestContext& ctx) {
     auto message_result =
         Service::FS::OpenFileFromArchive(cecd->cecd_system_save_data_archive, message_path, mode);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 4);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
     if (message_result.Succeeded()) {
         auto message = message_result.Unwrap();
         std::vector<u8> buffer(buffer_size);
@@ -366,7 +366,7 @@ void Module::Interface::WriteMessage(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x07, 4, 6);
+    IPC::RequestParser rp{ctx, 0x07, 4, 6};
     const u32 ncch_program_id = rp.Pop<u32>();
     const bool is_outbox = rp.Pop<bool>();
     const u32 message_id_size = rp.Pop<u32>();
@@ -396,7 +396,7 @@ void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
     auto message_result =
         Service::FS::OpenFileFromArchive(cecd->cecd_system_save_data_archive, message_path, mode);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 6);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 6)};
     if (message_result.Succeeded()) {
         auto message = message_result.Unwrap();
         std::vector<u8> buffer(buffer_size);
@@ -423,7 +423,7 @@ void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::Delete(Kernel::HLERequestContext& ctx) { /// DeleteMessage?
-    IPC::RequestParser rp(ctx, 0x08, 4, 2);
+    IPC::RequestParser rp{ctx, 0x08, 4, 2};
     const u32 ncch_program_id = rp.Pop<u32>();
     const CecDataPathType path_type = rp.PopEnum<CecDataPathType>();
     const bool is_outbox = rp.Pop<bool>();
@@ -434,7 +434,7 @@ void Module::Interface::Delete(Kernel::HLERequestContext& ctx) { /// DeleteMessa
     FileSys::Mode mode;
     mode.write_flag.Assign(1);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     switch (path_type) {
     case CecDataPathType::CEC_PATH_ROOT_DIR:
     case CecDataPathType::CEC_PATH_MBOX_DIR:
@@ -476,7 +476,7 @@ void Module::Interface::Delete(Kernel::HLERequestContext& ctx) { /// DeleteMessa
 }
 
 void Module::Interface::SetData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x09, 3, 2);
+    IPC::RequestParser rp{ctx, 0x09, 3, 2};
     const u32 ncch_program_id = rp.Pop<u32>();
     const u32 buffer_size = rp.Pop<u32>();
     const u32 option = rp.Pop<u32>();
@@ -515,7 +515,7 @@ void Module::Interface::SetData(Kernel::HLERequestContext& ctx) {
     if (session_data->file)
         session_data->file->backend->Close();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(message_id_buffer);
 
@@ -524,7 +524,7 @@ void Module::Interface::SetData(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::ReadData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0A, 3, 4);
+    IPC::RequestParser rp{ctx, 0x0A, 3, 4};
     const u32 dest_buffer_size = rp.Pop<u32>();
     const CecSystemInfoType info_type = rp.PopEnum<CecSystemInfoType>();
     const u32 param_buffer_size = rp.Pop<u32>();
@@ -532,7 +532,7 @@ void Module::Interface::ReadData(Kernel::HLERequestContext& ctx) {
     auto& dest_buffer = rp.PopMappedBuffer();
 
     /// TODO: Other CecSystemInfoTypes
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 4);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 4)};
     std::vector<u8> buffer;
     switch (info_type) {
     case CecSystemInfoType::EulaVersion: /// TODO: Read config Eula version
@@ -561,32 +561,32 @@ void Module::Interface::ReadData(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::Start(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0B, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0B, 1, 0};
     const CecCommand command = rp.PopEnum<CecCommand>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CECD, "(STUBBED) called, command={}", cecd->GetCecCommandAsString(command));
 }
 
 void Module::Interface::Stop(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0C, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0C, 1, 0};
     const CecCommand command = rp.PopEnum<CecCommand>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_CECD, "(STUBBED) called, command={}", cecd->GetCecCommandAsString(command));
 }
 
 void Module::Interface::GetCecInfoBuffer(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0D, 2, 2);
+    IPC::RequestParser rp{ctx, 0x0D, 2, 2};
     const u32 buffer_size = rp.Pop<u32>();
     const u32 possible_info_type = rp.Pop<u32>();
     auto& buffer = rp.PopMappedBuffer();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
@@ -595,9 +595,9 @@ void Module::Interface::GetCecInfoBuffer(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetCecdState(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0E, 0, 0);
+    IPC::RequestParser rp{ctx, 0x0E, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum(CecdState::NDM_STATUS_IDLE);
 
@@ -605,9 +605,9 @@ void Module::Interface::GetCecdState(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetCecInfoEventHandle(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0F, 0, 0);
+    IPC::RequestParser rp{ctx, 0x0F, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(cecd->cecinfo_event);
 
@@ -615,9 +615,9 @@ void Module::Interface::GetCecInfoEventHandle(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::GetChangeStateEventHandle(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x10, 0, 0);
+    IPC::RequestParser rp{ctx, 0x10, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(cecd->change_state_event);
 
@@ -625,7 +625,7 @@ void Module::Interface::GetChangeStateEventHandle(Kernel::HLERequestContext& ctx
 }
 
 void Module::Interface::OpenAndWrite(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x11, 4, 4);
+    IPC::RequestParser rp{ctx, 0x11, 4, 4};
     const u32 buffer_size = rp.Pop<u32>();
     const u32 ncch_program_id = rp.Pop<u32>();
     const CecDataPathType path_type = rp.PopEnum<CecDataPathType>();
@@ -639,7 +639,7 @@ void Module::Interface::OpenAndWrite(Kernel::HLERequestContext& ctx) {
     mode.write_flag.Assign(1);
     mode.create_flag.Assign(1);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     switch (path_type) {
     case CecDataPathType::CEC_PATH_ROOT_DIR:
     case CecDataPathType::CEC_PATH_MBOX_DIR:
@@ -681,7 +681,7 @@ void Module::Interface::OpenAndWrite(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::OpenAndRead(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x12, 4, 4);
+    IPC::RequestParser rp{ctx, 0x12, 4, 4};
     const u32 buffer_size = rp.Pop<u32>();
     const u32 ncch_program_id = rp.Pop<u32>();
     const CecDataPathType path_type = rp.PopEnum<CecDataPathType>();
@@ -694,7 +694,7 @@ void Module::Interface::OpenAndRead(Kernel::HLERequestContext& ctx) {
     FileSys::Mode mode;
     mode.read_flag.Assign(1);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     switch (path_type) {
     case CecDataPathType::CEC_PATH_ROOT_DIR:
     case CecDataPathType::CEC_PATH_MBOX_DIR:

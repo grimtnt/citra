@@ -22,7 +22,7 @@ enum class DspPipe;
 namespace Service::DSP {
 
 void DSP_DSP::RecvData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x01, 1, 0);
+    IPC::RequestParser rp{ctx, 0x01, 1, 0};
     const u32 register_number = rp.Pop<u32>();
 
     ASSERT_MSG(register_number == 0, "Unknown register_number {}", register_number);
@@ -30,7 +30,7 @@ void DSP_DSP::RecvData(Kernel::HLERequestContext& ctx) {
     // Application reads this after requesting DSP shutdown, to verify the DSP has indeed shutdown
     // or slept.
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
 
     switch (Core::DSP().GetDspState()) {
@@ -50,12 +50,12 @@ void DSP_DSP::RecvData(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::RecvDataIsReady(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x02, 1, 0);
+    IPC::RequestParser rp{ctx, 0x02, 1, 0};
     const u32 register_number = rp.Pop<u32>();
 
     ASSERT_MSG(register_number == 0, "Unknown register_number {}", register_number);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(true); /// 0 = not ready, 1 = ready to read
 
@@ -63,20 +63,20 @@ void DSP_DSP::RecvDataIsReady(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::SetSemaphore(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x07, 1, 0);
+    IPC::RequestParser rp{ctx, 0x07, 1, 0};
     const u16 semaphore_value = rp.Pop<u16>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_DSP, "(STUBBED) called, semaphore_value={:04X}", semaphore_value);
 }
 
 void DSP_DSP::ConvertProcessAddressFromDspDram(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0C, 1, 0);
+    IPC::RequestParser rp{ctx, 0x0C, 1, 0};
     const u32 address = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
 
     // TODO(merry): There is a per-region offset missing in this calculation (that seems to be
@@ -87,7 +87,7 @@ void DSP_DSP::ConvertProcessAddressFromDspDram(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::WriteProcessPipe(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0D, 2, 2);
+    IPC::RequestParser rp{ctx, 0x0D, 2, 2};
     const u32 channel = rp.Pop<u32>();
     const u32 size = rp.Pop<u32>();
     auto buffer = rp.PopStaticBuffer();
@@ -114,7 +114,7 @@ void DSP_DSP::WriteProcessPipe(Kernel::HLERequestContext& ctx) {
 
     Core::DSP().PipeWrite(pipe, buffer);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_DSP, "channel={}, size=0x{:X}, buffer_size={:X}", channel, size,
@@ -122,7 +122,7 @@ void DSP_DSP::WriteProcessPipe(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::ReadPipe(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0E, 3, 0);
+    IPC::RequestParser rp{ctx, 0x0E, 3, 0};
     const u32 channel = rp.Pop<u32>();
     const u32 peer = rp.Pop<u32>();
     const u16 size = rp.Pop<u16>();
@@ -136,7 +136,7 @@ void DSP_DSP::ReadPipe(Kernel::HLERequestContext& ctx) {
     else
         UNREACHABLE(); // No more data is in pipe. Hardware hangs in this case; Should never happen.
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushStaticBuffer(std::move(pipe_buffer), 0);
 
@@ -145,14 +145,14 @@ void DSP_DSP::ReadPipe(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::GetPipeReadableSize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0F, 2, 0);
+    IPC::RequestParser rp{ctx, 0x0F, 2, 0};
     const u32 channel = rp.Pop<u32>();
     const u32 peer = rp.Pop<u32>();
 
     const DspPipe pipe = static_cast<DspPipe>(channel);
     const u16 pipe_readable_size = static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe));
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(pipe_readable_size);
 
@@ -161,7 +161,7 @@ void DSP_DSP::GetPipeReadableSize(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::ReadPipeIfPossible(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x10, 3, 0);
+    IPC::RequestParser rp{ctx, 0x10, 3, 0};
     const u32 channel = rp.Pop<u32>();
     const u32 peer = rp.Pop<u32>();
     const u16 size = rp.Pop<u16>();
@@ -173,7 +173,7 @@ void DSP_DSP::ReadPipeIfPossible(Kernel::HLERequestContext& ctx) {
     if (pipe_readable_size >= size)
         pipe_buffer = Core::DSP().PipeRead(pipe, size);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u16>(pipe_readable_size);
     rb.PushStaticBuffer(pipe_buffer, 0);
@@ -183,13 +183,13 @@ void DSP_DSP::ReadPipeIfPossible(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::LoadComponent(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x11, 3, 2);
+    IPC::RequestParser rp{ctx, 0x11, 3, 2};
     const u32 size = rp.Pop<u32>();
     const u32 prog_mask = rp.Pop<u32>();
     const u32 data_mask = rp.Pop<u32>();
     auto& buffer = rp.PopMappedBuffer();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.Push(true); /// Pretend that we actually loaded the DSP firmware
     rb.PushMappedBuffer(buffer);
@@ -211,21 +211,21 @@ void DSP_DSP::LoadComponent(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::UnloadComponent(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x12, 0, 0);
+    IPC::RequestParser rp{ctx, 0x12, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_DSP, "(STUBBED) called");
 }
 
 void DSP_DSP::FlushDataCache(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x13, 2, 2);
+    IPC::RequestParser rp{ctx, 0x13, 2, 2};
     const VAddr address = rp.Pop<u32>();
     const u32 size = rp.Pop<u32>();
     const auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_TRACE(Service_DSP, "called address=0x{:08X}, size=0x{:X}, process={}", address, size,
@@ -233,12 +233,12 @@ void DSP_DSP::FlushDataCache(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::InvalidateDataCache(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x14, 2, 2);
+    IPC::RequestParser rp{ctx, 0x14, 2, 2};
     const VAddr address = rp.Pop<u32>();
     const u32 size = rp.Pop<u32>();
     const auto process = rp.PopObject<Kernel::Process>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_TRACE(Service_DSP, "called address=0x{:08X}, size=0x{:X}, process={}", address, size,
@@ -246,7 +246,7 @@ void DSP_DSP::InvalidateDataCache(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::RegisterInterruptEvents(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x15, 2, 2);
+    IPC::RequestParser rp{ctx, 0x15, 2, 2};
     const u32 interrupt = rp.Pop<u32>();
     const u32 channel = rp.Pop<u32>();
     auto event = rp.PopObject<Kernel::Event>();
@@ -257,7 +257,7 @@ void DSP_DSP::RegisterInterruptEvents(Kernel::HLERequestContext& ctx) {
     const InterruptType type = static_cast<InterruptType>(interrupt);
     const DspPipe pipe = static_cast<DspPipe>(channel);
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     if (event) { /// Register interrupt event
         if (HasTooManyEventsRegistered()) {
@@ -281,9 +281,9 @@ void DSP_DSP::RegisterInterruptEvents(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::GetSemaphoreEventHandle(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x16, 0, 0);
+    IPC::RequestParser rp{ctx, 0x16, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(semaphore_event);
 
@@ -291,19 +291,19 @@ void DSP_DSP::GetSemaphoreEventHandle(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::SetSemaphoreMask(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x17, 1, 0);
+    IPC::RequestParser rp{ctx, 0x17, 1, 0};
     const u32 mask = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_DSP, "(STUBBED) called mask=0x{:08X}", mask);
 }
 
 void DSP_DSP::GetHeadphoneStatus(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x1F, 0, 0);
+    IPC::RequestParser rp{ctx, 0x1F, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(static_cast<u8>(Settings::values.headphones_connected));
 
@@ -311,19 +311,19 @@ void DSP_DSP::GetHeadphoneStatus(Kernel::HLERequestContext& ctx) {
 }
 
 void DSP_DSP::ForceHeadphoneOut(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x20, 1, 0);
+    IPC::RequestParser rp{ctx, 0x20, 1, 0};
     const u8 force = rp.Pop<u8>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_DSP, "(STUBBED) called, force={}", force);
 }
 
 void DSP_DSP::GetIsDspOccupied(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x21, 0, 0);
+    IPC::RequestParser rp{ctx, 0x21, 0, 0};
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0);
 

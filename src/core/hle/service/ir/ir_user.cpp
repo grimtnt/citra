@@ -228,7 +228,7 @@ void IR_USER::PutToReceive(const std::vector<u8>& payload) {
 }
 
 void IR_USER::InitializeIrNopShared(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x18, 6, 2);
+    IPC::RequestParser rp{ctx, 0x18, 6, 2};
     const u32 shared_buff_size = rp.Pop<u32>();
     const u32 recv_buff_size = rp.Pop<u32>();
     const u32 recv_buff_packet_count = rp.Pop<u32>();
@@ -237,7 +237,7 @@ void IR_USER::InitializeIrNopShared(Kernel::HLERequestContext& ctx) {
     const u8 baud_rate = rp.Pop<u8>();
     shared_memory = rp.PopObject<Kernel::SharedMemory>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     shared_memory->name = "IR_USER: shared memory";
 
@@ -258,7 +258,7 @@ void IR_USER::InitializeIrNopShared(Kernel::HLERequestContext& ctx) {
 }
 
 void IR_USER::RequireConnection(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x06, 1, 0);
+    IPC::RequestParser rp{ctx, 0x06, 1, 0};
     const u8 device_id = rp.Pop<u8>();
 
     u8* shared_memory_ptr = shared_memory->GetPointer();
@@ -278,7 +278,7 @@ void IR_USER::RequireConnection(Kernel::HLERequestContext& ctx) {
         shared_memory_ptr[offsetof(SharedMemoryHeader, trying_to_connect_status)] = 2;
     }
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
     LOG_INFO(Service_IR, "called, device_id = {}", device_id);
@@ -344,12 +344,12 @@ void IR_USER::FinalizeIrNop(Kernel::HLERequestContext& ctx) {
 }
 
 void IR_USER::SendIrNop(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x0D, 1, 2);
+    IPC::RequestParser rp{ctx, 0x0D, 1, 2};
     const u32 size = rp.Pop<u32>();
     std::vector<u8> buffer = rp.PopStaticBuffer();
     ASSERT(size == buffer.size());
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     if (connected_device) {
         connected_device->OnReceive(buffer);
         send_event->Signal();
@@ -364,10 +364,10 @@ void IR_USER::SendIrNop(Kernel::HLERequestContext& ctx) {
 }
 
 void IR_USER::ReleaseReceivedData(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x19, 1, 0);
+    IPC::RequestParser rp{ctx, 0x19, 1, 0};
     u32 count = rp.Pop<u32>();
 
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
 
     if (receive_buffer->Release(count)) {
         rb.Push(RESULT_SUCCESS);

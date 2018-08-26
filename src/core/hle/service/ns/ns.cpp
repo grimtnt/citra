@@ -33,7 +33,7 @@ Kernel::SharedPtr<Kernel::Process> LaunchTitleImpl(FS::MediaType media_type, u64
 }
 
 void NS_S::LaunchTitle(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x2, 3, 0);
+    IPC::RequestParser rp{ctx, 0x2, 3, 0};
     u64 title_id = rp.Pop<u64>();
     u32 flags = rp.Pop<u32>();
     FS::MediaType media_type =
@@ -41,22 +41,22 @@ void NS_S::LaunchTitle(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_NS, "(STUBBED) called, title_id={}, media_type={}, flags={}", title_id,
                 static_cast<u32>(media_type), flags);
     auto process = LaunchTitleImpl(media_type, title_id);
-    IPC::RequestBuilder rb = rp.MakeBuilder(2, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(process ? process->process_id : 0);
 }
 
 void NS_S::ShutdownAsync(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xE, 0, 0);
+    IPC::RequestParser rp{ctx, 0xE, 0, 0};
     Core::System::GetInstance().RequestShutdown();
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
 void NS_S::RebootSystemClean(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0xE, 0, 0);
+    IPC::RequestParser rp{ctx, 0xE, 0, 0};
     Core::System::GetInstance().RequestJump(0, FS::MediaType::NAND);
-    IPC::RequestBuilder rb = rp.MakeBuilder(1, 0);
+    IPC::RequestBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }
 
