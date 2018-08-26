@@ -19,7 +19,7 @@ ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& param
     // The LibAppJustStarted message contains a buffer with the size of the framebuffer shared
     // memory.
     // Create the SharedMemory that will hold the framebuffer data
-    Service::APT::CaptureBufferInfo capture_info;
+    Service::APT::CaptureBufferInfo capture_info{};
     ASSERT(sizeof(capture_info) == parameter.buffer.size());
 
     memcpy(&capture_info, parameter.buffer.data(), sizeof(capture_info));
@@ -34,7 +34,7 @@ ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& param
         "ErrEula Memory");
 
     // Send the response message with the newly created SharedMemory
-    Service::APT::MessageParameter result;
+    Service::APT::MessageParameter result{};
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
     result.destination_id = Service::APT::AppletId::Application;
@@ -54,7 +54,7 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 }
 
 void ErrEula::Update() {
-    auto cb = Core::System::GetInstance().GetQtCallbacks().erreula;
+    auto cb{Core::System::GetInstance().GetQtCallbacks().erreula};
 
     if (cb) {
         cb(config);

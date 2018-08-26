@@ -14,6 +14,7 @@ ConfigMemDef config_mem;
 void Init() {
     std::memset(&config_mem, 0, sizeof(config_mem));
 
+    // TODO: Update this
     // Values extracted from firmware 11.2.0-35E
     config_mem.kernel_version_min = 0x34;
     config_mem.kernel_version_maj = 0x2;

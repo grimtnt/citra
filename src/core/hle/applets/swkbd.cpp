@@ -159,7 +159,7 @@ ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter con
     // The LibAppJustStarted message contains a buffer with the size of the framebuffer shared
     // memory.
     // Create the SharedMemory that will hold the framebuffer data
-    Service::APT::CaptureBufferInfo capture_info;
+    Service::APT::CaptureBufferInfo capture_info{};
     ASSERT(sizeof(capture_info) == parameter.buffer.size());
 
     memcpy(&capture_info, parameter.buffer.data(), sizeof(capture_info));
@@ -173,7 +173,7 @@ ResultCode SoftwareKeyboard::ReceiveParameter(Service::APT::MessageParameter con
         MemoryPermission::ReadWrite, "SoftwareKeyboard Memory");
 
     // Send the response message with the newly created SharedMemory
-    Service::APT::MessageParameter result;
+    Service::APT::MessageParameter result{};
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
     result.destination_id = Service::APT::AppletId::Application;
@@ -200,26 +200,18 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 }
 
 void SoftwareKeyboard::Update() {
-    auto cb = Core::System::GetInstance().GetQtCallbacks().swkbd;
-
-    if (Settings::values.keyboard_mode == Settings::KeyboardMode::Qt && cb) {
-        // Call the function registered by the Qt frontend
-        std::u16string text;
-        cb(config, text);
-        memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
-        Finalize();
-    } else {
-        // Read from stdin
-        std::string input;
+    switch (Settings::values.keyboard_mode) {
+    case Settings::KeyboardMode::StdIn: {
+        std::string input{};
         std::cout << "Software Keyboard" << std::endl;
         // Display hint text
-        std::u16string hint(reinterpret_cast<char16_t*>(config.hint_text));
+        std::u16string hint{reinterpret_cast<char16_t*>(config.hint_text)};
         if (!hint.empty()) {
             std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
         }
-        ValidationError error = ValidationError::ButtonOutOfRange;
+        ValidationError error{ValidationError::ButtonOutOfRange};
         auto ValidateInputString = [&]() -> bool {
-            ValidationError error = ValidateInput(config, input);
+            ValidationError error{ValidateInput(config, input)};
             if (error != ValidationError::None) {
                 switch (error) {
                 case ValidationError::AtSignNotAllowed:
@@ -268,14 +260,14 @@ void SoftwareKeyboard::Update() {
             std::getline(std::cin, input);
         } while (!ValidateInputString());
 
-        std::string option_text;
+        std::string option_text{};
         // convert all of the button texts into something we can output
         // num_buttons is in the range of 0-2 so use <= instead of <
-        u32 num_buttons = static_cast<u32>(config.num_buttons_m1);
+        u32 num_buttons{static_cast<u32>(config.num_buttons_m1)};
         for (u32 i = 0; i <= num_buttons; ++i) {
-            std::string button_text;
+            std::string button_text{};
             // apps are allowed to set custom text to display on the button
-            std::u16string custom_button_text(reinterpret_cast<char16_t*>(config.button_text[i]));
+            std::u16string custom_button_text{reinterpret_cast<char16_t*>(config.button_text[i])};
             if (custom_button_text.empty()) {
                 // Use the system default text for that button
                 button_text = default_button_text[num_buttons][i];
@@ -284,12 +276,12 @@ void SoftwareKeyboard::Update() {
             }
             option_text += "\t(" + std::to_string(i) + ") " + button_text + "\t";
         }
-        std::string option;
+        std::string option{};
         error = ValidationError::ButtonOutOfRange;
         auto ValidateButtonString = [&]() -> bool {
-            bool valid = false;
+            bool valid{};
             try {
-                u32 num = std::stoul(option);
+                u32 num{static_cast<u32>(std::stoul(option))};
                 valid = ValidateButton(config, static_cast<u8>(num)) == ValidationError::None;
                 if (!valid) {
                     std::cout << Common::StringFromFormat("Please choose a number between 0 and %u",
@@ -309,7 +301,7 @@ void SoftwareKeyboard::Update() {
             std::getline(std::cin, option);
         } while (!ValidateButtonString());
 
-        s32 button = std::stol(option);
+        s32 button{static_cast<s32>(std::stol(option))};
         switch (config.num_buttons_m1) {
         case SwkbdButtonConfig::SingleButton:
             config.return_code = SwkbdResult::D0Click;
@@ -344,12 +336,28 @@ void SoftwareKeyboard::Update() {
         config.text_length = static_cast<u16>(utf16_input.size());
         config.text_offset = 0;
         Finalize();
+        break;
+    }
+    case Settings::KeyboardMode::Qt: {
+        auto cb{Core::System::GetInstance().GetQtCallbacks().swkbd};
+        if (!cb)
+            UNREACHABLE_MSG("Qt keyboard callback is nullptr");
+        std::u16string text{};
+        cb(config, text);
+        memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
+        Finalize();
+        break;
+    }
+    default:
+        UNREACHABLE_MSG("Unimplemented keyboard mode {}",
+                        static_cast<int>(Settings::values.keyboard_mode));
+        break;
     }
 }
 
 void SoftwareKeyboard::Finalize() {
     // Let the application know that we're closing
-    Service::APT::MessageParameter message;
+    Service::APT::MessageParameter message{};
     message.buffer.resize(sizeof(SoftwareKeyboardConfig));
     std::memcpy(message.buffer.data(), &config, message.buffer.size());
     message.signal = Service::APT::SignalType::WakeupByExit;

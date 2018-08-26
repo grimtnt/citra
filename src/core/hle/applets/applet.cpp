@@ -37,9 +37,9 @@ namespace HLE::Applets {
 
 static std::unordered_map<Service::APT::AppletId, std::shared_ptr<Applet>> applets;
 /// The CoreTiming event identifier for the Applet update callback.
-static CoreTiming::EventType* applet_update_event = nullptr;
+static CoreTiming::EventType* applet_update_event{nullptr};
 /// The interval at which the Applet update callback will be called, 16.6ms
-static const u64 applet_update_interval_us = 16666;
+static const u64 applet_update_interval_us{16666};
 
 ResultCode Applet::Create(Service::APT::AppletId id,
                           std::weak_ptr<Service::APT::AppletManager> manager) {
@@ -71,7 +71,7 @@ ResultCode Applet::Create(Service::APT::AppletId id,
 }
 
 std::shared_ptr<Applet> Applet::Get(Service::APT::AppletId id) {
-    auto itr = applets.find(id);
+    auto itr{applets.find(id)};
     if (itr != applets.end())
         return itr->second;
     return nullptr;
@@ -79,8 +79,8 @@ std::shared_ptr<Applet> Applet::Get(Service::APT::AppletId id) {
 
 /// Handles updating the current Applet every time it's called.
 static void AppletUpdateEvent(u64 applet_id, s64 cycles_late) {
-    Service::APT::AppletId id = static_cast<Service::APT::AppletId>(applet_id);
-    std::shared_ptr<Applet> applet = Applet::Get(id);
+    Service::APT::AppletId id{static_cast<Service::APT::AppletId>(applet_id)};
+    std::shared_ptr<Applet> applet{Applet::Get(id)};
     ASSERT_MSG(applet != nullptr, "Applet doesn't exist! applet_id={:08X}", static_cast<u32>(id));
 
     applet->Update();

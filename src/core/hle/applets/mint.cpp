@@ -19,7 +19,7 @@ ResultCode Mint::ReceiveParameter(const Service::APT::MessageParameter& paramete
     // The Request message contains a buffer with the size of the framebuffer shared
     // memory.
     // Create the SharedMemory that will hold the framebuffer data
-    Service::APT::CaptureBufferInfo capture_info;
+    Service::APT::CaptureBufferInfo capture_info{};
     ASSERT(sizeof(capture_info) == parameter.buffer.size());
 
     memcpy(&capture_info, parameter.buffer.data(), sizeof(capture_info));
@@ -34,7 +34,7 @@ ResultCode Mint::ReceiveParameter(const Service::APT::MessageParameter& paramete
         "Mint Memory");
 
     // Send the response message with the newly created SharedMemory
-    Service::APT::MessageParameter result;
+    Service::APT::MessageParameter result{};
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
     result.destination_id = Service::APT::AppletId::Application;
@@ -53,7 +53,7 @@ ResultCode Mint::StartImpl(const Service::APT::AppletStartupParameter& parameter
     // TODO(Subv): Reverse the parameter format for the Mint applet
 
     // Let the application know that we're closing
-    Service::APT::MessageParameter message;
+    Service::APT::MessageParameter message{};
     message.buffer.resize(parameter.buffer.size());
     std::fill(message.buffer.begin(), message.buffer.end(), 0);
     message.signal = Service::APT::SignalType::WakeupByExit;

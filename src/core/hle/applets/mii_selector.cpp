@@ -27,7 +27,7 @@ ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& p
     // The LibAppJustStarted message contains a buffer with the size of the framebuffer shared
     // memory.
     // Create the SharedMemory that will hold the framebuffer data
-    Service::APT::CaptureBufferInfo capture_info;
+    Service::APT::CaptureBufferInfo capture_info{};
     ASSERT(sizeof(capture_info) == parameter.buffer.size());
 
     memcpy(&capture_info, parameter.buffer.data(), sizeof(capture_info));
@@ -41,7 +41,7 @@ ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& p
         "MiiSelector Memory");
 
     // Send the response message with the newly created SharedMemory
-    Service::APT::MessageParameter result;
+    Service::APT::MessageParameter result{};
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
     result.destination_id = Service::APT::AppletId::Application;
@@ -63,12 +63,11 @@ ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& pa
 
     // TODO(Subv): Find more about this structure, result code 0 is enough to let most games
     // continue.
-    MiiResult result;
-    memset(&result, 0, sizeof(result));
+    MiiResult result{};
     result.return_code = 0;
 
     // Let the application know that we're closing
-    Service::APT::MessageParameter message;
+    Service::APT::MessageParameter message{};
     message.buffer.resize(sizeof(MiiResult));
     std::memcpy(message.buffer.data(), &result, message.buffer.size());
     message.signal = Service::APT::SignalType::WakeupByExit;
