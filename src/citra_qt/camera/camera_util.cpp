@@ -172,21 +172,21 @@ static constexpr int V(int r, int g, int b) {
 } // namespace YuvTable
 
 std::vector<u16> Rgb2Yuv(const QImage& source, int width, int height) {
-    auto buffer = std::vector<u16>(width * height);
-    auto dest = buffer.begin();
-    bool write = false;
-    int py, pu, pv;
+    auto buffer{std::vector<u16>(width * height)};
+    auto dest{buffer.begin()};
+    bool write{false};
+    int py{}, pu{}, pv{};
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             QRgb rgb = source.pixel(x, y);
-            int r = qRed(rgb);
-            int g = qGreen(rgb);
-            int b = qBlue(rgb);
+            int r{qRed(rgb)};
+            int g{qGreen(rgb)};
+            int b{qBlue(rgb)};
 
             // The following transformation is a reverse of the one in Y2R using ITU_Rec601
-            int y = YuvTable::Y(r, g, b);
-            int u = YuvTable::U(r, g, b);
-            int v = YuvTable::V(r, g, b);
+            int y{YuvTable::Y(r, g, b)};
+            int u{YuvTable::U(r, g, b)};
+            int v{YuvTable::V(r, g, b)};
 
             if (write) {
                 pu = (pu + u) / 2;
@@ -212,13 +212,13 @@ std::vector<u16> ProcessImage(const QImage& image, int width, int height, bool o
     if (image.isNull()) {
         return buffer;
     }
-    QImage scaled =
-        image.scaled(width, height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-    QImage transformed =
+    QImage scaled{
+        image.scaled(width, height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation)};
+    QImage transformed{
         scaled.copy((scaled.width() - width) / 2, (scaled.height() - height) / 2, width, height)
-            .mirrored(flip_horizontal, flip_vertical);
+            .mirrored(flip_horizontal, flip_vertical)};
     if (output_rgb) {
-        QImage converted = transformed.convertToFormat(QImage::Format_RGB16);
+        QImage converted{transformed.convertToFormat(QImage::Format_RGB16)};
         std::memcpy(buffer.data(), converted.bits(), width * height * sizeof(u16));
     } else {
         return CameraUtil::Rgb2Yuv(transformed, width, height);
