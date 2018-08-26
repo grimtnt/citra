@@ -24,7 +24,9 @@
 namespace Service::CFG {
 
 /// The maximum number of block entries that can exist in the config file
-static const u32 CONFIG_FILE_MAX_BLOCK_ENTRIES = 1479;
+constexpr u32 CONFIG_FILE_MAX_BLOCK_ENTRIES{1479};
+/// The maximum EULA version
+constexpr u32 MAX_EULA_VERSION{0xFFFF};
 
 namespace {
 
@@ -517,7 +519,7 @@ ResultCode Module::FormatConfig() {
         return res;
 
     // 0x000D0000 - Accepted EULA version
-    res = CreateConfigInfoBlk(EULAVersionBlockID, 0x4, 0xE, zero_buffer);
+    res = CreateConfigInfoBlk(EULAVersionBlockID, 0x4, 0xE, &MAX_EULA_VERSION);
     if (!res.IsSuccess())
         return res;
 
@@ -568,6 +570,12 @@ ResultCode Module::LoadConfigNANDSaveFile() {
     if (config_result.Succeeded()) {
         auto config = std::move(config_result).Unwrap();
         config->backend->Read(0, CONFIG_SAVEFILE_SIZE, cfg_config_file_buffer.data());
+        u32 eula_version;
+        GetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &eula_version);
+        if (eula_version == 0) {
+            eula_version = MAX_EULA_VERSION;
+            SetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &eula_version);
+        }
         return RESULT_SUCCESS;
     }
 
