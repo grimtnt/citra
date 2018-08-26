@@ -18,7 +18,7 @@
 #include "ui_configure_general.h"
 
 ConfigureGeneral::ConfigureGeneral(QWidget* parent)
-    : QWidget(parent), ui(new Ui::ConfigureGeneral) {
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureGeneral>()} {
 
     ui->setupUi(this);
     ui->language_combobox->addItem(tr("<System>"), QString(""));

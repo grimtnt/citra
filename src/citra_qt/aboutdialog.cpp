@@ -8,8 +8,8 @@
 #include "ui_aboutdialog.h"
 
 AboutDialog::AboutDialog(QWidget* parent)
-    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(new Ui::AboutDialog) {
+    : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
+      ui{std::make_unique<Ui::AboutDialog>()} {
     ui->setupUi(this);
     ui->labelLogo->setPixmap(QIcon::fromTheme("citra").pixmap(200));
     ui->labelBuildInfo->setText(
@@ -17,6 +17,4 @@ AboutDialog::AboutDialog(QWidget* parent)
                                        Common::g_scm_desc, QString(Common::g_build_date).left(10)));
 }
 
-AboutDialog::~AboutDialog() {
-    delete ui;
-}
+AboutDialog::~AboutDialog() {}

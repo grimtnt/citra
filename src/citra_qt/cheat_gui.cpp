@@ -10,7 +10,7 @@
 #include "ui_cheat_gui.h"
 
 CheatDialog::CheatDialog(QWidget* parent)
-    : QDialog(parent), ui(std::make_unique<Ui::CheatDialog>()) {
+    : QDialog{parent}, ui{std::make_unique<Ui::CheatDialog>()} {
     setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
     ui->setupUi(this);
     ui->tableCheats->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -40,7 +40,7 @@ void CheatDialog::LoadCheats() {
     ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
 
     for (int i = 0; i < static_cast<int>(cheats.size()); i++) {
-        auto enabled = new QCheckBox();
+        QCheckBox* enabled{new QCheckBox()};
         enabled->setChecked(cheats[i]->GetEnabled());
         enabled->setStyleSheet("margin-left:7px;");
         ui->tableCheats->setItem(i, 0, new QTableWidgetItem());
@@ -91,25 +91,24 @@ void CheatDialog::OnRowSelected(int row, int column) {
     }
 
     ui->textLines->setEnabled(true);
-    const auto& current_cheat = cheats[row];
+    const auto& current_cheat{cheats[row]};
 
-    std::vector<std::string> lines;
+    std::vector<std::string> lines{};
     for (const auto& line : current_cheat->GetCheatLines())
         lines.push_back(line.cheat_line);
     ui->textLines->setPlainText(QString::fromStdString(Common::Join(lines, "\n")));
 
     current_row = row;
-
     selection_changing = false;
 }
 
 void CheatDialog::OnLinesChanged() {
     if (selection_changing)
         return;
-    auto lines = ui->textLines->toPlainText();
-    std::vector<std::string> lines_vec;
+    QString lines{ui->textLines->toPlainText()};
+    std::vector<std::string> lines_vec{};
     Common::SplitString(lines.toStdString(), '\n', lines_vec);
-    auto new_lines = std::vector<CheatEngine::CheatLine>();
+    auto new_lines{std::vector<CheatEngine::CheatLine>()};
     for (const auto& line : lines_vec) {
         new_lines.emplace_back(line);
     }
@@ -117,18 +116,18 @@ void CheatDialog::OnLinesChanged() {
 }
 
 void CheatDialog::OnCheckChanged(int state) {
-    const QCheckBox* checkbox = qobject_cast<QCheckBox*>(sender());
-    int row = static_cast<int>(checkbox->property("row").toInt());
+    QCheckBox* checkbox{qobject_cast<QCheckBox*>(sender())};
+    int row{static_cast<int>(checkbox->property("row").toInt())};
     cheats[row]->SetEnabled(state);
 }
 
 void CheatDialog::OnDelete() {
-    QItemSelectionModel* selectionModel = ui->tableCheats->selectionModel();
-    QModelIndexList selected = selectionModel->selectedRows();
-    std::vector<int> rows;
+    QItemSelectionModel* selectionModel{ui->tableCheats->selectionModel()};
+    QModelIndexList selected{selectionModel->selectedRows()};
+    std::vector<int> rows{};
     for (int i = selected.count() - 1; i >= 0; i--) {
-        QModelIndex index = selected.at(i);
-        int row = index.row();
+        QModelIndex index{selected.at(i)};
+        int row{index.row()};
         cheats.erase(cheats.begin() + row);
         rows.push_back(row);
     }
@@ -143,12 +142,12 @@ void CheatDialog::OnAddCheat() {
     NewCheatDialog dialog;
     dialog.exec();
 
-    auto result = dialog.GetReturnValue();
+    auto result{dialog.GetReturnValue()};
     if (result == nullptr)
         return;
     cheats.push_back(result);
-    int new_cheat_index = static_cast<int>(cheats.size() - 1);
-    auto enabled = new QCheckBox();
+    int new_cheat_index{static_cast<int>(cheats.size() - 1)};
+    QCheckBox* enabled{new QCheckBox()};
     ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
     enabled->setCheckState(Qt::CheckState::Unchecked);
     enabled->setStyleSheet("margin-left:7px;");
@@ -171,38 +170,38 @@ NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
     resize(166, 115);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
     setWindowTitle(tr("New Cheat"));
-    auto mainLayout = new QVBoxLayout(this);
-
-    QHBoxLayout* namePanel = new QHBoxLayout();
+    QVBoxLayout* main_layout{new QVBoxLayout(this)};
+    QHBoxLayout* name_panel{new QHBoxLayout()};
+    QLabel* name_label{new QLabel()};
     name_block = new QLineEdit();
-    QLabel* nameLabel = new QLabel();
-    nameLabel->setText(tr("Name: "));
-    namePanel->addWidget(nameLabel);
-    namePanel->addWidget(name_block);
+    name_label->setText(tr("Name: "));
+    name_panel->addWidget(name_label);
+    name_panel->addWidget(name_block);
 
-    QHBoxLayout* typePanel = new QHBoxLayout();
-    auto typeLabel = new QLabel();
-    typeLabel->setText(tr("Type: "));
+    QHBoxLayout* type_panel{new QHBoxLayout()};
+    QLabel* type_label{new QLabel()};
     type_select = new QComboBox();
+    type_label->setText(tr("Type: "));
     type_select->addItem(tr("Gateway"), 0);
-    typePanel->addWidget(typeLabel);
-    typePanel->addWidget(type_select);
+    type_panel->addWidget(type_label);
+    type_panel->addWidget(type_select);
 
-    auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(button_box, &QDialogButtonBox::accepted, this, [=]() {
-        auto name = name_block->text().toStdString();
+    QDialogButtonBox* button_box{
+        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel)};
+    connect(button_box, &QDialogButtonBox::accepted, this, [&]() {
+        std::string name{name_block->text().toStdString()};
         if (type_select->currentIndex() == 0 && Common::Trim(name).length() > 0) {
             return_value =
                 std::make_shared<CheatEngine::GatewayCheat>(name_block->text().toStdString());
         }
-        this->close();
+        close();
     });
-    connect(button_box, &QDialogButtonBox::rejected, this, [=]() { this->close(); });
-    QHBoxLayout* confirmationPanel = new QHBoxLayout();
-    confirmationPanel->addWidget(button_box);
-    mainLayout->addLayout(namePanel);
-    mainLayout->addLayout(typePanel);
-    mainLayout->addLayout(confirmationPanel);
+    connect(button_box, &QDialogButtonBox::rejected, this, [&]() { close(); });
+    QHBoxLayout* confirmation_panel{new QHBoxLayout()};
+    confirmation_panel->addWidget(button_box);
+    main_layout->addLayout(name_panel);
+    main_layout->addLayout(type_panel);
+    main_layout->addLayout(confirmation_panel);
 }
 
 NewCheatDialog::~NewCheatDialog() {}

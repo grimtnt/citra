@@ -53,17 +53,20 @@ static QString ButtonToText(const Common::ParamPackage& param) {
     } else if (param.Get("engine", "") == "keyboard") {
         return getKeyName(param.Get("code", 0));
     } else if (param.Get("engine", "") == "sdl") {
-        QString text = QString(QObject::tr("Joystick %1")).arg(param.Get("joystick", "").c_str());
+        QString text{
+            QObject::tr("Joystick %1").arg(QString::fromStdString(param.Get("joystick", "")))};
         if (param.Has("hat")) {
-            text += QString(QObject::tr(" Hat %1 %2"))
-                        .arg(param.Get("hat", "").c_str(), param.Get("direction", "").c_str());
+            text += QObject::tr(" Hat %1 %2")
+                        .arg(QString::fromStdString(param.Get("hat", "")),
+                             QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("axis")) {
-            text += QString(QObject::tr(" Axis %1%2"))
-                        .arg(param.Get("axis", "").c_str(), param.Get("direction", "").c_str());
+            text += QObject::tr(" Axis %1%2")
+                        .arg(QString::fromStdString(param.Get("axis", "")),
+                             QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("button")) {
-            text += QString(QObject::tr(" Button %1")).arg(param.Get("button", "").c_str());
+            text += QObject::tr(" Button %1").arg(QString::fromStdString(param.Get("button", "")));
         }
         return text;
     } else {
@@ -81,11 +84,12 @@ static QString AnalogToText(const Common::ParamPackage& param, const std::string
             return QString(QObject::tr("[unused]"));
         }
 
-        QString text = QString(QObject::tr("Joystick %1")).arg(param.Get("joystick", "").c_str());
+        QString text{
+            QObject::tr("Joystick %1").arg(QString::fromStdString(param.Get("joystick", "")))};
         if (dir == "left" || dir == "right") {
-            text += QString(QObject::tr(" Axis %1")).arg(param.Get("axis_x", "").c_str());
+            text += QObject::tr(" Axis %1").arg(QString::fromStdString(param.Get("axis_x", "")));
         } else if (dir == "up" || dir == "down") {
-            text += QString(QObject::tr(" Axis %1")).arg(param.Get("axis_y", "").c_str());
+            text += QObject::tr(" Axis %1").arg(QString::fromStdString(param.Get("axis_y", "")));
         }
         return text;
     } else {
@@ -94,8 +98,8 @@ static QString AnalogToText(const Common::ParamPackage& param, const std::string
 };
 
 ConfigureInput::ConfigureInput(QWidget* parent)
-    : QWidget(parent), ui(std::make_unique<Ui::ConfigureInput>()),
-      timeout_timer(std::make_unique<QTimer>()), poll_timer(std::make_unique<QTimer>()) {
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureInput>()},
+      timeout_timer{std::make_unique<QTimer>()}, poll_timer{std::make_unique<QTimer>()} {
 
     ui->setupUi(this);
     setFocusPolicy(Qt::ClickFocus);
@@ -127,10 +131,10 @@ ConfigureInput::ConfigureInput(QWidget* parent)
 
     for (int button_id = 0; button_id < Settings::NativeButton::NumButtons; button_id++) {
         if (button_map[button_id])
-            connect(button_map[button_id], &QPushButton::released, [=]() {
+            connect(button_map[button_id], &QPushButton::released, [&]() {
                 handleClick(
                     button_map[button_id],
-                    [=](const Common::ParamPackage& params) { buttons_param[button_id] = params; },
+                    [&](const Common::ParamPackage& params) { buttons_param[button_id] = params; },
                     InputCommon::Polling::DeviceType::Button);
             });
     }
@@ -139,9 +143,9 @@ ConfigureInput::ConfigureInput(QWidget* parent)
         for (int sub_button_id = 0; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
             if (analog_map_buttons[analog_id][sub_button_id] != nullptr) {
                 connect(analog_map_buttons[analog_id][sub_button_id], &QPushButton::released,
-                        [=]() {
+                        [&]() {
                             handleClick(analog_map_buttons[analog_id][sub_button_id],
-                                        [=](const Common::ParamPackage& params) {
+                                        [&](const Common::ParamPackage& params) {
                                             SetAnalogButton(params, analogs_param[analog_id],
                                                             analog_sub_buttons[sub_button_id]);
                                         },
@@ -149,19 +153,19 @@ ConfigureInput::ConfigureInput(QWidget* parent)
                         });
             }
         }
-        connect(analog_map_stick[analog_id], &QPushButton::released, [=]() {
+        connect(analog_map_stick[analog_id], &QPushButton::released, [&]() {
             QMessageBox::information(
                 this, "Information",
                 "After pressing OK, first move your joystick horizontally, and then vertically.");
             handleClick(
                 analog_map_stick[analog_id],
-                [=](const Common::ParamPackage& params) { analogs_param[analog_id] = params; },
+                [&](const Common::ParamPackage& params) { analogs_param[analog_id] = params; },
                 InputCommon::Polling::DeviceType::Analog);
         });
     }
 
     connect(ui->buttonMotionTouch, &QPushButton::released, [this] {
-        QDialog* motion_touch_dialog = new ConfigureMotionTouch(this);
+        ConfigureMotionTouch* motion_touch_dialog{new ConfigureMotionTouch(this)};
         return motion_touch_dialog->exec();
     });
     connect(ui->buttonRestoreDefaults, &QPushButton::released, [this]() { restoreDefaults(); });
@@ -170,7 +174,7 @@ ConfigureInput::ConfigureInput(QWidget* parent)
     connect(timeout_timer.get(), &QTimer::timeout, [this]() { setPollingResult({}, true); });
 
     connect(poll_timer.get(), &QTimer::timeout, [this]() {
-        Common::ParamPackage params;
+        Common::ParamPackage params{};
         for (auto& poller : device_pollers) {
             params = poller->GetNextInput();
             if (params.Has("engine")) {

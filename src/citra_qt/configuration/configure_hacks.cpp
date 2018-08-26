@@ -8,7 +8,7 @@
 #include "ui_configure_hacks.h"
 
 ConfigureHacks::ConfigureHacks(QWidget* parent)
-    : QWidget(parent), ui(std::make_unique<Ui::ConfigureHacks>()) {
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureHacks>()} {
     ui->setupUi(this);
 
     setConfiguration();

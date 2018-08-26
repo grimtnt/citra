@@ -105,8 +105,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("LLE");
     for (const auto& service_module : Service::service_module_map) {
-        bool use_lle =
-            qt_config->value(QString::fromStdString(service_module.name), false).toBool();
+        bool use_lle{qt_config->value(QString::fromStdString(service_module.name), false).toBool()};
         Settings::values.lle_modules.emplace(service_module.name, use_lle);
     }
     qt_config->endGroup();

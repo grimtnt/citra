@@ -12,6 +12,22 @@
 
 namespace Camera {
 
+constexpr std::array<QCamera::FrameRateRange, 13> FrameRateList = {
+    /* Rate_15 */ QCamera::FrameRateRange(15, 15),
+    /* Rate_15_To_5 */ QCamera::FrameRateRange(5, 15),
+    /* Rate_15_To_2 */ QCamera::FrameRateRange(2, 15),
+    /* Rate_10 */ QCamera::FrameRateRange(10, 10),
+    /* Rate_8_5 */ QCamera::FrameRateRange(8.5, 8.5),
+    /* Rate_5 */ QCamera::FrameRateRange(5, 5),
+    /* Rate_20 */ QCamera::FrameRateRange(20, 20),
+    /* Rate_20_To_5 */ QCamera::FrameRateRange(5, 20),
+    /* Rate_30 */ QCamera::FrameRateRange(30, 30),
+    /* Rate_30_To_5 */ QCamera::FrameRateRange(5, 30),
+    /* Rate_15_To_10 */ QCamera::FrameRateRange(10, 15),
+    /* Rate_20_To_10 */ QCamera::FrameRateRange(10, 20),
+    /* Rate_30_To_10 */ QCamera::FrameRateRange(10, 30),
+};
+
 QList<QVideoFrame::PixelFormat> QtCameraSurface::supportedPixelFormats(
     QAbstractVideoBuffer::HandleType handleType) const {
     Q_UNUSED(handleType);
@@ -35,11 +51,11 @@ bool QtCameraSurface::present(const QVideoFrame& frame) {
     if (!frame.isValid()) {
         return false;
     }
-    QVideoFrame cloneFrame(frame);
+    QVideoFrame cloneFrame{frame};
     cloneFrame.map(QAbstractVideoBuffer::ReadOnly);
-    const QImage image(cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
-                       QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat()));
-    QMutexLocker locker(&mutex);
+    const QImage image{cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
+                       QVideoFrame::imageFormatFromPixelFormat(cloneFrame.pixelFormat())};
+    QMutexLocker locker{&mutex};
     current_frame = image.mirrored(true, true);
     locker.unlock();
     cloneFrame.unmap();
@@ -75,23 +91,7 @@ void QtMultimediaCamera::StopCapture() {
 }
 
 void QtMultimediaCamera::SetFrameRate(Service::CAM::FrameRate frame_rate) {
-    const std::array<QCamera::FrameRateRange, 13> FrameRateList = {
-        /* Rate_15 */ QCamera::FrameRateRange(15, 15),
-        /* Rate_15_To_5 */ QCamera::FrameRateRange(5, 15),
-        /* Rate_15_To_2 */ QCamera::FrameRateRange(2, 15),
-        /* Rate_10 */ QCamera::FrameRateRange(10, 10),
-        /* Rate_8_5 */ QCamera::FrameRateRange(8.5, 8.5),
-        /* Rate_5 */ QCamera::FrameRateRange(5, 5),
-        /* Rate_20 */ QCamera::FrameRateRange(20, 20),
-        /* Rate_20_To_5 */ QCamera::FrameRateRange(5, 20),
-        /* Rate_30 */ QCamera::FrameRateRange(30, 30),
-        /* Rate_30_To_5 */ QCamera::FrameRateRange(5, 30),
-        /* Rate_15_To_10 */ QCamera::FrameRateRange(10, 15),
-        /* Rate_20_To_10 */ QCamera::FrameRateRange(10, 20),
-        /* Rate_30_To_10 */ QCamera::FrameRateRange(10, 30),
-    };
-
-    auto framerate = FrameRateList[static_cast<int>(frame_rate)];
+    auto framerate{FrameRateList[static_cast<int>(frame_rate)]};
 
     if (handler->camera->supportedViewfinderFrameRateRanges().contains(framerate)) {
         handler->settings.setMinimumFrameRate(framerate.minimumFrameRate);
@@ -100,7 +100,7 @@ void QtMultimediaCamera::SetFrameRate(Service::CAM::FrameRate frame_rate) {
 }
 
 QImage QtMultimediaCamera::QtReceiveFrame() {
-    QMutexLocker locker(&handler->camera_surface.mutex);
+    QMutexLocker locker{&handler->camera_surface.mutex};
     return handler->camera_surface.current_frame;
 }
 

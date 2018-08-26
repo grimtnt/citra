@@ -12,8 +12,8 @@ class CheatSearch;
 } // namespace Ui
 
 struct FoundItem {
-    std::string address;
-    std::string value;
+    QString address;
+    QString value;
 };
 
 class CheatSearch : public QDialog {
@@ -49,7 +49,7 @@ class ModifyAddressDialog : public QDialog {
     Q_OBJECT
 
 public:
-    ModifyAddressDialog(QWidget* parent, std::string address, int type, std::string value);
+    ModifyAddressDialog(QWidget* parent, const QString& address, int type, const QString& value);
     ~ModifyAddressDialog();
 
     QString return_value;

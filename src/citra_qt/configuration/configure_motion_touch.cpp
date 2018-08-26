@@ -16,7 +16,7 @@
 CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
                                                                const std::string& host, u16 port,
                                                                u8 pad_index, u16 client_id)
-    : QDialog(parent) {
+    : QDialog{parent} {
     layout = new QVBoxLayout;
     status_label = new QLabel(tr("Communicating with the server..."));
     cancel_button = new QPushButton(tr("Cancel"));
@@ -33,7 +33,7 @@ CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
     job = std::move(std::make_unique<CalibrationConfigurationJob>(
         host, port, pad_index, client_id,
         [this](CalibrationConfigurationJob::Status status) {
-            QString text;
+            QString text{};
             switch (status) {
             case CalibrationConfigurationJob::Status::Ready:
                 text = tr("Touch the top left corner <br>of your touchpad.");
@@ -102,10 +102,10 @@ ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
 ConfigureMotionTouch::~ConfigureMotionTouch() = default;
 
 void ConfigureMotionTouch::setConfiguration() {
-    Common::ParamPackage motion_param(Settings::values.motion_device);
-    Common::ParamPackage touch_param(Settings::values.touch_device);
-    std::string motion_engine = motion_param.Get("engine", "motion_emu");
-    std::string touch_engine = touch_param.Get("engine", "emu_window");
+    Common::ParamPackage motion_param{Settings::values.motion_device};
+    Common::ParamPackage touch_param{Settings::values.touch_device};
+    std::string motion_engine{motion_param.Get("engine", "motion_emu")};
+    std::string touch_engine{touch_param.Get("engine", "emu_window")};
 
     ui->motion_provider->setCurrentIndex(
         ui->motion_provider->findData(QString::fromStdString(motion_engine)));
@@ -124,8 +124,8 @@ void ConfigureMotionTouch::setConfiguration() {
 }
 
 void ConfigureMotionTouch::updateUiDisplay() {
-    std::string motion_engine = ui->motion_provider->currentData().toString().toStdString();
-    std::string touch_engine = ui->touch_provider->currentData().toString().toStdString();
+    std::string motion_engine{ui->motion_provider->currentData().toString().toStdString()};
+    std::string touch_engine{ui->touch_provider->currentData().toString().toStdString()};
 
     if (motion_engine == "motion_emu") {
         ui->motion_sensitivity_label->setVisible(true);
@@ -247,8 +247,8 @@ void ConfigureMotionTouch::applyConfiguration() {
     if (!CanCloseDialog())
         return;
 
-    std::string motion_engine = ui->motion_provider->currentData().toString().toStdString();
-    std::string touch_engine = ui->touch_provider->currentData().toString().toStdString();
+    std::string motion_engine{ui->motion_provider->currentData().toString().toStdString()};
+    std::string touch_engine{ui->touch_provider->currentData().toString().toStdString()};
 
     Common::ParamPackage motion_param{}, touch_param{};
     motion_param.Set("engine", motion_engine);

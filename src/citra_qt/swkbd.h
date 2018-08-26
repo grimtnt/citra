@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <memory>
 #include <QDialog>
 #include "core/hle/applets/swkbd.h"
 
@@ -20,5 +21,5 @@ public:
     ~SoftwareKeyboardDialog();
 
 private:
-    Ui::SoftwareKeyboardDialog* ui;
+    std::unique_ptr<Ui::SoftwareKeyboardDialog> ui;
 };

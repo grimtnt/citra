@@ -11,6 +11,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QTranslator>
+#include "citra_qt/swkbd.h"
 #include "core/core.h"
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
@@ -202,6 +203,9 @@ private:
     bool applet_open = false;
     std::mutex applet_mutex;
     std::condition_variable applet_cv;
+
+    // HLE Qt Applets
+    std::unique_ptr<SoftwareKeyboardDialog> swkbd;
 
     std::shared_ptr<ControlPanel> control_panel;
     std::shared_ptr<CheatSearch> cheat_search_window;

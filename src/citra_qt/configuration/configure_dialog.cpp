@@ -7,7 +7,8 @@
 #include "core/settings.h"
 #include "ui_configure.h"
 
-ConfigureDialog::ConfigureDialog(QWidget* parent) : QDialog(parent), ui(new Ui::ConfigureDialog) {
+ConfigureDialog::ConfigureDialog(QWidget* parent)
+    : QDialog{parent}, ui{std::make_unique<Ui::ConfigureDialog>()} {
     ui->setupUi(this);
     connect(ui->generalTab, &ConfigureGeneral::languageChanged, this,
             &ConfigureDialog::onLanguageChanged);

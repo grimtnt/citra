@@ -4,10 +4,10 @@
 
 #include <QMessageBox>
 #include <QString>
-
 #include "citra_qt/multiplayer/message.h"
 
 namespace NetworkMessage {
+
 const ConnectionError IP_ADDRESS_NOT_VALID(QT_TR_NOOP("IP is not a valid IPv4 address."));
 const ConnectionError PORT_NOT_VALID(QT_TR_NOOP("Port must be a number between 0 to 65535."));
 const ConnectionError UNABLE_TO_CONNECT(

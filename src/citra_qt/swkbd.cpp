@@ -8,8 +8,8 @@
 SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
                                                HLE::Applets::SoftwareKeyboardConfig& config,
                                                std::u16string& text)
-    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint),
-      ui(new Ui::SoftwareKeyboardDialog) {
+    : QDialog{parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint},
+      ui{std::make_unique<Ui::SoftwareKeyboardDialog>()} {
     ui->setupUi(this);
     setWindowTitle(tr("Software Keyboard"));
     switch (config.num_buttons_m1) {
@@ -99,6 +99,4 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     });
 }
 
-SoftwareKeyboardDialog::~SoftwareKeyboardDialog() {
-    delete ui;
-}
+SoftwareKeyboardDialog::~SoftwareKeyboardDialog() {}

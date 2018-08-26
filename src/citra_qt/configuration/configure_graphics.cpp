@@ -12,7 +12,7 @@
 #include "ui_configure_graphics.h"
 
 ConfigureGraphics::ConfigureGraphics(QWidget* parent)
-    : QWidget(parent), ui(new Ui::ConfigureGraphics) {
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureGraphics>()} {
 
     ui->setupUi(this);
 
@@ -26,7 +26,7 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     ui->layoutBox->setEnabled(!Settings::values.custom_layout);
 
     connect(ui->layout_bg, &QPushButton::clicked, this, [this] {
-        QColor new_color = QColorDialog::getColor(bg_color, this);
+        QColor new_color{QColorDialog::getColor(bg_color, this)};
         if (new_color.isValid()) {
             bg_color = new_color;
             ui->layout_bg->setStyleSheet(

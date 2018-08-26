@@ -216,7 +216,8 @@ static const std::array<const char*, 187> country_names = {
     QT_TRANSLATE_NOOP("ConfigureSystem", "Bermuda"), // 180-186
 };
 
-ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureSystem) {
+ConfigureSystem::ConfigureSystem(QWidget* parent)
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureSystem>()} {
     ui->setupUi(this);
     connect(ui->combo_birthmonth,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
@@ -241,7 +242,7 @@ void ConfigureSystem::setConfiguration() {
     enabled = !Core::System::GetInstance().IsPoweredOn();
 
     ui->combo_init_clock->setCurrentIndex(static_cast<u8>(Settings::values.init_clock));
-    QDateTime date_time;
+    QDateTime date_time{};
     date_time.setTime_t(Settings::values.init_time);
     ui->edit_init_time->setDateTime(date_time);
 
@@ -291,7 +292,7 @@ void ConfigureSystem::ReadSystemSettings() {
     ui->combo_country->setCurrentIndex(ui->combo_country->findData(country_code));
 
     // set the console id
-    u64 console_id = cfg->GetConsoleUniqueId();
+    u64 console_id{cfg->GetConsoleUniqueId()};
     ui->label_console_id->setText(
         tr("Console ID: 0x%1").arg(QString::number(console_id, 16).toUpper()));
 }
@@ -303,43 +304,43 @@ void ConfigureSystem::applyConfiguration() {
     bool modified = false;
 
     // apply username
-    std::u16string new_username = ui->edit_username->text().toStdU16String();
+    std::u16string new_username{ui->edit_username->text().toStdU16String()};
     if (new_username != username) {
         cfg->SetUsername(new_username);
         modified = true;
     }
 
     // apply birthday
-    int new_birthmonth = ui->combo_birthmonth->currentIndex() + 1;
-    int new_birthday = ui->combo_birthday->currentIndex() + 1;
+    int new_birthmonth{ui->combo_birthmonth->currentIndex() + 1};
+    int new_birthday{ui->combo_birthday->currentIndex() + 1};
     if (birthmonth != new_birthmonth || birthday != new_birthday) {
         cfg->SetBirthday(new_birthmonth, new_birthday);
         modified = true;
     }
 
     // apply language
-    int new_language = ui->combo_language->currentIndex();
+    int new_language{ui->combo_language->currentIndex()};
     if (language_index != new_language) {
         cfg->SetSystemLanguage(static_cast<Service::CFG::SystemLanguage>(new_language));
         modified = true;
     }
 
     // apply sound
-    int new_sound = ui->combo_sound->currentIndex();
+    int new_sound{ui->combo_sound->currentIndex()};
     if (sound_index != new_sound) {
         cfg->SetSoundOutputMode(static_cast<Service::CFG::SoundOutputMode>(new_sound));
         modified = true;
     }
 
     // apply model
-    int new_model = ui->combo_model->currentIndex();
+    int new_model{ui->combo_model->currentIndex()};
     if (model_index != new_model) {
         cfg->SetSystemModel(static_cast<Service::CFG::SystemModel>(new_model));
         modified = true;
     }
 
     // apply country
-    u8 new_country = static_cast<u8>(ui->combo_country->currentData().toInt());
+    u8 new_country{static_cast<u8>(ui->combo_country->currentData().toInt())};
     if (country_code != new_country) {
         cfg->SetCountryCode(new_country);
         modified = true;
@@ -360,10 +361,10 @@ void ConfigureSystem::updateBirthdayComboBox(int birthmonth_index) {
         return;
 
     // store current day selection
-    int birthday_index = ui->combo_birthday->currentIndex();
+    int birthday_index{ui->combo_birthday->currentIndex()};
 
     // get number of days in the new selected month
-    int days = days_in_month[birthmonth_index];
+    int days{days_in_month[birthmonth_index]};
 
     // if the selected day is out of range,
     // reset it to 1st
@@ -382,7 +383,7 @@ void ConfigureSystem::updateBirthdayComboBox(int birthmonth_index) {
 
 void ConfigureSystem::ConfigureTime() {
     ui->edit_init_time->setCalendarPopup(true);
-    QDateTime dt;
+    QDateTime dt{};
     dt.fromString("2000-01-01 00:00:01", "yyyy-MM-dd hh:mm:ss");
     ui->edit_init_time->setMinimumDateTime(dt);
 
@@ -408,8 +409,8 @@ void ConfigureSystem::refreshConsoleID() {
                                   QMessageBox::No | QMessageBox::Yes);
     if (reply == QMessageBox::No)
         return;
-    u32 random_number;
-    u64 console_id;
+    u32 random_number{};
+    u64 console_id{};
     cfg->GenerateConsoleUniqueId(random_number, console_id);
     cfg->SetConsoleUniqueId(random_number, console_id);
     cfg->UpdateConfigNANDSavegame();

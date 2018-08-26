@@ -35,13 +35,13 @@ const std::string StillImageCameraFactory::GetFilePath() const {
     if (!last_path.empty()) {
         return last_path;
     }
-    QList<QByteArray> types = QImageReader::supportedImageFormats();
-    QList<QString> temp_filters;
+    QList<QByteArray> types{QImageReader::supportedImageFormats()};
+    QList<QString> temp_filters{};
     for (QByteArray type : types) {
         temp_filters << QString("*." + QString(type));
     }
 
-    QString filter = QObject::tr("Supported image files (%1)").arg(temp_filters.join(" "));
+    QString filter{QObject::tr("Supported image files (%1)").arg(temp_filters.join(" "))};
     last_path =
         QFileDialog::getOpenFileName(nullptr, QObject::tr("Open File"), ".", filter).toStdString();
     return last_path;
@@ -49,7 +49,7 @@ const std::string StillImageCameraFactory::GetFilePath() const {
 
 std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::string& config,
                                                                  const Service::CAM::Flip& flip) {
-    std::string real_config = config;
+    std::string real_config{config};
     if (config.empty()) {
         // call GetFilePath() in UI thread (note: StillImageCameraFactory itself is initialized in
         // UI thread, so we can just pass in "this" here)
@@ -60,7 +60,7 @@ std::unique_ptr<CameraInterface> StillImageCameraFactory::Create(const std::stri
                                       Q_RETURN_ARG(std::string, real_config));
         }
     }
-    QImage image(QString::fromStdString(real_config));
+    QImage image{QString::fromStdString(real_config)};
     if (image.isNull()) {
         LOG_ERROR(Service_CAM, "Couldn't load image \"{}\"", real_config);
     }

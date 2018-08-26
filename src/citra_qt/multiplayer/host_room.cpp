@@ -26,8 +26,8 @@
 #include "ui_host_room.h"
 
 HostRoomWindow::HostRoomWindow(QWidget* parent)
-    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::HostRoom>()) {
+    : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
+      ui{std::make_unique<Ui::HostRoom>()} {
     ui->setupUi(this);
 
     // set up validation for all of the fields

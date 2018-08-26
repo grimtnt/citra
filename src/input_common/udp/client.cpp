@@ -204,7 +204,7 @@ void Client::StartCommunication(const std::string& host, u16 port, u8 pad_index,
 void TestCommunication(const std::string& host, u16 port, u8 pad_index, u32 client_id,
                        std::function<void()> success_callback,
                        std::function<void()> failure_callback) {
-    std::thread([=] {
+    std::thread([&] {
         Common::Event success_event;
         SocketCallback callback{[](Response::Version version) {}, [](Response::PortInfo info) {},
                                 [&](Response::PadData data) { success_event.Set(); }};
@@ -226,7 +226,7 @@ CalibrationConfigurationJob::CalibrationConfigurationJob(
     std::function<void(Status)> status_callback,
     std::function<void(u16, u16, u16, u16)> data_callback) {
 
-    std::thread([=] {
+    std::thread([&] {
         constexpr u16 CALIBRATION_THRESHOLD = 100;
 
         u16 min_x{UINT16_MAX}, min_y{UINT16_MAX};

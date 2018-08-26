@@ -43,8 +43,8 @@ static SharedPage::NetworkState IndexToNetworkState(int index) {
 } // namespace SharedPageUtil
 
 ControlPanel::ControlPanel(QWidget* parent)
-    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::ControlPanel>()) {
+    : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
+      ui{std::make_unique<Ui::ControlPanel>()} {
     ui->setupUi(this);
     ui->shared_page_enable_3d->setChecked(Settings::values.sp_enable_3d);
     ui->power_adapter_connected->setChecked(Settings::values.p_adapter_connected);

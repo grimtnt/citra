@@ -19,8 +19,8 @@
 #include "ui_ip_connect.h"
 
 IpConnectWindow::IpConnectWindow(QWidget* parent)
-    : QDialog(parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint),
-      ui(std::make_unique<Ui::IpConnect>()) {
+    : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
+      ui{std::make_unique<Ui::IpConnect>()} {
 
     ui->setupUi(this);
 

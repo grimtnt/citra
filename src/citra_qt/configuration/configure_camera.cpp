@@ -22,7 +22,7 @@ const std::array<std::string, 3> ConfigureCamera::Implementations = {
 };
 
 ConfigureCamera::ConfigureCamera(QWidget* parent)
-    : QWidget(parent), ui(std::make_unique<Ui::ConfigureCamera>()) {
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureCamera>()} {
     ui->setupUi(this);
     // Load settings
     camera_name = Settings::values.camera_name;
@@ -79,7 +79,7 @@ void ConfigureCamera::connectEvents() {
                 setConfiguration();
             });
     connect(ui->toolButton, &QToolButton::clicked, this, &ConfigureCamera::onToolButtonClicked);
-    connect(ui->preview_button, &QPushButton::clicked, this, [=] { startPreviewing(); });
+    connect(ui->preview_button, &QPushButton::clicked, this, [&] { startPreviewing(); });
     connect(ui->prompt_before_load, &QCheckBox::stateChanged, this, [this](int state) {
         ui->camera_file->setDisabled(state == Qt::Checked);
         ui->toolButton->setDisabled(state == Qt::Checked);
@@ -87,12 +87,12 @@ void ConfigureCamera::connectEvents() {
             ui->camera_file->clear();
         }
     });
-    connect(ui->camera_file, &QLineEdit::textChanged, this, [=] { stopPreviewing(); });
+    connect(ui->camera_file, &QLineEdit::textChanged, this, [&] { stopPreviewing(); });
     connect(ui->system_camera,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            [=] { stopPreviewing(); });
+            [&] { stopPreviewing(); });
     connect(ui->camera_flip, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [=] { stopPreviewing(); });
+            this, [&] { stopPreviewing(); });
 }
 
 void ConfigureCamera::updateCameraMode() {

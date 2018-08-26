@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <memory>
 #include <QDialog>
 
 namespace Ui {
@@ -18,5 +19,5 @@ public:
     ~AboutDialog();
 
 private:
-    Ui::AboutDialog* ui;
+    std::unique_ptr<Ui::AboutDialog> ui;
 };

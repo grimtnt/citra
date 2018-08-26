@@ -14,7 +14,7 @@
 #include "ui_cheatsearch.h"
 
 CheatSearch::CheatSearch(QWidget* parent)
-    : QDialog(parent), ui(std::make_unique<Ui::CheatSearch>()) {
+    : QDialog{parent}, ui{std::make_unique<Ui::CheatSearch>()} {
     ui->setupUi(this);
     ui->btnNextScan->setEnabled(false);
     ui->lblTo->setVisible(false);
@@ -30,10 +30,9 @@ CheatSearch::CheatSearch(QWidget* parent)
     connect(ui->chkHex, &QCheckBox::clicked, this,
             [this](bool state) { OnHexCheckedChanged(state); });
     connect(ui->tableFound, &QTableWidget::doubleClicked, this, [&](QModelIndex i) {
-        ModifyAddressDialog* dialog =
-            new ModifyAddressDialog(this, ui->tableFound->item(i.row(), 0)->text().toStdString(),
-                                    ui->cbValueType->currentIndex(),
-                                    ui->tableFound->item(i.row(), 1)->text().toStdString());
+        ModifyAddressDialog* dialog = new ModifyAddressDialog(
+            this, ui->tableFound->item(i.row(), 0)->text(), ui->cbValueType->currentIndex(),
+            ui->tableFound->item(i.row(), 1)->text());
         dialog->exec();
         QString rv = dialog->return_value;
         ui->tableFound->item(i.row(), 1)->setText(rv);
@@ -57,57 +56,57 @@ T Read(const VAddr addr) {
     }
 }
 
-std::string IntToHex(int i) {
+QString IntToHex(int value) {
     std::stringstream ss;
-    ss << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << i;
-    return ss.str();
+    ss << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << value;
+    return QString::fromStdString(ss.str());
 }
 
-int HexToInt(std::string hex_value) {
-    int decimal_value;
+int HexToInt(const QString& hex) {
+    int dec;
     std::stringstream ss;
-    ss << hex_value;
-    ss >> std::hex >> decimal_value;
-    return decimal_value;
+    ss << hex.toStdString();
+    ss >> std::hex >> dec;
+    return dec;
 }
 
-double HexStringToDouble(const std::string& hexstr) {
+double HexStringToDouble(const QString& hex) {
     union {
         long long i;
         double d;
     } value;
 
-    value.i = std::stoll(hexstr, nullptr, 16);
+    value.i = std::stoll(hex.toStdString(), nullptr, 16);
 
     return value.d;
 }
 
-std::string DoubleToHexString(double x) {
+QString DoubleToHexString(double value) {
     union {
         long long i;
         double d;
-    } value;
-
-    value.d = x;
-
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0') << std::setw(16) << value.i;
-
-    return oss.str();
-}
-
-std::string IeeeFloatToHex(float f) {
-    union {
-        float fval;
-        u32 ival;
     };
 
-    fval = f;
+    d = value;
 
     std::ostringstream oss;
-    oss << std::hex << std::uppercase << ival;
+    oss << std::hex << std::setfill('0') << std::setw(16) << i;
 
-    return oss.str();
+    return QString::fromStdString(oss.str());
+}
+
+QString IeeeFloatToHex(float value) {
+    union {
+        float f;
+        u32 i;
+    };
+
+    f = value;
+
+    std::ostringstream oss;
+    oss << std::hex << std::uppercase << i;
+
+    return QString::fromStdString(oss.str());
 }
 
 void CheatSearch::OnScan(bool is_next_scan) {
@@ -121,7 +120,8 @@ void CheatSearch::OnScan(bool is_next_scan) {
         search_type = ui->cbScanType->currentIndex();
         search_value = ui->txtSearch->text();
         convert_hex = ui->chkHex->isChecked();
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        LOG_CRITICAL(Frontend, "Exception when scanning: {}", e.what());
         ui->txtSearch->clear();
         return;
     }
@@ -132,19 +132,19 @@ void CheatSearch::OnScan(bool is_next_scan) {
 
     switch (search_type) {
     case 0: { // Equals
-        comparer = [&](int a, int b, int c) { return CheatSearch::Equals(a, b, c); };
+        comparer = [&](int a, int b, int c) { return Equals(a, b, c); };
         break;
     }
     case 1: { // Greater Than
-        comparer = [&](int a, int b, int c) { return CheatSearch::GreaterThan(a, b, c); };
+        comparer = [&](int a, int b, int c) { return GreaterThan(a, b, c); };
         break;
     }
     case 2: { // Less Than
-        comparer = [&](int a, int b, int c) { return CheatSearch::LessThan(a, b, c); };
+        comparer = [&](int a, int b, int c) { return LessThan(a, b, c); };
         break;
     }
     case 3: { // Between
-        comparer = [&](int a, int b, int c) { return CheatSearch::Between(a, b, c); };
+        comparer = [&](int a, int b, int c) { return Between(a, b, c); };
         break;
     }
     }
@@ -221,27 +221,29 @@ void CheatSearch::OnScanTypeChanged(int index) {
 }
 
 void CheatSearch::OnHexCheckedChanged(bool checked) {
-    std::string text{ui->txtSearch->text().toStdString()};
-    std::string text2{ui->txtSearchTo->text().toStdString()};
+    QString text{ui->txtSearch->text()};
+    QString text_to{ui->txtSearchTo->text()};
 
     try {
         if (checked) {
             if (text.length() > 0) {
-                int val{std::stoi(text, nullptr, 10)};
-                ui->txtSearch->setText(QString::fromStdString(IntToHex(val)));
+                int val{std::stoi(text.toStdString(), nullptr, 10)};
+                ui->txtSearch->setText(IntToHex(val));
             }
 
-            if (text2.length() > 0) {
-                int val2{std::stoi(text2, nullptr, 10)};
-                ui->txtSearchTo->setText(QString::fromStdString(IntToHex(val2)));
+            if (text_to.length() > 0) {
+                int val2{std::stoi(text_to.toStdString(), nullptr, 10)};
+                ui->txtSearchTo->setText(IntToHex(val2));
             }
         } else {
             if (text.length() > 0) {
-                ui->txtSearch->setText(QString::fromStdString(std::to_string(HexToInt(text))));
+                // ui->txtSearch->setText(QString::fromStdString(std::to_string(HexToInt(text))));
+                ui->txtSearch->setText(QString::number(HexToInt(text)));
             }
 
-            if (text2.length() > 0) {
-                ui->txtSearchTo->setText(QString::fromStdString(std::to_string(HexToInt(text2))));
+            if (text_to.length() > 0) {
+                // ui->txtSearchTo->setText(QString::fromStdString(std::to_string(HexToInt(text_to))));
+                ui->txtSearchTo->setText(QString::number(HexToInt(text_to)));
             }
         }
     } catch (const std::exception&) {
@@ -254,9 +256,8 @@ void CheatSearch::LoadTable(const std::vector<FoundItem>& items) {
     ui->tableFound->setRowCount(static_cast<int>(items.size()));
 
     for (int i = 0; i < items.size(); i++) {
-        ui->tableFound->setItem(
-            i, 0, new QTableWidgetItem(QString::fromStdString(items[i].address).toUpper()));
-        ui->tableFound->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(items[i].value)));
+        ui->tableFound->setItem(i, 0, new QTableWidgetItem(items[i].address.toUpper()));
+        ui->tableFound->setItem(i, 1, new QTableWidgetItem(items[i].value));
         ui->tableFound->setRowHeight(i, 23);
     }
 }
@@ -283,7 +284,7 @@ std::vector<FoundItem> CheatSearch::FirstSearch(const T value,
             if (comparer(result, value, search_to_value)) {
                 FoundItem item;
                 item.address = IntToHex(i);
-                item.value = std::to_string(result);
+                item.value = QString::number(result);
                 results.push_back(item);
             }
         }
@@ -299,13 +300,13 @@ std::vector<FoundItem> CheatSearch::NextSearch(const T value,
     T search_to_value{static_cast<T>(ui->txtSearchTo->text().toUInt(nullptr, base))};
 
     for (auto& f : previous_found) {
-        VAddr addr{static_cast<VAddr>(std::stoul(f.address, nullptr, 16))};
+        VAddr addr{static_cast<VAddr>(f.address.toUInt(nullptr, 16))};
         T result{Read<T>(addr)};
 
         if (comparer(result, value, search_to_value)) {
             FoundItem item{};
             item.address = IntToHex(addr);
-            item.value = std::to_string(result);
+            item.value = QString::number(result);
             results.push_back(item);
         }
     }
@@ -329,22 +330,23 @@ bool CheatSearch::Between(int value, int min, int max) {
     return min < value && value < max;
 }
 
-ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, std::string address, int type,
-                                         std::string value)
+ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, const QString& address, int type,
+                                         const QString& value)
     : QDialog(parent) {
     resize(300, 30);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
     setWindowTitle(tr("Modify Address"));
     setSizeGripEnabled(false);
-    auto mainLayout = new QVBoxLayout(this);
 
-    QHBoxLayout* editPanel = new QHBoxLayout();
+    QVBoxLayout* main_layout{new QVBoxLayout(this)};
+
+    QHBoxLayout* edit_panel{new QHBoxLayout()};
     address_block = new QLineEdit();
     value_block = new QLineEdit();
     type_select = new QComboBox();
 
     address_block->setReadOnly(true);
-    address_block->setText(QString::fromStdString(address));
+    address_block->setText(address);
 
     type_select->addItem("u32");
     type_select->addItem("u16");
@@ -353,18 +355,22 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, std::string address, i
     type_select->addItem("double");
     type_select->setCurrentIndex(type);
 
-    value_block->setText(QString::fromStdString(value));
+    value_block->setText(value);
 
-    editPanel->addWidget(address_block);
-    editPanel->addWidget(type_select);
-    editPanel->addWidget(value_block);
+    edit_panel->addWidget(address_block);
+    edit_panel->addWidget(type_select);
+    edit_panel->addWidget(value_block);
 
-    auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok);
-    connect(button_box, &QDialogButtonBox::accepted, this, [=]() { OnOkClicked(); });
-    QHBoxLayout* confirmationPanel = new QHBoxLayout();
-    confirmationPanel->addWidget(button_box);
-    mainLayout->addLayout(editPanel);
-    mainLayout->addLayout(confirmationPanel);
+    auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    connect(button_box, &QDialogButtonBox::accepted, this, [&] { OnOkClicked(); });
+    connect(button_box, &QDialogButtonBox::rejected, this, [&] {
+        return_value = value;
+        close();
+    });
+    QHBoxLayout* confirmation_panel = new QHBoxLayout();
+    confirmation_panel->addWidget(button_box);
+    main_layout->addLayout(edit_panel);
+    main_layout->addLayout(confirmation_panel);
 }
 
 ModifyAddressDialog::~ModifyAddressDialog() {}
@@ -403,14 +409,14 @@ void ModifyAddressDialog::OnOkClicked() {
     }
     case 3: { // float
         float value{new_value.toFloat()};
-        u32 converted{static_cast<u32>(std::stoul(IeeeFloatToHex(value), nullptr, 10))};
+        u32 converted{IeeeFloatToHex(value).toUInt(nullptr, 16)};
         Memory::Write32(address, converted);
         Core::CPU().InvalidateCacheRange(address, sizeof(u32));
         break;
     }
     case 4: { // double
         double value{new_value.toDouble()};
-        u64 converted{std::stoull(DoubleToHexString(value), nullptr, 10)};
+        u64 converted{DoubleToHexString(value).toULongLong(nullptr, 10)};
         Memory::Write64(address, converted);
         Core::CPU().InvalidateCacheRange(address, sizeof(u64));
         break;
