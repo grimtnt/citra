@@ -71,8 +71,8 @@ System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& file
         LOG_CRITICAL(Core, "Failed to obtain loader for {}!", filepath);
         return ResultStatus::ErrorGetLoader;
     }
-    std::pair<boost::optional<u32>, Loader::ResultStatus> system_mode =
-        app_loader->LoadKernelSystemMode();
+    std::pair<boost::optional<u32>, Loader::ResultStatus> system_mode{
+        app_loader->LoadKernelSystemMode()};
 
     if (system_mode.second != Loader::ResultStatus::Success) {
         LOG_CRITICAL(Core, "Failed to determine system mode (Error {})!",
@@ -212,7 +212,7 @@ void System::Jump() {
         Load(*m_emu_window, m_filepath);
         return;
     }
-    auto path = Service::AM::GetTitleContentPath(jump_media, jump_tid);
+    std::string path{Service::AM::GetTitleContentPath(jump_media, jump_tid)};
     Load(*m_emu_window, path);
 }
 

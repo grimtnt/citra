@@ -57,7 +57,7 @@ static u64 event_fifo_id;
 // to the event_queue by the emu thread
 static Common::MPSCQueue<Event, false> ts_queue;
 
-static constexpr int MAX_SLICE_LENGTH = 20000;
+static constexpr int MAX_SLICE_LENGTH{20000};
 
 static s64 idled_cycles;
 
@@ -66,7 +66,7 @@ static s64 idled_cycles;
 // don't change slice_length and downcount.
 static bool is_global_timer_sane;
 
-static EventType* ev_lost = nullptr;
+static EventType* ev_lost{nullptr};
 
 static void EmptyTimedCallback(u64 userdata, s64 cyclesLate) {}
 
@@ -135,7 +135,7 @@ void ClearPendingEvents() {
 
 void ScheduleEvent(s64 cycles_into_future, const EventType* event_type, u64 userdata) {
     ASSERT(event_type != nullptr);
-    s64 timeout = GetTicks() + cycles_into_future;
+    s64 timeout{static_cast<s64>(GetTicks()) + cycles_into_future};
 
     // If this event needs to be scheduled before the next advance(), force one early
     if (!is_global_timer_sane)
@@ -150,9 +150,9 @@ void ScheduleEventThreadsafe(s64 cycles_into_future, const EventType* event_type
 }
 
 void UnscheduleEvent(const EventType* event_type, u64 userdata) {
-    auto itr = std::remove_if(event_queue.begin(), event_queue.end(), [&](const Event& e) {
+    auto itr{std::remove_if(event_queue.begin(), event_queue.end(), [&](const Event& e) {
         return e.type == event_type && e.userdata == userdata;
-    });
+    })};
 
     // Removing random items breaks the invariant so we have to re-establish it.
     if (itr != event_queue.end()) {
@@ -162,8 +162,8 @@ void UnscheduleEvent(const EventType* event_type, u64 userdata) {
 }
 
 void RemoveEvent(const EventType* event_type) {
-    auto itr = std::remove_if(event_queue.begin(), event_queue.end(),
-                              [&](const Event& e) { return e.type == event_type; });
+    auto itr{std::remove_if(event_queue.begin(), event_queue.end(),
+                            [&](const Event& e) { return e.type == event_type; })};
 
     // Removing random items breaks the invariant so we have to re-establish it.
     if (itr != event_queue.end()) {
@@ -196,7 +196,7 @@ void MoveEvents() {
 void Advance() {
     MoveEvents();
 
-    s64 cycles_executed = slice_length - downcount;
+    s64 cycles_executed{slice_length - downcount};
     global_timer += cycles_executed;
     slice_length = MAX_SLICE_LENGTH;
 

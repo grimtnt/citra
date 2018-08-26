@@ -163,7 +163,7 @@ void Movie::Play(Service::HID::PadState& pad_state, s16& circle_pad_x, s16& circ
 }
 
 void Movie::Play(Service::HID::TouchDataEntry& touch_data) {
-    ControllerState s;
+    ControllerState s{};
     std::memcpy(&s, &recorded_input[current_byte], sizeof(ControllerState));
     current_byte += sizeof(ControllerState);
 
@@ -180,7 +180,7 @@ void Movie::Play(Service::HID::TouchDataEntry& touch_data) {
 }
 
 void Movie::Play(Service::HID::AccelerometerDataEntry& accelerometer_data) {
-    ControllerState s;
+    ControllerState s{};
     std::memcpy(&s, &recorded_input[current_byte], sizeof(ControllerState));
     current_byte += sizeof(ControllerState);
 
@@ -197,7 +197,7 @@ void Movie::Play(Service::HID::AccelerometerDataEntry& accelerometer_data) {
 }
 
 void Movie::Play(Service::HID::GyroscopeDataEntry& gyroscope_data) {
-    ControllerState s;
+    ControllerState s{};
     std::memcpy(&s, &recorded_input[current_byte], sizeof(ControllerState));
     current_byte += sizeof(ControllerState);
 
@@ -214,7 +214,7 @@ void Movie::Play(Service::HID::GyroscopeDataEntry& gyroscope_data) {
 }
 
 void Movie::Play(Service::IR::PadState& pad_state, s16& c_stick_x, s16& c_stick_y) {
-    ControllerState s;
+    ControllerState s{};
     std::memcpy(&s, &recorded_input[current_byte], sizeof(ControllerState));
     current_byte += sizeof(ControllerState);
 
@@ -232,7 +232,7 @@ void Movie::Play(Service::IR::PadState& pad_state, s16& c_stick_x, s16& c_stick_
 }
 
 void Movie::Play(Service::IR::ExtraHIDResponse& extra_hid_response) {
-    ControllerState s;
+    ControllerState s{};
     std::memcpy(&s, &recorded_input[current_byte], sizeof(ControllerState));
     current_byte += sizeof(ControllerState);
 
@@ -262,7 +262,7 @@ void Movie::Record(const ControllerState& controller_state) {
 
 void Movie::Record(const Service::HID::PadState& pad_state, const s16& circle_pad_x,
                    const s16& circle_pad_y) {
-    ControllerState s;
+    ControllerState s{};
     s.type = ControllerStateType::PadAndCircle;
 
     s.pad_and_circle.a.Assign(static_cast<u16>(pad_state.a));
@@ -285,7 +285,7 @@ void Movie::Record(const Service::HID::PadState& pad_state, const s16& circle_pa
 }
 
 void Movie::Record(const Service::HID::TouchDataEntry& touch_data) {
-    ControllerState s;
+    ControllerState s{};
     s.type = ControllerStateType::Touch;
 
     s.touch.x = touch_data.x;
@@ -296,7 +296,7 @@ void Movie::Record(const Service::HID::TouchDataEntry& touch_data) {
 }
 
 void Movie::Record(const Service::HID::AccelerometerDataEntry& accelerometer_data) {
-    ControllerState s;
+    ControllerState s{};
     s.type = ControllerStateType::Accelerometer;
 
     s.accelerometer.x = accelerometer_data.x;
@@ -307,7 +307,7 @@ void Movie::Record(const Service::HID::AccelerometerDataEntry& accelerometer_dat
 }
 
 void Movie::Record(const Service::HID::GyroscopeDataEntry& gyroscope_data) {
-    ControllerState s;
+    ControllerState s{};
     s.type = ControllerStateType::Gyroscope;
 
     s.gyroscope.x = gyroscope_data.x;
@@ -319,7 +319,7 @@ void Movie::Record(const Service::HID::GyroscopeDataEntry& gyroscope_data) {
 
 void Movie::Record(const Service::IR::PadState& pad_state, const s16& c_stick_x,
                    const s16& c_stick_y) {
-    ControllerState s;
+    ControllerState s{};
     s.type = ControllerStateType::IrRst;
 
     s.ir_rst.x = c_stick_x;
@@ -331,7 +331,7 @@ void Movie::Record(const Service::IR::PadState& pad_state, const s16& c_stick_x,
 }
 
 void Movie::Record(const Service::IR::ExtraHIDResponse& extra_hid_response) {
-    ControllerState s;
+    ControllerState s{};
     s.type = ControllerStateType::ExtraHidResponse;
 
     s.extra_hid_response.battery_level.Assign(extra_hid_response.buttons.battery_level);
@@ -350,8 +350,8 @@ Movie::ValidationResult Movie::ValidateHeader(const CTMHeader& header, u64 progr
         return ValidationResult::Invalid;
     }
 
-    std::string revision =
-        Common::ArrayToString(header.revision.data(), header.revision.size(), 21, false);
+    std::string revision{
+        Common::ArrayToString(header.revision.data(), header.revision.size(), 21, false)};
     revision = Common::ToLower(revision);
 
     if (!program_id)
@@ -372,7 +372,7 @@ Movie::ValidationResult Movie::ValidateHeader(const CTMHeader& header, u64 progr
 
 void Movie::SaveMovie() {
     LOG_INFO(Movie, "Saving recorded movie to '{}'", record_movie_file);
-    FileUtil::IOFile save_record(record_movie_file, "wb");
+    FileUtil::IOFile save_record{record_movie_file, "wb"};
 
     if (!save_record.IsGood()) {
         LOG_ERROR(Movie, "Unable to open file to save movie");
@@ -384,7 +384,7 @@ void Movie::SaveMovie() {
 
     Core::System::GetInstance().GetAppLoader().ReadProgramId(header.program_id);
 
-    std::string rev_bytes;
+    std::string rev_bytes{};
     CryptoPP::StringSource(Common::g_scm_rev, true,
                            new CryptoPP::HexDecoder(new CryptoPP::StringSink(rev_bytes)));
     std::memcpy(header.revision.data(), rev_bytes.data(), sizeof(CTMHeader::revision));
@@ -400,11 +400,11 @@ void Movie::SaveMovie() {
 void Movie::StartPlayback(const std::string& movie_file,
                           std::function<void()> completion_callback) {
     LOG_INFO(Movie, "Loading Movie for playback");
-    FileUtil::IOFile save_record(movie_file, "rb");
-    const u64 size = save_record.GetSize();
+    FileUtil::IOFile save_record{movie_file, "rb"};
+    const u64 size{save_record.GetSize()};
 
     if (save_record.IsGood() && size > sizeof(CTMHeader)) {
-        CTMHeader header;
+        CTMHeader header{};
         save_record.ReadArray(&header, 1);
         if (ValidateHeader(header) != ValidationResult::Invalid) {
             play_mode = PlayMode::Playing;
@@ -433,20 +433,20 @@ Movie::ValidationResult Movie::ValidateMovie(const std::string& movie_file, u64 
         return ValidationResult::Invalid;
     }
 
-    CTMHeader header;
+    CTMHeader header{};
     save_record.ReadArray(&header, 1);
     return ValidateHeader(header, program_id);
 }
 
 u64 Movie::GetMovieProgramID(const std::string& movie_file) const {
-    FileUtil::IOFile save_record(movie_file, "rb");
-    const u64 size = save_record.GetSize();
+    FileUtil::IOFile save_record{movie_file, "rb"};
+    const u64 size{save_record.GetSize()};
 
     if (!save_record || size <= sizeof(CTMHeader)) {
         return 0;
     }
 
-    CTMHeader header;
+    CTMHeader header{};
     save_record.ReadArray(&header, 1);
 
     if (header_magic_bytes != header.filetype) {

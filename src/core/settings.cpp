@@ -75,7 +75,7 @@ void LogSettings() {
     LogSetting("System_EnableNewMode", Settings::values.enable_new_mode);
     LogSetting("Hacks_PriorityBoost", Settings::values.priority_boost);
     LogSetting("Hacks_Ticks", Settings::values.ticks);
-    LogSetting("Hacks_TicksMode", Settings::values.ticks_mode);
+    LogSetting("Hacks_TicksMode", static_cast<int>(Settings::values.ticks_mode));
     LogSetting("Hacks_UseBos", Settings::values.use_bos);
 }
 

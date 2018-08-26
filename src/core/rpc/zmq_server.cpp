@@ -6,9 +6,9 @@
 namespace RPC {
 
 ZMQServer::ZMQServer(std::function<void(std::unique_ptr<Packet>)> new_request_callback)
-    : zmq_context(std::move(std::make_unique<zmq::context_t>(1))),
-      zmq_socket(std::move(std::make_unique<zmq::socket_t>(*zmq_context, ZMQ_REP))),
-      new_request_callback(std::move(new_request_callback)) {
+    : zmq_context{std::move(std::make_unique<zmq::context_t>(1))},
+      zmq_socket{std::move(std::make_unique<zmq::socket_t>(*zmq_context, ZMQ_REP))},
+      new_request_callback{std::move(new_request_callback)} {
     // Use a random high port
     // TODO: Make configurable or increment port number on failure
     zmq_socket->bind("tcp://127.0.0.1:45987");

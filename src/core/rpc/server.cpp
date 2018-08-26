@@ -7,12 +7,12 @@
 
 namespace RPC {
 
-Server::Server(RPCServer& rpc_server) : rpc_server(rpc_server) {}
+Server::Server(RPCServer& rpc_server) : rpc_server{rpc_server} {}
 
 void Server::Start() {
-    const auto callback = [this](std::unique_ptr<RPC::Packet> new_request) {
+    const auto callback{[this](std::unique_ptr<RPC::Packet> new_request) {
         NewRequestCallback(std::move(new_request));
-    };
+    }};
 
     try {
         zmq_server = std::make_unique<ZMQServer>(callback);
