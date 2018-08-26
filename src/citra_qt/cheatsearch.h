@@ -27,7 +27,7 @@ private:
     std::unique_ptr<Ui::CheatSearch> ui;
     std::vector<FoundItem> previous_found;
 
-    void OnScan(bool isNextScan);
+    void OnScan(bool is_next_scan);
     void OnScanTypeChanged(int index);
     void OnValueTypeChanged(int index);
     void OnHexCheckedChanged(bool checked);
@@ -37,8 +37,7 @@ private:
     std::vector<FoundItem> FirstSearch(const T value, std::function<bool(int, int, int)> comparer);
 
     template <typename T>
-    std::vector<FoundItem> NextSearch(const T value, std::function<bool(int, int, int)> comparer,
-                                      std::vector<FoundItem> previous_found);
+    std::vector<FoundItem> NextSearch(const T value, std::function<bool(int, int, int)> comparer);
 
     bool Equals(int a, int b, int c);
     bool LessThan(int a, int b, int c);

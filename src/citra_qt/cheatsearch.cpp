@@ -27,7 +27,8 @@ CheatSearch::CheatSearch(QWidget* parent)
             this, [this](int index) { OnScanTypeChanged(index); });
     connect(ui->cbValueType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this](int index) { OnValueTypeChanged(index); });
-    connect(ui->chkHex, &QCheckBox::clicked, this, [this](bool i) { OnHexCheckedChanged(i); });
+    connect(ui->chkHex, &QCheckBox::clicked, this,
+            [this](bool state) { OnHexCheckedChanged(state); });
     connect(ui->tableFound, &QTableWidget::doubleClicked, this, [&](QModelIndex i) {
         ModifyAddressDialog* dialog =
             new ModifyAddressDialog(this, ui->tableFound->item(i.row(), 0)->text().toStdString(),
@@ -56,13 +57,13 @@ T Read(const VAddr addr) {
     }
 }
 
-std::string int_to_hex(int i) {
+std::string IntToHex(int i) {
     std::stringstream ss;
     ss << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << i;
     return ss.str();
 }
 
-int hex_to_int(std::string hex_value) {
+int HexToInt(std::string hex_value) {
     int decimal_value;
     std::stringstream ss;
     ss << hex_value;
@@ -70,7 +71,7 @@ int hex_to_int(std::string hex_value) {
     return decimal_value;
 }
 
-double hexstr2double(const std::string& hexstr) {
+double HexStringToDouble(const std::string& hexstr) {
     union {
         long long i;
         double d;
@@ -81,7 +82,7 @@ double hexstr2double(const std::string& hexstr) {
     return value.d;
 }
 
-std::string double2hexstr(double x) {
+std::string DoubleToHexString(double x) {
     union {
         long long i;
         double d;
@@ -95,11 +96,12 @@ std::string double2hexstr(double x) {
     return oss.str();
 }
 
-std::string ieee_float_to_hex(float f) {
+std::string IeeeFloatToHex(float f) {
     union {
         float fval;
-        std::uint32_t ival;
+        u32 ival;
     };
+
     fval = f;
 
     std::ostringstream oss;
@@ -108,17 +110,17 @@ std::string ieee_float_to_hex(float f) {
     return oss.str();
 }
 
-void CheatSearch::OnScan(bool isNextScan) {
-    int valueType;
-    int searchType;
-    QString searchvalue;
-    bool convertHex;
+void CheatSearch::OnScan(bool is_next_scan) {
+    int value_type{};
+    int search_type{};
+    QString search_value{};
+    bool convert_hex{};
 
     try {
-        valueType = ui->cbValueType->currentIndex();
-        searchType = ui->cbScanType->currentIndex();
-        searchvalue = ui->txtSearch->text();
-        convertHex = ui->chkHex->isChecked();
+        value_type = ui->cbValueType->currentIndex();
+        search_type = ui->cbScanType->currentIndex();
+        search_value = ui->txtSearch->text();
+        convert_hex = ui->chkHex->isChecked();
     } catch (const std::exception&) {
         ui->txtSearch->clear();
         return;
@@ -128,7 +130,7 @@ void CheatSearch::OnScan(bool isNextScan) {
         return Equals(a, b, c);
     };
 
-    switch (searchType) {
+    switch (search_type) {
     case 0: { // Equals
         comparer = [&](int a, int b, int c) { return CheatSearch::Equals(a, b, c); };
         break;
@@ -149,30 +151,30 @@ void CheatSearch::OnScan(bool isNextScan) {
 
     int base = (ui->chkHex->isChecked()) ? 16 : 10;
 
-    switch (valueType) {
+    switch (value_type) {
     case 0: { // u32
-        u32 value = searchvalue.toUInt(nullptr, base);
-        if (!isNextScan)
+        u32 value = search_value.toUInt(nullptr, base);
+        if (!is_next_scan)
             previous_found = FirstSearch<u32>(value, comparer);
         else
-            previous_found = NextSearch<u32>(value, comparer, previous_found);
+            previous_found = NextSearch<u32>(value, comparer);
         break;
     }
 
     case 1: { // u16
-        u16 value = searchvalue.toUShort(nullptr, base);
-        if (!isNextScan)
+        u16 value = search_value.toUShort(nullptr, base);
+        if (!is_next_scan)
             previous_found = FirstSearch<u16>(value, comparer);
         else
-            previous_found = NextSearch<u16>(value, comparer, previous_found);
+            previous_found = NextSearch<u16>(value, comparer);
         break;
     }
     case 2: { // u8
-        u8 value = static_cast<u8>(searchvalue.toUShort(nullptr, base));
-        if (!isNextScan)
+        u8 value = static_cast<u8>(search_value.toUShort(nullptr, base));
+        if (!is_next_scan)
             previous_found = FirstSearch<u8>(value, comparer);
         else
-            previous_found = NextSearch<u8>(value, comparer, previous_found);
+            previous_found = NextSearch<u8>(value, comparer);
         break;
     }
     }
@@ -219,27 +221,27 @@ void CheatSearch::OnScanTypeChanged(int index) {
 }
 
 void CheatSearch::OnHexCheckedChanged(bool checked) {
-    std::string text = ui->txtSearch->text().toStdString();
-    std::string text2 = ui->txtSearchTo->text().toStdString();
+    std::string text{ui->txtSearch->text().toStdString()};
+    std::string text2{ui->txtSearchTo->text().toStdString()};
 
     try {
         if (checked) {
             if (text.length() > 0) {
-                int val = std::stoi(text, nullptr, 10);
-                ui->txtSearch->setText(QString::fromStdString(int_to_hex(val)));
+                int val{std::stoi(text, nullptr, 10)};
+                ui->txtSearch->setText(QString::fromStdString(IntToHex(val)));
             }
 
             if (text2.length() > 0) {
-                int val2 = std::stoi(text2, nullptr, 10);
-                ui->txtSearchTo->setText(QString::fromStdString(int_to_hex(val2)));
+                int val2{std::stoi(text2, nullptr, 10)};
+                ui->txtSearchTo->setText(QString::fromStdString(IntToHex(val2)));
             }
         } else {
             if (text.length() > 0) {
-                ui->txtSearch->setText(QString::fromStdString(std::to_string(hex_to_int(text))));
+                ui->txtSearch->setText(QString::fromStdString(std::to_string(HexToInt(text))));
             }
 
             if (text2.length() > 0) {
-                ui->txtSearchTo->setText(QString::fromStdString(std::to_string(hex_to_int(text2))));
+                ui->txtSearchTo->setText(QString::fromStdString(std::to_string(HexToInt(text2))));
             }
         }
     } catch (const std::exception&) {
@@ -262,12 +264,12 @@ void CheatSearch::LoadTable(const std::vector<FoundItem>& items) {
 template <typename T>
 std::vector<FoundItem> CheatSearch::FirstSearch(const T value,
                                                 std::function<bool(int, int, int)> comparer) {
-    u32 start_address = 0x00000000;
-    u32 end_address = 0x08000000 + 0x08000000;
-    std::vector<int> address_in_use;
-    std::vector<FoundItem> results;
-    int base = (ui->chkHex->isChecked()) ? 16 : 10;
-    T searchToValue = static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base));
+    u32 start_address{0x00000000};
+    u32 end_address{0x08000000 + 0x08000000};
+    std::vector<int> address_in_use{};
+    std::vector<FoundItem> results{};
+    int base{ui->chkHex->isChecked() ? 16 : 10};
+    T search_to_value{static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base))};
 
     for (u32 i = start_address; i < end_address; i += 4096) {
         if (Memory::IsValidVirtualAddress(i)) {
@@ -277,10 +279,10 @@ std::vector<FoundItem> CheatSearch::FirstSearch(const T value,
 
     for (auto& range : address_in_use) {
         for (int i = range; i < (range + 4096); i++) {
-            T result = Read<T>(i);
-            if (comparer(result, value, searchToValue)) {
+            T result{Read<T>(i)};
+            if (comparer(result, value, search_to_value)) {
                 FoundItem item;
-                item.address = int_to_hex(i);
+                item.address = IntToHex(i);
                 item.value = std::to_string(result);
                 results.push_back(item);
             }
@@ -291,19 +293,18 @@ std::vector<FoundItem> CheatSearch::FirstSearch(const T value,
 
 template <typename T>
 std::vector<FoundItem> CheatSearch::NextSearch(const T value,
-                                               std::function<bool(int, int, int)> comparer,
-                                               std::vector<FoundItem> previousFound) {
-    std::vector<FoundItem> results;
-    int base = (ui->chkHex->isChecked()) ? 16 : 10;
-    T searchToValue = static_cast<T>(ui->txtSearchTo->text().toUInt(nullptr, base));
+                                               std::function<bool(int, int, int)> comparer) {
+    std::vector<FoundItem> results{};
+    int base{ui->chkHex->isChecked() ? 16 : 10};
+    T search_to_value{static_cast<T>(ui->txtSearchTo->text().toUInt(nullptr, base))};
 
-    for (auto& f : previousFound) {
-        VAddr addr = std::stoul(f.address, nullptr, 16);
-        T result = Read<T>(addr);
+    for (auto& f : previous_found) {
+        VAddr addr{static_cast<VAddr>(std::stoul(f.address, nullptr, 16))};
+        T result{Read<T>(addr)};
 
-        if (comparer(result, value, searchToValue)) {
-            FoundItem item;
-            item.address = int_to_hex(addr);
+        if (comparer(result, value, search_to_value)) {
+            FoundItem item{};
+            item.address = IntToHex(addr);
             item.value = std::to_string(result);
             results.push_back(item);
         }
@@ -369,55 +370,53 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, std::string address, i
 ModifyAddressDialog::~ModifyAddressDialog() {}
 
 void ModifyAddressDialog::OnOkClicked() {
-    int valueType;
-    QString newValue;
-    int address;
+    int value_type{};
+    QString new_value{};
+    int address{};
 
     try {
-        valueType = type_select->currentIndex();
-        newValue = value_block->text();
+        value_type = type_select->currentIndex();
+        new_value = value_block->text();
         address = address_block->text().toInt(nullptr, 16);
     } catch (const std::exception&) {
-        this->close();
+        close();
     }
 
-    int base = 10;
-
-    switch (valueType) {
+    switch (value_type) {
     case 0: { // u32
-        u32 value = newValue.toUInt(nullptr, base);
+        u32 value{new_value.toUInt(nullptr, 10)};
         Memory::Write32(address, value);
         Core::CPU().InvalidateCacheRange(address, sizeof(u32));
         break;
     }
     case 1: { // u16
-        u16 value = newValue.toUShort(nullptr, base);
+        u16 value{new_value.toUShort(nullptr, 10)};
         Memory::Write16(address, value);
         Core::CPU().InvalidateCacheRange(address, sizeof(u16));
         break;
     }
     case 2: { // u8
-        u8 value = static_cast<u8>(newValue.toUShort(nullptr, base));
+        u8 value{static_cast<u8>(new_value.toUShort(nullptr, 10))};
         Memory::Write8(address, value);
         Core::CPU().InvalidateCacheRange(address, sizeof(u8));
         break;
     }
     case 3: { // float
-        float value = newValue.toFloat();
-        u32 converted = std::stoul(ieee_float_to_hex(value), nullptr, 10);
+        float value{new_value.toFloat()};
+        u32 converted{static_cast<u32>(std::stoul(IeeeFloatToHex(value), nullptr, 10))};
         Memory::Write32(address, converted);
         Core::CPU().InvalidateCacheRange(address, sizeof(u32));
         break;
     }
     case 4: { // double
-        double value = newValue.toDouble();
-        u64 converted = std::stoull(double2hexstr(value), nullptr, 10);
+        double value{new_value.toDouble()};
+        u64 converted{std::stoull(DoubleToHexString(value), nullptr, 10)};
         Memory::Write64(address, converted);
         Core::CPU().InvalidateCacheRange(address, sizeof(u64));
         break;
     }
     }
 
-    return_value = newValue;
-    this->close();
+    return_value = new_value;
+    close();
 }
