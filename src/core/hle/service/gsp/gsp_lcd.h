@@ -12,6 +12,13 @@ class GSP_LCD final : public ServiceFramework<GSP_LCD> {
 public:
     GSP_LCD();
     ~GSP_LCD() = default;
+
+    void SetBrightnessRaw(Kernel::HLERequestContext& ctx);
+    void SetBrightness(Kernel::HLERequestContext& ctx);
+    void GetBrightness(Kernel::HLERequestContext& ctx);
+
+private:
+    float brightness{1.0f};
 };
 
 } // namespace Service::GSP
