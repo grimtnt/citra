@@ -629,7 +629,6 @@ public:
 
 private:
     bool LoadSharedFont();
-    bool LoadLegacySharedFont();
 
     /// Handle to shared memory region designated to for shared system font
     Kernel::SharedPtr<Kernel::SharedMemory> shared_font_mem;

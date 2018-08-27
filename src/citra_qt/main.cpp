@@ -1278,17 +1278,17 @@ void GMainWindow::UpdateStatusBar() {
     emu_frametime_label->setVisible(true);
 }
 
-void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string details) {
-    QMessageBox::StandardButton answer;
+void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::string& details) {
     QString status_message;
-    const QString common_message =
-        tr("%1 is missing. Please <a "
-           "href='https://github.com/valentinvanelslande/citra/wiki/"
-           "Dumping-System-Archives-from-a-3DS-Console/'>dump your system "
-           "archives</a>.<br/>Continuing emulation may result in crashes and bugs.");
     QString title, message;
     switch (result) {
     case Core::System::ResultStatus::ErrorSystemFiles: {
+        const QString common_message =
+            tr("%1 is missing. Please <a "
+               "href='https://github.com/valentinvanelslande/citra/wiki/"
+               "Dumping-System-Archives-from-a-3DS-Console/'>dump your system "
+               "archives</a>.<br/>Continuing emulation may result in crashes and bugs.");
+
         if (!details.empty()) {
             message = common_message.arg(QString::fromStdString(details));
         } else {
@@ -1300,16 +1300,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
         break;
     }
 
-    case Core::System::ResultStatus::ErrorSharedFont: {
-        message = tr("Shared fonts not found. ");
-        message.append(common_message);
-        title = tr("Shared Fonts Not Found");
-        status_message = "Shared Font Missing";
-        break;
-    }
-
     case Core::System::ResultStatus::ShutdownRequested: {
-        answer = QMessageBox::Yes;
         break;
     }
 

@@ -70,7 +70,7 @@ private:
     GRenderWindow* render_window;
 
 signals:
-    void ErrorThrown(Core::System::ResultStatus, std::string);
+    void ErrorThrown(Core::System::ResultStatus, const std::string&);
 };
 
 class GRenderWindow : public QWidget, public EmuWindow {
