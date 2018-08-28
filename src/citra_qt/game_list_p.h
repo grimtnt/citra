@@ -379,6 +379,7 @@ public:
     explicit GameListItemRegion(const std::vector<u8>& smdh_data) {
         if (!Loader::IsValidSMDH(smdh_data)) {
             setText("Invalid region");
+        } else {
             Loader::SMDH smdh;
             memcpy(&smdh, smdh_data.data(), sizeof(Loader::SMDH));
 
