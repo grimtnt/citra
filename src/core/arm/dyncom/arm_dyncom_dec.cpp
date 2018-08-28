@@ -441,12 +441,12 @@ const InstructionSetEncodingItem arm_exclusion_code[] = {
 // clang-format on
 
 ARMDecodeStatus DecodeARMInstruction(u32 instr, int* idx) {
-    int n = 0;
-    int base = 0;
+    int n{};
+    int base{};
     int instr_slots = sizeof(arm_instruction) / sizeof(InstructionSetEncodingItem);
     ARMDecodeStatus ret = ARMDecodeStatus::FAILURE;
 
-    for (int i = 0; i < instr_slots; i++) {
+    for (int i{}; i < instr_slots; i++) {
         n = arm_instruction[i].attribute_value;
         base = 0;
 

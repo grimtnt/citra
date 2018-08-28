@@ -264,7 +264,7 @@ inline int vfp_single_type(const vfp_single* s) {
 // of the single-precision float mantissa with the 1. if necessary,
 // aligned to bit 30.
 inline u32 vfp_single_unpack(vfp_single* s, s32 val, u32 fpscr) {
-    u32 exceptions = 0;
+    u32 exceptions{};
     s->sign = vfp_single_packed_sign(val) >> 16, s->exponent = vfp_single_packed_exponent(val);
 
     u32 significand = ((u32)val << (32 - VFP_SINGLE_MANTISSA_BITS)) >> 2;
@@ -339,7 +339,7 @@ inline int vfp_double_type(const vfp_double* s) {
 // of the double-precision float mantissa with the 1. if necessary,
 // aligned to bit 62.
 inline u32 vfp_double_unpack(vfp_double* s, s64 val, u32 fpscr) {
-    u32 exceptions = 0;
+    u32 exceptions{};
     s->sign = vfp_double_packed_sign(val) >> 48;
     s->exponent = vfp_double_packed_exponent(val);
 

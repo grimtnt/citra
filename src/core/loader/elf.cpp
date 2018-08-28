@@ -288,8 +288,8 @@ SharedPtr<CodeSet> ElfReader::LoadInto(u32 vaddr) {
     // First pass : Get the bits into RAM
     u32 base_addr = relocate ? vaddr : 0;
 
-    u32 total_image_size = 0;
-    for (unsigned int i = 0; i < header->e_phnum; ++i) {
+    u32 total_image_size{};
+    for (unsigned int i{}; i < header->e_phnum; ++i) {
         Elf32_Phdr* p = &segments[i];
         if (p->p_type == PT_LOAD) {
             total_image_size += (p->p_memsz + 0xFFF) & ~0xFFF;
@@ -301,7 +301,7 @@ SharedPtr<CodeSet> ElfReader::LoadInto(u32 vaddr) {
 
     SharedPtr<CodeSet> codeset{CodeSet::Create("", 0)};
 
-    for (unsigned int i = 0; i < header->e_phnum; ++i) {
+    for (unsigned int i{}; i < header->e_phnum; ++i) {
         Elf32_Phdr* p{&segments[i]};
         LOG_DEBUG(Loader, "Type: {} Vaddr: {:08X} Filesz: {:08X} Memsz: {:08X} ", p->p_type,
                   p->p_vaddr, p->p_filesz, p->p_memsz);

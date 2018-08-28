@@ -257,7 +257,7 @@ void Shutdown() {
  */
 static int JoystickIDToDeviceIndex(SDL_JoystickID id) {
     int num_joysticks{SDL_NumJoysticks()};
-    for (int i = 0; i < num_joysticks; i++) {
+    for (int i{}; i < num_joysticks; i++) {
         auto joystick{GetJoystick(i)};
         if (joystick->GetJoystickID() == id) {
             return i;
@@ -316,7 +316,7 @@ public:
         // SDL joysticks must be opened, otherwise they don't generate events
         SDL_JoystickUpdate();
         int num_joysticks = SDL_NumJoysticks();
-        for (int i = 0; i < num_joysticks; i++) {
+        for (int i{}; i < num_joysticks; i++) {
             joysticks_opened.emplace_back(GetJoystick(i));
         }
         // Empty event queue to get rid of old events. citra-qt doesn't use the queue

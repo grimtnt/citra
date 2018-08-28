@@ -172,7 +172,7 @@ void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
 
         // Register Info
         LOG_CRITICAL(Service_ERR, "ARM Registers:");
-        for (u32 index = 0; index < errtype.exception_data.exception_context.arm_regs.size();
+        for (u32 index{}; index < errtype.exception_data.exception_context.arm_regs.size();
              ++index) {
             if (index < 13) {
                 LOG_DEBUG(Service_ERR, "r{}=0x{:08X}", index,

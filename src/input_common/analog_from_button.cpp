@@ -17,8 +17,8 @@ public:
           modifier_scale(modifier_scale_) {}
 
     std::tuple<float, float> GetStatus() const override {
-        constexpr float SQRT_HALF = 0.707106781f;
-        int x = 0, y = 0;
+        constexpr float SQRT_HALF{0.707106781f};
+        int x{}, y{};
 
         if (right->GetStatus())
             ++x;

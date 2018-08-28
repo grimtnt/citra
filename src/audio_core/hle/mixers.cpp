@@ -138,8 +138,8 @@ void Mixers::AuxReturn(const IntermediateMixSamples& read_samples) {
     // QuadFrame32.
 
     if (state.mixer1_enabled) {
-        for (size_t sample = 0; sample < samples_per_frame; sample++) {
-            for (size_t channel = 0; channel < 4; channel++) {
+        for (size_t sample{}; sample < samples_per_frame; sample++) {
+            for (size_t channel{}; channel < 4; channel++) {
                 state.intermediate_mix_buffer[1][sample][channel] =
                     read_samples.mix1.pcm32[channel][sample];
             }
@@ -147,8 +147,8 @@ void Mixers::AuxReturn(const IntermediateMixSamples& read_samples) {
     }
 
     if (state.mixer2_enabled) {
-        for (size_t sample = 0; sample < samples_per_frame; sample++) {
-            for (size_t channel = 0; channel < 4; channel++) {
+        for (size_t sample{}; sample < samples_per_frame; sample++) {
+            for (size_t channel{}; channel < 4; channel++) {
                 state.intermediate_mix_buffer[2][sample][channel] =
                     read_samples.mix2.pcm32[channel][sample];
             }
@@ -164,8 +164,8 @@ void Mixers::AuxSend(IntermediateMixSamples& write_samples,
     state.intermediate_mix_buffer[0] = input[0];
 
     if (state.mixer1_enabled) {
-        for (size_t sample = 0; sample < samples_per_frame; sample++) {
-            for (size_t channel = 0; channel < 4; channel++) {
+        for (size_t sample{}; sample < samples_per_frame; sample++) {
+            for (size_t channel{}; channel < 4; channel++) {
                 write_samples.mix1.pcm32[channel][sample] = input[1][sample][channel];
             }
         }
@@ -174,8 +174,8 @@ void Mixers::AuxSend(IntermediateMixSamples& write_samples,
     }
 
     if (state.mixer2_enabled) {
-        for (size_t sample = 0; sample < samples_per_frame; sample++) {
-            for (size_t channel = 0; channel < 4; channel++) {
+        for (size_t sample{}; sample < samples_per_frame; sample++) {
+            for (size_t channel{}; channel < 4; channel++) {
                 write_samples.mix2.pcm32[channel][sample] = input[2][sample][channel];
             }
         }
@@ -187,7 +187,7 @@ void Mixers::AuxSend(IntermediateMixSamples& write_samples,
 void Mixers::MixCurrentFrame() {
     current_frame.fill({});
 
-    for (size_t mix = 0; mix < 3; mix++) {
+    for (size_t mix{}; mix < 3; mix++) {
         DownmixAndMixIntoCurrentFrame(state.intermediate_mixer_volume[mix],
                                       state.intermediate_mix_buffer[mix]);
     }

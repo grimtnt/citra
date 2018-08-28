@@ -112,21 +112,21 @@ private:
     bool CheckSize(std::size_t size);
 
     // Member data
-    std::vector<char> data;   ///< Data stored in the packet
-    std::size_t read_pos = 0; ///< Current reading position in the packet
-    bool is_valid = true;     ///< Reading state of the packet
+    std::vector<char> data; ///< Data stored in the packet
+    std::size_t read_pos{}; ///< Current reading position in the packet
+    bool is_valid = true;   ///< Reading state of the packet
 };
 
 template <typename T>
 Packet& Packet::operator>>(std::vector<T>& out_data) {
     // First extract the size
-    u32 size = 0;
+    u32 size{};
     *this >> size;
     out_data.resize(size);
 
     // Then extract the data
-    for (std::size_t i = 0; i < out_data.size(); ++i) {
-        T character = 0;
+    for (std::size_t i{}; i < out_data.size(); ++i) {
+        T character{};
         *this >> character;
         out_data[i] = character;
     }
@@ -135,8 +135,8 @@ Packet& Packet::operator>>(std::vector<T>& out_data) {
 
 template <typename T, std::size_t S>
 Packet& Packet::operator>>(std::array<T, S>& out_data) {
-    for (std::size_t i = 0; i < out_data.size(); ++i) {
-        T character = 0;
+    for (std::size_t i{}; i < out_data.size(); ++i) {
+        T character{};
         *this >> character;
         out_data[i] = character;
     }
@@ -149,7 +149,7 @@ Packet& Packet::operator<<(const std::vector<T>& in_data) {
     *this << static_cast<u32>(in_data.size());
 
     // Then insert the data
-    for (std::size_t i = 0; i < in_data.size(); ++i) {
+    for (std::size_t i{}; i < in_data.size(); ++i) {
         *this << in_data[i];
     }
     return *this;
@@ -157,7 +157,7 @@ Packet& Packet::operator<<(const std::vector<T>& in_data) {
 
 template <typename T, std::size_t S>
 Packet& Packet::operator<<(const std::array<T, S>& in_data) {
-    for (std::size_t i = 0; i < in_data.size(); ++i) {
+    for (std::size_t i{}; i < in_data.size(); ++i) {
         *this << in_data[i];
     }
     return *this;

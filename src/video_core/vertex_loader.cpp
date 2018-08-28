@@ -23,18 +23,18 @@ void VertexLoader::Setup(const PipelineRegs& regs) {
 
     boost::fill(vertex_attribute_sources, 0xdeadbeef);
 
-    for (int i = 0; i < 16; i++) {
+    for (int i{}; i < 16; i++) {
         vertex_attribute_is_default[i] = attribute_config.IsDefaultAttribute(i);
     }
 
     // Setup attribute data from loaders
-    for (int loader = 0; loader < 12; ++loader) {
+    for (int loader{}; loader < 12; ++loader) {
         const auto& loader_config = attribute_config.attribute_loaders[loader];
 
-        u32 offset = 0;
+        u32 offset{};
 
         // TODO: What happens if a loader overwrites a previous one's data?
-        for (unsigned component = 0; component < loader_config.component_count; ++component) {
+        for (unsigned component{}; component < loader_config.component_count; ++component) {
             if (component >= 12) {
                 LOG_ERROR(HW_GPU,
                           "Overflow in the vertex attribute loader {} trying to load component {}",
@@ -73,7 +73,7 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
                               Shader::AttributeBuffer& input) {
     ASSERT_MSG(is_setup, "A VertexLoader needs to be setup before loading vertices.");
 
-    for (int i = 0; i < num_total_attributes; ++i) {
+    for (int i{}; i < num_total_attributes; ++i) {
         if (vertex_attribute_elements[i] != 0) {
             // Load per-vertex data from the loader arrays
             u32 source_addr =
@@ -83,7 +83,7 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
             case PipelineRegs::VertexAttributeFormat::BYTE: {
                 const s8* srcdata =
                     reinterpret_cast<const s8*>(Memory::GetPhysicalPointer(source_addr));
-                for (unsigned int comp = 0; comp < vertex_attribute_elements[i]; ++comp) {
+                for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;
@@ -91,7 +91,7 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
             case PipelineRegs::VertexAttributeFormat::UBYTE: {
                 const u8* srcdata =
                     reinterpret_cast<const u8*>(Memory::GetPhysicalPointer(source_addr));
-                for (unsigned int comp = 0; comp < vertex_attribute_elements[i]; ++comp) {
+                for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;
@@ -99,7 +99,7 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
             case PipelineRegs::VertexAttributeFormat::SHORT: {
                 const s16* srcdata =
                     reinterpret_cast<const s16*>(Memory::GetPhysicalPointer(source_addr));
-                for (unsigned int comp = 0; comp < vertex_attribute_elements[i]; ++comp) {
+                for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;
@@ -107,7 +107,7 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
             case PipelineRegs::VertexAttributeFormat::FLOAT: {
                 const float* srcdata =
                     reinterpret_cast<const float*>(Memory::GetPhysicalPointer(source_addr));
-                for (unsigned int comp = 0; comp < vertex_attribute_elements[i]; ++comp) {
+                for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;

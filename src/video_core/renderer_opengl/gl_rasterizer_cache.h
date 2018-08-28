@@ -243,13 +243,13 @@ struct SurfaceParams {
     MathUtil::Rectangle<u32> GetSubRect(const SurfaceParams& sub_surface) const;
     MathUtil::Rectangle<u32> GetScaledSubRect(const SurfaceParams& sub_surface) const;
 
-    PAddr addr = 0;
-    PAddr end = 0;
-    u32 size = 0;
+    PAddr addr{};
+    PAddr end{};
+    u32 size{};
 
-    u32 width = 0;
-    u32 height = 0;
-    u32 stride = 0;
+    u32 width{};
+    u32 height{};
+    u32 stride{};
     u16 res_scale = 1;
 
     bool is_tiled = false;
@@ -306,7 +306,7 @@ struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface
     bool registered = false;
     SurfaceRegions invalid_regions;
 
-    u32 fill_size = 0; /// Number of bytes to read from fill_data
+    u32 fill_size{}; /// Number of bytes to read from fill_data
     std::array<u8, 4> fill_data;
 
     OGLTexture texture;
@@ -321,7 +321,7 @@ struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface
     }
 
     std::unique_ptr<u8[]> gl_buffer;
-    size_t gl_buffer_size = 0;
+    size_t gl_buffer_size{};
 
     // Read/Write data in 3DS memory to/from gl_buffer
     void LoadGLBuffer(PAddr load_start, PAddr load_end);
@@ -375,7 +375,7 @@ namespace std {
 template <>
 struct hash<TextureCubeConfig> {
     size_t operator()(const TextureCubeConfig& config) const {
-        std::size_t hash = 0;
+        std::size_t hash{};
         boost::hash_combine(hash, config.px);
         boost::hash_combine(hash, config.nx);
         boost::hash_combine(hash, config.py);

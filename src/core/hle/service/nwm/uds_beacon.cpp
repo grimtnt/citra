@@ -197,7 +197,7 @@ std::vector<u8> GeneratedEncryptedData(const NetworkInfo& network_info, const No
         BeaconNodeInfo info{};
         info.friend_code_seed = node.friend_code_seed;
         info.network_node_id = node.network_node_id;
-        for (int i = 0; i < info.username.size(); ++i)
+        for (int i{}; i < info.username.size(); ++i)
             info.username[i] = node.username[i];
 
         buffer.insert(buffer.end(), reinterpret_cast<u8*>(&info),

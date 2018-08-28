@@ -95,7 +95,7 @@ void ConfigureCamera::connectEvents() {
 }
 
 void ConfigureCamera::updateCameraMode() {
-    CameraPosition pos = getCameraSelection();
+    CameraPosition pos{getCameraSelection()};
     // Set the visibility of the camera mode selection widgets
     if (pos == CameraPosition::RearBoth) {
         ui->camera_position->setHidden(true);
@@ -226,21 +226,21 @@ void ConfigureCamera::timerEvent(QTimerEvent* event) {
         timer_id = 0;
         return;
     }
-    std::vector<u16> frame = previewing_camera->ReceiveFrame();
-    int width = ui->preview_box->size().width();
-    int height = width * 0.75;
+    std::vector<u16> frame{previewing_camera->ReceiveFrame()};
+    int width{ui->preview_box->size().width()};
+    int height{static_cast<int>(width * 0.75)};
     if (width != preview_width || height != preview_height) {
         stopPreviewing();
         return;
     }
-    QImage image(width, height, QImage::Format::Format_RGB16);
+    QImage image{width, height, QImage::Format::Format_RGB16};
     std::memcpy(image.bits(), frame.data(), width * height * sizeof(u16));
     ui->preview_box->setPixmap(QPixmap::fromImage(image));
 }
 
 void ConfigureCamera::setConfiguration() {
-    int index = getSelectedCameraIndex();
-    for (int i = 0; i < Implementations.size(); i++) {
+    int index{getSelectedCameraIndex()};
+    for (int i{}; i < Implementations.size(); i++) {
         if (Implementations[i] == camera_name[index]) {
             ui->image_source->setCurrentIndex(i);
         }

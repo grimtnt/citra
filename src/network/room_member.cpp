@@ -18,8 +18,8 @@ constexpr u32 ConnectionTimeoutMs = 5000;
 
 class RoomMember::RoomMemberImpl {
 public:
-    ENetHost* client = nullptr; ///< ENet network interface.
-    ENetPeer* server = nullptr; ///< The server peer the client is connected to
+    ENetHost* client{};         ///< ENet network interface.
+    ENetPeer* server{}; ///< The server peer the client is connected to
 
     /// Information about the clients connected to the same room as us.
     MemberList member_information;

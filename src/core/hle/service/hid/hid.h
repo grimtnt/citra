@@ -313,13 +313,13 @@ private:
     Kernel::SharedPtr<Kernel::Event> event_gyroscope;
     Kernel::SharedPtr<Kernel::Event> event_debug_pad;
 
-    u32 next_pad_index = 0;
-    u32 next_touch_index = 0;
-    u32 next_accelerometer_index = 0;
-    u32 next_gyroscope_index = 0;
+    u32 next_pad_index{};
+    u32 next_touch_index{};
+    u32 next_accelerometer_index{};
+    u32 next_gyroscope_index{};
 
-    int enable_accelerometer_count = 0; // positive means enabled
-    int enable_gyroscope_count = 0;     // positive means enabled
+    int enable_accelerometer_count{}; // positive means enabled
+    int enable_gyroscope_count{};     // positive means enabled
 
     CoreTiming::EventType* pad_update_event;
     CoreTiming::EventType* accelerometer_update_event;
@@ -332,18 +332,18 @@ private:
     std::unique_ptr<Input::AnalogDevice> circle_pad;
     std::unique_ptr<Input::MotionDevice> motion_device;
     std::unique_ptr<Input::TouchDevice> touch_device;
-    u32 override_pad_state = 0;
-    s16 override_touch_x = 0;
-    s16 override_touch_y = 0;
+    u32 override_pad_state{};
+    s16 override_touch_x{};
+    s16 override_touch_y{};
     bool override_touch_valid = false;
-    s16 override_motion_x = 0;
-    s16 override_motion_y = 0;
-    s16 override_motion_z = 0;
-    s16 override_motion_roll = 0;
-    s16 override_motion_pitch = 0;
-    s16 override_motion_yaw = 0;
-    s16 override_circle_x = 0;
-    s16 override_circle_y = 0;
+    s16 override_motion_x{};
+    s16 override_motion_y{};
+    s16 override_motion_z{};
+    s16 override_motion_roll{};
+    s16 override_motion_pitch{};
+    s16 override_motion_yaw{};
+    s16 override_circle_x{};
+    s16 override_circle_y{};
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);

@@ -7,7 +7,7 @@
 #include "core/arm/skyeye_common/vfp/vfp.h"
 
 char trans_cache_buf[TRANS_CACHE_SIZE];
-size_t trans_cache_buf_top = 0;
+size_t trans_cache_buf_top{};
 
 static void* AllocBuffer(size_t size) {
     size_t start = trans_cache_buf_top;

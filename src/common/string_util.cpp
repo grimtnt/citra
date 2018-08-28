@@ -68,9 +68,7 @@ bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list ar
     // will be present in the middle of a multibyte sequence.
     //
     // This is why we lookup an ANSI (cp1252) locale here and use _vsnprintf_l.
-    static locale_t c_locale = nullptr;
-    if (!c_locale)
-        c_locale = _create_locale(LC_ALL, ".1252");
+    static locale_t c_locale{}(!c_locale)c_locale = _create_locale(LC_ALL, ".1252");
     writtenCount = _vsnprintf_l(out, outsize, format, c_locale, args);
 #else
     writtenCount = vsnprintf(out, outsize, format, args);
@@ -87,9 +85,9 @@ bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list ar
 
 std::string StringFromFormat(const char* format, ...) {
     va_list args;
-    char* buf = nullptr;
+    char* buf{};
 #ifdef _WIN32
-    int required = 0;
+    int required{};
 
     va_start(args, format);
     required = _vscprintf(format, args);
@@ -116,7 +114,7 @@ std::string ArrayToString(const u8* data, size_t size, int line_len, bool spaces
     std::ostringstream oss;
     oss << std::setfill('0') << std::hex;
 
-    for (int line = 0; size; ++data, --size) {
+    for (int line{}; size; ++data, --size) {
         oss << std::setw(2) << (int)*data;
 
         if (line_len == ++line) {
@@ -150,7 +148,7 @@ std::string StripQuotes(const std::string& s) {
 }
 
 bool TryParse(const std::string& str, u32* const output) {
-    char* endptr = nullptr;
+    char* endptr{};
 
     // Reset errno to a value other than ERANGE
     errno = 0;
@@ -243,7 +241,7 @@ void SplitString(const std::string& str, const char delim, std::vector<std::stri
 }
 
 std::string TabsToSpaces(int tab_size, std::string in) {
-    size_t i = 0;
+    size_t i{};
 
     while ((i = in.find('\t')) != std::string::npos) {
         in.replace(i, 1, tab_size, ' ');
@@ -253,7 +251,7 @@ std::string TabsToSpaces(int tab_size, std::string in) {
 }
 
 std::string ReplaceAll(std::string result, const std::string& src, const std::string& dest) {
-    size_t pos = 0;
+    size_t pos{};
 
     if (src == dest)
         return result;
@@ -453,7 +451,7 @@ std::string SHIFTJISToUTF8(const std::string& input) {
 #endif
 
 std::string StringFromFixedZeroTerminatedBuffer(const char* buffer, size_t max_len) {
-    size_t len = 0;
+    size_t len{};
     while (len < max_len && buffer[len] != '\0')
         ++len;
 

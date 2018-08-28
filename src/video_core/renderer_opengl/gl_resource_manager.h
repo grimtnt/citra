@@ -43,7 +43,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLSampler : private NonCopyable {
@@ -78,7 +78,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLShader : private NonCopyable {
@@ -112,7 +112,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLProgram : private NonCopyable {
@@ -155,7 +155,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLPipeline : private NonCopyable {
@@ -187,7 +187,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLBuffer : private NonCopyable {
@@ -222,7 +222,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLSync : private NonCopyable {
@@ -255,7 +255,7 @@ public:
         handle = 0;
     }
 
-    GLsync handle = 0;
+    GLsync handle{};
 };
 
 class OGLVertexArray : private NonCopyable {
@@ -290,7 +290,7 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };
 
 class OGLFramebuffer : private NonCopyable {
@@ -325,5 +325,5 @@ public:
         handle = 0;
     }
 
-    GLuint handle = 0;
+    GLuint handle{};
 };

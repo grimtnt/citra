@@ -203,7 +203,7 @@ struct ShaderSetup {
     struct EngineData {
         unsigned int entry_point;
         /// Used by the JIT, points to a compiled shader object.
-        const void* cached_shader = nullptr;
+        const void* cached_shader{};
     } engine_data;
 
     void MarkProgramCodeDirty() {

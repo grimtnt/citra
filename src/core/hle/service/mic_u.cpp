@@ -197,20 +197,20 @@ struct MIC_U::Impl {
         LOG_WARNING(Service_MIC, "(STUBBED) called, version: 0x{:08X}", version);
     }
 
-    u32 client_version = 0;
-    Kernel::SharedPtr<Kernel::Event> buffer_full_event =
-        Kernel::Event::Create(Kernel::ResetType::OneShot, "MIC_U::buffer_full_event");
-    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
-    u8 mic_gain = 0;
-    bool mic_power = false;
-    bool is_sampling = false;
-    bool allow_shell_closed;
-    bool clamp = false;
-    Encoding encoding = Encoding::PCM8;
-    SampleRate sample_rate = SampleRate::SampleRate32730;
-    s32 audio_buffer_offset = 0;
-    u32 audio_buffer_size = 0;
-    bool audio_buffer_loop = false;
+    u32 client_version{};
+    Kernel::SharedPtr<Kernel::Event> buffer_full_event{
+        Kernel::Event::Create(Kernel::ResetType::OneShot, "MIC_U::buffer_full_event")};
+    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory{};
+    u8 mic_gain{};
+    bool mic_power{};
+    bool is_sampling{};
+    bool allow_shell_closed{};
+    bool clamp{};
+    Encoding encoding{Encoding::PCM8};
+    SampleRate sample_rate{SampleRate::SampleRate32730};
+    s32 audio_buffer_offset{};
+    u32 audio_buffer_size{};
+    bool audio_buffer_loop{};
 };
 
 void MIC_U::MapSharedMem(Kernel::HLERequestContext& ctx) {

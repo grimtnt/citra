@@ -58,9 +58,9 @@ private:
     void StartCommunication(const std::string& host, u16 port, u8 pad_index, u32 client_id);
 
     std::unique_ptr<Socket> socket;
-    std::shared_ptr<DeviceStatus> status;
+    std::shared_ptr<DeviceStatus> status{};
     std::thread thread;
-    u64 packet_sequence = 0;
+    u64 packet_sequence{};
 };
 
 /// An async job allowing configuration of the touchpad calibration.

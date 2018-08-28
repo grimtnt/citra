@@ -54,8 +54,8 @@ private:
     std::unique_ptr<DynarmicUserCallbacks> cb;
     std::unique_ptr<Dynarmic::A32::Jit> MakeJit();
 
-    Dynarmic::A32::Jit* jit = nullptr;
-    Memory::PageTable* current_page_table = nullptr;
+    Dynarmic::A32::Jit* jit{};
+    Memory::PageTable* current_page_table{};
     std::map<Memory::PageTable*, std::unique_ptr<Dynarmic::A32::Jit>> jits;
     std::shared_ptr<ARMul_State> interpreter_state;
 };

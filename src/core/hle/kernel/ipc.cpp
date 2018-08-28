@@ -33,7 +33,7 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
     std::array<u32, IPC::COMMAND_BUFFER_LENGTH> cmd_buf;
     Memory::ReadBlock(*src_process, src_address, cmd_buf.data(), command_size * sizeof(u32));
 
-    size_t i = untranslated_size;
+    size_t i{untranslated_size};
     while (i < command_size) {
         u32 descriptor = cmd_buf[i];
         i += 1;
@@ -49,12 +49,12 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
                                   ErrorSummary::InvalidState, ErrorLevel::Status);
             }
 
-            for (u32 j = 0; j < num_handles; ++j) {
+            for (u32 j{}; j < num_handles; ++j) {
                 Handle handle = cmd_buf[i];
-                SharedPtr<Object> object = nullptr;
-                // Perform pseudo-handle detection here because by the time this function is called,
-                // the current thread and process are no longer the ones which created this IPC
-                // request, but the ones that are handling it.
+                SharedPtr<Object> object{}; // Perform pseudo-handle detection here because by the
+                                            // time this function is called, the current thread and
+                                            // process are no longer the ones which created this IPC
+                                            // request, but the ones that are handling it.
                 if (handle == CurrentThread) {
                     object = src_thread;
                 } else if (handle == CurrentProcess) {
@@ -145,7 +145,7 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
                 break;
             }
 
-            VAddr target_address = 0;
+            VAddr target_address{};
 
             auto IsPageAligned = [](VAddr address) -> bool {
                 return (address & Memory::PAGE_MASK) == 0;

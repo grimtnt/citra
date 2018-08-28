@@ -22,9 +22,9 @@ public:
     bool IsPreviewAvailable() override;
 
 private:
-    int width = 0;
-    int height = 0;
-    bool output_rgb = false;
+    int width{};
+    int height{};
+    bool output_rgb{};
 };
 
 } // namespace Camera

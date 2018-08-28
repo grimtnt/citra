@@ -11,7 +11,7 @@ namespace Log {
 namespace {
 template <typename It>
 Level GetLevelByName(const It begin, const It end) {
-    for (u8 i = 0; i < static_cast<u8>(Level::Count); ++i) {
+    for (u8 i{}; i < static_cast<u8>(Level::Count); ++i) {
         const char* level_name = GetLevelName(static_cast<Level>(i));
         if (Common::ComparePartialString(begin, end, level_name)) {
             return static_cast<Level>(i);
@@ -22,7 +22,7 @@ Level GetLevelByName(const It begin, const It end) {
 
 template <typename It>
 Class GetClassByName(const It begin, const It end) {
-    for (u8 i = 0; i < static_cast<u8>(Class::Count); ++i) {
+    for (u8 i{}; i < static_cast<u8>(Class::Count); ++i) {
         const char* level_name = GetLogClassName(static_cast<Class>(i));
         if (Common::ComparePartialString(begin, end, level_name)) {
             return static_cast<Class>(i);

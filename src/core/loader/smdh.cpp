@@ -34,8 +34,8 @@ std::vector<u16> SMDH::GetIcon(bool large) const {
     }
 
     std::vector<u16> icon(size * size);
-    for (u32 x = 0; x < size; ++x) {
-        for (u32 y = 0; y < size; ++y) {
+    for (u32 x{}; x < size; ++x) {
+        for (u32 y{}; y < size; ++y) {
             u32 coarse_y = y & ~7;
             const u8* pixel = icon_data + VideoCore::GetMortonOffset(x, y, 2) + coarse_y * size * 2;
             icon[x + size * y] = (pixel[1] << 8) + pixel[0];
@@ -54,7 +54,7 @@ SMDH::GameRegion SMDH::GetRegion() const {
     }
 
     constexpr u32 REGION_COUNT{7};
-    for (u32 region = 0; region < REGION_COUNT; ++region) {
+    for (u32 region{}; region < REGION_COUNT; ++region) {
         if (region_lockout & (1 << region)) {
             return static_cast<GameRegion>(region);
         }

@@ -61,7 +61,7 @@ AESKey HexToKey(const std::string& hex) {
     }
 
     AESKey key;
-    for (size_t i = 0; i < key.size(); ++i) {
+    for (size_t i{}; i < key.size(); ++i) {
         key[i] = static_cast<u8>(std::stoi(hex.substr(i * 2, 2), 0, 16));
     }
 

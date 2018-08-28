@@ -80,7 +80,7 @@ Loader::ResultStatus TitleMetadata::Load(const std::vector<u8> file_data, size_t
         return Loader::ResultStatus::ErrorInvalidFormat;
     }
 
-    for (u16 i = 0; i < tmd_body.content_count; i++) {
+    for (u16 i{}; i < tmd_body.content_count; i++) {
         ContentChunk chunk{};
 
         memcpy(&chunk, &file_data[offset + body_end + (i * sizeof(ContentChunk))],
@@ -120,13 +120,13 @@ Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
     tmd_body.contentinfo[0].command_count = static_cast<u16>(tmd_chunks.size());
 
     CryptoPP::SHA256 chunk_hash{};
-    for (u16 i = 0; i < tmd_body.content_count; i++) {
+    for (u16 i{}; i < tmd_body.content_count; i++) {
         chunk_hash.Update(reinterpret_cast<u8*>(&tmd_chunks[i]), sizeof(ContentChunk));
     }
     chunk_hash.Final(tmd_body.contentinfo[0].hash.data());
 
     CryptoPP::SHA256 contentinfo_hash{};
-    for (size_t i = 0; i < tmd_body.contentinfo.size(); i++) {
+    for (size_t i{}; i < tmd_body.contentinfo.size(); i++) {
         chunk_hash.Update(reinterpret_cast<u8*>(&tmd_body.contentinfo[i]), sizeof(ContentInfo));
     }
     chunk_hash.Final(tmd_body.contentinfo_hash.data());
@@ -135,7 +135,7 @@ Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
     if (file.WriteBytes(&tmd_body, sizeof(TitleMetadata::Body)) != sizeof(TitleMetadata::Body))
         return Loader::ResultStatus::Error;
 
-    for (u16 i = 0; i < tmd_body.content_count; i++) {
+    for (u16 i{}; i < tmd_body.content_count; i++) {
         ContentChunk chunk{tmd_chunks[i]};
         if (file.WriteBytes(&chunk, sizeof(ContentChunk)) != sizeof(ContentChunk))
             return Loader::ResultStatus::Error;
@@ -213,7 +213,7 @@ void TitleMetadata::Print() const {
 
     // Content info describes ranges of content chunks
     LOG_DEBUG(Service_FS, "Content info:");
-    for (size_t i = 0; i < tmd_body.contentinfo.size(); i++) {
+    for (size_t i{}; i < tmd_body.contentinfo.size(); i++) {
         if (tmd_body.contentinfo[i].command_count == 0)
             break;
 
@@ -223,7 +223,7 @@ void TitleMetadata::Print() const {
     }
 
     // For each content info, print their content chunk range
-    for (size_t i = 0; i < tmd_body.contentinfo.size(); i++) {
+    for (size_t i{}; i < tmd_body.contentinfo.size(); i++) {
         u16 index{static_cast<u16>(tmd_body.contentinfo[i].index)};
         u16 count{static_cast<u16>(tmd_body.contentinfo[i].command_count)};
 

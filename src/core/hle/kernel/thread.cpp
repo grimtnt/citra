@@ -28,7 +28,7 @@
 namespace Kernel {
 
 /// Event type for the thread wake up event
-static CoreTiming::EventType* ThreadWakeupEventType = nullptr;
+static CoreTiming::EventType* ThreadWakeupEventType{};
 
 bool Thread::ShouldWait(Thread* thread) const {
     return status != THREADSTATUS_DEAD;
@@ -38,7 +38,8 @@ void Thread::Acquire(Thread* thread) {
     ASSERT_MSG(!ShouldWait(thread), "object unavailable!");
 }
 
-// TODO(yuriks): This can be removed if Thread objects are explicitly pooled in the future, allowing
+// TODO(yuriks): This can be removed if Thread objects are explicitly pooled in the future,
+// allowing
 //               us to simply use a pool index or similar.
 static Kernel::HandleTable wakeup_callback_handle_table;
 
@@ -309,11 +310,11 @@ static void DebugThreadQueue() {
 static std::tuple<std::size_t, std::size_t, bool> GetFreeThreadLocalSlot(
     const std::vector<std::bitset<8>>& tls_slots) {
     // Iterate over all the allocated pages, and try to find one where not all slots are used.
-    for (std::size_t page = 0; page < tls_slots.size(); ++page) {
+    for (std::size_t page{}; page < tls_slots.size(); ++page) {
         const auto& page_tls_slots = tls_slots[page];
         if (!page_tls_slots.all()) {
             // We found a page with at least one free slot, find which slot it is
-            for (std::size_t slot = 0; slot < page_tls_slots.size(); ++slot) {
+            for (std::size_t slot{}; slot < page_tls_slots.size(); ++slot) {
                 if (!page_tls_slots.test(slot)) {
                     return std::make_tuple(page, slot, false);
                 }

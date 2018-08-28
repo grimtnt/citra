@@ -33,7 +33,7 @@ void WaitObject::RemoveWaitingThread(Thread* thread) {
 }
 
 SharedPtr<Thread> WaitObject::GetHighestPriorityReadyThread() {
-    Thread* candidate = nullptr;
+    Thread* candidate{};
     u32 candidate_priority = THREADPRIO_LOWEST + 1;
 
     for (const auto& thread : waiting_threads) {

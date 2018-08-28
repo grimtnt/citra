@@ -55,7 +55,7 @@ RasterizerOpenGL::RasterizerOpenGL(EmuWindow& window)
     state.clip_distance[0] = true;
 
     // Create sampler objects
-    for (size_t i = 0; i < texture_samplers.size(); ++i) {
+    for (size_t i{}; i < texture_samplers.size(); ++i) {
         texture_samplers[i].Create();
         state.texture_units[i].sampler = texture_samplers[i].sampler.handle;
     }
@@ -174,11 +174,11 @@ void RasterizerOpenGL::SyncEntireState() {
     SyncAlphaTest();
     SyncCombinerColor();
     auto& tev_stages = Pica::g_state.regs.texturing.GetTevStages();
-    for (std::size_t index = 0; index < tev_stages.size(); ++index)
+    for (std::size_t index{}; index < tev_stages.size(); ++index)
         SyncTevConstColor(index, tev_stages[index]);
 
     SyncGlobalAmbient();
-    for (unsigned light_index = 0; light_index < 8; light_index++) {
+    for (unsigned light_index{}; light_index < 8; light_index++) {
         SyncLightSpecular0(light_index);
         SyncLightSpecular1(light_index);
         SyncLightDiffuse(light_index);
@@ -257,7 +257,7 @@ RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_i
         vertex_max = 0;
         std::size_t size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
         res_cache.FlushRegion(address, size, nullptr);
-        for (u32 index = 0; index < regs.pipeline.num_vertices; ++index) {
+        for (u32 index{}; index < regs.pipeline.num_vertices; ++index) {
             u32 vertex = index_u16 ? index_address_16[index] : index_address_8[index];
             vertex_min = std::min(vertex_min, vertex);
             vertex_max = std::max(vertex_max, vertex);
@@ -268,7 +268,7 @@ RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_i
     }
 
     u32 vertex_num = vertex_max - vertex_min + 1;
-    u32 vs_input_size = 0;
+    u32 vs_input_size{};
     for (auto& loader : vertex_attributes.attribute_loaders) {
         if (loader.component_count != 0) {
             vs_input_size += loader.byte_count * vertex_num;
@@ -295,8 +295,8 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
             continue;
         }
 
-        u32 offset = 0;
-        for (u32 comp = 0; comp < loader.component_count && comp < 12; ++comp) {
+        u32 offset{};
+        for (u32 comp{}; comp < loader.component_count && comp < 12; ++comp) {
             u32 attribute_index = loader.GetComponent(comp);
             if (attribute_index < 12) {
                 if (vertex_attributes.GetNumElements(attribute_index) != 0) {
@@ -335,7 +335,7 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
         buffer_offset += data_size;
     }
 
-    for (std::size_t i = 0; i < enable_attributes.size(); ++i) {
+    for (std::size_t i{}; i < enable_attributes.size(); ++i) {
         if (enable_attributes[i] != hw_vao_enabled_attributes[i]) {
             if (enable_attributes[i]) {
                 glEnableVertexAttribArray(i);
@@ -628,7 +628,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
 
     // Sync and bind the texture surfaces
     const auto pica_textures = regs.texturing.GetTextures();
-    for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
+    for (unsigned texture_index{}; texture_index < pica_textures.size(); ++texture_index) {
         const auto& texture = pica_textures[texture_index];
 
         if (texture.enabled) {
@@ -783,7 +783,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
         state.Apply();
 
         std::size_t max_vertices = 3 * (VERTEX_BUFFER_SIZE / (3 * sizeof(HardwareVertex)));
-        for (std::size_t base_vertex = 0; base_vertex < vertex_batch.size();
+        for (std::size_t base_vertex{}; base_vertex < vertex_batch.size();
              base_vertex += max_vertices) {
             std::size_t vertices = std::min(max_vertices, vertex_batch.size() - base_vertex);
             std::size_t vertex_size = vertices * sizeof(HardwareVertex);
@@ -800,7 +800,7 @@ bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
     vertex_batch.clear();
 
     // Reset textures in rasterizer state context because the rasterizer cache might delete them
-    for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
+    for (unsigned texture_index{}; texture_index < pica_textures.size(); ++texture_index) {
         state.texture_units[texture_index].texture_2d = 0;
     }
     state.texture_cube_unit.texture_cube = 0;
@@ -1910,13 +1910,13 @@ void RasterizerOpenGL::SyncAndUploadLUTs() {
     u8* buffer;
     GLintptr offset;
     bool invalidate;
-    size_t bytes_used = 0;
+    size_t bytes_used{};
     glBindBuffer(GL_TEXTURE_BUFFER, texture_buffer.GetHandle());
     std::tie(buffer, offset, invalidate) = texture_buffer.Map(max_size, sizeof(GLvec4));
 
     // Sync the lighting luts
     if (uniform_block_data.lighting_lut_dirty_any || invalidate) {
-        for (unsigned index = 0; index < uniform_block_data.lighting_lut_dirty.size(); index++) {
+        for (unsigned index{}; index < uniform_block_data.lighting_lut_dirty.size(); index++) {
             if (uniform_block_data.lighting_lut_dirty[index] || invalidate) {
                 std::array<GLvec2, 256> new_data;
                 const auto& source_lut = Pica::g_state.lighting.luts[index];
@@ -2059,7 +2059,7 @@ void RasterizerOpenGL::UploadUniforms(bool accelerate_draw, bool use_gs) {
 
     size_t uniform_size =
         uniform_size_aligned_vs + uniform_size_aligned_gs + uniform_size_aligned_fs;
-    size_t used_bytes = 0;
+    size_t used_bytes{};
     u8* uniforms;
     GLintptr offset;
     bool invalidate;

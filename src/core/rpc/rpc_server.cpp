@@ -107,8 +107,8 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
 
     if (ValidatePacket(request_packet->GetHeader())) {
         // Currently, all request types use the address/data_size wire format
-        u32 address = 0;
-        u32 data_size = 0;
+        u32 address{};
+        u32 data_size{};
         std::memcpy(&address, request_packet->GetPacketData().data(), sizeof(address));
         std::memcpy(&data_size, request_packet->GetPacketData().data() + sizeof(address),
                     sizeof(data_size));

@@ -135,7 +135,7 @@ void AppLoader_NCCH::ParseRegionLockoutInfo() {
         memcpy(&smdh, smdh_buffer.data(), sizeof(SMDH));
         u32 region_lockout = smdh.region_lockout;
         constexpr u32 REGION_COUNT = 7;
-        for (u32 region = 0; region < REGION_COUNT; ++region) {
+        for (u32 region{}; region < REGION_COUNT; ++region) {
             if (region_lockout & 1) {
                 Service::CFG::GetCurrentModule()->SetPreferredRegionCode(region);
                 break;

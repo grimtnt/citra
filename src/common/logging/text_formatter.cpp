@@ -45,7 +45,8 @@ void PrintColoredMessage(const Entry& entry) {
     CONSOLE_SCREEN_BUFFER_INFO original_info = {};
     GetConsoleScreenBufferInfo(console_handle, &original_info);
 
-    WORD color = 0;
+    WORD color {}
+    switch (entry.log_level) {
     switch (entry.log_level) {
     case Level::Trace: // Grey
         color = FOREGROUND_INTENSITY;

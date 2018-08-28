@@ -337,7 +337,7 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
     using ObjectPtr = SharedPtr<WaitObject>;
     std::vector<ObjectPtr> objects(handle_count);
 
-    for (int i = 0; i < handle_count; ++i) {
+    for (int i{}; i < handle_count; ++i) {
         Handle handle = Memory::Read32(handles_address + i * sizeof(Handle));
         auto object = g_handle_table.Get<WaitObject>(handle);
         if (object == nullptr)
@@ -425,7 +425,7 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
         thread->status = THREADSTATUS_WAIT_SYNCH_ANY;
 
         // Add the thread to each of the objects' waiting threads.
-        for (size_t i = 0; i < objects.size(); ++i) {
+        for (size_t i{}; i < objects.size(); ++i) {
             WaitObject* object = objects[i].get();
             object->AddWaitingThread(thread);
         }
@@ -503,7 +503,7 @@ static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_
     using ObjectPtr = SharedPtr<WaitObject>;
     std::vector<ObjectPtr> objects(handle_count);
 
-    for (int i = 0; i < handle_count; ++i) {
+    for (int i{}; i < handle_count; ++i) {
         Handle handle = Memory::Read32(handles_address + i * sizeof(Handle));
         auto object = g_handle_table.Get<WaitObject>(handle);
         if (object == nullptr)
@@ -582,7 +582,7 @@ static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_
     thread->status = THREADSTATUS_WAIT_SYNCH_ANY;
 
     // Add the thread to each of the objects' waiting threads.
-    for (size_t i = 0; i < objects.size(); ++i) {
+    for (size_t i{}; i < objects.size(); ++i) {
         WaitObject* object = objects[i].get();
         object->AddWaitingThread(thread);
     }
@@ -692,7 +692,7 @@ static ResultCode GetResourceLimitCurrentValues(VAddr values, Handle resource_li
     if (resource_limit == nullptr)
         return ERR_INVALID_HANDLE;
 
-    for (unsigned int i = 0; i < name_count; ++i) {
+    for (unsigned int i{}; i < name_count; ++i) {
         u32 name = Memory::Read32(names + i * sizeof(u32));
         s64 value = resource_limit->GetCurrentResourceValue(name);
         Memory::Write64(values + i * sizeof(u64), value);
@@ -712,7 +712,7 @@ static ResultCode GetResourceLimitLimitValues(VAddr values, Handle resource_limi
     if (resource_limit == nullptr)
         return ERR_INVALID_HANDLE;
 
-    for (unsigned int i = 0; i < name_count; ++i) {
+    for (unsigned int i{}; i < name_count; ++i) {
         u32 name = Memory::Read32(names + i * sizeof(u32));
         s64 value = resource_limit->GetMaxResourceValue(name);
         Memory::Write64(values + i * sizeof(u64), value);

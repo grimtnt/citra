@@ -173,8 +173,8 @@ void Client::OnPadData(Response::PadData data) {
         // between a simple "tap" and a hard press that causes the touch screen to click.
         bool is_active = data.touch_1.is_active != 0;
 
-        float x = 0;
-        float y = 0;
+        float x{};
+        float y{};
 
         if (is_active && status->touch_calibration) {
             u16 min_x = status->touch_calibration->min_x;

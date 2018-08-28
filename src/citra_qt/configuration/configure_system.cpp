@@ -227,7 +227,7 @@ ConfigureSystem::ConfigureSystem(QWidget* parent)
             &ConfigureSystem::updateInitTime);
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::refreshConsoleID);
-    for (u8 i = 0; i < country_names.size(); i++) {
+    for (u8 i{}; i < country_names.size(); i++) {
         if (country_names.at(i) != "") {
             ui->combo_country->addItem(country_names.at(i), i);
         }

@@ -68,8 +68,8 @@ static Math::Vec4<u8> DecodePixel(Regs::PixelFormat input_format, const u8* src_
 }
 
 static void MemoryFill(const Regs::MemoryFillConfig& config) {
-    const PAddr start_addr = config.GetStartAddress();
-    const PAddr end_addr = config.GetEndAddress();
+    const PAddr start_addr{config.GetStartAddress()};
+    const PAddr end_addr{config.GetEndAddress()};
 
     // TODO: do hwtest with these cases
     if (!Memory::IsValidPhysicalAddress(start_addr)) {
@@ -88,8 +88,8 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
         return;
     }
 
-    u8* start = Memory::GetPhysicalPointer(start_addr);
-    u8* end = Memory::GetPhysicalPointer(end_addr);
+    u8* start{Memory::GetPhysicalPointer(start_addr)};
+    u8* end{Memory::GetPhysicalPointer(end_addr)};
 
     if (VideoCore::g_renderer->Rasterizer()->AccelerateFill(config))
         return;
@@ -109,7 +109,7 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
         if (end > start) {
             u32 value = config.value_32bit;
             size_t len = (end - start) / sizeof(u32);
-            for (size_t i = 0; i < len; ++i)
+            for (size_t i{}; i < len; ++i)
                 memcpy(&start[i * sizeof(u32)], &value, sizeof(u32));
         }
     } else {
@@ -187,8 +187,8 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     Memory::RasterizerFlushRegion(config.GetPhysicalInputAddress(), input_size);
     Memory::RasterizerInvalidateRegion(config.GetPhysicalOutputAddress(), output_size);
 
-    for (u32 y = 0; y < output_height; ++y) {
-        for (u32 x = 0; x < output_width; ++x) {
+    for (u32 y{}; y < output_height; ++y) {
+        for (u32 x{}; x < output_width; ++x) {
             Math::Vec4<u8> src_color;
 
             // Calculate the [x,y] position of the input image

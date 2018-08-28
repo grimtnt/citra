@@ -21,9 +21,9 @@ namespace Pica::Shader {
 void OutputVertex::ValidateSemantics(const RasterizerRegs& regs) {
     unsigned int num_attributes = regs.vs_output_total;
     ASSERT(num_attributes <= 7);
-    for (size_t attrib = 0; attrib < num_attributes; ++attrib) {
+    for (size_t attrib{}; attrib < num_attributes; ++attrib) {
         u32 output_register_map = regs.vs_output_attributes[attrib].raw;
-        for (size_t comp = 0; comp < 4; ++comp) {
+        for (size_t comp{}; comp < 4; ++comp) {
             u32 semantic = (output_register_map >> (8 * comp)) & 0x1F;
             ASSERT_MSG(semantic < 24 || semantic == RasterizerRegs::VSOutputAttributes::INVALID,
                        "Invalid/unknown semantic id: {}", semantic);
@@ -47,7 +47,7 @@ OutputVertex OutputVertex::FromAttributeBuffer(const RasterizerRegs& regs,
                   "Struct and array have different sizes.");
 
     unsigned int num_attributes = regs.vs_output_total & 7;
-    for (size_t attrib = 0; attrib < num_attributes; ++attrib) {
+    for (size_t attrib{}; attrib < num_attributes; ++attrib) {
         const auto output_register_map = regs.vs_output_attributes[attrib];
         vertex_slots_overflow[output_register_map.map_x] = input.attr[attrib][0];
         vertex_slots_overflow[output_register_map.map_y] = input.attr[attrib][1];
@@ -57,7 +57,7 @@ OutputVertex OutputVertex::FromAttributeBuffer(const RasterizerRegs& regs,
 
     // The hardware takes the absolute and saturates vertex colors like this, *before* doing
     // interpolation
-    for (unsigned i = 0; i < 4; ++i) {
+    for (unsigned i{}; i < 4; ++i) {
         float c = std::fabs(ret.color[i].ToFloat32());
         ret.color[i] = float24::FromFloat32(c < 1.0f ? c : 1.0f);
     }
@@ -68,7 +68,7 @@ OutputVertex OutputVertex::FromAttributeBuffer(const RasterizerRegs& regs,
 void UnitState::LoadInput(const ShaderRegs& config, const AttributeBuffer& input) {
     const unsigned max_attribute = config.max_input_attribute_index;
 
-    for (unsigned attr = 0; attr <= max_attribute; ++attr) {
+    for (unsigned attr{}; attr <= max_attribute; ++attr) {
         unsigned reg = config.GetRegisterForAttribute(attr);
         registers.input[reg] = input.attr[attr];
     }
@@ -76,7 +76,7 @@ void UnitState::LoadInput(const ShaderRegs& config, const AttributeBuffer& input
 
 static void CopyRegistersToOutput(const Math::Vec4<float24>* regs, u32 mask,
                                   AttributeBuffer& buffer) {
-    int output_i = 0;
+    int output_i{};
     for (int reg : Common::BitSet<u32>(mask)) {
         buffer.attr[output_i++] = regs[reg];
     }
@@ -104,7 +104,7 @@ void GSEmitter::Emit(Math::Vec4<float24> (&output_regs)[16]) {
     if (prim_emit) {
         if (winding)
             handlers->winding_setter();
-        for (size_t i = 0; i < buffer.size(); ++i) {
+        for (size_t i{}; i < buffer.size(); ++i) {
             handlers->vertex_handler(buffer[i]);
         }
     }

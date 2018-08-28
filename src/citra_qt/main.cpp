@@ -184,7 +184,7 @@ void GMainWindow::InitializeWidgets() {
 }
 
 void GMainWindow::InitializeRecentFileMenuActions() {
-    for (int i = 0; i < max_recent_files_item; ++i) {
+    for (int i{}; i < max_recent_files_item; ++i) {
         actions_recent_files[i] = new QAction(this);
         actions_recent_files[i]->setVisible(false);
         connect(actions_recent_files[i], &QAction::triggered, this, &GMainWindow::OnMenuRecentFile);
@@ -743,7 +743,7 @@ void GMainWindow::UpdateRecentFiles() {
     const int num_recent_files =
         std::min(UISettings::values.recent_files.size(), max_recent_files_item);
 
-    for (int i = 0; i < num_recent_files; i++) {
+    for (int i{}; i < num_recent_files; i++) {
         const QString text = QString("%1. %2").arg(i + 1).arg(
             QFileInfo(UISettings::values.recent_files[i]).fileName());
         actions_recent_files[i]->setText(text);

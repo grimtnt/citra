@@ -14,16 +14,16 @@ void RelocateSharedFont(Kernel::SharedPtr<Kernel::SharedMemory> shared_font, VAd
     CFNT cfnt;
     memcpy(&cfnt, cfnt_ptr, sizeof(cfnt));
 
-    u32 assumed_cmap_offset = 0;
-    u32 assumed_cwdh_offset = 0;
-    u32 assumed_tglp_offset = 0;
-    u32 first_cmap_offset = 0;
-    u32 first_cwdh_offset = 0;
-    u32 first_tglp_offset = 0;
+    u32 assumed_cmap_offset{};
+    u32 assumed_cwdh_offset{};
+    u32 assumed_tglp_offset{};
+    u32 first_cmap_offset{};
+    u32 first_cwdh_offset{};
+    u32 first_tglp_offset{};
 
     // First discover the location of sections so that the rebase offset can be auto-detected
     u32 current_offset = SharedFontStartOffset + cfnt.header_size;
-    for (unsigned block = 0; block < cfnt.num_blocks; ++block) {
+    for (unsigned block{}; block < cfnt.num_blocks; ++block) {
         const u8* data = shared_font->GetPointer(current_offset);
 
         SectionHeader section_header;
@@ -55,7 +55,7 @@ void RelocateSharedFont(Kernel::SharedPtr<Kernel::SharedMemory> shared_font, VAd
 
     // Reset pointer back to start of sections and do the actual rebase
     current_offset = SharedFontStartOffset + cfnt.header_size;
-    for (unsigned block = 0; block < cfnt.num_blocks; ++block) {
+    for (unsigned block{}; block < cfnt.num_blocks; ++block) {
         u8* data = shared_font->GetPointer(current_offset);
 
         SectionHeader section_header;

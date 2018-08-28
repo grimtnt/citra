@@ -30,7 +30,7 @@ void Source::MixInto(QuadFrame32& dest, size_t intermediate_mix_id) const {
         return;
 
     const std::array<float, 4>& gains{state.gain.at(intermediate_mix_id)};
-    for (size_t samplei = 0; samplei < samples_per_frame; samplei++) {
+    for (size_t samplei{}; samplei < samples_per_frame; samplei++) {
         // Conversion from stereo (current_frame) to quadraphonic (dest) occurs here.
         dest[samplei][0] += static_cast<s32>(gains[0] * current_frame[samplei][0]);
         dest[samplei][1] += static_cast<s32>(gains[1] * current_frame[samplei][1]);
@@ -194,7 +194,7 @@ void Source::ParseConfig(SourceConfiguration::Configuration& config,
 
     if (config.buffer_queue_dirty) {
         config.buffer_queue_dirty.Assign(0);
-        for (size_t i = 0; i < 4; i++) {
+        for (size_t i{}; i < 4; i++) {
             if (config.buffers_dirty & (1 << i)) {
                 const auto& b = config.buffers[i];
                 state.input_queue.emplace(Buffer{

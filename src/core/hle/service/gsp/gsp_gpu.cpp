@@ -52,7 +52,7 @@ constexpr u32 MaxGSPThreads = 4;
 static std::array<bool, MaxGSPThreads> used_thread_ids = {false, false, false, false};
 
 static u32 GetUnusedThreadId() {
-    for (u32 id = 0; id < MaxGSPThreads; ++id) {
+    for (u32 id{}; id < MaxGSPThreads; ++id) {
         if (!used_thread_ids[id])
             return id;
     }
@@ -123,7 +123,7 @@ static ResultCode WriteHWRegs(u32 base_address, u32 size_in_bytes, const std::ve
             LOG_ERROR(Service_GSP, "Misaligned size 0x{:08x}", size_in_bytes);
             return ERR_REGS_MISALIGNED;
         } else {
-            size_t offset = 0;
+            size_t offset{};
             while (size_in_bytes > 0) {
                 u32 value;
                 std::memcpy(&value, &data[offset], sizeof(u32));
@@ -167,7 +167,7 @@ static ResultCode WriteHWRegsWithMask(u32 base_address, u32 size_in_bytes,
             LOG_ERROR(Service_GSP, "Misaligned size 0x{:08x}", size_in_bytes);
             return ERR_REGS_MISALIGNED;
         } else {
-            size_t offset = 0;
+            size_t offset{};
             while (size_in_bytes > 0) {
                 const u32 reg_address = base_address + REGS_BEGIN;
 
@@ -242,7 +242,7 @@ void GSP_GPU::ReadHWRegs(Kernel::HLERequestContext& ctx) {
     }
 
     std::vector<u8> buffer(size);
-    for (u32 offset = 0; offset < size; ++offset) {
+    for (u32 offset{}; offset < size; ++offset) {
         HW::Read<u8>(buffer[offset], REGS_BEGIN + reg_addr + offset);
     }
 
@@ -417,7 +417,7 @@ void GSP_GPU::SignalInterrupt(InterruptId interrupt_id) {
     // Normal interrupts are only signaled for the active thread (ie, the thread that has the GPU
     // right), but the PDC0/1 interrupts are signaled for every registered thread.
     if (interrupt_id == InterruptId::PDC0 || interrupt_id == InterruptId::PDC1) {
-        for (u32 thread_id = 0; thread_id < MaxGSPThreads; ++thread_id) {
+        for (u32 thread_id{}; thread_id < MaxGSPThreads; ++thread_id) {
             SignalInterruptForThread(interrupt_id, thread_id);
         }
         return;
@@ -577,11 +577,11 @@ void GSP_GPU::TriggerCmdReqQueue(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xC, 0, 0};
 
     // Iterate through each thread's command queue...
-    for (unsigned thread_id = 0; thread_id < 0x4; ++thread_id) {
+    for (unsigned thread_id{}; thread_id < 0x4; ++thread_id) {
         CommandBuffer* command_buffer = (CommandBuffer*)GetCommandBuffer(shared_memory, thread_id);
 
         // Iterate through each command...
-        for (unsigned i = 0; i < command_buffer->number_commands; ++i) {
+        for (unsigned i{}; i < command_buffer->number_commands; ++i) {
             // Decode and execute command
             ExecuteCommand(command_buffer->commands[i], thread_id);
 
@@ -597,11 +597,11 @@ void GSP_GPU::TriggerCmdReqQueue(Kernel::HLERequestContext& ctx) {
 void GSP_GPU::ImportDisplayCaptureInfo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x18, 0, 0};
 
-    // TODO(Subv): We're always returning the framebuffer structures for thread_id = 0,
+    // TODO(Subv): We're always returning the framebuffer structures for thread_id 0,
     // because we only support a single running application at a time.
     // This should always return the framebuffer data that is currently displayed on the screen.
 
-    u32 thread_id = 0;
+    u32 thread_id{0};
 
     FrameBufferUpdate* top_screen = GetFrameBufferInfo(thread_id, 0);
     FrameBufferUpdate* bottom_screen = GetFrameBufferInfo(thread_id, 1);

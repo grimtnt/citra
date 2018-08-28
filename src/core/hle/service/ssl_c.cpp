@@ -28,8 +28,8 @@ void SSL_C::GenerateRandomData(Kernel::HLERequestContext& ctx) {
     auto buffer{rp.PopMappedBuffer()};
 
     // Fill the output buffer with random data.
-    u32 data = 0;
-    u32 i = 0;
+    u32 data{};
+    u32 i{};
     while (i < size) {
         if ((i % 4) == 0) {
             // The random number generator returns 4 bytes worth of data, so generate new random

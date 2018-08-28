@@ -55,8 +55,8 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
-    for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {
-        std::string default_param = InputCommon::GenerateKeyboardParam(default_buttons[i]);
+    for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
+        std::string default_param{InputCommon::GenerateKeyboardParam(default_buttons[i])};
         Settings::values.buttons[i] =
             qt_config
                 ->value(Settings::NativeButton::mapping[i], QString::fromStdString(default_param))
@@ -66,10 +66,10 @@ void Config::ReadValues() {
             Settings::values.buttons[i] = default_param;
     }
 
-    for (int i = 0; i < Settings::NativeAnalog::NumAnalogs; ++i) {
-        std::string default_param = InputCommon::GenerateAnalogParamFromKeys(
+    for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
+        std::string default_param{InputCommon::GenerateAnalogParamFromKeys(
             default_analogs[i][0], default_analogs[i][1], default_analogs[i][2],
-            default_analogs[i][3], default_analogs[i][4], 0.5f);
+            default_analogs[i][3], default_analogs[i][4], 0.5f)};
         Settings::values.analogs[i] =
             qt_config
                 ->value(Settings::NativeAnalog::mapping[i], QString::fromStdString(default_param))
@@ -227,7 +227,7 @@ void Config::ReadValues() {
     UISettings::values.game_dir_deprecated_deepscan =
         qt_config->value("gameListDeepScan", false).toBool();
     int size = qt_config->beginReadArray("gamedirs");
-    for (int i = 0; i < size; ++i) {
+    for (int i{}; i < size; ++i) {
         qt_config->setArrayIndex(i);
         UISettings::GameDir game_dir;
         game_dir.path = qt_config->value("path").toString();
@@ -303,11 +303,11 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
-    for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {
+    for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
         qt_config->setValue(QString::fromStdString(Settings::NativeButton::mapping[i]),
                             QString::fromStdString(Settings::values.buttons[i]));
     }
-    for (int i = 0; i < Settings::NativeAnalog::NumAnalogs; ++i) {
+    for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
         qt_config->setValue(QString::fromStdString(Settings::NativeAnalog::mapping[i]),
                             QString::fromStdString(Settings::values.analogs[i]));
     }
@@ -422,7 +422,7 @@ void Config::SaveValues() {
     qt_config->beginGroup("Paths");
     qt_config->setValue("romsPath", UISettings::values.roms_path);
     qt_config->beginWriteArray("gamedirs");
-    for (int i = 0; i < UISettings::values.game_dirs.size(); ++i) {
+    for (int i{}; i < UISettings::values.game_dirs.size(); ++i) {
         qt_config->setArrayIndex(i);
         const auto& game_dir = UISettings::values.game_dirs.at(i);
         qt_config->setValue("path", game_dir.path);

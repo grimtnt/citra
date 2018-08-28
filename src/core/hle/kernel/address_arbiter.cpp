@@ -95,7 +95,7 @@ ResultCode AddressArbiter::ArbitrateAddress(SharedPtr<Thread> thread, Arbitratio
             ResumeAllThreads(address);
         } else {
             // Resume first N threads
-            for (int i = 0; i < value; i++)
+            for (int i{}; i < value; i++)
                 ResumeHighestPriorityThread(address);
         }
         break;

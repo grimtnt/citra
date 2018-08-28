@@ -57,9 +57,9 @@ struct MemoryRegionInfo;
 
 struct CodeSet final : public Object {
     struct Segment {
-        size_t offset = 0;
-        VAddr addr = 0;
-        u32 size = 0;
+        size_t offset{};
+        VAddr addr{};
+        u32 size{};
     };
 
     static SharedPtr<CodeSet> Create(std::string name, u64 program_id);
@@ -146,9 +146,9 @@ public:
     boost::container::static_vector<AddressMapping, 8> address_mappings;
     ProcessFlags flags;
     /// Kernel compatibility version for this process
-    u16 kernel_version = 0;
+    u16 kernel_version{};
     /// The default CPU for this process, threads are scheduled on this cpu by default.
-    u8 ideal_processor = 0;
+    u8 ideal_processor{};
     /// Current status of the process
     ProcessStatus status;
 
@@ -177,11 +177,11 @@ public:
     // in the emulator address space, allowing Memory::GetPointer to be reasonably safe.
     std::shared_ptr<std::vector<u8>> heap_memory;
     // The left/right bounds of the address space covered by heap_memory.
-    VAddr heap_start = 0, heap_end = 0;
+    VAddr heap_start{}, heap_end{};
 
-    u32 heap_used = 0, linear_heap_used = 0, misc_memory_used = 0;
+    u32 heap_used{}, linear_heap_used{}, misc_memory_used{};
 
-    MemoryRegionInfo* memory_region = nullptr;
+    MemoryRegionInfo* memory_region{};
 
     /// The Thread Local Storage area is allocated as processes create threads,
     /// each TLS area is 0x200 bytes, so one page (0x1000) is split up in 8 parts, and each part

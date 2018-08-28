@@ -154,8 +154,8 @@ private:
     };
     static_assert(sizeof(Type0Command) == 0x20, "Type0Command structure size is wrong");
 
-    Kernel::SharedPtr<Kernel::Mutex> mutex = nullptr;
-    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory = nullptr;
+    Kernel::SharedPtr<Kernel::Mutex> mutex{};
+    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory{};
 
     static constexpr u32 MaxCaptureUnits = 2;
     std::array<bool, MaxCaptureUnits> capture_units = {false, false};

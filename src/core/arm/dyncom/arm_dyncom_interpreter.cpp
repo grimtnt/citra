@@ -342,7 +342,7 @@ static void LnSWoUB(ScaledRegisterPreIndexed)(ARMul_State* cpu, unsigned int ins
     unsigned int shift_imm = BITS(inst, 7, 11);
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int Rm = BITS(inst, 0, 3);
-    unsigned int index = 0;
+    unsigned int index{};
     unsigned int addr;
     unsigned int rm = CHECK_READ_REG15_WA(cpu, Rm);
     unsigned int rn = CHECK_READ_REG15_WA(cpu, Rn);
@@ -394,7 +394,7 @@ static void LnSWoUB(ScaledRegisterPostIndexed)(ARMul_State* cpu, unsigned int in
     unsigned int shift_imm = BITS(inst, 7, 11);
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int Rm = BITS(inst, 0, 3);
-    unsigned int index = 0;
+    unsigned int index{};
     unsigned int addr = CHECK_READ_REG15_WA(cpu, Rn);
     unsigned int rm = CHECK_READ_REG15_WA(cpu, Rm);
 
@@ -545,7 +545,7 @@ static void MLnS(RegisterPostIndexed)(ARMul_State* cpu, unsigned int inst,
 static void LdnStM(DecrementBefore)(ARMul_State* cpu, unsigned int inst, unsigned int& virt_addr) {
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int i = BITS(inst, 0, 15);
-    int count = 0;
+    int count{};
 
     while (i) {
         if (i & 1)
@@ -562,7 +562,7 @@ static void LdnStM(DecrementBefore)(ARMul_State* cpu, unsigned int inst, unsigne
 static void LdnStM(IncrementBefore)(ARMul_State* cpu, unsigned int inst, unsigned int& virt_addr) {
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int i = BITS(inst, 0, 15);
-    int count = 0;
+    int count{};
 
     while (i) {
         if (i & 1)
@@ -579,7 +579,7 @@ static void LdnStM(IncrementBefore)(ARMul_State* cpu, unsigned int inst, unsigne
 static void LdnStM(IncrementAfter)(ARMul_State* cpu, unsigned int inst, unsigned int& virt_addr) {
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int i = BITS(inst, 0, 15);
-    int count = 0;
+    int count{};
 
     while (i) {
         if (i & 1)
@@ -596,7 +596,7 @@ static void LdnStM(IncrementAfter)(ARMul_State* cpu, unsigned int inst, unsigned
 static void LdnStM(DecrementAfter)(ARMul_State* cpu, unsigned int inst, unsigned int& virt_addr) {
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int i = BITS(inst, 0, 15);
-    int count = 0;
+    int count{};
     while (i) {
         if (i & 1)
             count++;
@@ -618,7 +618,7 @@ static void LnSWoUB(ScaledRegisterOffset)(ARMul_State* cpu, unsigned int inst,
     unsigned int shift_imm = BITS(inst, 7, 11);
     unsigned int Rn = BITS(inst, 16, 19);
     unsigned int Rm = BITS(inst, 0, 3);
-    unsigned int index = 0;
+    unsigned int index{};
     unsigned int addr;
     unsigned int rm = CHECK_READ_REG15_WA(cpu, Rm);
     unsigned int rn = CHECK_READ_REG15_WA(cpu, Rn);
@@ -840,9 +840,9 @@ static int InterpreterTranslateBlock(ARMul_State* cpu, std::size_t& bb_start, u3
     // Allocate memory and init InsCream
     // Go on next, until terminal instruction
     // Save start addr of basicblock in CreamCache
-    ARM_INST_PTR inst_base = nullptr;
+    ARM_INST_PTR inst_base{};
     TransExtData ret = TransExtData::NON_BRANCH;
-    int size = 0; // instruction size of basic block
+    int size{}; // instruction size of basic block
     bb_start = trans_cache_buf_top;
 
     u32 phys_addr = addr;
@@ -867,7 +867,7 @@ static int InterpreterTranslateBlock(ARMul_State* cpu, std::size_t& bb_start, u3
 }
 
 static int InterpreterTranslateSingle(ARMul_State* cpu, std::size_t& bb_start, u32 addr) {
-    ARM_INST_PTR inst_base = nullptr;
+    ARM_INST_PTR inst_base{};
     bb_start = trans_cache_buf_top;
 
     u32 phys_addr = addr;
@@ -1591,7 +1591,7 @@ unsigned InterpreterMainLoop(ARMul_State* cpu) {
 #endif
     arm_inst* inst_base;
     unsigned int addr;
-    unsigned int num_instrs = 0;
+    unsigned int num_instrs{};
 
     std::size_t ptr;
 
@@ -1907,8 +1907,8 @@ CMP_INST : {
 }
 CPS_INST : {
     cps_inst* inst_cream = (cps_inst*)inst_base->component;
-    u32 aif_val = 0;
-    u32 aif_mask = 0;
+    u32 aif_val{};
+    u32 aif_mask{};
     if (cpu->InAPrivilegedMode()) {
         if (inst_cream->imod1) {
             if (inst_cream->A) {
@@ -1997,7 +1997,7 @@ LDM_INST : {
 
         unsigned int inst = inst_cream->inst;
         if (BIT(inst, 22) && !BIT(inst, 15)) {
-            for (int i = 0; i < 13; i++) {
+            for (int i{}; i < 13; i++) {
                 if (BIT(inst, i)) {
                     cpu->Reg[i] = cpu->ReadMemory32(addr);
                     addr += 4;
@@ -2020,7 +2020,7 @@ LDM_INST : {
                 addr += 4;
             }
         } else if (!BIT(inst, 22)) {
-            for (int i = 0; i < 16; i++) {
+            for (int i{}; i < 16; i++) {
                 if (BIT(inst, i)) {
                     unsigned int ret = cpu->ReadMemory32(addr);
 
@@ -2035,7 +2035,7 @@ LDM_INST : {
                 }
             }
         } else if (BIT(inst, 22) && BIT(inst, 15)) {
-            for (int i = 0; i < 15; i++) {
+            for (int i{}; i < 15; i++) {
                 if (BIT(inst, i)) {
                     cpu->Reg[i] = cpu->ReadMemory32(addr);
                     addr += 4;
@@ -2460,7 +2460,7 @@ MSR_INST : {
         }
         u32 byte_mask = (BIT(inst, 16) ? 0xff : 0) | (BIT(inst, 17) ? 0xff00 : 0) |
                         (BIT(inst, 18) ? 0xff0000 : 0) | (BIT(inst, 19) ? 0xff000000 : 0);
-        u32 mask = 0;
+        u32 mask{};
         if (!inst_cream->R) {
             if (cpu->InAPrivilegedMode()) {
                 if ((operand & StateMask) != 0) {
@@ -2615,7 +2615,7 @@ QSUB_INST : {
         const u32 rm_val = RM;
         const u32 rn_val = RN;
 
-        u32 result = 0;
+        u32 result{};
 
         // QADD
         if (op1 == 0x00) {
@@ -2691,8 +2691,8 @@ QSUBADDX_INST : {
         const u16 rn_hi = ((RN >> 16) & 0xFFFF);
         const u8 op2 = inst_cream->op2;
 
-        u16 lo_result = 0;
-        u16 hi_result = 0;
+        u16 lo_result{};
+        u16 hi_result{};
 
         // QADD16
         if (op2 == 0x00) {
@@ -2776,7 +2776,7 @@ RFE_INST : {
     // RFE is unconditional
     ldst_inst* const inst_cream = (ldst_inst*)inst_base->component;
 
-    u32 address = 0;
+    u32 address{};
     inst_cream->get_addr(cpu, inst_cream->inst, address);
 
     cpu->Cpsr = cpu->ReadMemory32(address);
@@ -2871,8 +2871,8 @@ SSUB16_INST : {
             const s16 rm_lo = (RM & 0xFFFF);
             const s16 rm_hi = ((RM >> 16) & 0xFFFF);
 
-            s32 lo_result = 0;
-            s32 hi_result = 0;
+            s32 lo_result{};
+            s32 hi_result{};
 
             // SADD16
             if (inst_cream->op2 == 0x00) {
@@ -3079,8 +3079,8 @@ SHSUBADDX_INST : {
         const u32 rn_val = RN;
 
         if (op2 == 0x00 || op2 == 0x01 || op2 == 0x02 || op2 == 0x03) {
-            s32 lo_result = 0;
-            s32 hi_result = 0;
+            s32 lo_result{};
+            s32 hi_result{};
 
             // SHADD16
             if (op2 == 0x00) {
@@ -3439,7 +3439,7 @@ SRS_INST : {
     // SRS is unconditional
     ldst_inst* const inst_cream = (ldst_inst*)inst_base->component;
 
-    u32 address = 0;
+    u32 address{};
     inst_cream->get_addr(cpu, inst_cream->inst, address);
 
     cpu->WriteMemory32(address + 0, cpu->Reg[14]);
@@ -3522,7 +3522,7 @@ STM_INST : {
 
         inst_cream->get_addr(cpu, inst_cream->inst, addr);
         if (BIT(inst_cream->inst, 22) == 1) {
-            for (int i = 0; i < 13; i++) {
+            for (int i{}; i < 13; i++) {
                 if (BIT(inst_cream->inst, i)) {
                     cpu->WriteMemory32(addr, cpu->Reg[i]);
                     addr += 4;
@@ -3548,7 +3548,7 @@ STM_INST : {
                 cpu->WriteMemory32(addr, cpu->Reg[15] + 8);
             }
         } else {
-            for (int i = 0; i < 15; i++) {
+            for (int i{}; i < 15; i++) {
                 if (BIT(inst_cream->inst, i)) {
                     if (i == Rn)
                         cpu->WriteMemory32(addr, old_RN);
@@ -3987,8 +3987,8 @@ USUBADDX_INST : {
         const u32 rm_val = RM;
         const u32 rn_val = RN;
 
-        s32 lo_result = 0;
-        s32 hi_result = 0;
+        s32 lo_result{};
+        s32 hi_result{};
 
         // UADD16
         if (op2 == 0x00) {
@@ -4157,8 +4157,8 @@ UHSUB16_INST : {
         const u8 op2 = inst_cream->op2;
 
         if (op2 == 0x00 || op2 == 0x01 || op2 == 0x02 || op2 == 0x03) {
-            u32 lo_val = 0;
-            u32 hi_val = 0;
+            u32 lo_val{};
+            u32 hi_val{};
 
             // UHADD16
             if (op2 == 0x00) {

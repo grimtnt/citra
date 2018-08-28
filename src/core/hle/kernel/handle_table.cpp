@@ -86,7 +86,7 @@ SharedPtr<Object> HandleTable::GetGeneric(Handle handle) const {
 }
 
 void HandleTable::Clear() {
-    for (u16 i = 0; i < MAX_COUNT; ++i) {
+    for (u16 i{}; i < MAX_COUNT; ++i) {
         generations[i] = i + 1;
         objects[i] = nullptr;
     }

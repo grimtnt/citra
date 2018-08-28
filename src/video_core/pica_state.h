@@ -138,7 +138,7 @@ struct State {
         // Used to buffer partial vertices for immediate-mode rendering.
         Shader::AttributeBuffer input_vertex;
         // Index of the next attribute to be loaded into `input_vertex`.
-        u32 current_attribute = 0;
+        u32 current_attribute{};
         // Indicates the immediate mode just started and the geometry pipeline needs to reconfigure
         bool reset_geometry_pipeline = true;
     } immediate;

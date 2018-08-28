@@ -19,8 +19,8 @@ public:
 
     bool touch_pressed = false; ///< True if touchpad area is currently pressed, otherwise false
 
-    float touch_x = 0.0f; ///< Touchpad X-position
-    float touch_y = 0.0f; ///< Touchpad Y-position
+    float touch_x{0.0f}; ///< Touchpad X-position
+    float touch_y{0.0f}; ///< Touchpad Y-position
 
 private:
     class Device : public Input::TouchDevice {

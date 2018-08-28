@@ -255,7 +255,7 @@ void CheatSearch::OnHexCheckedChanged(bool checked) {
 void CheatSearch::LoadTable(const std::vector<FoundItem>& items) {
     ui->tableFound->setRowCount(static_cast<int>(items.size()));
 
-    for (int i = 0; i < items.size(); i++) {
+    for (int i{}; i < items.size(); i++) {
         ui->tableFound->setItem(i, 0, new QTableWidgetItem(items[i].address.toUpper()));
         ui->tableFound->setItem(i, 1, new QTableWidgetItem(items[i].value));
         ui->tableFound->setRowHeight(i, 23);

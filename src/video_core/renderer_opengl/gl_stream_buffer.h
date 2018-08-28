@@ -37,9 +37,9 @@ private:
     bool coherent = false;
     bool persistent = false;
 
-    GLintptr buffer_pos = 0;
-    GLsizeiptr buffer_size = 0;
-    GLintptr mapped_offset = 0;
-    GLsizeiptr mapped_size = 0;
-    u8* mapped_ptr = nullptr;
+    GLintptr buffer_pos{};
+    GLsizeiptr buffer_size{};
+    GLintptr mapped_offset{};
+    GLsizeiptr mapped_size{};
+    u8* mapped_ptr {};
 };

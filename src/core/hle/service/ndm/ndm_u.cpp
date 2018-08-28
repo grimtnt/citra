@@ -60,7 +60,7 @@ void NDM_U::SuspendDaemons(Kernel::HLERequestContext& ctx) {
     u32 bit_mask{rp.Pop<u32>() & 0xF};
     daemon_bit_mask =
         static_cast<DaemonMask>(static_cast<u32>(default_daemon_bit_mask) & ~bit_mask);
-    for (std::size_t index = 0; index < daemon_status.size(); ++index) {
+    for (std::size_t index{}; index < daemon_status.size(); ++index) {
         if (bit_mask & (1 << index)) {
             daemon_status[index] = DaemonStatus::Suspended;
         }
@@ -75,7 +75,7 @@ void NDM_U::ResumeDaemons(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x07, 1, 0};
     u32 bit_mask{rp.Pop<u32>() & 0xF};
     daemon_bit_mask = static_cast<DaemonMask>(static_cast<u32>(daemon_bit_mask) & ~bit_mask);
-    for (std::size_t index = 0; index < daemon_status.size(); ++index) {
+    for (std::size_t index{}; index < daemon_status.size(); ++index) {
         if (bit_mask & (1 << index)) {
             daemon_status[index] = DaemonStatus::Idle;
         }
@@ -178,7 +178,7 @@ void NDM_U::OverrideDefaultDaemons(Kernel::HLERequestContext& ctx) {
     u32 bit_mask{rp.Pop<u32>() & 0xF};
     default_daemon_bit_mask = static_cast<DaemonMask>(bit_mask);
     daemon_bit_mask = default_daemon_bit_mask;
-    for (std::size_t index = 0; index < daemon_status.size(); ++index) {
+    for (std::size_t index{}; index < daemon_status.size(); ++index) {
         if (bit_mask & (1 << index)) {
             daemon_status[index] = DaemonStatus::Idle;
         }

@@ -143,7 +143,7 @@ void SendPacket(Network::WifiPacket& packet) {
  * currently-hosted UDS network.
  */
 static u16 GetNextAvailableNodeId() {
-    for (u16 index = 0; index < connection_status.max_nodes; ++index) {
+    for (u16 index{}; index < connection_status.max_nodes; ++index) {
         if ((connection_status.node_bitmask & (1 << index)) == 0)
             return index + 1;
     }
@@ -155,11 +155,11 @@ static u16 GetNextAvailableNodeId() {
 static void BroadcastNodeMap() {
     // Note: This is not how UDS on a 3ds does it but it shouldn't be
     // necessary for citra
-    Network::WifiPacket packet;
+    Network::WifiPacket packet{};
     packet.channel = network_channel;
     packet.type = Network::WifiPacket::PacketType::NodeMap;
     packet.destination_address = Network::BroadcastMac;
-    size_t size = node_map.size();
+    size_t size{node_map.size()};
     using node_t = decltype(node_map)::value_type;
     packet.data.resize(sizeof(size) + (sizeof(node_t::first) + sizeof(node_t::second)) * size);
     std::memcpy(packet.data.data(), &size, sizeof(size));
@@ -177,12 +177,12 @@ static void BroadcastNodeMap() {
 static void HandleNodeMapPacket(const Network::WifiPacket& packet) {
     std::lock_guard<std::mutex> lock(connection_status_mutex);
     node_map.clear();
-    size_t num_entries;
-    Network::MacAddress address;
-    u16 id;
+    size_t num_entries{};
+    Network::MacAddress address{};
+    u16 id{};
     std::memcpy(&num_entries, packet.data.data(), sizeof(num_entries));
-    size_t offset = sizeof(num_entries);
-    for (size_t i = 0; i < num_entries; ++i) {
+    size_t offset{sizeof(num_entries)};
+    for (size_t i{}; i < num_entries; ++i) {
         std::memcpy(&address, packet.data.data() + offset, sizeof(address));
         std::memcpy(&id, packet.data.data() + offset + sizeof(address), sizeof(id));
         node_map[address] = id;
@@ -194,11 +194,11 @@ static void HandleNodeMapPacket(const Network::WifiPacket& packet) {
 // limit is exceeded.
 void HandleBeaconFrame(const Network::WifiPacket& packet) {
     std::lock_guard<std::mutex> lock(beacon_mutex);
-    const auto unique_beacon =
-        std::find_if(received_beacons.begin(), received_beacons.end(),
-                     [&packet](const Network::WifiPacket& new_packet) {
-                         return new_packet.transmitter_address == packet.transmitter_address;
-                     });
+    const auto unique_beacon{std::find_if(received_beacons.begin(), received_beacons.end(),
+                                          [&packet](const Network::WifiPacket& new_packet) {
+                                              return new_packet.transmitter_address ==
+                                                     packet.transmitter_address;
+                                          })};
     if (unique_beacon != received_beacons.end()) {
         // We already have a beacon from the same mac in the deque, remove the old one;
         received_beacons.erase(unique_beacon);
@@ -305,7 +305,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         node_info.clear();
         node_info.reserve(network_info.max_nodes);
-        for (size_t index = 0; index < logoff.connected_nodes; ++index) {
+        for (size_t index{}; index < logoff.connected_nodes; ++index) {
             connection_status.node_bitmask |= 1 << index;
             connection_status.changed_nodes |= 1 << index;
             connection_status.nodes[index] = logoff.nodes[index].network_node_id;
@@ -331,7 +331,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         node_info.clear();
         node_info.reserve(network_info.max_nodes);
-        for (size_t index = 0; index < logoff.connected_nodes; ++index) {
+        for (size_t index{}; index < logoff.connected_nodes; ++index) {
             if ((connection_status.node_bitmask & (1 << index)) == 0) {
                 connection_status.changed_nodes |= 1 << index;
             }
@@ -1028,7 +1028,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
         dest_address = network_info.host_mac_address;
     }
 
-    constexpr size_t MaxSize = 0x5C6;
+    constexpr size_t MaxSize{0x5C6};
     if (data_size > MaxSize) {
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
                            ErrorSummary::WrongArgument, ErrorLevel::Usage));
@@ -1036,7 +1036,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     }
 
     // TODO(B3N30): Increment the sequence number after each sent packet.
-    u16 sequence_number = 0;
+    u16 sequence_number{};
     std::vector<u8> data_payload =
         GenerateDataPayload(input_buffer, data_channel, dest_node_id,
                             connection_status.network_node_id, sequence_number);
@@ -1238,7 +1238,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
 
     std::vector<NodeInfo> nodes;
 
-    for (int i = 0; i < num_nodes; ++i) {
+    for (int i{}; i < num_nodes; ++i) {
         BeaconNodeInfo info;
         std::memcpy(&info, beacon_data.data() + sizeof(beacon_header) + i * sizeof(info),
                     sizeof(info));
@@ -1247,7 +1247,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
         NodeInfo node{};
         node.friend_code_seed = info.friend_code_seed;
         node.network_node_id = info.network_node_id;
-        for (int i = 0; i < info.username.size(); ++i)
+        for (int i{}; i < info.username.size(); ++i)
             node.username[i] = info.username[i];
 
         nodes.push_back(node);

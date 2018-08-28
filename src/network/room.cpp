@@ -22,7 +22,7 @@ public:
     const MacAddress NintendoOUI;
     std::mt19937 random_gen; ///< Random number generator. Used for GenerateMacAddress
 
-    ENetHost* server = nullptr; ///< Network interface.
+    ENetHost* server{}; ///< Network interface.
 
     std::atomic<State> state{State::Closed}; ///< Current state of the room.
     u16 port;                                ///< Port of this room.

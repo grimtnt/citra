@@ -73,7 +73,7 @@ private:
     friend void intrusive_ptr_add_ref(Object*);
     friend void intrusive_ptr_release(Object*);
 
-    unsigned int ref_count = 0;
+    unsigned int ref_count{};
     unsigned int object_id = next_object_id++;
 };
 

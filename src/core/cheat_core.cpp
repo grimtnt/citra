@@ -69,7 +69,7 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
     std::vector<std::shared_ptr<CheatBase>> cheats;
     std::string name;
     bool enabled = false;
-    for (size_t i = 0; i < lines.size(); i++) {
+    for (size_t i{}; i < lines.size(); i++) {
         std::string current_line = std::string(lines[i].c_str());
         current_line = Common::Trim(current_line);
         if (!current_line.empty()) {
@@ -140,7 +140,7 @@ void GatewayCheat::Execute() {
     u32 loop_count{0};
     size_t loopbackline{0};
     bool loop_flag{false};
-    for (size_t i = 0; i < cheat_lines.size(); i++) {
+    for (size_t i{}; i < cheat_lines.size(); i++) {
         CheatLine line{cheat_lines[i]};
         if (line.type == CheatType::Null)
             continue;
@@ -399,7 +399,7 @@ void GatewayCheat::Execute() {
             u32 y{line.value};
             addr = x + offset;
             {
-                u32 j = 0, t = 0, b = 0;
+                u32 j{}, t{}, b{};
                 if (y > 0)
                     i++; // skip over the current code
                 while (y >= 4) {

@@ -39,11 +39,11 @@ Path ConstructSystemSaveDataBinaryPath(u32 high, u32 low) {
     // Append each word byte by byte
 
     // First is the high word
-    for (unsigned i = 0; i < 4; ++i)
+    for (unsigned i{}; i < 4; ++i)
         binary_path.push_back((high >> (8 * i)) & 0xFF);
 
     // Next is the low word
-    for (unsigned i = 0; i < 4; ++i)
+    for (unsigned i{}; i < 4; ++i)
         binary_path.push_back((low >> (8 * i)) & 0xFF);
 
     return {binary_path};

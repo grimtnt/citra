@@ -76,7 +76,7 @@ private:
         Format format;
 
         bool from_queue;
-        u32_dsp play_position; // = 0;
+        u32_dsp play_position; //{};
         bool has_played;       // = false;
     };
 
@@ -92,7 +92,7 @@ private:
         // State variables
 
         bool enabled = false;
-        u16 sync = 0;
+        u16 sync{};
 
         // Mixing
 
@@ -106,14 +106,14 @@ private:
 
         // Current buffer
 
-        u32 current_sample_number = 0;
-        u32 next_sample_number = 0;
+        u32 current_sample_number{};
+        u32 next_sample_number{};
         AudioInterp::StereoBuffer16 current_buffer;
 
         // buffer_id state
 
         bool buffer_update = false;
-        u32 current_buffer_id = 0;
+        u32 current_buffer_id{};
 
         // Decoding state
 

@@ -158,7 +158,7 @@ void ServiceFrameworkBase::InstallAsNamedPort() {
 
 void ServiceFrameworkBase::RegisterHandlersBase(const FunctionInfoBase* functions, size_t n) {
     handlers.reserve(handlers.size() + n);
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i{}; i < n; ++i) {
         // Usually this array is sorted by id already, so hint to insert at the end
         handlers.emplace_hint(handlers.cend(), functions[i].expected_header, functions[i]);
     }
@@ -172,7 +172,7 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
     fmt::memory_buffer buf;
     fmt::format_to(buf, "function '{}': port='{}' cmd_buf={{[0]={:#x}", function_name, service_name,
                    cmd_buf[0]);
-    for (int i = 1; i <= num_params; ++i) {
+    for (int i{1}; i <= num_params; ++i) {
         fmt::format_to(buf, ", [{}]={:#x}", i, cmd_buf[i]);
     }
     buf.push_back('}');

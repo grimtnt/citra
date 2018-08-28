@@ -85,8 +85,8 @@ template <bool morton_to_gl, PixelFormat format>
 static void MortonCopyTile(u32 stride, u8* tile_buffer, u8* gl_buffer) {
     constexpr u32 bytes_per_pixel = SurfaceParams::GetFormatBpp(format) / 8;
     constexpr u32 gl_bytes_per_pixel = CachedSurface::GetGLBytesPerPixel(format);
-    for (u32 y = 0; y < 8; ++y) {
-        for (u32 x = 0; x < 8; ++x) {
+    for (u32 y{}; y < 8; ++y) {
+        for (u32 x{}; x < 8; ++x) {
             u8* tile_ptr = tile_buffer + VideoCore::MortonInterleave(x, y) * bytes_per_pixel;
             u8* gl_ptr = gl_buffer + ((7 - y) * stride + x) * gl_bytes_per_pixel;
             if (morton_to_gl) {
@@ -267,7 +267,7 @@ static bool BlitTextures(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rec
     state.draw.draw_framebuffer = draw_fb_handle;
     state.Apply();
 
-    u32 buffers = 0;
+    u32 buffers{};
 
     if (type == SurfaceType::Color || type == SurfaceType::Texture) {
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, src_tex,
@@ -357,7 +357,7 @@ static bool FillSurface(const Surface& surface, const u8* fill_data,
                                surface->texture.handle, 0);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 
-        u32 value_32bit = 0;
+        u32 value_32bit{};
         GLfloat value_float;
 
         if (surface->pixel_format == SurfaceParams::PixelFormat::D16) {
@@ -521,10 +521,10 @@ bool CachedSurface::CanFill(const SurfaceParams& dest_surface,
             const u32 dest_bytes_per_pixel = std::max(dest_surface.GetFormatBpp() / 8, 1u);
             std::vector<u8> fill_test(fill_size * dest_bytes_per_pixel);
 
-            for (u32 i = 0; i < dest_bytes_per_pixel; ++i)
+            for (u32 i{}; i < dest_bytes_per_pixel; ++i)
                 std::memcpy(&fill_test[i * fill_size], &fill_data[0], fill_size);
 
-            for (u32 i = 0; i < fill_size; ++i)
+            for (u32 i{}; i < fill_size; ++i)
                 if (std::memcmp(&fill_test[dest_bytes_per_pixel * i], &fill_test[0],
                                 dest_bytes_per_pixel) != 0)
                     return false;
@@ -868,9 +868,9 @@ template <MatchFlags find_flags>
 Surface FindMatch(const SurfaceCache& surface_cache, const SurfaceParams& params,
                   ScaleMatch match_scale_type,
                   boost::optional<SurfaceInterval> validate_interval = boost::none) {
-    Surface match_surface = nullptr;
+    Surface match_surface{};
     bool match_valid = false;
-    u32 match_scale = 0;
+    u32 match_scale{};
     SurfaceInterval match_interval{};
 
     for (auto& pair : RangeFromInterval(surface_cache, params.GetInterval())) {
@@ -1381,13 +1381,13 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
     }
 
     MathUtil::Rectangle<u32> color_rect{};
-    Surface color_surface = nullptr;
+    Surface color_surface{};
     if (using_color_fb)
         std::tie(color_surface, color_rect) =
             GetSurfaceSubRect(color_params, ScaleMatch::Exact, false);
 
     MathUtil::Rectangle<u32> depth_rect{};
-    Surface depth_surface = nullptr;
+    Surface depth_surface{};
     if (using_depth_fb)
         std::tie(depth_surface, depth_rect) =
             GetSurfaceSubRect(depth_params, ScaleMatch::Exact, false);

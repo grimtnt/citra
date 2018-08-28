@@ -30,7 +30,7 @@ private:
     std::array<PipelineRegs::VertexAttributeFormat, 16> vertex_attribute_formats;
     std::array<u32, 16> vertex_attribute_elements{};
     std::array<bool, 16> vertex_attribute_is_default;
-    int num_total_attributes = 0;
+    int num_total_attributes{};
     bool is_setup = false;
 };
 

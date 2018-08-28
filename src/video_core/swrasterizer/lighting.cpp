@@ -68,7 +68,7 @@ std::tuple<Math::Vec4<u8>, Math::Vec4<u8>> ComputeFragmentsColors(
     Math::Vec4<float> diffuse_sum = {0.0f, 0.0f, 0.0f, 1.0f};
     Math::Vec4<float> specular_sum = {0.0f, 0.0f, 0.0f, 1.0f};
 
-    for (unsigned light_index = 0; light_index <= lighting.max_light_index; ++light_index) {
+    for (unsigned light_index{}; light_index <= lighting.max_light_index; ++light_index) {
         unsigned num = lighting.light_enable.GetNum(light_index);
         const auto& light_config = lighting.light[num];
 

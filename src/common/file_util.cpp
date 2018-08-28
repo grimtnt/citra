@@ -597,7 +597,7 @@ const std::string& GetExeDirectory() {
 }
 
 std::string AppDataRoamingDirectory() {
-    PWSTR pw_local_path = nullptr;
+    PWSTR pw_local_path{};
     // Only supported by Windows Vista or later
     SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &pw_local_path);
     std::string local_path = Common::UTF16ToUTF8(pw_local_path);
@@ -755,7 +755,7 @@ void SplitFilename83(const std::string& filename, std::array<char, 9>& short_nam
         point = filename.rfind('.', point);
 
     // Get short name.
-    int j = 0;
+    int j{};
     for (char letter : filename.substr(0, point)) {
         if (forbidden_characters.find(letter, 0) != std::string::npos)
             continue;

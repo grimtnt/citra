@@ -221,7 +221,7 @@ struct CTRPollFD {
         /// Translates the resulting events of a Poll operation from 3ds specific to platform
         /// specific
         static u32 TranslateToPlatform(Events input_event) {
-            u32 ret = 0;
+            u32 ret{};
             if (input_event.pollin)
                 ret |= POLLIN;
             if (input_event.pollpri)
@@ -394,7 +394,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
     u32 ctr_arg{rp.Pop<u32>()};
     rp.PopPID();
 
-    u32 posix_ret = 0; // TODO: Check what hardware returns for F_SETFL (unspecified by POSIX)
+    u32 posix_ret{}; // TODO: Check what hardware returns for F_SETFL (unspecified by POSIX)
     SCOPE_EXIT({
         IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
         rb.Push(RESULT_SUCCESS);
@@ -419,8 +419,8 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
 #endif
     } else if (ctr_cmd == 4) { // F_SETFL
 #ifdef _WIN32
-        unsigned long tmp = (ctr_arg & 4 /* O_NONBLOCK */) ? 1 : 0;
-        int ret = ioctlsocket(socket_handle, FIONBIO, &tmp);
+        unsigned long tmp{(ctr_arg & 4 /* O_NONBLOCK */) ? 1 : 0};
+        int ret{ioctlsocket(socket_handle, FIONBIO, &tmp)};
         if (ret == SOCKET_ERROR_VALUE) {
             posix_ret = TranslateError(GET_ERRNO);
             return;
@@ -429,7 +429,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
         if (iter != open_sockets.end())
             iter->second.blocking = (tmp == 0);
 #else
-        int flags = ::fcntl(socket_handle, F_GETFL, 0);
+        int flags{::fcntl(socket_handle, F_GETFL, 0)};
         if (flags == SOCKET_ERROR_VALUE) {
             posix_ret = TranslateError(GET_ERRNO);
             return;
@@ -439,7 +439,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
         if (ctr_arg & 4) // O_NONBLOCK
             flags |= O_NONBLOCK;
 
-        int ret = ::fcntl(socket_handle, F_SETFL, flags);
+        int ret{::fcntl(socket_handle, F_SETFL, flags)};
         if (ret == SOCKET_ERROR_VALUE) {
             posix_ret = TranslateError(GET_ERRNO);
             return;
@@ -458,7 +458,7 @@ void SOC_U::Listen(Kernel::HLERequestContext& ctx) {
     u32 backlog{rp.Pop<u32>()};
     rp.PopPID();
 
-    s32 ret = ::listen(socket_handle, backlog);
+    s32 ret{::listen(socket_handle, backlog)};
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
@@ -473,16 +473,16 @@ void SOC_U::Accept(Kernel::HLERequestContext& ctx) {
     // performing nonblocking operations and spinlock until the data is available
     IPC::RequestParser rp{ctx, 0x04, 2, 2};
     u32 socket_handle{rp.Pop<u32>()};
-    socklen_t max_addr_len = static_cast<socklen_t>(rp.Pop<u32>());
+    socklen_t max_addr_len{static_cast<socklen_t>(rp.Pop<u32>())};
     rp.PopPID();
-    sockaddr addr;
-    socklen_t addr_len = sizeof(addr);
+    sockaddr addr{};
+    socklen_t addr_len{sizeof(addr)};
     u32 ret = static_cast<u32>(::accept(socket_handle, &addr, &addr_len));
 
     if ((s32)ret != SOCKET_ERROR_VALUE)
         open_sockets[ret] = {ret, true};
 
-    CTRSockAddr ctr_addr;
+    CTRSockAddr ctr_addr{};
     std::vector<u8> ctr_addr_buf(sizeof(ctr_addr));
     if ((s32)ret == SOCKET_ERROR_VALUE) {
         ret = TranslateError(GET_ERRNO);
@@ -503,12 +503,12 @@ void SOC_U::GetHostId(Kernel::HLERequestContext& ctx) {
     char name[128];
     gethostname(name, sizeof(name));
     addrinfo hints = {};
-    addrinfo* res;
+    addrinfo* res{};
 
     hints.ai_family = AF_INET;
     getaddrinfo(name, nullptr, &hints, &res);
     sockaddr_in* sock_addr = reinterpret_cast<sockaddr_in*>(res->ai_addr);
-    in_addr* addr = &sock_addr->sin_addr;
+    in_addr* addr{&sock_addr->sin_addr};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -521,7 +521,7 @@ void SOC_U::Close(Kernel::HLERequestContext& ctx) {
     u32 socket_handle{rp.Pop<u32>()};
     rp.PopPID();
 
-    s32 ret = 0;
+    s32 ret{};
     open_sockets.erase(socket_handle);
 
     ret = closesocket(socket_handle);
@@ -544,10 +544,10 @@ void SOC_U::SendTo(Kernel::HLERequestContext& ctx) {
     auto input_buff{rp.PopStaticBuffer()};
     auto dest_addr_buff{rp.PopStaticBuffer()};
 
-    CTRSockAddr ctr_dest_addr;
+    CTRSockAddr ctr_dest_addr{};
     std::memcpy(&ctr_dest_addr, dest_addr_buff.data(), sizeof(ctr_dest_addr));
 
-    s32 ret = -1;
+    s32 ret{-1};
     if (addr_len > 0) {
         sockaddr dest_addr = CTRSockAddr::ToPlatform(ctr_dest_addr);
         ret = ::sendto(socket_handle, reinterpret_cast<const char*>(input_buff.data()), len, flags,
@@ -576,11 +576,11 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
     u32 addr_len{rp.Pop<u32>()};
     rp.PopPID();
 
-    CTRSockAddr ctr_src_addr;
+    CTRSockAddr ctr_src_addr{};
     std::vector<u8> output_buff(len);
     std::vector<u8> addr_buff(sizeof(ctr_src_addr));
-    sockaddr src_addr;
-    socklen_t src_addr_len = sizeof(src_addr);
+    sockaddr src_addr{};
+    socklen_t src_addr_len{sizeof(src_addr)};
     s32 ret = ::recvfrom(socket_handle, reinterpret_cast<char*>(output_buff.data()), len, flags,
                          &src_addr, &src_addr_len);
 
@@ -590,7 +590,7 @@ void SOC_U::RecvFrom(Kernel::HLERequestContext& ctx) {
         std::memcpy(addr_buff.data(), &ctr_src_addr, sizeof(ctr_src_addr));
     }
 
-    s32 total_received = ret;
+    s32 total_received{ret};
     if (ret == SOCKET_ERROR_VALUE) {
         ret = TranslateError(GET_ERRNO);
         total_received = 0;
@@ -647,11 +647,11 @@ void SOC_U::GetSockName(Kernel::HLERequestContext& ctx) {
     u32 max_addr_len{rp.Pop<u32>()};
     rp.PopPID();
 
-    sockaddr dest_addr;
-    socklen_t dest_addr_len = sizeof(dest_addr);
+    sockaddr dest_addr{};
+    socklen_t dest_addr_len{sizeof(dest_addr)};
     s32 ret = ::getsockname(socket_handle, &dest_addr, &dest_addr_len);
 
-    CTRSockAddr ctr_dest_addr = CTRSockAddr::FromPlatform(dest_addr);
+    CTRSockAddr ctr_dest_addr{CTRSockAddr::FromPlatform(dest_addr)};
     std::vector<u8> dest_addr_buff(sizeof(ctr_dest_addr));
     std::memcpy(dest_addr_buff.data(), &ctr_dest_addr, sizeof(ctr_dest_addr));
 
@@ -670,7 +670,7 @@ void SOC_U::Shutdown(Kernel::HLERequestContext& ctx) {
     s32 how{rp.Pop<s32>()};
     rp.PopPID();
 
-    s32 ret = ::shutdown(socket_handle, how);
+    s32 ret{::shutdown(socket_handle, how)};
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
@@ -684,15 +684,14 @@ void SOC_U::GetPeerName(Kernel::HLERequestContext& ctx) {
     u32 max_addr_len{rp.Pop<u32>()};
     rp.PopPID();
 
-    sockaddr dest_addr;
-    socklen_t dest_addr_len = sizeof(dest_addr);
+    sockaddr dest_addr{};
+    socklen_t dest_addr_len{sizeof(dest_addr)};
     int ret = ::getpeername(socket_handle, &dest_addr, &dest_addr_len);
 
-    CTRSockAddr ctr_dest_addr = CTRSockAddr::FromPlatform(dest_addr);
+    CTRSockAddr ctr_dest_addr{CTRSockAddr::FromPlatform(dest_addr)};
     std::vector<u8> dest_addr_buff(sizeof(ctr_dest_addr));
     std::memcpy(dest_addr_buff.data(), &ctr_dest_addr, sizeof(ctr_dest_addr));
 
-    int result = 0;
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
@@ -712,11 +711,11 @@ void SOC_U::Connect(Kernel::HLERequestContext& ctx) {
     rp.PopPID();
     auto input_addr_buf{rp.PopStaticBuffer()};
 
-    CTRSockAddr ctr_input_addr;
+    CTRSockAddr ctr_input_addr{};
     std::memcpy(&ctr_input_addr, input_addr_buf.data(), sizeof(ctr_input_addr));
 
-    sockaddr input_addr = CTRSockAddr::ToPlatform(ctr_input_addr);
-    s32 ret = ::connect(socket_handle, &input_addr, sizeof(input_addr));
+    sockaddr input_addr{CTRSockAddr::ToPlatform(ctr_input_addr)};
+    s32 ret{::connect(socket_handle, &input_addr, sizeof(input_addr))};
     if (ret != 0)
         ret = TranslateError(GET_ERRNO);
 
@@ -759,10 +758,10 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
     u32 socket_handle{rp.Pop<u32>()};
     u32 level{rp.Pop<u32>()};
     s32 optname{rp.Pop<s32>()};
-    socklen_t optlen = static_cast<socklen_t>(rp.Pop<u32>());
+    socklen_t optlen{static_cast<socklen_t>(rp.Pop<u32>())};
     rp.PopPID();
 
-    s32 err = 0;
+    s32 err{};
 
     std::vector<u8> optval(optlen);
 
@@ -773,7 +772,7 @@ void SOC_U::GetSockOpt(Kernel::HLERequestContext& ctx) {
         err = EINVAL;
 #endif
     } else {
-        char* optval_data = reinterpret_cast<char*>(optval.data());
+        char* optval_data{reinterpret_cast<char*>(optval.data())};
         err = ::getsockopt(socket_handle, level, optname, optval_data, &optlen);
         if (err == SOCKET_ERROR_VALUE) {
             err = TranslateError(GET_ERRNO);
@@ -792,11 +791,11 @@ void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
     u32 socket_handle{rp.Pop<u32>()};
     u32 level{rp.Pop<u32>()};
     s32 optname{rp.Pop<s32>()};
-    socklen_t optlen = static_cast<socklen_t>(rp.Pop<u32>());
+    socklen_t optlen{static_cast<socklen_t>(rp.Pop<u32>())};
     rp.PopPID();
     auto optval{rp.PopStaticBuffer()};
 
-    s32 err = 0;
+    s32 err{};
 
     if (optname < 0) {
 #ifdef _WIN32
@@ -805,7 +804,7 @@ void SOC_U::SetSockOpt(Kernel::HLERequestContext& ctx) {
         err = EINVAL;
 #endif
     } else {
-        const char* optval_data = reinterpret_cast<const char*>(optval.data());
+        const char* optval_data{reinterpret_cast<const char*>(optval.data())};
         err = static_cast<u32>(::setsockopt(socket_handle, level, optname, optval_data,
                                             static_cast<socklen_t>(optval.size())));
         if (err == SOCKET_ERROR_VALUE) {

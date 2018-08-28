@@ -28,13 +28,13 @@
 
 namespace Pica::CommandProcessor {
 
-static int vs_float_regs_counter = 0;
+static int vs_float_regs_counter{};
 static u32 vs_uniform_write_buffer[4];
 
-static int gs_float_regs_counter = 0;
+static int gs_float_regs_counter{};
 static u32 gs_uniform_write_buffer[4];
 
-static int default_attr_counter = 0;
+static int default_attr_counter{};
 static u32 default_attr_write_buffer[3];
 
 // Expand a 4-bit mask to 4-byte mask, e.g. 0b0101 -> 0x00FF00FF
@@ -54,7 +54,7 @@ static const char* GetShaderSetupTypeName(Shader::ShaderSetup& setup) {
 }
 
 static void WriteUniformBoolReg(Shader::ShaderSetup& setup, u32 value) {
-    for (unsigned i = 0; i < setup.uniforms.b.size(); ++i)
+    for (unsigned i{}; i < setup.uniforms.b.size(); ++i)
         setup.uniforms.b[i] = (value & (1 << i)) != 0;
 }
 
@@ -308,7 +308,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         std::array<Shader::AttributeBuffer, VERTEX_CACHE_SIZE> vertex_cache;
         Shader::AttributeBuffer vs_output;
 
-        unsigned int vertex_cache_pos = 0;
+        unsigned int vertex_cache_pos{};
 
         auto* shader_engine = Shader::GetEngine();
         Shader::UnitState shader_unit;
@@ -320,7 +320,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         if (g_state.geometry_pipeline.NeedIndexInput())
             ASSERT(is_indexed);
 
-        for (unsigned int index = 0; index < regs.pipeline.num_vertices; ++index) {
+        for (unsigned int index{}; index < regs.pipeline.num_vertices; ++index) {
             // Indexed rendering doesn't use the start offset
             unsigned int vertex =
                 is_indexed ? (index_u16 ? index_address_16[index] : index_address_8[index])
@@ -334,7 +334,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                     continue;
                 }
 
-                for (unsigned int i = 0; i < VERTEX_CACHE_SIZE; ++i) {
+                for (unsigned int i{}; i < VERTEX_CACHE_SIZE; ++i) {
                     if (vertex_cache_valid[i] && vertex == vertex_cache_ids[i]) {
                         vs_output = vertex_cache[i];
                         vertex_cache_hit = true;
@@ -594,7 +594,7 @@ void ProcessCommandList(const u32* list, u32 size) {
 
         WritePicaReg(header.cmd_id, value, header.parameter_mask);
 
-        for (unsigned i = 0; i < header.extra_data_length; ++i) {
+        for (unsigned i{}; i < header.extra_data_length; ++i) {
             u32 cmd = header.cmd_id + (header.group_commands ? i + 1 : 0);
             WritePicaReg(cmd, *g_state.cmd_list.current_ptr++, header.parameter_mask);
         }

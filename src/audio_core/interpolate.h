@@ -19,7 +19,7 @@ struct State {
     std::array<s16, 2> xn1 = {}; ///< x[n-1]
     std::array<s16, 2> xn2 = {}; ///< x[n-2]
     /// Current fractional position.
-    u64 fposition = 0;
+    u64 fposition{};
 };
 
 /**

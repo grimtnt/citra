@@ -71,7 +71,7 @@ private:
 
     std::mutex tilt_mutex;
     Math::Vec2<float> tilt_direction;
-    float tilt_angle = 0;
+    float tilt_angle{};
     float tilt_clamp = 90;
 
     bool is_tilting = false;

@@ -28,8 +28,7 @@ void Init(u32 system_mode) {
     Kernel::TimersInit();
 
     Object::next_object_id = 0;
-    // Start the process ids from 10 for now, as lower PIDs are reserved for low-level services
-    Process::next_process_id = 10;
+    Process::next_process_id = 0;
 }
 
 /// Shutdown the kernel

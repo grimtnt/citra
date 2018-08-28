@@ -73,22 +73,22 @@ public:
     std::string name;
 
     /// Max thread priority that a process in this category can create
-    s32 max_priority = 0;
+    s32 max_priority{};
 
     /// Max memory that processes in this category can use
-    s32 max_commit = 0;
+    s32 max_commit{};
 
     ///< Max number of objects that can be collectively created by the processes in this category
-    s32 max_threads = 0;
-    s32 max_events = 0;
-    s32 max_mutexes = 0;
-    s32 max_semaphores = 0;
-    s32 max_timers = 0;
-    s32 max_shared_mems = 0;
-    s32 max_address_arbiters = 0;
+    s32 max_threads{};
+    s32 max_events{};
+    s32 max_mutexes{};
+    s32 max_semaphores{};
+    s32 max_timers{};
+    s32 max_shared_mems{};
+    s32 max_address_arbiters{};
 
     /// Max CPU time that the processes in this category can utilize
-    s32 max_cpu_time = 0;
+    s32 max_cpu_time{};
 
     // TODO(Subv): Increment these in their respective Kernel::T::Create functions, keeping in mind
     // that APPLICATION resource limits should not be affected by the objects created by service
@@ -98,19 +98,19 @@ public:
     // own processes
 
     /// Current memory that the processes in this category are using
-    s32 current_commit = 0;
+    s32 current_commit{};
 
     ///< Current number of objects among all processes in this category
-    s32 current_threads = 0;
-    s32 current_events = 0;
-    s32 current_mutexes = 0;
-    s32 current_semaphores = 0;
-    s32 current_timers = 0;
-    s32 current_shared_mems = 0;
-    s32 current_address_arbiters = 0;
+    s32 current_threads{};
+    s32 current_events{};
+    s32 current_mutexes{};
+    s32 current_semaphores{};
+    s32 current_timers{};
+    s32 current_shared_mems{};
+    s32 current_address_arbiters{};
 
     /// Current CPU time that the processes in this category are utilizing
-    s32 current_cpu_time = 0;
+    s32 current_cpu_time{};
 
 private:
     ResourceLimit();

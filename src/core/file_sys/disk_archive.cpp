@@ -70,7 +70,7 @@ u32 DiskDirectory::Read(const u32 count, Entry* entries) {
         LOG_TRACE(Service_FS, "File {}: size={} dir={}", filename, file.size, file.isDirectory);
 
         // TODO(Link Mauve): use a proper conversion to UTF-16.
-        for (size_t j = 0; j < FILENAME_LENGTH; ++j) {
+        for (size_t j{}; j < FILENAME_LENGTH; ++j) {
             entry.filename[j] = filename[j];
             if (!filename[j])
                 break;

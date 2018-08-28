@@ -13,9 +13,9 @@
 namespace AudioCore {
 
 struct SDL2Sink::Impl {
-    unsigned int sample_rate = 0;
+    unsigned int sample_rate{};
 
-    SDL_AudioDeviceID audio_device_id = 0;
+    SDL_AudioDeviceID audio_device_id{};
 
     std::list<std::vector<s16>> queue;
 
@@ -41,7 +41,7 @@ SDL2Sink::SDL2Sink(std::string device_name) : impl(std::make_unique<Impl>()) {
     SDL_AudioSpec obtained_audiospec;
     SDL_zero(obtained_audiospec);
 
-    const char* device = nullptr;
+    const char* device{};
     if (device_name != auto_device_name && !device_name.empty()) {
         device = device_name.c_str();
     }
@@ -135,7 +135,7 @@ std::vector<std::string> ListSDL2SinkDevices() {
 
     std::vector<std::string> device_list;
     const int device_count = SDL_GetNumAudioDevices(0);
-    for (int i = 0; i < device_count; ++i) {
+    for (int i{}; i < device_count; ++i) {
         device_list.push_back(SDL_GetAudioDeviceName(i, 0));
     }
 

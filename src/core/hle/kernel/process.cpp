@@ -47,7 +47,7 @@ SharedPtr<Process> Process::Create(SharedPtr<CodeSet> code_set) {
 }
 
 void Process::ParseKernelCaps(const u32* kernel_caps, size_t len) {
-    for (size_t i = 0; i < len; ++i) {
+    for (size_t i{}; i < len; ++i) {
         u32 descriptor = kernel_caps[i];
         u32 type = descriptor >> 20;
 

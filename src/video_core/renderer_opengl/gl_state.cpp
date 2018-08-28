@@ -196,7 +196,7 @@ void OpenGLState::Apply() const {
     }
 
     // Textures
-    for (unsigned i = 0; i < ARRAY_SIZE(texture_units); ++i) {
+    for (unsigned i{}; i < ARRAY_SIZE(texture_units); ++i) {
         if (texture_units[i].texture_2d != cur_state.texture_units[i].texture_2d) {
             glActiveTexture(TextureUnits::PicaTexture(i).Enum());
             glBindTexture(GL_TEXTURE_2D, texture_units[i].texture_2d);
@@ -317,7 +317,7 @@ void OpenGLState::Apply() const {
     }
 
     // Clip distance
-    for (size_t i = 0; i < clip_distance.size(); ++i) {
+    for (size_t i{}; i < clip_distance.size(); ++i) {
         if (clip_distance[i] != cur_state.clip_distance[i]) {
             if (clip_distance[i]) {
                 glEnable(GL_CLIP_DISTANCE0 + static_cast<GLenum>(i));

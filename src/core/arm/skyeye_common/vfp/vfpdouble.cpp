@@ -235,7 +235,7 @@ pack:
 static u32 vfp_propagate_nan(struct vfp_double* vdd, struct vfp_double* vdn, struct vfp_double* vdm,
                              u32 fpscr) {
     struct vfp_double* nan;
-    int tn, tm = 0;
+    int tn, tm{};
 
     tn = vfp_double_type(vdn);
 
@@ -296,7 +296,7 @@ static u32 vfp_double_fsqrt(ARMul_State* state, int dd, int unused, int dm, u32 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);
     vfp_double vdm, vdd, *vdp;
     int ret, tm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     exceptions |= vfp_double_unpack(&vdm, vfp_get_double(state, dm), fpscr);
 
@@ -388,7 +388,7 @@ static u32 vfp_double_fsqrt(ARMul_State* state, int dd, int unused, int dm, u32 
  */
 static u32 vfp_compare(ARMul_State* state, int dd, int signal_on_qnan, s64 m, u32 fpscr) {
     s64 d;
-    u32 ret = 0;
+    u32 ret{};
 
     LOG_TRACE(Core_ARM11, "In {}, state=0x{}, fpscr=0x{:x}", __FUNCTION__, fmt::ptr(state), fpscr);
     if (vfp_double_packed_exponent(m) == 2047 && vfp_double_packed_mantissa(m)) {
@@ -475,7 +475,7 @@ static u32 vfp_double_fcvts(ARMul_State* state, int sd, int unused, int dm, u32 
     struct vfp_double vdm;
     struct vfp_single vsd;
     int tm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);
     exceptions |= vfp_double_unpack(&vdm, vfp_get_double(state, dm), fpscr);
@@ -540,7 +540,7 @@ static u32 vfp_double_fsito(ARMul_State* state, int dd, int unused, int dm, u32 
 
 static u32 vfp_double_ftoui(ARMul_State* state, int sd, int unused, int dm, u32 fpscr) {
     struct vfp_double vdm;
-    u32 d, exceptions = 0;
+    u32 d, exceptions{};
     int rmode = fpscr & FPSCR_RMODE_MASK;
     int tm;
 
@@ -562,7 +562,7 @@ static u32 vfp_double_ftoui(ARMul_State* state, int sd, int unused, int dm, u32 
         exceptions = FPSCR_IOC;
     } else if (vdm.exponent >= 1023) {
         int shift = 1023 + 63 - vdm.exponent;
-        u64 rem, incr = 0;
+        u64 rem, incr{};
 
         /*
          * 2^0 <= m < 2^32-2^8
@@ -628,7 +628,7 @@ static u32 vfp_double_ftouiz(ARMul_State* state, int sd, int unused, int dm, u32
 
 static u32 vfp_double_ftosi(ARMul_State* state, int sd, int unused, int dm, u32 fpscr) {
     struct vfp_double vdm;
-    u32 d, exceptions = 0;
+    u32 d, exceptions{};
     int rmode = fpscr & FPSCR_RMODE_MASK;
     int tm;
 
@@ -653,7 +653,7 @@ static u32 vfp_double_ftosi(ARMul_State* state, int sd, int unused, int dm, u32 
         exceptions |= FPSCR_IOC;
     } else if (vdm.exponent >= 1023) {
         int shift = 1023 + 63 - vdm.exponent; /* 58 */
-        u64 rem, incr = 0;
+        u64 rem, incr{};
 
         d = (u32)((vdm.significand << 1) >> shift);
         rem = vdm.significand << (65 - shift);
@@ -743,7 +743,7 @@ static struct op fops_ext[] = {
 static u32 vfp_double_fadd_nonnumber(struct vfp_double* vdd, struct vfp_double* vdn,
                                      struct vfp_double* vdm, u32 fpscr) {
     struct vfp_double* vdp;
-    u32 exceptions = 0;
+    u32 exceptions{};
     int tn, tm;
 
     tn = vfp_double_type(vdn);
@@ -899,7 +899,7 @@ u32 vfp_double_multiply(struct vfp_double* vdd, struct vfp_double* vdn, struct v
 static u32 vfp_double_multiply_accumulate(ARMul_State* state, int dd, int dn, int dm, u32 fpscr,
                                           u32 negate, const char* func) {
     struct vfp_double vdd, vdp, vdn, vdm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     exceptions |= vfp_double_unpack(&vdn, vfp_get_double(state, dn), fpscr);
     if (vdn.exponent == 0 && vdn.significand)
@@ -967,7 +967,7 @@ static u32 vfp_double_fnmsc(ARMul_State* state, int dd, int dn, int dm, u32 fpsc
  */
 static u32 vfp_double_fmul(ARMul_State* state, int dd, int dn, int dm, u32 fpscr) {
     struct vfp_double vdd, vdn, vdm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);
     exceptions |= vfp_double_unpack(&vdn, vfp_get_double(state, dn), fpscr);
@@ -987,7 +987,7 @@ static u32 vfp_double_fmul(ARMul_State* state, int dd, int dn, int dm, u32 fpscr
  */
 static u32 vfp_double_fnmul(ARMul_State* state, int dd, int dn, int dm, u32 fpscr) {
     struct vfp_double vdd, vdn, vdm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);
     exceptions |= vfp_double_unpack(&vdn, vfp_get_double(state, dn), fpscr);
@@ -1009,7 +1009,7 @@ static u32 vfp_double_fnmul(ARMul_State* state, int dd, int dn, int dm, u32 fpsc
  */
 static u32 vfp_double_fadd(ARMul_State* state, int dd, int dn, int dm, u32 fpscr) {
     struct vfp_double vdd, vdn, vdm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);
     exceptions |= vfp_double_unpack(&vdn, vfp_get_double(state, dn), fpscr);
@@ -1030,7 +1030,7 @@ static u32 vfp_double_fadd(ARMul_State* state, int dd, int dn, int dm, u32 fpscr
  */
 static u32 vfp_double_fsub(ARMul_State* state, int dd, int dn, int dm, u32 fpscr) {
     struct vfp_double vdd, vdn, vdm;
-    u32 exceptions = 0;
+    u32 exceptions{};
 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);
     exceptions |= vfp_double_unpack(&vdn, vfp_get_double(state, dn), fpscr);
@@ -1056,7 +1056,7 @@ static u32 vfp_double_fsub(ARMul_State* state, int dd, int dn, int dm, u32 fpscr
  */
 static u32 vfp_double_fdiv(ARMul_State* state, int dd, int dn, int dm, u32 fpscr) {
     struct vfp_double vdd, vdn, vdm;
-    u32 exceptions = 0;
+    u32 exceptions{};
     int tm, tn;
 
     LOG_TRACE(Core_ARM11, "In {}", __FUNCTION__);

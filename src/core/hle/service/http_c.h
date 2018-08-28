@@ -66,7 +66,7 @@ struct Context {
         using lup = LUrlParser::clParseURL;
         namespace hl = httplib;
         lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli = nullptr;
+        std::unique_ptr<hl::Client> cli{};
         int port;
         if (parsedUrl.m_Scheme == "http") {
             if (!parsedUrl.GetPort(&port)) {
@@ -367,7 +367,7 @@ private:
      */
     void Finalize(Kernel::HLERequestContext& ctx);
 
-    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory = nullptr;
+    Kernel::SharedPtr<Kernel::SharedMemory> shared_memory{};
     std::unordered_map<u32, Context> contexts;
     u32 context_counter{0};
 };

@@ -27,11 +27,11 @@ static void ConvertYUVToRGB(InputFormat input_format, const u8* input_Y, const u
                             const u8* input_V, ImageTile output[], unsigned int width,
                             unsigned int height, const CoefficientSet& coefficients) {
 
-    for (unsigned int y = 0; y < height; ++y) {
-        for (unsigned int x = 0; x < width; ++x) {
-            s32 Y = 0;
-            s32 U = 0;
-            s32 V = 0;
+    for (unsigned int y{}; y < height; ++y) {
+        for (unsigned int x{}; x < width; ++x) {
+            s32 Y{};
+            s32 U{};
+            s32 V{};
             switch (input_format) {
             case InputFormat::YUV422_Indiv8:
             case InputFormat::YUV422_Indiv16:
@@ -85,7 +85,7 @@ static void ReceiveData(u8* output, ConversionBuffer& buf, size_t amount_of_data
     ASSERT(amount_of_data % output_unit == 0);
 
     while (amount_of_data > 0) {
-        for (size_t i = 0; i < output_unit; ++i) {
+        for (size_t i{}; i < output_unit; ++i) {
             output[i] = input[i * N];
         }
 
@@ -167,15 +167,15 @@ static const u8 morton_lut[TILE_SIZE] = {
 
 static void RotateTile0(const ImageTile& input, ImageTile& output, int height,
                         const u8 out_map[64]) {
-    for (int i = 0; i < height * 8; ++i) {
+    for (int i{}; i < height * 8; ++i) {
         output[out_map[i]] = input[i];
     }
 }
 
 static void RotateTile90(const ImageTile& input, ImageTile& output, int height,
                          const u8 out_map[64]) {
-    int out_i = 0;
-    for (int x = 0; x < 8; ++x) {
+    int out_i{};
+    for (int x{}; x < 8; ++x) {
         for (int y = height - 1; y >= 0; --y) {
             output[out_map[out_i++]] = input[y * 8 + x];
         }
@@ -184,7 +184,7 @@ static void RotateTile90(const ImageTile& input, ImageTile& output, int height,
 
 static void RotateTile180(const ImageTile& input, ImageTile& output, int height,
                           const u8 out_map[64]) {
-    int out_i = 0;
+    int out_i{};
     for (int i = height * 8 - 1; i >= 0; --i) {
         output[out_map[out_i++]] = input[i];
     }
@@ -192,17 +192,17 @@ static void RotateTile180(const ImageTile& input, ImageTile& output, int height,
 
 static void RotateTile270(const ImageTile& input, ImageTile& output, int height,
                           const u8 out_map[64]) {
-    int out_i = 0;
+    int out_i{};
     for (int x = 8 - 1; x >= 0; --x) {
-        for (int y = 0; y < height; ++y) {
+        for (int y{}; y < height; ++y) {
             output[out_map[out_i++]] = input[y * 8 + x];
         }
     }
 }
 
 static void WriteTileToOutput(u32* output, const ImageTile& tile, int height, int line_stride) {
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < 8; ++x) {
+    for (int y{}; y < height; ++y) {
+        for (int x{}; x < 8; ++x) {
             output[y * line_stride + x] = tile[y * 8 + x];
         }
     }
@@ -273,7 +273,7 @@ void PerformConversion(ConversionConfiguration& cvt) {
 
     // LUT used to remap writes to a tile. Used to allow linear or swizzled output without
     // requiring two different code paths.
-    const u8* tile_remap = nullptr;
+    const u8* tile_remap{};
     switch (cvt.block_alignment) {
     case BlockAlignment::Linear:
         tile_remap = linear_lut;
@@ -283,7 +283,7 @@ void PerformConversion(ConversionConfiguration& cvt) {
         break;
     }
 
-    for (unsigned int y = 0; y < cvt.input_lines; y += 8) {
+    for (unsigned int y{}; y < cvt.input_lines; y += 8) {
         unsigned int row_height = std::min(cvt.input_lines - y, 8u);
 
         // Total size in pixels of incoming data required for this strip.
@@ -328,9 +328,9 @@ void PerformConversion(ConversionConfiguration& cvt) {
 
         u32* output_buffer = reinterpret_cast<u32*>(data_buffer.get());
 
-        for (size_t i = 0; i < num_tiles; ++i) {
-            int image_strip_width = 0;
-            int output_stride = 0;
+        for (size_t i{}; i < num_tiles; ++i) {
+            int image_strip_width{};
+            int output_stride{};
 
             switch (cvt.rotation) {
             case Rotation::None:

@@ -11,11 +11,11 @@
 namespace AudioCore {
 
 struct CubebSink::Impl {
-    unsigned int sample_rate = 0;
+    unsigned int sample_rate{};
     std::vector<std::string> device_list;
 
-    cubeb* ctx = nullptr;
-    cubeb_stream* stream = nullptr;
+    cubeb* ctx{};
+    cubeb_stream* stream{};
 
     std::vector<s16> queue;
 
@@ -30,7 +30,7 @@ CubebSink::CubebSink(std::string target_device_name) : impl(std::make_unique<Imp
         return;
     }
 
-    cubeb_devid output_device = nullptr;
+    cubeb_devid output_device{};
 
     cubeb_stream_params params;
     params.rate = native_sample_rate;
@@ -40,7 +40,7 @@ CubebSink::CubebSink(std::string target_device_name) : impl(std::make_unique<Imp
 
     impl->sample_rate = native_sample_rate;
 
-    u32 minimum_latency = 0;
+    u32 minimum_latency{};
     if (cubeb_get_min_latency(impl->ctx, &params, &minimum_latency) != CUBEB_OK)
         LOG_CRITICAL(Audio_Sink, "Error getting minimum latency");
 
@@ -145,7 +145,7 @@ std::vector<std::string> ListCubebSinkDevices() {
     if (cubeb_enumerate_devices(ctx, CUBEB_DEVICE_TYPE_OUTPUT, &collection) != CUBEB_OK) {
         LOG_WARNING(Audio_Sink, "Audio output device enumeration not supported");
     } else {
-        for (size_t i = 0; i < collection.count; i++) {
+        for (size_t i{}; i < collection.count; i++) {
             const cubeb_device_info& device = collection.device[i];
             if (device.friendly_name) {
                 device_list.emplace_back(device.friendly_name);

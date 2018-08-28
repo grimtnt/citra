@@ -79,12 +79,12 @@ struct VirtualMemoryArea {
 
     // Settings for type = BackingMemory
     /// Pointer backing this VMA. It will not be destroyed or freed when the VMA is removed.
-    u8* backing_memory = nullptr;
+    u8* backing_memory{};
 
     // Settings for type = MMIO
     /// Physical address of the register area this VMA maps to.
     PAddr paddr = 0;
-    Memory::MMIORegionPointer mmio_handler = nullptr;
+    Memory::MMIORegionPointer mmio_handler{};
 
     /// Tests if this area can be merged to the right with `next`.
     bool CanBeMergedWith(const VirtualMemoryArea& next) const;

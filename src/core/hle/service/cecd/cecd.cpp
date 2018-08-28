@@ -737,7 +737,7 @@ std::string Module::EncodeBase64(const std::vector<u8>& in, const std::string& d
     std::string out;
     out.reserve((in.size() * 4) / 3);
     int b;
-    for (int i = 0; i < in.size(); i += 3) {
+    for (int i{}; i < in.size(); i += 3) {
         b = (in[i] & 0xFC) >> 2;
         out += dictionary[b];
         b = (in[i] & 0x03) << 4;
@@ -849,9 +849,9 @@ std::string Module::GetCecCommandAsString(const CecCommand command) const {
 
 void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_program_id,
                                 std::vector<u8>& file_buffer) {
-    constexpr u32 max_num_boxes = 24;
-    constexpr u32 name_size = 16;      /// fixed size 16 characters long
-    constexpr u32 valid_name_size = 8; /// 8 characters are valid, the rest are null
+    constexpr u32 max_num_boxes{24};
+    constexpr u32 name_size{16};      /// fixed size 16 characters long
+    constexpr u32 valid_name_size{8}; /// 8 characters are valid, the rest are null
     const u32 file_size = file_buffer.size();
 
     switch (path_type) {
@@ -891,11 +891,11 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
             std::memset(name_buffer.data(), 0, name_size);
 
             if (ncch_program_id != 0) {
-                std::string name = Common::StringFromFormat("%08x", ncch_program_id);
+                std::string name{Common::StringFromFormat("%08x", ncch_program_id)};
                 std::memcpy(name_buffer.data(), name.data(), name.size());
 
-                bool already_activated = false;
-                for (auto i = 0; i < mbox_list_header.num_boxes; i++) {
+                bool already_activated{};
+                for (u16_le i{}; i < mbox_list_header.num_boxes; i++) {
                     LOG_DEBUG(Service_CECD, "{}", i);
                     /// Box names start at offset 0xC, are 16 char long, first 8 id, last 8 null
                     if (std::memcmp(name_buffer.data(), &mbox_list_header.box_names[i * name_size],
@@ -936,7 +936,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
                 std::u16string u16_filename;
 
                 /// Loop through entries but don't add mboxlist____ to itself.
-                for (u32 i = 0; i < entry_count; i++) {
+                for (u32 i{}; i < entry_count; i++) {
                     u16_filename = std::u16string(entries[i].filename);
                     file_name = Common::UTF16ToUTF8(u16_filename);
 

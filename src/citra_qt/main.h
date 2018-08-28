@@ -172,16 +172,16 @@ private:
     GameListPlaceholder* game_list_placeholder;
 
     // Status bar elements
-    QProgressBar* progress_bar = nullptr;
-    QLabel* message_label = nullptr;
-    QLabel* emu_speed_label = nullptr;
-    QLabel* game_fps_label = nullptr;
-    QLabel* emu_frametime_label = nullptr;
+    QProgressBar* progress_bar{};
+    QLabel* message_label{};
+    QLabel* emu_speed_label{};
+    QLabel* game_fps_label{};
+    QLabel* emu_frametime_label{};
     QTimer status_bar_update_timer;
 
     QTimer movie_play_timer;
 
-    MultiplayerState* multiplayer_state = nullptr;
+    MultiplayerState* multiplayer_state{};
     std::unique_ptr<Config> config;
 
     // Whether emulation is currently running in Citra.

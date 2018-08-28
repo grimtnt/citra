@@ -33,8 +33,8 @@ ConfigureAudio::ConfigureAudio(QWidget* parent)
 ConfigureAudio::~ConfigureAudio() {}
 
 void ConfigureAudio::setConfiguration() {
-    int new_sink_index = 0;
-    for (int index = 0; index < ui->output_sink_combo_box->count(); index++) {
+    int new_sink_index{};
+    for (int index{}; index < ui->output_sink_combo_box->count(); index++) {
         if (ui->output_sink_combo_box->itemText(index).toStdString() == Settings::values.sink_id) {
             new_sink_index = index;
             break;
@@ -48,7 +48,7 @@ void ConfigureAudio::setConfiguration() {
     updateAudioDevices(new_sink_index);
 
     int new_device_index = -1;
-    for (int index = 0; index < ui->audio_device_combo_box->count(); index++) {
+    for (int index{}; index < ui->audio_device_combo_box->count(); index++) {
         if (ui->audio_device_combo_box->itemText(index).toStdString() ==
             Settings::values.audio_device_id) {
             new_device_index = index;

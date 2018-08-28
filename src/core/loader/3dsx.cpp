@@ -128,7 +128,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
 
     // Read the relocation headers
     std::vector<u32> relocs{n_reloc_tables * NUM_SEGMENTS};
-    for (unsigned int current_segment = 0; current_segment < NUM_SEGMENTS; ++current_segment) {
+    for (unsigned int current_segment{}; current_segment < NUM_SEGMENTS; ++current_segment) {
         size_t size = n_reloc_tables * sizeof(u32);
         if (file.ReadBytes(&relocs[current_segment * n_reloc_tables], size) != size)
             return ERROR_READ;
@@ -147,7 +147,7 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
     memset((char*)loadinfo.seg_ptrs[2] + hdr.data_seg_size - hdr.bss_size, 0, hdr.bss_size);
 
     // Relocate the segments
-    for (unsigned int current_segment = 0; current_segment < NUM_SEGMENTS; ++current_segment) {
+    for (unsigned int current_segment{}; current_segment < NUM_SEGMENTS; ++current_segment) {
         for (unsigned current_segment_reloc_table = 0; current_segment_reloc_table < n_reloc_tables;
              current_segment_reloc_table++) {
             u32 n_relocs = relocs[current_segment * n_reloc_tables + current_segment_reloc_table];
@@ -169,8 +169,8 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
                     remaining * sizeof(THREEDSX_Reloc))
                     return ERROR_READ;
 
-                for (unsigned current_inprogress = 0;
-                     current_inprogress < remaining && pos < end_pos; current_inprogress++) {
+                for (unsigned current_inprogress{}; current_inprogress < remaining && pos < end_pos;
+                     current_inprogress++) {
                     const auto& table = reloc_table[current_inprogress];
                     LOG_TRACE(Loader, "(t={},skip={},patch={})", current_segment_reloc_table,
                               static_cast<u32>(table.skip), static_cast<u32>(table.patch));

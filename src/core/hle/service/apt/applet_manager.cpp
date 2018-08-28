@@ -461,7 +461,7 @@ ResultCode AppletManager::CloseLibraryApplet(Kernel::SharedPtr<Kernel::Object> o
 }
 
 AppletManager::AppletManager() {
-    for (size_t slot = 0; slot < applet_slots.size(); ++slot) {
+    for (size_t slot{}; slot < applet_slots.size(); ++slot) {
         auto& slot_data = applet_slots[slot];
         slot_data.slot = static_cast<AppletSlot>(slot);
         slot_data.applet_id = AppletId::None;

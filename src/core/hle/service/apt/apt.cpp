@@ -57,8 +57,8 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
     ASSERT(type == 0x11);
     decompressed_size >>= 8;
 
-    u32 current_out_size = 0;
-    u8 flags = 0, mask = 1;
+    u32 current_out_size{};
+    u8 flags{}, mask = 1;
     while (current_out_size < decompressed_size) {
         if (mask == 1) {
             flags = *(in++);
@@ -88,7 +88,7 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
                 offset = (((byte1 & 0x0F) << 8) | byte2) + 0x1;
             }
 
-            for (u32 i = 0; i < length; i++) {
+            for (u32 i{}; i < length; i++) {
                 *out = *(out - offset);
                 ++out;
             }

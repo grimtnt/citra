@@ -147,7 +147,7 @@ const BitSet32 ABI_ALL_CALLEE_SAVED = BuildRegSet({
     Xbyak::util::r15,
 });
 
-constexpr size_t ABI_SHADOW_SPACE = 0;
+constexpr size_t ABI_SHADOW_SPACE{};
 
 #endif
 
@@ -155,7 +155,7 @@ inline void ABI_CalculateFrameSize(BitSet32 regs, size_t rsp_alignment, size_t n
                                    s32* out_subtraction, s32* out_xmm_offset) {
     int count = (regs & ABI_ALL_GPRS).Count();
     rsp_alignment -= count * 8;
-    size_t subtraction = 0;
+    size_t subtraction{};
     int xmm_count = (regs & ABI_ALL_XMMS).Count();
     if (xmm_count) {
         // If we have any XMMs to save, we must align the stack here.

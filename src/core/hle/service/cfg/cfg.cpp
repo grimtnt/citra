@@ -147,12 +147,12 @@ void Module::Interface::GetCountryCodeString(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetCountryCodeID(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0A, 1, 0};
     u16 country_code{rp.Pop<u16>()};
-    u16 country_code_id = 0;
+    u16 country_code_id{};
 
     // The following algorithm will fail if the first country code isn't 0.
     DEBUG_ASSERT(country_codes[0] == 0);
 
-    for (u16 id = 0; id < country_codes.size(); ++id) {
+    for (u16 id{}; id < country_codes.size(); ++id) {
         if (country_codes[id] == country_code) {
             country_code_id = id;
             break;
@@ -489,7 +489,7 @@ ResultCode Module::FormatConfig() {
 
     u16_le country_name_buffer[16][0x40] = {};
     std::u16string region_name = Common::UTF8ToUTF16("Gensokyo");
-    for (size_t i = 0; i < 16; ++i) {
+    for (size_t i{}; i < 16; ++i) {
         std::copy(region_name.cbegin(), region_name.cend(), country_name_buffer[i]);
     }
     // 0x000B0001 - Localized names for the profile Country

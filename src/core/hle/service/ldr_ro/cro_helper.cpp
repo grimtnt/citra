@@ -151,7 +151,7 @@ VAddr CROHelper::FindExportNamedSymbol(const std::string& name) const {
     if (!GetField(ExportTreeNum))
         return 0;
 
-    std::size_t len = name.size();
+    std::size_t len{name.size()};
     ExportTreeEntry entry;
     GetEntry(0, entry);
     ExportTreeEntry::Child next;
@@ -260,7 +260,7 @@ ResultCode CROHelper::RebaseHeader(u32 cro_size) {
 
     // verifies everything is not beyond the buffer
     u32 file_end = module_address + cro_size;
-    for (int field = CodeOffset, i = 0; field < Fix0Barrier; field += 2, ++i) {
+    for (int field = CodeOffset, i{}; field < Fix0Barrier; field += 2, ++i) {
         HeaderField offset_field = static_cast<HeaderField>(field);
         HeaderField size_field = static_cast<HeaderField>(field + 1);
         if (GetField(offset_field) + GetField(size_field) * ENTRY_SIZE[i] > file_end)
@@ -274,9 +274,9 @@ ResultVal<VAddr> CROHelper::RebaseSegmentTable(u32 cro_size, VAddr data_segment_
                                                u32 data_segment_size, VAddr bss_segment_address,
                                                u32 bss_segment_size) {
 
-    u32 prev_data_segment = 0;
+    u32 prev_data_segment{};
     u32 segment_num = GetField(SegmentNum);
-    for (u32 i = 0; i < segment_num; ++i) {
+    for (u32 i{}; i < segment_num; ++i) {
         SegmentEntry segment;
         GetEntry(i, segment);
         if (segment.type == SegmentType::Data) {
@@ -307,7 +307,7 @@ ResultCode CROHelper::RebaseExportNamedSymbolTable() {
     VAddr export_strings_end = export_strings_offset + GetField(ExportStringsSize);
 
     u32 export_named_symbol_num = GetField(ExportNamedSymbolNum);
-    for (u32 i = 0; i < export_named_symbol_num; ++i) {
+    for (u32 i{}; i < export_named_symbol_num; ++i) {
         ExportNamedSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -326,7 +326,7 @@ ResultCode CROHelper::RebaseExportNamedSymbolTable() {
 
 ResultCode CROHelper::VerifyExportTreeTable() const {
     u32 tree_num = GetField(ExportTreeNum);
-    for (u32 i = 0; i < tree_num; ++i) {
+    for (u32 i{}; i < tree_num; ++i) {
         ExportTreeEntry entry;
         GetEntry(i, entry);
 
@@ -350,7 +350,7 @@ ResultCode CROHelper::RebaseImportModuleTable() {
         GetField(ImportAnonymousSymbolNum) * sizeof(ImportAnonymousSymbolEntry);
 
     u32 module_num = GetField(ImportModuleNum);
-    for (u32 i = 0; i < module_num; ++i) {
+    for (u32 i{}; i < module_num; ++i) {
         ImportModuleEntry entry;
         GetEntry(i, entry);
 
@@ -392,7 +392,7 @@ ResultCode CROHelper::RebaseImportNamedSymbolTable() {
         GetField(ExternalRelocationNum) * sizeof(ExternalRelocationEntry);
 
     u32 num = GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < num; ++i) {
+    for (u32 i{}; i < num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -424,7 +424,7 @@ ResultCode CROHelper::RebaseImportIndexedSymbolTable() {
         GetField(ExternalRelocationNum) * sizeof(ExternalRelocationEntry);
 
     u32 num = GetField(ImportIndexedSymbolNum);
-    for (u32 i = 0; i < num; ++i) {
+    for (u32 i{}; i < num; ++i) {
         ImportIndexedSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -448,7 +448,7 @@ ResultCode CROHelper::RebaseImportAnonymousSymbolTable() {
         GetField(ExternalRelocationNum) * sizeof(ExternalRelocationEntry);
 
     u32 num = GetField(ImportAnonymousSymbolNum);
-    for (u32 i = 0; i < num; ++i) {
+    for (u32 i{}; i < num; ++i) {
         ImportAnonymousSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -481,7 +481,7 @@ ResultCode CROHelper::ResetExternalRelocations() {
     }
 
     bool batch_begin = true;
-    for (u32 i = 0; i < external_relocation_num; ++i) {
+    for (u32 i{}; i < external_relocation_num; ++i) {
         GetEntry(i, relocation);
         VAddr relocation_target = SegmentTagToAddress(relocation.target_position);
 
@@ -514,7 +514,7 @@ ResultCode CROHelper::ClearExternalRelocations() {
     ExternalRelocationEntry relocation;
 
     bool batch_begin = true;
-    for (u32 i = 0; i < external_relocation_num; ++i) {
+    for (u32 i{}; i < external_relocation_num; ++i) {
         GetEntry(i, relocation);
         VAddr relocation_target = SegmentTagToAddress(relocation.target_position);
 
@@ -551,7 +551,7 @@ ResultCode CROHelper::ApplyStaticAnonymousSymbolToCRS(VAddr crs_address) {
     u32 offset_export_num = GetField(StaticAnonymousSymbolNum);
     LOG_INFO(Service_LDR, "CRO {} exports {} static anonymous symbols", ModuleName(),
              offset_export_num);
-    for (u32 i = 0; i < offset_export_num; ++i) {
+    for (u32 i{}; i < offset_export_num; ++i) {
         StaticAnonymousSymbolEntry entry;
         GetEntry(i, entry);
         u32 batch_address = entry.relocation_batch_offset + module_address;
@@ -576,7 +576,7 @@ ResultCode CROHelper::ApplyStaticAnonymousSymbolToCRS(VAddr crs_address) {
 ResultCode CROHelper::ApplyInternalRelocations(u32 old_data_segment_address) {
     u32 segment_num = GetField(SegmentNum);
     u32 internal_relocation_num = GetField(InternalRelocationNum);
-    for (u32 i = 0; i < internal_relocation_num; ++i) {
+    for (u32 i{}; i < internal_relocation_num; ++i) {
         InternalRelocationEntry relocation;
         GetEntry(i, relocation);
         VAddr target_addressB = SegmentTagToAddress(relocation.target_position);
@@ -616,7 +616,7 @@ ResultCode CROHelper::ApplyInternalRelocations(u32 old_data_segment_address) {
 
 ResultCode CROHelper::ClearInternalRelocations() {
     u32 internal_relocation_num = GetField(InternalRelocationNum);
-    for (u32 i = 0; i < internal_relocation_num; ++i) {
+    for (u32 i{}; i < internal_relocation_num; ++i) {
         InternalRelocationEntry relocation;
         GetEntry(i, relocation);
         VAddr target_address = SegmentTagToAddress(relocation.target_position);
@@ -636,7 +636,7 @@ ResultCode CROHelper::ClearInternalRelocations() {
 
 void CROHelper::UnrebaseImportAnonymousSymbolTable() {
     u32 num = GetField(ImportAnonymousSymbolNum);
-    for (u32 i = 0; i < num; ++i) {
+    for (u32 i{}; i < num; ++i) {
         ImportAnonymousSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -650,7 +650,7 @@ void CROHelper::UnrebaseImportAnonymousSymbolTable() {
 
 void CROHelper::UnrebaseImportIndexedSymbolTable() {
     u32 num = GetField(ImportIndexedSymbolNum);
-    for (u32 i = 0; i < num; ++i) {
+    for (u32 i{}; i < num; ++i) {
         ImportIndexedSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -664,7 +664,7 @@ void CROHelper::UnrebaseImportIndexedSymbolTable() {
 
 void CROHelper::UnrebaseImportNamedSymbolTable() {
     u32 num = GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < num; ++i) {
+    for (u32 i{}; i < num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -682,7 +682,7 @@ void CROHelper::UnrebaseImportNamedSymbolTable() {
 
 void CROHelper::UnrebaseImportModuleTable() {
     u32 module_num = GetField(ImportModuleNum);
-    for (u32 i = 0; i < module_num; ++i) {
+    for (u32 i{}; i < module_num; ++i) {
         ImportModuleEntry entry;
         GetEntry(i, entry);
 
@@ -704,7 +704,7 @@ void CROHelper::UnrebaseImportModuleTable() {
 
 void CROHelper::UnrebaseExportNamedSymbolTable() {
     u32 export_named_symbol_num = GetField(ExportNamedSymbolNum);
-    for (u32 i = 0; i < export_named_symbol_num; ++i) {
+    for (u32 i{}; i < export_named_symbol_num; ++i) {
         ExportNamedSymbolEntry entry;
         GetEntry(i, entry);
 
@@ -718,7 +718,7 @@ void CROHelper::UnrebaseExportNamedSymbolTable() {
 
 void CROHelper::UnrebaseSegmentTable() {
     u32 segment_num = GetField(SegmentNum);
-    for (u32 i = 0; i < segment_num; ++i) {
+    for (u32 i{}; i < segment_num; ++i) {
         SegmentEntry segment;
         GetEntry(i, segment);
 
@@ -748,7 +748,7 @@ void CROHelper::UnrebaseHeader() {
 ResultCode CROHelper::ApplyImportNamedSymbol(VAddr crs_address) {
     u32 import_strings_size = GetField(ImportStringsSize);
     u32 symbol_import_num = GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < symbol_import_num; ++i) {
+    for (u32 i{}; i < symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -790,7 +790,7 @@ ResultCode CROHelper::ResetImportNamedSymbol() {
     u32 unresolved_symbol = GetOnUnresolvedAddress();
 
     u32 symbol_import_num = GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < symbol_import_num; ++i) {
+    for (u32 i{}; i < symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -810,7 +810,7 @@ ResultCode CROHelper::ResetImportIndexedSymbol() {
     u32 unresolved_symbol = GetOnUnresolvedAddress();
 
     u32 import_num = GetField(ImportIndexedSymbolNum);
-    for (u32 i = 0; i < import_num; ++i) {
+    for (u32 i{}; i < import_num; ++i) {
         ImportIndexedSymbolEntry entry;
         GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -830,7 +830,7 @@ ResultCode CROHelper::ResetImportAnonymousSymbol() {
     u32 unresolved_symbol = GetOnUnresolvedAddress();
 
     u32 import_num = GetField(ImportAnonymousSymbolNum);
-    for (u32 i = 0; i < import_num; ++i) {
+    for (u32 i{}; i < import_num; ++i) {
         ImportAnonymousSymbolEntry entry;
         GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -847,20 +847,19 @@ ResultCode CROHelper::ResetImportAnonymousSymbol() {
 }
 
 ResultCode CROHelper::ApplyModuleImport(VAddr crs_address) {
-    u32 import_strings_size = GetField(ImportStringsSize);
-
-    u32 import_module_num = GetField(ImportModuleNum);
-    for (u32 i = 0; i < import_module_num; ++i) {
-        ImportModuleEntry entry;
+    u32 import_strings_size{GetField(ImportStringsSize)};
+    u32 import_module_num{GetField(ImportModuleNum)};
+    for (u32 i{}; i < import_module_num; ++i) {
+        ImportModuleEntry entry{};
         GetEntry(i, entry);
-        std::string want_cro_name = Memory::ReadCString(entry.name_offset, import_strings_size);
+        std::string want_cro_name{Memory::ReadCString(entry.name_offset, import_strings_size)};
 
         ResultCode result =
             ForEachAutoLinkCRO(crs_address, [&](CROHelper source) -> ResultVal<bool> {
                 if (want_cro_name == source.ModuleName()) {
                     LOG_INFO(Service_LDR, "CRO {} imports {} indexed symbols from {}", ModuleName(),
                              entry.import_indexed_symbol_num, source.ModuleName());
-                    for (u32 j = 0; j < entry.import_indexed_symbol_num; ++j) {
+                    for (u32 j{}; j < entry.import_indexed_symbol_num; ++j) {
                         ImportIndexedSymbolEntry im;
                         entry.GetImportIndexedSymbolEntry(j, im);
                         ExportIndexedSymbolEntry ex;
@@ -877,7 +876,7 @@ ResultCode CROHelper::ApplyModuleImport(VAddr crs_address) {
                     }
                     LOG_INFO(Service_LDR, "CRO {} imports {} anonymous symbols from {}",
                              ModuleName(), entry.import_anonymous_symbol_num, source.ModuleName());
-                    for (u32 j = 0; j < entry.import_anonymous_symbol_num; ++j) {
+                    for (u32 j{}; j < entry.import_anonymous_symbol_num; ++j) {
                         ImportAnonymousSymbolEntry im;
                         entry.GetImportAnonymousSymbolEntry(j, im);
                         u32 symbol_address = source.SegmentTagToAddress(im.symbol_position);
@@ -905,7 +904,7 @@ ResultCode CROHelper::ApplyExportNamedSymbol(CROHelper target) {
     LOG_DEBUG(Service_LDR, "CRO {} exports named symbols to {}", ModuleName(), target.ModuleName());
     u32 target_import_strings_size = target.GetField(ImportStringsSize);
     u32 target_symbol_import_num = target.GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < target_symbol_import_num; ++i) {
+    for (u32 i{}; i < target_symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         target.GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -935,7 +934,7 @@ ResultCode CROHelper::ResetExportNamedSymbol(CROHelper target) {
     u32 unresolved_symbol = target.GetOnUnresolvedAddress();
     u32 target_import_strings_size = target.GetField(ImportStringsSize);
     u32 target_symbol_import_num = target.GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < target_symbol_import_num; ++i) {
+    for (u32 i{}; i < target_symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         target.GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -964,7 +963,7 @@ ResultCode CROHelper::ApplyModuleExport(CROHelper target) {
     std::string module_name = ModuleName();
     u32 target_import_string_size = target.GetField(ImportStringsSize);
     u32 target_import_module_num = target.GetField(ImportModuleNum);
-    for (u32 i = 0; i < target_import_module_num; ++i) {
+    for (u32 i{}; i < target_import_module_num; ++i) {
         ImportModuleEntry entry;
         target.GetEntry(i, entry);
 
@@ -973,7 +972,7 @@ ResultCode CROHelper::ApplyModuleExport(CROHelper target) {
 
         LOG_INFO(Service_LDR, "CRO {} exports {} indexed symbols to {}", module_name,
                  entry.import_indexed_symbol_num, target.ModuleName());
-        for (u32 j = 0; j < entry.import_indexed_symbol_num; ++j) {
+        for (u32 j{}; j < entry.import_indexed_symbol_num; ++j) {
             ImportIndexedSymbolEntry im;
             entry.GetImportIndexedSymbolEntry(j, im);
             ExportIndexedSymbolEntry ex;
@@ -990,7 +989,7 @@ ResultCode CROHelper::ApplyModuleExport(CROHelper target) {
 
         LOG_INFO(Service_LDR, "CRO {} exports {} anonymous symbols to {}", module_name,
                  entry.import_anonymous_symbol_num, target.ModuleName());
-        for (u32 j = 0; j < entry.import_anonymous_symbol_num; ++j) {
+        for (u32 j{}; j < entry.import_anonymous_symbol_num; ++j) {
             ImportAnonymousSymbolEntry im;
             entry.GetImportAnonymousSymbolEntry(j, im);
             u32 symbol_address = SegmentTagToAddress(im.symbol_position);
@@ -1013,7 +1012,7 @@ ResultCode CROHelper::ResetModuleExport(CROHelper target) {
     std::string module_name = ModuleName();
     u32 target_import_string_size = target.GetField(ImportStringsSize);
     u32 target_import_module_num = target.GetField(ImportModuleNum);
-    for (u32 i = 0; i < target_import_module_num; ++i) {
+    for (u32 i{}; i < target_import_module_num; ++i) {
         ImportModuleEntry entry;
         target.GetEntry(i, entry);
 
@@ -1022,7 +1021,7 @@ ResultCode CROHelper::ResetModuleExport(CROHelper target) {
 
         LOG_DEBUG(Service_LDR, "CRO {} unexports indexed symbols to {}", module_name,
                   target.ModuleName());
-        for (u32 j = 0; j < entry.import_indexed_symbol_num; ++j) {
+        for (u32 j{}; j < entry.import_indexed_symbol_num; ++j) {
             ImportIndexedSymbolEntry im;
             entry.GetImportIndexedSymbolEntry(j, im);
             ResultCode result =
@@ -1035,7 +1034,7 @@ ResultCode CROHelper::ResetModuleExport(CROHelper target) {
 
         LOG_DEBUG(Service_LDR, "CRO {} unexports anonymous symbols to {}", module_name,
                   target.ModuleName());
-        for (u32 j = 0; j < entry.import_anonymous_symbol_num; ++j) {
+        for (u32 j{}; j < entry.import_anonymous_symbol_num; ++j) {
             ImportAnonymousSymbolEntry im;
             entry.GetImportAnonymousSymbolEntry(j, im);
             ResultCode result =
@@ -1053,7 +1052,7 @@ ResultCode CROHelper::ResetModuleExport(CROHelper target) {
 ResultCode CROHelper::ApplyExitRelocations(VAddr crs_address) {
     u32 import_strings_size = GetField(ImportStringsSize);
     u32 symbol_import_num = GetField(ImportNamedSymbolNum);
-    for (u32 i = 0; i < symbol_import_num; ++i) {
+    for (u32 i{}; i < symbol_import_num; ++i) {
         ImportNamedSymbolEntry entry;
         GetEntry(i, entry);
         VAddr relocation_addr = entry.relocation_batch_offset;
@@ -1499,7 +1498,7 @@ bool CROHelper::IsLoaded() const {
 
 std::tuple<VAddr, u32> CROHelper::GetExecutablePages() const {
     u32 segment_num = GetField(SegmentNum);
-    for (u32 i = 0; i < segment_num; ++i) {
+    for (u32 i{}; i < segment_num; ++i) {
         SegmentEntry entry;
         GetEntry(i, entry);
         if (entry.type == SegmentType::Code && entry.size != 0) {

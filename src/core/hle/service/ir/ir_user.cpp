@@ -104,7 +104,7 @@ public:
         SetPacketInfo(info.end_index, packet_info);
 
         // writes packet data
-        for (size_t i = 0; i < packet.size(); ++i) {
+        for (size_t i{}; i < packet.size(); ++i) {
             *GetDataBufferPointer((write_offset + i) % max_data_size) = packet[i];
         }
 

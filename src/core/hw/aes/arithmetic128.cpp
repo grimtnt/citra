@@ -14,7 +14,7 @@ AESKey Lrot128(const AESKey& in, u32 rot) {
     const u32 byte_shift = rot / 8;
     const u32 bit_shift = rot % 8;
 
-    for (u32 i = 0; i < 16; i++) {
+    for (u32 i{}; i < 16; i++) {
         const u32 wrap_index_a = (i + byte_shift) % 16;
         const u32 wrap_index_b = (i + byte_shift + 1) % 16;
         out[i] = ((in[wrap_index_a] << bit_shift) | (in[wrap_index_b] >> (8 - bit_shift))) & 0xFF;
@@ -24,8 +24,8 @@ AESKey Lrot128(const AESKey& in, u32 rot) {
 
 AESKey Add128(const AESKey& a, const AESKey& b) {
     AESKey out;
-    u32 carry = 0;
-    u32 sum = 0;
+    u32 carry{};
+    u32 sum{};
 
     for (int i = 15; i >= 0; i--) {
         sum = a[i] + b[i] + carry;

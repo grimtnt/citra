@@ -109,7 +109,7 @@ void Module::CompletionEventCallBack(u64 port_id, s64) {
         int dest_size_left = static_cast<int>(port.dest_size);
         const int line_bytes = static_cast<int>(trim_width * sizeof(u16));
 
-        for (u32 y = 0; y < trim_height; ++y) {
+        for (u32 y{}; y < trim_height; ++y) {
             int copy_length = std::min({line_bytes, dest_size_left, src_size_left});
             if (copy_length <= 0) {
                 break;
@@ -621,7 +621,7 @@ void Module::Interface::Activate(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (camera_select.IsValid()) {
         if (camera_select.m_val == 0) { // deactive all
-            for (int i = 0; i < 2; ++i) {
+            for (int i{}; i < 2; ++i) {
                 if (cam->ports[i].is_busy) {
                     cam->CancelReceiving(i);
                     cam->cameras[cam->ports[i].camera_id].impl->StopCapture();
@@ -976,10 +976,10 @@ void Module::Interface::DriverInitialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x39, 0, 0};
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
-    for (int camera_id = 0; camera_id < NumCameras; ++camera_id) {
+    for (int camera_id{}; camera_id < NumCameras; ++camera_id) {
         CameraConfig& camera = cam->cameras[camera_id];
         camera.current_context = 0;
-        for (int context_id = 0; context_id < 2; ++context_id) {
+        for (int context_id{}; context_id < 2; ++context_id) {
             // Note: the following default values are verified against real 3DS
             ContextConfig& context = camera.contexts[context_id];
             context.flip = camera_id == 1 ? Flip::Horizontal : Flip::None;

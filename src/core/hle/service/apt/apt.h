@@ -608,10 +608,10 @@ private:
 
     Kernel::SharedPtr<Kernel::Mutex> lock;
 
-    u32 cpu_percent = 0; ///< CPU time available to the running application
+    u32 cpu_percent{}; ///< CPU time available to the running application
 
     // APT::CheckNew3DSApp will check this unknown_ns_state_field to determine processing mode
-    u8 unknown_ns_state_field = 0;
+    u8 unknown_ns_state_field{};
 
     std::vector<u8> screen_capture_buffer;
 

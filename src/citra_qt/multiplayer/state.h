@@ -49,10 +49,10 @@ signals:
     void NetworkStateChanged(const Network::RoomMember::State&);
 
 private:
-    HostRoomWindow* host_room = nullptr;
-    IpConnectWindow* ip_connect = nullptr;
-    QLabel* status_icon = nullptr;
-    QStandardItemModel* game_list_model = nullptr;
+    HostRoomWindow* host_room{};
+    IpConnectWindow* ip_connect{};
+    QLabel* status_icon{};
+    QStandardItemModel* game_list_model{};
     QTimer close_timer;
     QAction* leave_room;
     Network::RoomMember::State current_state = Network::RoomMember::State::Uninitialized;

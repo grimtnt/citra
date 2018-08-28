@@ -291,8 +291,8 @@ private:
     std::array<u8, 16> exefs_ctr{};
     std::array<u8, 16> romfs_ctr{};
 
-    u32 ncch_offset = 0; // Offset to NCCH header, can be 0 for NCCHs or non-zero for CIAs/NCSDs
-    u32 exefs_offset = 0;
+    u32 ncch_offset{}; // Offset to NCCH header, can be 0 for NCCHs or non-zero for CIAs/NCSDs
+    u32 exefs_offset{};
 
     std::string filepath;
     FileUtil::IOFile file;

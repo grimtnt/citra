@@ -10,11 +10,12 @@
 
 static void SetShaderUniformBlockBinding(GLuint shader, const char* name, UniformBindings binding,
                                          size_t expected_size) {
-    GLuint ub_index = glGetUniformBlockIndex(shader, name);
+    GLuint ub_index{glGetUniformBlockIndex(shader, name)};
     if (ub_index == GL_INVALID_INDEX) {
         return;
     }
-    GLint ub_size = 0;
+    GLint ub_size{};
+    glGetActiveUniformBlockiv(shader, ub_index, GL_UNIFORM_BLOCK_DATA_SIZE, &ub_size);
     glGetActiveUniformBlockiv(shader, ub_index, GL_UNIFORM_BLOCK_DATA_SIZE, &ub_size);
     ASSERT_MSG(ub_size == expected_size, "Uniform block size did not match! Got {}, expected {}",
                static_cast<int>(ub_size), expected_size);
@@ -30,22 +31,22 @@ static void SetShaderUniformBlockBindings(GLuint shader) {
 
 static void SetShaderSamplerBinding(GLuint shader, const char* name,
                                     TextureUnits::TextureUnit binding) {
-    GLint uniform_tex = glGetUniformLocation(shader, name);
+    GLint uniform_tex{glGetUniformLocation(shader, name)};
     if (uniform_tex != -1) {
         glUniform1i(uniform_tex, binding.id);
     }
 }
 
 static void SetShaderImageBinding(GLuint shader, const char* name, GLuint binding) {
-    GLint uniform_tex = glGetUniformLocation(shader, name);
+    GLint uniform_tex{glGetUniformLocation(shader, name)};
     if (uniform_tex != -1) {
         glUniform1i(uniform_tex, static_cast<GLint>(binding));
     }
 }
 
 static void SetShaderSamplerBindings(GLuint shader) {
-    OpenGLState cur_state = OpenGLState::GetCurState();
-    GLuint old_program = std::exchange(cur_state.draw.shader_program, shader);
+    OpenGLState cur_state{OpenGLState::GetCurState()};
+    GLuint old_program{std::exchange(cur_state.draw.shader_program, shader)};
     cur_state.Apply();
 
     // Set the texture samplers to correspond to different texture units
@@ -225,9 +226,9 @@ public:
     }
 
     struct ShaderTuple {
-        GLuint vs = 0;
-        GLuint gs = 0;
-        GLuint fs = 0;
+        GLuint vs{};
+        GLuint gs{};
+        GLuint fs{};
 
         bool operator==(const ShaderTuple& rhs) const {
             return std::tie(vs, gs, fs) == std::tie(rhs.vs, rhs.gs, rhs.fs);
@@ -239,7 +240,7 @@ public:
 
         struct Hash {
             std::size_t operator()(const ShaderTuple& tuple) const {
-                std::size_t hash = 0;
+                std::size_t hash{};
                 boost::hash_combine(hash, tuple.vs);
                 boost::hash_combine(hash, tuple.gs);
                 boost::hash_combine(hash, tuple.fs);

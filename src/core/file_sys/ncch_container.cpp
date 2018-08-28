@@ -59,7 +59,7 @@ static bool LZSS_Decompress(const u8* compressed, u32 compressed_size, u8* decom
     while (index > stop_index) {
         u8 control = compressed[--index];
 
-        for (unsigned i = 0; i < 8; i++) {
+        for (unsigned i{}; i < 8; i++) {
             if (index <= stop_index)
                 break;
             if (index <= 0)
@@ -82,7 +82,7 @@ static bool LZSS_Decompress(const u8* compressed, u32 compressed_size, u8* decom
                 if (out < segment_size)
                     return false;
 
-                for (unsigned j = 0; j < segment_size; j++) {
+                for (unsigned j{}; j < segment_size; j++) {
                     // Check if compression is out of bounds
                     if (out + segment_offset >= decompressed_size)
                         return false;
@@ -415,7 +415,7 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
 
     LOG_DEBUG(Service_FS, "{} sections:", kMaxSections);
     // Iterate through the ExeFs archive until we find a section with the specified name...
-    for (unsigned section_number = 0; section_number < kMaxSections; section_number++) {
+    for (unsigned section_number{}; section_number < kMaxSections; section_number++) {
         const auto& section{exefs_header.section[section_number]};
 
         // Load the specified section...
@@ -423,8 +423,8 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
             LOG_DEBUG(Service_FS, "{} - offset: 0x{:08X}, size: 0x{:08X}, name: {}", section_number,
                       section.offset, section.size, section.name);
 
-            s64 section_offset{
-                (section.offset + exefs_offset + sizeof(ExeFs_Header) + ncch_offset)};
+            s64 section_offset{static_cast<s64>(
+                (section.offset + exefs_offset + sizeof(ExeFs_Header) + ncch_offset))};
             exefs_file.Seek(section_offset, SEEK_SET);
 
             std::array<u8, 16> key{};

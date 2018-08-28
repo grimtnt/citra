@@ -46,7 +46,7 @@ void DspInterface::OutputFrame(StereoFrame16& frame) {
 
     // Implementation of the hardware volume slider with a dynamic range of 60 dB
     double volume_scale_factor{std::exp(6.90775 * Settings::values.volume) * 0.001};
-    for (size_t i = 0; i < frame.size(); i++) {
+    for (size_t i{}; i < frame.size(); i++) {
         frame[i][0] = static_cast<s16>(frame[i][0] * volume_scale_factor);
         frame[i][1] = static_cast<s16>(frame[i][1] * volume_scale_factor);
     }

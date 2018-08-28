@@ -284,10 +284,10 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
     std::array<QuadFrame32, 3> intermediate_mixes = {};
 
     // Generate intermediate mixes
-    for (size_t i = 0; i < HLE::num_sources; i++) {
+    for (size_t i{}; i < HLE::num_sources; i++) {
         write.source_statuses.status[i] =
             sources[i].Tick(read.source_configurations.config[i], read.adpcm_coefficients.coeff[i]);
-        for (size_t mix = 0; mix < 3; mix++) {
+        for (size_t mix{}; mix < 3; mix++) {
             sources[i].MixInto(intermediate_mixes[mix], mix);
         }
     }
@@ -299,8 +299,8 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
     StereoFrame16 output_frame{mixers.GetOutput()};
 
     // Write current output frame to the shared memory region
-    for (size_t samplei = 0; samplei < output_frame.size(); samplei++) {
-        for (size_t channeli = 0; channeli < output_frame[0].size(); channeli++) {
+    for (size_t samplei{}; samplei < output_frame.size(); samplei++) {
+        for (size_t channeli{}; channeli < output_frame[0].size(); channeli++) {
             write.final_samples.pcm16[samplei][channeli] = s16_le(output_frame[samplei][channeli]);
         }
     }

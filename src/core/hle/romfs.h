@@ -18,8 +18,8 @@ public:
     u64 Length() const;
 
 private:
-    const u8* data = nullptr;
-    u64 length = 0;
+    const u8* data{};
+    u64 length{};
 };
 
 /**

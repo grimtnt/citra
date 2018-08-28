@@ -127,7 +127,7 @@ ConfigureInput::ConfigureInput(QWidget* parent)
 
     analog_map_stick = {ui->buttonCircleAnalog, ui->buttonCStickAnalog};
 
-    for (int button_id = 0; button_id < Settings::NativeButton::NumButtons; button_id++) {
+    for (int button_id{}; button_id < Settings::NativeButton::NumButtons; button_id++) {
         if (button_map[button_id])
             connect(button_map[button_id], &QPushButton::released, [&]() {
                 handleClick(
@@ -137,8 +137,8 @@ ConfigureInput::ConfigureInput(QWidget* parent)
             });
     }
 
-    for (int analog_id = 0; analog_id < Settings::NativeAnalog::NumAnalogs; analog_id++) {
-        for (int sub_button_id = 0; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
+    for (int analog_id{}; analog_id < Settings::NativeAnalog::NumAnalogs; analog_id++) {
+        for (int sub_button_id{}; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
             if (analog_map_buttons[analog_id][sub_button_id] != nullptr) {
                 connect(analog_map_buttons[analog_id][sub_button_id], &QPushButton::released,
                         [&]() {
@@ -203,13 +203,13 @@ void ConfigureInput::loadConfiguration() {
 }
 
 void ConfigureInput::restoreDefaults() {
-    for (int button_id = 0; button_id < Settings::NativeButton::NumButtons; button_id++) {
+    for (int button_id{}; button_id < Settings::NativeButton::NumButtons; button_id++) {
         buttons_param[button_id] = Common::ParamPackage{
             InputCommon::GenerateKeyboardParam(Config::default_buttons[button_id])};
     }
 
-    for (int analog_id = 0; analog_id < Settings::NativeAnalog::NumAnalogs; analog_id++) {
-        for (int sub_button_id = 0; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
+    for (int analog_id{}; analog_id < Settings::NativeAnalog::NumAnalogs; analog_id++) {
+        for (int sub_button_id{}; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
             Common::ParamPackage params{InputCommon::GenerateKeyboardParam(
                 Config::default_analogs[analog_id][sub_button_id])};
             SetAnalogButton(params, analogs_param[analog_id], analog_sub_buttons[sub_button_id]);
@@ -220,12 +220,12 @@ void ConfigureInput::restoreDefaults() {
 }
 
 void ConfigureInput::updateButtonLabels() {
-    for (int button = 0; button < Settings::NativeButton::NumButtons; button++) {
+    for (int button{}; button < Settings::NativeButton::NumButtons; button++) {
         button_map[button]->setText(ButtonToText(buttons_param[button]));
     }
 
-    for (int analog_id = 0; analog_id < Settings::NativeAnalog::NumAnalogs; analog_id++) {
-        for (int sub_button_id = 0; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
+    for (int analog_id{}; analog_id < Settings::NativeAnalog::NumAnalogs; analog_id++) {
+        for (int sub_button_id{}; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
             if (analog_map_buttons[analog_id][sub_button_id]) {
                 analog_map_buttons[analog_id][sub_button_id]->setText(
                     AnalogToText(analogs_param[analog_id], analog_sub_buttons[sub_button_id]));

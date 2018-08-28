@@ -89,7 +89,7 @@ public:
             break;
         }
         case Settings::TicksMode::Auto: {
-            u64 program_id = 0;
+            u64 program_id{};
             Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
             auto itr = custom_ticks_map.find(program_id);
             if (itr != custom_ticks_map.end()) {
@@ -173,7 +173,7 @@ public:
     }
 
     ARM_Dynarmic& parent;
-    u64 custom_ticks = 0;
+    u64 custom_ticks{};
     bool use_custom_ticks = false;
 };
 
@@ -310,7 +310,7 @@ void ARM_Dynarmic::SyncSettings() {
         break;
     }
     case Settings::TicksMode::Auto: {
-        u64 program_id = 0;
+        u64 program_id{};
         Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
         auto itr = custom_ticks_map.find(program_id);
         if (itr != custom_ticks_map.end()) {

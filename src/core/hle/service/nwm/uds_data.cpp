@@ -85,11 +85,11 @@ static std::array<u8, CryptoPP::Weak::MD5::DIGESTSIZE> GetDataCryptoCTR(
 static std::array<u8, CryptoPP::AES::BLOCKSIZE> GenerateDataCCMPKey(
     const std::vector<u8>& passphrase, const NetworkInfo& network_info) {
     // Calculate the MD5 hash of the input passphrase.
-    std::array<u8, CryptoPP::Weak::MD5::DIGESTSIZE> passphrase_hash;
+    std::array<u8, CryptoPP::Weak::MD5::DIGESTSIZE> passphrase_hash{};
     CryptoPP::Weak::MD5().CalculateDigest(passphrase_hash.data(), passphrase.data(),
                                           passphrase.size());
 
-    std::array<u8, CryptoPP::AES::BLOCKSIZE> ccmp_key;
+    std::array<u8, CryptoPP::AES::BLOCKSIZE> ccmp_key{};
 
     // The CCMP key is the result of encrypting the MD5 hash of the passphrase with AES-CTR using
     // keyslot 0x2D.
@@ -356,9 +356,9 @@ std::vector<u8> GenerateEAPoLLogoffFrame(const MacAddress& mac_address, u16 netw
     eapol_logoff.connected_nodes = total_nodes;
     eapol_logoff.max_nodes = max_nodes;
 
-    for (size_t index = 0; index < total_nodes; ++index) {
-        const auto& node_info = nodes[index];
-        auto& node = eapol_logoff.nodes[index];
+    for (size_t index{}; index < total_nodes; ++index) {
+        const auto& node_info{nodes[index]};
+        auto& node{eapol_logoff.nodes[index]};
 
         node.friend_code_seed = node_info.friend_code_seed;
         node.network_node_id = node_info.network_node_id;
@@ -369,13 +369,13 @@ std::vector<u8> GenerateEAPoLLogoffFrame(const MacAddress& mac_address, u16 netw
     std::vector<u8> eapol_buffer(sizeof(EAPoLLogoffPacket));
     std::memcpy(eapol_buffer.data(), &eapol_logoff, sizeof(eapol_logoff));
 
-    std::vector<u8> buffer = GenerateLLCHeader(EtherType::EAPoL);
+    std::vector<u8> buffer{GenerateLLCHeader(EtherType::EAPoL)};
     buffer.insert(buffer.end(), eapol_buffer.begin(), eapol_buffer.end());
     return buffer;
 }
 
 EAPoLLogoffPacket ParseEAPoLLogoffFrame(const std::vector<u8>& frame) {
-    EAPoLLogoffPacket eapol_logoff;
+    EAPoLLogoffPacket eapol_logoff{};
 
     // Skip the LLC header
     std::memcpy(&eapol_logoff, frame.data() + sizeof(LLCHeader), sizeof(eapol_logoff));

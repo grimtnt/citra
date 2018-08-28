@@ -94,7 +94,7 @@ private:
             // Drain the logging queue. Only writes out up to MAX_LOGS_TO_WRITE to prevent a case
             // where a system is repeatedly spamming logs even on close.
             constexpr int MAX_LOGS_TO_WRITE = 100;
-            int logs_written = 0;
+            int logs_written{};
             while (logs_written++ < MAX_LOGS_TO_WRITE && message_queue.Pop(entry)) {
                 write_logs(entry);
             }

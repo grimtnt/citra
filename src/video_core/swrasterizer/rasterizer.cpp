@@ -312,7 +312,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
             uv[2].v() = GetInterpolatedAttribute(v0.tc2.v(), v1.tc2.v(), v2.tc2.v());
 
             Math::Vec4<u8> texture_color[4]{};
-            for (int i = 0; i < 3; ++i) {
+            for (int i{}; i < 3; ++i) {
                 const auto& texture = textures[i];
                 if (!texture.enabled)
                     continue;
@@ -467,7 +467,7 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                     g_state.regs.lighting, g_state.lighting, normquat, view, texture_color);
             }
 
-            for (unsigned tev_stage_index = 0; tev_stage_index < tev_stages.size();
+            for (unsigned tev_stage_index{}; tev_stage_index < tev_stages.size();
                  ++tev_stage_index) {
                 const auto& tev_stage = tev_stages[tev_stage_index];
                 using Source = TexturingRegs::TevStageConfig::Source;
@@ -646,13 +646,13 @@ static void ProcessTriangleInternal(const Vertex& v0, const Vertex& v1, const Ve
                 fog_factor = std::clamp(fog_factor, 0.0f, 1.0f);
 
                 // Blend the fog
-                for (unsigned i = 0; i < 3; i++) {
+                for (unsigned i{}; i < 3; i++) {
                     combiner_output[i] = static_cast<u8>(fog_factor * combiner_output[i] +
                                                          (1.0f - fog_factor) * fog_color[i]);
                 }
             }
 
-            u8 old_stencil = 0;
+            u8 old_stencil{};
 
             auto UpdateStencil = [stencil_test, x, y,
                                   &old_stencil](Pica::FramebufferRegs::StencilAction action) {

@@ -116,9 +116,9 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
         case IPC::DescriptorType::MoveHandle: {
             u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
             ASSERT(i + num_handles <= command_size); // TODO(yuriks): Return error
-            for (u32 j = 0; j < num_handles; ++j) {
+            for (u32 j{}; j < num_handles; ++j) {
                 Handle handle = src_cmdbuf[i];
-                SharedPtr<Object> object = nullptr;
+                SharedPtr<Object> object{};
                 if (handle != 0) {
                     object = src_table.GetGeneric(handle);
                     ASSERT(object != nullptr); // TODO(yuriks): Return error
@@ -182,9 +182,9 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
             // HLE services don't use handles, so we treat both CopyHandle and MoveHandle equally
             u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
             ASSERT(i + num_handles <= command_size);
-            for (u32 j = 0; j < num_handles; ++j) {
+            for (u32 j{}; j < num_handles; ++j) {
                 SharedPtr<Object> object = GetIncomingHandle(cmd_buf[i]);
-                Handle handle = 0;
+                Handle handle{};
                 if (object != nullptr) {
                     // TODO(yuriks): Figure out the proper error handling for if this fails
                     handle = dst_table.Create(object).Unwrap();

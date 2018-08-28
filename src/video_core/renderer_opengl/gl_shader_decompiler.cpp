@@ -208,7 +208,7 @@ public:
         return std::move(shader_source);
     }
 
-    int scope = 0;
+    int scope{};
 
 private:
     std::string shader_source;
@@ -218,7 +218,7 @@ private:
 template <SwizzlePattern::Selector (SwizzlePattern::*getter)(int) const>
 std::string GetSelectorSrc(const SwizzlePattern& pattern) {
     std::string out;
-    for (std::size_t i = 0; i < 4; ++i) {
+    for (std::size_t i{}; i < 4; ++i) {
         switch ((pattern.*getter)(i)) {
         case SwizzlePattern::Selector::x:
             out += "x";
@@ -377,10 +377,10 @@ private:
      */
     void SetDest(const SwizzlePattern& swizzle, const std::string& reg, const std::string& value,
                  u32 dest_num_components, u32 value_num_components) {
-        u32 dest_mask_num_components = 0;
+        u32 dest_mask_num_components{};
         std::string dest_mask_swizzle = ".";
 
-        for (u32 i = 0; i < dest_num_components; ++i) {
+        for (u32 i{}; i < dest_num_components; ++i) {
             if (swizzle.DestComponentEnabled(static_cast<int>(i))) {
                 dest_mask_swizzle += "xyzw"[i];
                 ++dest_mask_num_components;
@@ -810,7 +810,7 @@ private:
         // Add declarations for registers
         shader.AddLine("bvec2 conditional_code = bvec2(false);");
         shader.AddLine("ivec3 address_registers = ivec3(0);");
-        for (int i = 0; i < 16; ++i) {
+        for (int i{}; i < 16; ++i) {
             shader.AddLine("vec4 reg_tmp" + std::to_string(i) + " = vec4(0.0, 0.0, 0.0, 1.0);");
         }
         shader.AddLine("");

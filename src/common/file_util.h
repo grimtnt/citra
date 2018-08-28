@@ -258,7 +258,7 @@ public:
     }
 
 private:
-    std::FILE* m_file = nullptr;
+    std::FILE* m_file{};
     bool m_good = true;
 };
 

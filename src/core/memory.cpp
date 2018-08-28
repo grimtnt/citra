@@ -24,7 +24,7 @@ namespace Memory {
 static std::array<u8, Memory::VRAM_SIZE> vram;
 static std::array<u8, Memory::N3DS_EXTRA_RAM_SIZE> n3ds_extra_ram;
 
-static PageTable* current_page_table = nullptr;
+static PageTable* current_page_table{};
 
 void SetCurrentPageTable(PageTable* page_table) {
     current_page_table = page_table;
@@ -82,7 +82,7 @@ void UnmapRegion(PageTable& page_table, VAddr base, u32 size) {
  * using a VMA from the current process
  */
 static u8* GetPointerFromVMA(const Kernel::Process& process, VAddr vaddr) {
-    u8* direct_pointer = nullptr;
+    u8* direct_pointer{};
 
     auto& vm_manager = process.vm_manager;
 
@@ -253,7 +253,7 @@ u8* GetPointer(const VAddr vaddr) {
 std::string ReadCString(VAddr vaddr, std::size_t max_length) {
     std::string string;
     string.reserve(max_length);
-    for (std::size_t i = 0; i < max_length; ++i) {
+    for (std::size_t i{}; i < max_length; ++i) {
         char c = Read8(vaddr);
         if (c == '\0')
             break;
@@ -295,7 +295,7 @@ u8* GetPhysicalPointer(PAddr address) {
 
     u32 offset_into_region = address - area->paddr_base;
 
-    u8* target_pointer = nullptr;
+    u8* target_pointer{};
     switch (area->paddr_base) {
     case VRAM_PADDR:
         target_pointer = vram.data() + offset_into_region;
@@ -331,7 +331,7 @@ void RasterizerMarkRegionCached(PAddr start, u32 size, bool cached) {
     u32 num_pages = ((start + size - 1) >> PAGE_BITS) - (start >> PAGE_BITS) + 1;
     PAddr paddr = start;
 
-    for (unsigned i = 0; i < num_pages; ++i, paddr += PAGE_SIZE) {
+    for (unsigned i{}; i < num_pages; ++i, paddr += PAGE_SIZE) {
         boost::optional<VAddr> maybe_vaddr = PhysicalToVirtualAddress(paddr);
         // While the physical <-> virtual mapping is 1:1 for the regions supported by the cache,
         // some games (like Pokemon Super Mystery Dungeon) will try to use textures that go beyond

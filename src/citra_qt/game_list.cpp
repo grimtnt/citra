@@ -100,11 +100,11 @@ QString GameList::getLastFilterResultItem() {
     QStandardItem* child;
     QString file_path;
     int folderCount = item_model->rowCount();
-    for (int i = 0; i < folderCount; ++i) {
+    for (int i{}; i < folderCount; ++i) {
         folder = item_model->item(i, 0);
         QModelIndex folder_index = folder->index();
         int childrenCount = folder->rowCount();
-        for (int j = 0; j < childrenCount; ++j) {
+        for (int j{}; j < childrenCount; ++j) {
             if (!tree_view->isRowHidden(j, folder_index)) {
                 child = folder->child(j, 0);
                 file_path = child->data(GameListItemPath::FullPathRole).toString();
@@ -188,28 +188,28 @@ void GameList::onTextChanged(const QString& newText) {
     int folderCount = tree_view->model()->rowCount();
     QString edit_filter_text = newText.toLower();
     QStandardItem* folder;
-    int childrenTotal = 0;
+    int childrenTotal{};
 
     // If the searchfield is empty every item is visible
     // Otherwise the filter gets applied
     if (edit_filter_text.isEmpty()) {
-        for (int i = 0; i < folderCount; ++i) {
+        for (int i{}; i < folderCount; ++i) {
             folder = item_model->item(i, 0);
             QModelIndex folder_index = folder->index();
             int childrenCount = folder->rowCount();
-            for (int j = 0; j < childrenCount; ++j) {
+            for (int j{}; j < childrenCount; ++j) {
                 ++childrenTotal;
                 tree_view->setRowHidden(j, folder_index, false);
             }
         }
         search_field->setFilterResult(childrenTotal, childrenTotal);
     } else {
-        int result_count = 0;
-        for (int i = 0; i < folderCount; ++i) {
+        int result_count{};
+        for (int i{}; i < folderCount; ++i) {
             folder = item_model->item(i, 0);
             QModelIndex folder_index = folder->index();
             int childrenCount = folder->rowCount();
-            for (int j = 0; j < childrenCount; ++j) {
+            for (int j{}; j < childrenCount; ++j) {
                 ++childrenTotal;
                 const QStandardItem* child = folder->child(j, 0);
                 const QString file_path =
@@ -239,7 +239,7 @@ void GameList::onTextChanged(const QString& newText) {
 }
 
 void GameList::onUpdateThemedIcons() {
-    for (int i = 0; i < item_model->invisibleRootItem()->rowCount(); i++) {
+    for (int i{}; i < item_model->invisibleRootItem()->rowCount(); i++) {
         QStandardItem* child = item_model->invisibleRootItem()->child(i);
 
         switch (static_cast<GameListItemType>(child->type())) {
@@ -371,7 +371,7 @@ void GameList::ValidateEntry(const QModelIndex& item) {
 }
 
 bool GameList::isEmpty() {
-    for (int i = 0; i < item_model->invisibleRootItem()->rowCount(); i++) {
+    for (int i{}; i < item_model->invisibleRootItem()->rowCount(); i++) {
         const QStandardItem* child = item_model->invisibleRootItem()->child(i);
         GameListItemType type = static_cast<GameListItemType>(child->type());
         if (!child->hasChildren() &&
@@ -402,16 +402,16 @@ void GameList::DonePopulating(QStringList watch_list) {
     constexpr int LIMIT_WATCH_DIRECTORIES = 5000;
     constexpr int SLICE_SIZE = 25;
     int len = std::min(watch_list.length(), LIMIT_WATCH_DIRECTORIES);
-    for (int i = 0; i < len; i += SLICE_SIZE) {
+    for (int i{}; i < len; i += SLICE_SIZE) {
         watcher->addPaths(watch_list.mid(i, i + SLICE_SIZE));
         QCoreApplication::processEvents();
     }
     tree_view->setEnabled(true);
     int folderCount = tree_view->model()->rowCount();
-    int childrenTotal = 0;
-    for (int i = 0; i < folderCount; ++i) {
+    int childrenTotal{};
+    for (int i{}; i < folderCount; ++i) {
         int childrenCount = item_model->item(i, 0)->rowCount();
-        for (int j = 0; j < childrenCount; ++j) {
+        for (int j{}; j < childrenCount; ++j) {
             ++childrenTotal;
         }
     }
@@ -603,7 +603,7 @@ QString GameList::FindGameByProgramID(QStandardItem* current_item, u64 program_i
         current_item->data(GameListItemPath::ProgramIdRole).toULongLong() == program_id) {
         return current_item->data(GameListItemPath::FullPathRole).toString();
     } else if (current_item->hasChildren()) {
-        for (int child_id = 0; child_id < current_item->rowCount(); child_id++) {
+        for (int child_id{}; child_id < current_item->rowCount(); child_id++) {
             QString path = FindGameByProgramID(current_item->child(child_id, 0), program_id);
             if (!path.isEmpty())
                 return path;
@@ -628,7 +628,7 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
             if (!loader)
                 return true;
 
-            u64 program_id = 0;
+            u64 program_id{};
             loader->ReadProgramId(program_id);
 
             std::vector<u8> smdh = [program_id, &loader]() -> std::vector<u8> {

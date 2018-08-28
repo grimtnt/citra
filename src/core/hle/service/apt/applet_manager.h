@@ -77,13 +77,13 @@ struct MessageParameter {
     AppletId sender_id = AppletId::None;
     AppletId destination_id = AppletId::None;
     SignalType signal = SignalType::None;
-    Kernel::SharedPtr<Kernel::Object> object = nullptr;
+    Kernel::SharedPtr<Kernel::Object> object{};
     std::vector<u8> buffer;
 };
 
 /// Holds information about the parameters used in StartLibraryApplet
 struct AppletStartupParameter {
-    Kernel::SharedPtr<Kernel::Object> object = nullptr;
+    Kernel::SharedPtr<Kernel::Object> object{};
     std::vector<u8> buffer;
 };
 

@@ -91,12 +91,12 @@ private:
     QString FindGameByProgramID(QStandardItem* current_item, u64 program_id);
 
     GameListSearchField* search_field;
-    GMainWindow* main_window = nullptr;
-    QVBoxLayout* layout = nullptr;
-    QTreeView* tree_view = nullptr;
-    QStandardItemModel* item_model = nullptr;
-    GameListWorker* current_worker = nullptr;
-    QFileSystemWatcher* watcher = nullptr;
+    GMainWindow* main_window{};
+    QVBoxLayout* layout{};
+    QTreeView* tree_view{};
+    QStandardItemModel* item_model{};
+    GameListWorker* current_worker{};
+    QFileSystemWatcher* watcher{};
 
     friend class GameListSearchField;
 };
@@ -120,7 +120,7 @@ protected:
 
 private:
     GMainWindow* main_window = nullptr;
-    QVBoxLayout* layout = nullptr;
-    QLabel* image = nullptr;
-    QLabel* text = nullptr;
+    QVBoxLayout* layout{};
+    QLabel* image{};
+    QLabel* text{};
 };

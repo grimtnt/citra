@@ -129,7 +129,7 @@ PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
     // shader uniform instead.
     const auto& tev_stages = regs.texturing.GetTevStages();
     DEBUG_ASSERT(state.tev_stages.size() == tev_stages.size());
-    for (size_t i = 0; i < tev_stages.size(); i++) {
+    for (size_t i{}; i < tev_stages.size(); i++) {
         const auto& tev_stage = tev_stages[i];
         state.tev_stages[i].sources_raw = tev_stage.sources_raw;
         state.tev_stages[i].modifiers_raw = tev_stage.modifiers_raw;
@@ -149,7 +149,7 @@ PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
     state.lighting.enable = !regs.lighting.disable;
     state.lighting.src_num = regs.lighting.max_light_index + 1;
 
-    for (unsigned light_index = 0; light_index < state.lighting.src_num; ++light_index) {
+    for (unsigned light_index{}; light_index < state.lighting.src_num; ++light_index) {
         unsigned num = regs.lighting.light_enable.GetNum(light_index);
         const auto& light = regs.lighting.light[num];
         state.lighting.light[light_index].num = num;
@@ -264,13 +264,13 @@ void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
     gs_output_attributes = vs_output_attributes;
 
     semantic_maps.fill({16, 0});
-    for (u32 attrib = 0; attrib < regs.rasterizer.vs_output_total; ++attrib) {
+    for (u32 attrib{}; attrib < regs.rasterizer.vs_output_total; ++attrib) {
         std::array<VSOutputAttributes::Semantic, 4> semantics = {
             regs.rasterizer.vs_output_attributes[attrib].map_x,
             regs.rasterizer.vs_output_attributes[attrib].map_y,
             regs.rasterizer.vs_output_attributes[attrib].map_z,
             regs.rasterizer.vs_output_attributes[attrib].map_w};
-        for (u32 comp = 0; comp < 4; ++comp) {
+        for (u32 comp{}; comp < 4; ++comp) {
             const auto semantic = semantics[comp];
             if (static_cast<size_t>(semantic) < 24) {
                 semantic_maps[static_cast<size_t>(semantic)] = {attrib, comp};
@@ -289,7 +289,7 @@ void PicaGSConfigRaw::Init(const Pica::Regs& regs, Pica::Shader::ShaderSetup& se
     num_inputs = regs.gs.max_input_attribute_index + 1;
     input_map.fill(16);
 
-    for (u32 attr = 0; attr < num_inputs; ++attr) {
+    for (u32 attr{}; attr < num_inputs; ++attr) {
         input_map[regs.gs.GetRegisterForAttribute(attr)] = attr;
     }
 
@@ -745,7 +745,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
     // Samples the specified lookup table for specular lighting
     auto GetLutValue = [&lighting](LightingRegs::LightingSampler sampler, unsigned light_num,
                                    LightingRegs::LightingLutInput input, bool abs) {
-        std::string index;
+        std::string index{};
         switch (input) {
         case LightingRegs::LightingLutInput::NH:
             index = "dot(normal, normalize(half_vector))";
@@ -804,7 +804,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
     };
 
     // Write the code to emulate each enabled light
-    for (unsigned light_index = 0; light_index < lighting.src_num; ++light_index) {
+    for (unsigned light_index{}; light_index < lighting.src_num; ++light_index) {
         const auto& light_config = lighting.light[light_index];
         std::string light_src = "light_src[" + std::to_string(light_config.num) + "]";
 
@@ -1517,7 +1517,7 @@ vec4 secondary_fragment_color = vec4(0.0);
     out += "vec4 next_combiner_buffer = tev_combiner_buffer_color;\n";
     out += "vec4 last_tex_env_out = vec4(0.0);\n";
 
-    for (size_t index = 0; index < state.tev_stages.size(); ++index)
+    for (size_t index{}; index < state.tev_stages.size(); ++index)
         WriteTevStage(out, config, (unsigned)index);
 
     if (state.alpha_test_func != FramebufferRegs::CompareFunc::Always) {
@@ -1675,7 +1675,7 @@ layout (std140) uniform vs_config {
 
 )";
     // input attributes declaration
-    for (std::size_t i = 0; i < used_regs.size(); ++i) {
+    for (std::size_t i{}; i < used_regs.size(); ++i) {
         if (used_regs[i]) {
             out += "layout(location = " + std::to_string(i) + ") in vec4 vs_in_reg" +
                    std::to_string(i) + ";\n";
@@ -1684,13 +1684,13 @@ layout (std140) uniform vs_config {
     out += "\n";
 
     // output attributes declaration
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
+    for (u32 i{}; i < config.state.num_outputs; ++i) {
         out += (separable_shader ? "layout(location = " + std::to_string(i) + ")" : std::string{}) +
                " out vec4 vs_out_attr" + std::to_string(i) + ";\n";
     }
 
     out += "\nvoid main() {\n";
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
+    for (u32 i{}; i < config.state.num_outputs; ++i) {
         out += "    vs_out_attr" + std::to_string(i) + " = vec4(0.0, 0.0, 0.0, 1.0);\n";
     }
     out += "\n    exec_shader();\n}\n\n";
@@ -1706,7 +1706,7 @@ static std::string GetGSCommonSource(const PicaGSConfigCommonRaw& config, bool s
     out += Pica::Shader::Decompiler::GetCommonDeclarations();
 
     out += '\n';
-    for (u32 i = 0; i < config.vs_output_attributes; ++i) {
+    for (u32 i{}; i < config.vs_output_attributes; ++i) {
         out += (separable_shader ? "layout(location = " + std::to_string(i) + ")" : std::string{}) +
                " in vec4 vs_out_attr" + std::to_string(i) + "[];\n";
     }
@@ -1806,10 +1806,10 @@ layout(triangle_strip, max_vertices = 3) out;
 void main() {
     Vertex prim_buffer[3];
 )";
-    for (u32 vtx = 0; vtx < 3; ++vtx) {
+    for (u32 vtx{}; vtx < 3; ++vtx) {
         out += "    prim_buffer[" + std::to_string(vtx) + "].attributes = vec4[" +
                std::to_string(config.state.gs_output_attributes) + "](";
-        for (u32 i = 0; i < config.state.vs_output_attributes; ++i) {
+        for (u32 i{}; i < config.state.vs_output_attributes; ++i) {
             out += std::string(i == 0 ? "" : ", ") + "vs_out_attr" + std::to_string(i) + "[" +
                    std::to_string(vtx) + "]";
         }
@@ -1894,7 +1894,7 @@ void emit();
 
 void main() {
 )";
-    for (u32 i = 0; i < config.state.num_outputs; ++i) {
+    for (u32 i{}; i < config.state.num_outputs; ++i) {
         out +=
             "    output_buffer.attributes[" + std::to_string(i) + "] = vec4(0.0, 0.0, 0.0, 1.0);\n";
     }

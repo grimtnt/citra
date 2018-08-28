@@ -165,7 +165,7 @@ void ProcessTriangle(const OutputVertex& v0, const OutputVertex& v1, const Outpu
     InitScreenCoordinates((*output_list)[0]);
     InitScreenCoordinates((*output_list)[1]);
 
-    for (size_t i = 0; i < output_list->size() - 2; i++) {
+    for (size_t i{}; i < output_list->size() - 2; i++) {
         Vertex& vtx0 = (*output_list)[0];
         Vertex& vtx1 = (*output_list)[i + 1];
         Vertex& vtx2 = (*output_list)[i + 2];

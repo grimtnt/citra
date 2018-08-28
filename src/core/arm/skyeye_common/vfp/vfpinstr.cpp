@@ -1375,7 +1375,7 @@ VPUSH_INST : {
 
         addr = cpu->Reg[R13] - inst_cream->imm32;
 
-        for (unsigned int i = 0; i < inst_cream->regs; i++) {
+        for (unsigned int i{}; i < inst_cream->regs; i++) {
             if (inst_cream->single) {
                 cpu->WriteMemory32(addr, cpu->ExtReg[inst_cream->d + i]);
                 addr += 4;
@@ -1456,7 +1456,7 @@ VSTM_INST : /* encoding 1 */
         if (inst_cream->add == 0)
             address -= inst_cream->imm32;
 
-        for (unsigned int i = 0; i < inst_cream->regs; i++) {
+        for (unsigned int i{}; i < inst_cream->regs; i++) {
             if (inst_cream->single) {
                 cpu->WriteMemory32(address, cpu->ExtReg[inst_cream->d + i]);
                 address += 4;
@@ -1527,7 +1527,7 @@ VPOP_INST : {
 
         addr = cpu->Reg[R13];
 
-        for (unsigned int i = 0; i < inst_cream->regs; i++) {
+        for (unsigned int i{}; i < inst_cream->regs; i++) {
             if (inst_cream->single) {
                 cpu->ExtReg[inst_cream->d + i] = cpu->ReadMemory32(addr);
                 addr += 4;
@@ -1670,7 +1670,7 @@ VLDM_INST : {
         if (inst_cream->add == 0)
             address -= inst_cream->imm32;
 
-        for (unsigned int i = 0; i < inst_cream->regs; i++) {
+        for (unsigned int i{}; i < inst_cream->regs; i++) {
             if (inst_cream->single) {
                 cpu->ExtReg[inst_cream->d + i] = cpu->ReadMemory32(address);
                 address += 4;

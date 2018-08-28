@@ -391,7 +391,7 @@ template <unsigned int N>
 inline std::array<Kernel::SharedPtr<Kernel::Object>, N> RequestParser::PopGenericObjects() {
     std::array<u32, N> handles = PopHLEHandles<N>();
     std::array<Kernel::SharedPtr<Kernel::Object>, N> pointers;
-    for (int i = 0; i < N; ++i) {
+    for (int i{}; i < N; ++i) {
         pointers[i] = context->GetIncomingHandle(handles[i]);
     }
     return pointers;

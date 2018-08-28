@@ -173,7 +173,7 @@ u64 CIAContainer::GetMetadataOffset() const {
 u64 CIAContainer::GetContentOffset(u16 index) const {
     u64 offset{
         Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, CIA_SECTION_ALIGNMENT)};
-    for (u16 i = 0; i < index; i++) {
+    for (u16 i{}; i < index; i++) {
         offset += GetContentSize(i);
     }
     return offset;
@@ -221,7 +221,7 @@ void CIAContainer::Print() const {
     LOG_DEBUG(Service_FS, "Ticket Offset:      0x{:08x} bytes", GetTicketOffset());
     LOG_DEBUG(Service_FS, "TMD Offset:         0x{:08x} bytes", GetTitleMetadataOffset());
     LOG_DEBUG(Service_FS, "Meta Offset:        0x{:08x} bytes", GetMetadataOffset());
-    for (u16 i = 0; i < cia_tmd.GetContentCount(); i++) {
+    for (u16 i{}; i < cia_tmd.GetContentCount(); i++) {
         LOG_DEBUG(Service_FS, "Content {:x} Offset:   0x{:08x} bytes", i, GetContentOffset(i));
     }
 }

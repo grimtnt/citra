@@ -39,7 +39,7 @@ void CheatDialog::LoadCheats() {
 
     ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
 
-    for (int i = 0; i < static_cast<int>(cheats.size()); i++) {
+    for (int i{}; i < static_cast<int>(cheats.size()); i++) {
         QCheckBox* enabled{new QCheckBox()};
         enabled->setChecked(cheats[i]->GetEnabled());
         enabled->setStyleSheet("margin-left:7px;");

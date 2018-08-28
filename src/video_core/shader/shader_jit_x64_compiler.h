@@ -126,11 +126,11 @@ private:
     /// Offsets in code where a return needs to be inserted
     std::vector<unsigned> return_offsets;
 
-    unsigned program_counter = 0; ///< Offset of the next instruction to decode
-    bool looping = false;         ///< True if compiling a loop, used to check for nested loops
+    unsigned program_counter{}; ///< Offset of the next instruction to decode
+    bool looping = false;       ///< True if compiling a loop, used to check for nested loops
 
     using CompiledShader = void(const void* setup, void* state, const u8* start_addr);
-    CompiledShader* program = nullptr;
+    CompiledShader* program{};
 
     Xbyak::Label log2_subroutine;
     Xbyak::Label exp2_subroutine;

@@ -152,10 +152,10 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
  * @return QPixmap game icon
  */
 static QPixmap GetQPixmapFromSMDH(const Loader::SMDH& smdh, bool large) {
-    std::vector<u16> icon_data = smdh.GetIcon(large);
-    const uchar* data = reinterpret_cast<const uchar*>(icon_data.data());
-    int size = large ? 48 : 24;
-    QImage icon(data, size, size, QImage::Format::Format_RGB16);
+    std::vector<u16> icon_data{smdh.GetIcon(large)};
+    const uchar* data{reinterpret_cast<const uchar*>(icon_data.data())};
+    int size{large ? 48 : 24};
+    QImage icon{data, size, size, QImage::Format::Format_RGB16};
     return QPixmap::fromImage(icon);
 }
 
@@ -165,8 +165,8 @@ static QPixmap GetQPixmapFromSMDH(const Loader::SMDH& smdh, bool large) {
  * @return QPixmap default icon
  */
 static QPixmap GetDefaultIcon(bool large) {
-    int size = large ? 48 : 24;
-    QPixmap icon(size, size);
+    int size{large ? 48 : 24};
+    QPixmap icon{size, size};
     icon.fill(Qt::transparent);
     return icon;
 }
@@ -177,10 +177,10 @@ static QPixmap GetDefaultIcon(bool large) {
  * @return QPixmap circle pixmap
  */
 static QPixmap CreateCirclePixmapFromColor(const QColor& color) {
-    QPixmap circle_pixmap(16, 16);
+    QPixmap circle_pixmap{16, 16};
     circle_pixmap.fill(Qt::transparent);
 
-    QPainter painter(&circle_pixmap);
+    QPainter painter{&circle_pixmap};
     painter.setPen(color);
     painter.setBrush(color);
     painter.drawEllipse(0, 0, 15, 15);
@@ -205,7 +205,7 @@ static QString GetQStringShortTitleFromSMDH(const Loader::SMDH& smdh,
  * @return QString region
  */
 static QString GetRegionFromSMDH(const Loader::SMDH& smdh) {
-    const Loader::SMDH::GameRegion region = smdh.GetRegion();
+    const Loader::SMDH::GameRegion region{smdh.GetRegion()};
 
     switch (region) {
     case Loader::SMDH::GameRegion::Invalid:
@@ -237,29 +237,30 @@ struct CompatStatus {
     const char* tooltip;
 };
 
-const static inline std::map<std::string, CompatStatus> status_data = {
-    {"0",
+const static inline std::map<Compatibility, CompatStatus> status_data = {
+    {Compatibility::Perfect,
      {"#5c93ed", "Perfect",
       "Game functions flawless with no audio or graphical glitches, all tested functionality works "
       "as intended without\nany workarounds needed."}},
-    {"1",
+    {Compatibility::Great,
      {"#47d35c", "Great",
       "Game functions with minor graphical or audio glitches and is playable from start to finish. "
       "May require some\nworkarounds."}},
-    {"2",
+    {Compatibility::Okay,
      {"#94b242", "Okay",
       "Game functions with major graphical or audio glitches, but game is playable from start to "
       "finish with\nworkarounds."}},
-    {"3",
+    {Compatibility::Bad,
      {"#f2d624", "Bad",
       "Game functions, but with major graphical or audio glitches. Unable to progress in specific "
       "areas due to glitches\neven with workarounds."}},
-    {"4",
+    {Compatibility::IntroMenu,
      {"#FF0000", "Intro/Menu",
       "Game is completely unplayable due to major graphical or audio glitches. Unable to progress "
       "past the Start\nScreen."}},
-    {"5", {"#828282", "Won't Boot", "The game crashes when attempting to startup."}},
-    {"99", {"#000000", "Not Tested", "The game has not yet been tested."}},
+    {Compatibility::WontBoot,
+     {"#828282", "Won't Boot", "The game crashes when attempting to startup."}},
+    {Compatibility::NotTested, {"#000000", "Not Tested", "The game has not yet been tested."}},
 };
 
 class GameListItem : public QStandardItem {
@@ -351,16 +352,16 @@ public:
 
     GameListItemCompat() = default;
     explicit GameListItemCompat(Compatibility compatiblity) {
-        auto iterator = status_data.find(std::to_string(static_cast<int>(compatiblity)).c_str());
-        if (iterator == status_data.end()) {
+        auto it{status_data.find(compatiblity)};
+        if (it == status_data.end()) {
             LOG_WARNING(Frontend, "Invalid compatibility number {}",
                         static_cast<int>(compatiblity));
             return;
         }
-        CompatStatus status = iterator->second;
+        CompatStatus status{it->second};
         setData(QString::number(static_cast<int>(compatiblity)), CompatNumberRole);
-        setText(QCoreApplication::translate("GameList", status.text));
-        setToolTip(QCoreApplication::translate("GameList", status.tooltip));
+        setText(status.text);
+        setToolTip(status.tooltip);
         setData(CreateCirclePixmapFromColor(status.color), Qt::DecorationRole);
     }
 
@@ -406,7 +407,7 @@ public:
         // By specializing setData for SizeRole, we can ensure that the numerical and string
         // representations of the data are always accurate and in the correct format.
         if (role == SizeRole) {
-            qulonglong size_bytes = value.toULongLong();
+            qulonglong size_bytes{value.toULongLong()};
             GameListItem::setData(ReadableByteSize(size_bytes), Qt::DisplayRole);
             GameListItem::setData(value, SizeRole);
         } else {
@@ -436,7 +437,7 @@ public:
     explicit GameListDir(UISettings::GameDir& directory,
                          GameListItemType type = GameListItemType::CustomDir)
         : dir_type{type} {
-        UISettings::GameDir* game_dir = &directory;
+        UISettings::GameDir* game_dir{&directory};
         setData(QVariant::fromValue(game_dir), GameDirRole);
         switch (dir_type) {
         case GameListItemType::InstalledDir:
@@ -454,7 +455,7 @@ public:
             break;
         };
     };
-    static const int GameDirRole = Qt::UserRole + 1;
+    static const int GameDirRole{Qt::UserRole + 1};
 
 private:
     GameListItemType dir_type;
@@ -540,17 +541,17 @@ private:
         explicit KeyReleaseEater(GameList* gamelist);
 
     private:
-        GameList* gamelist = nullptr;
+        GameList* gamelist{};
         QString edit_filter_text_old;
 
     protected:
         // EventFilter in order to process systemkeys while editing the searchfield
         bool eventFilter(QObject* obj, QEvent* event) override;
     };
-    QHBoxLayout* layout_filter = nullptr;
-    QTreeView* tree_view = nullptr;
-    QLabel* label_filter = nullptr;
-    QLineEdit* edit_filter = nullptr;
-    QLabel* label_filter_result = nullptr;
-    QToolButton* button_filter_close = nullptr;
+    QHBoxLayout* layout_filter{};
+    QTreeView* tree_view{};
+    QLabel* label_filter{};
+    QLineEdit* edit_filter{};
+    QLabel* label_filter_result{};
+    QToolButton* button_filter_close{};
 };

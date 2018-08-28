@@ -171,7 +171,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
 
             switch (instr.opcode.Value().EffectiveOpCode()) {
             case OpCode::Id::ADD: {
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -181,7 +181,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             }
 
             case OpCode::Id::MUL: {
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -191,7 +191,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             }
 
             case OpCode::Id::FLR:
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -200,7 +200,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                 break;
 
             case OpCode::Id::MAX:
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -212,7 +212,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                 break;
 
             case OpCode::Id::MIN:
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -235,7 +235,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                 float24 dot = std::inner_product(src1, src1 + num_components, src2,
                                                  float24::FromFloat32(0.f));
 
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -247,7 +247,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             // Reciprocal
             case OpCode::Id::RCP: {
                 float24 rcp_res = float24::FromFloat32(1.0f / src1[0].ToFloat32());
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -259,7 +259,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             // Reciprocal Square Root
             case OpCode::Id::RSQ: {
                 float24 rsq_res = float24::FromFloat32(1.0f / std::sqrt(src1[0].ToFloat32()));
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -269,7 +269,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             }
 
             case OpCode::Id::MOVA: {
-                for (int i = 0; i < 2; ++i) {
+                for (int i{}; i < 2; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -280,7 +280,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             }
 
             case OpCode::Id::MOV: {
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -291,7 +291,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
 
             case OpCode::Id::SGE:
             case OpCode::Id::SGEI:
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -302,7 +302,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
 
             case OpCode::Id::SLT:
             case OpCode::Id::SLTI:
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -312,7 +312,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                 break;
 
             case OpCode::Id::CMP:
-                for (int i = 0; i < 2; ++i) {
+                for (int i{}; i < 2; ++i) {
                     // TODO: Can you restrict to one compare via dest masking?
 
                     auto compare_op = instr.common.compare_op;
@@ -353,7 +353,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             case OpCode::Id::EX2: {
                 // EX2 only takes first component exp2 and writes it to all dest components
                 float24 ex2_res = float24::FromFloat32(std::exp2(src1[0].ToFloat32()));
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -366,7 +366,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
             case OpCode::Id::LG2: {
                 // LG2 only takes the first component log2 and writes it to all dest components
                 float24 lg2_res = float24::FromFloat32(std::log2(src1[0].ToFloat32()));
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
@@ -454,7 +454,7 @@ static void RunInterpreter(const ShaderSetup& setup, UnitState& state, unsigned 
                               ? &state.registers.temporary[instr.mad.dest.Value().GetIndex()][0]
                               : dummy_vec4_float24;
 
-                for (int i = 0; i < 4; ++i) {
+                for (int i{}; i < 4; ++i) {
                     if (!swizzle.DestComponentEnabled(i))
                         continue;
 
