@@ -419,7 +419,7 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
 #endif
     } else if (ctr_cmd == 4) { // F_SETFL
 #ifdef _WIN32
-        unsigned long tmp{(ctr_arg & 4 /* O_NONBLOCK */) ? 1 : 0};
+        auto tmp{(ctr_arg & 4 /* O_NONBLOCK */) ? 1 : 0};
         int ret{ioctlsocket(socket_handle, FIONBIO, &tmp)};
         if (ret == SOCKET_ERROR_VALUE) {
             posix_ret = TranslateError(GET_ERRNO);
