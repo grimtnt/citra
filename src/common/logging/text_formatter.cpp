@@ -71,9 +71,10 @@ void PrintColoredMessage(const Entry& entry) {
         }
 
         SetConsoleTextAttribute(console_handle, color);
+    }
 #else
 #define ESC "\x1b"
-    const char* color = "";
+    const char* color{""};
     switch (entry.log_level) {
     case Level::Trace: // Grey
         color = ESC "[1;30m";
@@ -100,13 +101,13 @@ void PrintColoredMessage(const Entry& entry) {
     fputs(color, stderr);
 #endif
 
-        PrintMessage(entry);
+    PrintMessage(entry);
 
 #ifdef _WIN32
-        SetConsoleTextAttribute(console_handle, original_info.wAttributes);
+    SetConsoleTextAttribute(console_handle, original_info.wAttributes);
 #else
     fputs(ESC "[0m", stderr);
 #undef ESC
 #endif
-    }
+}
 } // namespace Log
