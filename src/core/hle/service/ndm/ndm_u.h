@@ -17,7 +17,6 @@ private:
     /**
      *  NDM::EnterExclusiveState service function
      *  Inputs:
-     *      0 : Header code [0x00010042]
      *      1 : Exclusive State
      *      2 : 0x20
      *  Outputs:
@@ -28,7 +27,6 @@ private:
     /**
      *  NDM::LeaveExclusiveState service function
      *  Inputs:
-     *      0 : Header code [0x00020002]
      *      1 : 0x20
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -37,8 +35,6 @@ private:
 
     /**
      *  NDM::QueryExclusiveMode service function
-     *  Inputs:
-     *      0 : Header code [0x00030000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      *      2 : Current Exclusive State
@@ -47,8 +43,6 @@ private:
 
     /**
      *  NDM::LockState service function
-     *  Inputs:
-     *      0 : Header code [0x00040002]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      */
@@ -56,8 +50,6 @@ private:
 
     /**
      *  NDM::UnlockState service function
-     *  Inputs:
-     *      0 : Header code [0x00050002]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      */
@@ -66,7 +58,6 @@ private:
     /**
      *  NDM::SuspendDaemons service function
      *  Inputs:
-     *      0 : Header code [0x00060040]
      *      1 : Daemon bit mask
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -76,7 +67,6 @@ private:
     /**
      *  NDM::ResumeDaemons service function
      *  Inputs:
-     *      0 : Header code [0x00070040]
      *      1 : Daemon bit mask
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -86,7 +76,6 @@ private:
     /**
      *  NDM::SuspendScheduler service function
      *  Inputs:
-     *      0 : Header code [0x00080040]
      *      1 : (u8/bool) 0 = Wait for completion, 1 = Perform in background
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -95,8 +84,6 @@ private:
 
     /**
      *  NDM::ResumeScheduler service function
-     *  Inputs:
-     *      0 : Header code [0x00090000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      */
@@ -104,8 +91,6 @@ private:
 
     /**
      *  NDM::Stubbed_0x000C0000 service function
-     *  Inputs:
-     *      0 : Header code [0x000C0000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      */
@@ -114,7 +99,6 @@ private:
     /**
      *  NDM::QueryStatus service function
      *  Inputs:
-     *      0 : Header code [0x000D0040]
      *      1 : Daemon
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -125,7 +109,6 @@ private:
     /**
      *  NDM::GetDaemonDisableCount service function
      *  Inputs:
-     *      0 : Header code [0x000E0040]
      *      1 : Daemon
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -136,8 +119,6 @@ private:
 
     /**
      *  NDM::GetSchedulerDisableCount service function
-     *  Inputs:
-     *      0 : Header code [0x000F0000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      *      2 : Current process disable count
@@ -148,7 +129,6 @@ private:
     /**
      *  NDM::SetScanInterval service function
      *  Inputs:
-     *      0 : Header code [0x00100040]
      *      1 : Interval (default = 30)
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -157,8 +137,6 @@ private:
 
     /**
      *  NDM::GetScanInterval service function
-     *  Inputs:
-     *      0 : Header code [0x00110000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      *      2 : Interval (default = 30)
@@ -168,7 +146,6 @@ private:
     /**
      *  NDM::SetRetryInterval service function
      *  Inputs:
-     *      0 : Header code [0x00120040]
      *      1 : Interval (default = 10)
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -177,8 +154,6 @@ private:
 
     /**
      *  NDM::GetRetryInterval service function
-     *  Inputs:
-     *      0 : Header code [0x00130000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      *      2 : Interval (default = 10)
@@ -188,7 +163,6 @@ private:
     /**
      *  NDM::OverrideDefaultDaemons service function
      *  Inputs:
-     *      0 : Header code [0x00140040]
      *      1 : Daemon bit mask
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
@@ -197,8 +171,6 @@ private:
 
     /**
      *  NDM::ResetDefaultDaemons service function
-     *  Inputs:
-     *      0 : Header code [0x00150000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      */
@@ -206,8 +178,6 @@ private:
 
     /**
      *  NDM::GetDefaultDaemons service function
-     *  Inputs:
-     *      0 : Header code [0x00160000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      *      2 : Daemon bit mask
@@ -219,8 +189,6 @@ private:
 
     /**
      *  NDM::ClearHalfAwakeMacFilter service function
-     *  Inputs:
-     *      0 : Header code [0x00170000]
      *  Outputs:
      *      1 : Result, 0 on success, otherwise error code
      */

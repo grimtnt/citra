@@ -24,11 +24,11 @@ const std::array<std::string, ConfigureInput::ANALOG_SUB_BUTTONS_NUM>
 static QString getKeyName(int key_code) {
     switch (key_code) {
     case Qt::Key_Shift:
-        return QObject::tr("Shift");
+        return "Shift";
     case Qt::Key_Control:
-        return QObject::tr("Ctrl");
+        return "Ctrl";
     case Qt::Key_Alt:
-        return QObject::tr("Alt");
+        return "Alt";
     case Qt::Key_Meta:
         return "";
     default:
@@ -49,51 +49,49 @@ static void SetAnalogButton(const Common::ParamPackage& input_param,
 
 static QString ButtonToText(const Common::ParamPackage& param) {
     if (!param.Has("engine")) {
-        return QObject::tr("[not set]");
+        return "[not set]";
     } else if (param.Get("engine", "") == "keyboard") {
         return getKeyName(param.Get("code", 0));
     } else if (param.Get("engine", "") == "sdl") {
-        QString text{
-            QObject::tr("Joystick %1").arg(QString::fromStdString(param.Get("joystick", "")))};
+        QString text{QString("Joystick %1").arg(QString::fromStdString(param.Get("joystick", "")))};
         if (param.Has("hat")) {
-            text += QObject::tr(" Hat %1 %2")
+            text += QString(" Hat %1 %2")
                         .arg(QString::fromStdString(param.Get("hat", "")),
                              QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("axis")) {
-            text += QObject::tr(" Axis %1%2")
+            text += QString(" Axis %1%2")
                         .arg(QString::fromStdString(param.Get("axis", "")),
                              QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("button")) {
-            text += QObject::tr(" Button %1").arg(QString::fromStdString(param.Get("button", "")));
+            text += QString(" Button %1").arg(QString::fromStdString(param.Get("button", "")));
         }
         return text;
     } else {
-        return QObject::tr("[unknown]");
+        return "[unknown]";
     }
 };
 
 static QString AnalogToText(const Common::ParamPackage& param, const std::string& dir) {
     if (!param.Has("engine")) {
-        return QObject::tr("[not set]");
+        return "[not set]";
     } else if (param.Get("engine", "") == "analog_from_button") {
         return ButtonToText(Common::ParamPackage{param.Get(dir, "")});
     } else if (param.Get("engine", "") == "sdl") {
         if (dir == "modifier") {
-            return QString(QObject::tr("[unused]"));
+            return "[unused]";
         }
 
-        QString text{
-            QObject::tr("Joystick %1").arg(QString::fromStdString(param.Get("joystick", "")))};
+        QString text{QString("Joystick %1").arg(QString::fromStdString(param.Get("joystick", "")))};
         if (dir == "left" || dir == "right") {
-            text += QObject::tr(" Axis %1").arg(QString::fromStdString(param.Get("axis_x", "")));
+            text += QString(" Axis %1").arg(QString::fromStdString(param.Get("axis_x", "")));
         } else if (dir == "up" || dir == "down") {
-            text += QObject::tr(" Axis %1").arg(QString::fromStdString(param.Get("axis_y", "")));
+            text += QString(" Axis %1").arg(QString::fromStdString(param.Get("axis_y", "")));
         }
         return text;
     } else {
-        return QObject::tr("[unknown]");
+        return "[unknown]";
     }
 };
 
@@ -233,14 +231,14 @@ void ConfigureInput::updateButtonLabels() {
                     AnalogToText(analogs_param[analog_id], analog_sub_buttons[sub_button_id]));
             }
         }
-        analog_map_stick[analog_id]->setText(tr("Set Analog Stick"));
+        analog_map_stick[analog_id]->setText("Set Analog Stick");
     }
 }
 
 void ConfigureInput::handleClick(QPushButton* button,
                                  std::function<void(const Common::ParamPackage&)> new_input_setter,
                                  InputCommon::Polling::DeviceType type) {
-    button->setText(tr("[press key]"));
+    button->setText("[press key]");
     button->setFocus();
 
     input_setter = new_input_setter;

@@ -195,7 +195,6 @@ public:
          *  Inputs:
          *      1 : AppID
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : Output, 0 = not registered, 1 = registered.
          */
@@ -216,7 +215,6 @@ public:
          *     7 : (Size<<14) | 2
          *     8 : Input parameter buffer ptr
          * Outputs:
-         *     0 : Return Header
          *     1 : Result of function, 0 on success, otherwise error code
          */
         void SendParameter(Kernel::HLERequestContext& ctx);
@@ -280,7 +278,6 @@ public:
          *          state.
          *      4 : AppID
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : Status flag, 0 = failure due to no parameter data being available, or the above
          * enabled
@@ -300,7 +297,6 @@ public:
          *    1-4 : 0x10-byte title-info struct
          *      4 : Flags
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          */
         void PrepareToStartApplication(Kernel::HLERequestContext& ctx);
@@ -317,7 +313,6 @@ public:
          *     6 : (Size1<<14) | 0x802
          *     7 : Buffer 1 pointer
          * Outputs:
-         *     0 : Return Header
          *     1 : Result of function, 0 on success, otherwise error code
          */
         void StartApplication(Kernel::HLERequestContext& ctx);
@@ -350,7 +345,6 @@ public:
          *  Inputs:
          *      1 : Value, must be one
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : System core CPU time percentage
          */
@@ -359,20 +353,15 @@ public:
         /**
          * APT::PrepareToStartLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x00180040]
          *      1 : Id of the applet to start
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          */
         void PrepareToStartLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PrepareToStartNewestHomeMenu service function
-         *  Inputs:
-         *      0 : Command header [0x001A0000]
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function
          */
         void PrepareToStartNewestHomeMenu(Kernel::HLERequestContext& ctx);
@@ -380,10 +369,8 @@ public:
         /**
          * APT::PreloadLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x00160040]
          *      1 : Id of the applet to start
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          */
         void PreloadLibraryApplet(Kernel::HLERequestContext& ctx);
@@ -391,10 +378,8 @@ public:
         /**
          * APT::FinishPreloadingLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x00170040]
          *      1 : Id of the applet
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          */
         void FinishPreloadingLibraryApplet(Kernel::HLERequestContext& ctx);
@@ -402,7 +387,6 @@ public:
         /**
          * APT::StartLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x001E0084]
          *      1 : Id of the applet to start
          *      2 : Buffer size
          *      3 : Always 0?
@@ -410,7 +394,6 @@ public:
          *      5 : (Size << 14) | 2
          *      6 : Input buffer virtual address
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          */
         void StartLibraryApplet(Kernel::HLERequestContext& ctx);
@@ -418,7 +401,6 @@ public:
         /**
          * APT::CloseApplication service function
          *  Inputs:
-         *      0 : Command header [0x00270044]
          *      1 : Parameters Size
          *      2 : 0x0
          *      3 : Handle Parameter
@@ -432,7 +414,6 @@ public:
         /**
          * APT::PrepareToDoApplicationJump service function
          *  Inputs:
-         *      0 : Command header [0x00310100]
          *      1 : Flags
          *      2 : Program ID low
          *      3 : Program ID high
@@ -445,7 +426,6 @@ public:
         /**
          * APT::DoApplicationJump service function
          *  Inputs:
-         *      0 : Command header [0x00320084]
          *      1 : Parameter Size (capped to 0x300)
          *      2 : HMAC Size (capped to 0x20)
          *      3 : (Parameter Size << 14) | 2
@@ -460,10 +440,8 @@ public:
         /**
          * APT::CancelLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x003B0040]
          *      1 : u8, Application exiting (0 = not exiting, 1 = exiting)
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          */
         void CancelLibraryApplet(Kernel::HLERequestContext& ctx);
@@ -471,12 +449,10 @@ public:
         /**
          * APT::PrepareToCloseLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x002500C0]
          *      1 : bool, Not pause
          *      2 : bool, Caller exiting
          *      3 : bool, Jump to home
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          */
         void PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx);
@@ -484,14 +460,12 @@ public:
         /**
          * APT::CloseLibraryApplet service function
          *  Inputs:
-         *      0 : Command header [0x00280044]
          *      1 : Buffer size
          *      2 : 0x0
          *      3 : Object handle
          *      4 : (Size << 14) | 2
          *      5 : Input buffer virtual address
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          */
         void CloseLibraryApplet(Kernel::HLERequestContext& ctx);
@@ -499,12 +473,10 @@ public:
         /**
          * APT::SendDspSleep service function
          *  Inputs:
-         *      0 : Command header [0x003C0042]
          *      1 : Unknown
          *		2 : 0x0
          *		3 : Handle
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          */
         void SendDspSleep(Kernel::HLERequestContext& ctx);
@@ -512,12 +484,10 @@ public:
         /**
          * APT::SendDspWakeUp service function
          *  Inputs:
-         *      0 : Command header [0x003D0042]
          *      1 : Unknown
          *		2 : 0x0
          *		3 : Handle
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          */
         void SendDspWakeUp(Kernel::HLERequestContext& ctx);
@@ -525,12 +495,10 @@ public:
         /**
          * APT::SendCaptureBufferInfo service function
          *  Inputs:
-         *      0 : Command header [0x00400042]
          *      1 : Size
          *      2 : (Size << 14) | 2
          *      3 : void*, CaptureBufferInfo
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          */
         void SendCaptureBufferInfo(Kernel::HLERequestContext& ctx);
@@ -538,25 +506,31 @@ public:
         /**
          * APT::ReceiveCaptureBufferInfo service function
          *  Inputs:
-         *      0 : Command header [0x00410040]
          *      1 : Size
          *      64 : Size << 14 | 2
          *      65 : void*, CaptureBufferInfo
          *  Outputs:
-         *      0 : Header code
          *      1 : Result code
          *      2 : Actual Size
          */
         void ReceiveCaptureBufferInfo(Kernel::HLERequestContext& ctx);
 
         /**
+         * APT::SleepSystem service function
+         *  Inputs:
+         *    1-2 : Time
+         *  Outputs:
+         *      1 : Result code
+         */
+        void SleepSystem(Kernel::HLERequestContext& ctx);
+
+        /**
          * APT::GetStartupArgument service function
          *  Inputs:
          *      1 : Parameter Size (capped to 0x300)
          *      2 : StartupArgumentType
-         *      65 : Output buffer for startup argument
+         *     65 : Output buffer for startup argument
          *  Outputs:
-         *      0 : Return header
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u8, Exists (0 = does not exist, 1 = exists)
          */
@@ -565,7 +539,6 @@ public:
         /**
          * APT::SetScreenCapPostPermission service function
          *  Inputs:
-         *      0 : Header Code[0x00550040]
          *      1 : u8 The screenshot posting permission
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -574,8 +547,6 @@ public:
 
         /**
          * APT::GetScreenCapPostPermission service function
-         *  Inputs:
-         *      0 : Header Code[0x00560000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u8 The screenshot posting permission

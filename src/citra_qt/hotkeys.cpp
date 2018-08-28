@@ -88,7 +88,3 @@ GHotkeysDialog::GHotkeysDialog(QWidget* parent) : QWidget(parent) {
     ui.treeWidget->resizeColumnToContents(0);
     ui.treeWidget->resizeColumnToContents(1);
 }
-
-void GHotkeysDialog::retranslateUi() {
-    ui.retranslateUi(this);
-}

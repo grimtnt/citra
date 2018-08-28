@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <QCameraInfo>
-#include <QDirIterator>
 #include <QFileDialog>
 #include <QImageReader>
 #include <QMessageBox>
@@ -183,7 +182,7 @@ void ConfigureCamera::startPreviewing() {
     ui->preview_button->setHidden(true);
     preview_width = ui->preview_box->size().width();
     preview_height = preview_width * 0.75;
-    ui->preview_box->setToolTip(tr("Resolution: ") + QString::number(preview_width) + "*" +
+    ui->preview_box->setToolTip(QString("Resolution: ") + QString::number(preview_width) + "*" +
                                 QString::number(preview_height));
     // Load previewing camera
     previewing_camera = Camera::CreateCameraPreview(
@@ -272,8 +271,8 @@ void ConfigureCamera::onToolButtonClicked() {
     for (const QByteArray& type : types) {
         temp_filters << QString("*." + QString(type));
     }
-    QString filter = tr("Supported image files (%1)").arg(temp_filters.join(" "));
-    QString path = QFileDialog::getOpenFileName(this, tr("Open File"), ".", filter);
+    QString filter{QString("Supported image files (%1)").arg(temp_filters.join(" "))};
+    QString path{QFileDialog::getOpenFileName(this, QString("Open File"), ".", filter)};
     if (!path.isEmpty()) {
         ui->camera_file->setText(path);
     }
@@ -314,8 +313,4 @@ int ConfigureCamera::getSelectedCameraIndex() {
         camera_selection = 0;              // Either camera is the same, so we return RearRight
     }
     return camera_selection;
-}
-
-void ConfigureCamera::retranslateUi() {
-    ui->retranslateUi(this);
 }

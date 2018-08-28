@@ -25,7 +25,6 @@ public:
 
     void applyConfiguration();
     void setConfiguration();
-    void retranslateUi();
 
 public slots:
     void updateBirthdayComboBox(int birthmonth_index);

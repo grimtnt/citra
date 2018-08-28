@@ -18,8 +18,8 @@ CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
                                                                u8 pad_index, u16 client_id)
     : QDialog{parent} {
     layout = new QVBoxLayout;
-    status_label = new QLabel(tr("Communicating with the server..."));
-    cancel_button = new QPushButton(tr("Cancel"));
+    status_label = new QLabel("Communicating with the server...");
+    cancel_button = new QPushButton("Cancel");
     connect(cancel_button, &QPushButton::clicked, this, [this] {
         if (!completed)
             job->Stop();
@@ -36,18 +36,18 @@ CalibrationConfigurationDialog::CalibrationConfigurationDialog(QWidget* parent,
             QString text{};
             switch (status) {
             case CalibrationConfigurationJob::Status::Ready:
-                text = tr("Touch the top left corner <br>of your touchpad.");
+                text = "Touch the top left corner <br>of your touchpad.";
                 break;
             case CalibrationConfigurationJob::Status::Stage1Completed:
-                text = tr("Now touch the bottom right corner <br>of your touchpad.");
+                text = "Now touch the bottom right corner <br>of your touchpad.";
                 break;
             case CalibrationConfigurationJob::Status::Completed:
-                text = tr("Configuration completed!");
+                text = "Configuration completed!";
                 break;
             }
             QMetaObject::invokeMethod(this, "UpdateLabelText", Q_ARG(QString, text));
             if (status == CalibrationConfigurationJob::Status::Completed) {
-                QMetaObject::invokeMethod(this, "UpdateButtonText", Q_ARG(QString, tr("OK")));
+                QMetaObject::invokeMethod(this, "UpdateButtonText", Q_ARG(QString, "OK"));
             }
         },
         [this](u16 min_x_, u16 min_y_, u16 max_x_, u16 max_y_) {
@@ -81,18 +81,18 @@ ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
     : QDialog(parent), ui(std::make_unique<Ui::ConfigureMotionTouch>()) {
     ui->setupUi(this);
     for (auto [provider, name] : MotionProviders) {
-        ui->motion_provider->addItem(tr(name), provider);
+        ui->motion_provider->addItem(name, provider);
     }
     for (auto [provider, name] : TouchProviders) {
-        ui->touch_provider->addItem(tr(name), provider);
+        ui->touch_provider->addItem(name, provider);
     }
 
     ui->udp_learn_more->setOpenExternalLinks(true);
     ui->udp_learn_more->setText(
-        tr("<a "
-           "href='https://github.com/valentinvanelslande/citra/wiki/"
-           "how-to-set-up-your-controller-or-android-phones-for-touch-and-motion-input'><span "
-           "style=\"text-decoration: underline; color:#039be5;\">Learn More</span></a>"));
+        QString("<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "how-to-set-up-your-controller-or-android-phones-for-touch-and-motion-input'><span "
+                "style=\"text-decoration: underline; color:#039be5;\">Learn More</span></a>"));
 
     setConfiguration();
     updateUiDisplay();
@@ -173,7 +173,7 @@ void ConfigureMotionTouch::connectEvents() {
 
 void ConfigureMotionTouch::OnCemuhookUDPTest() {
     ui->udp_test->setEnabled(false);
-    ui->udp_test->setText(tr("Testing"));
+    ui->udp_test->setText("Testing");
     udp_test_in_progress = true;
     InputCommon::CemuhookUDP::TestCommunication(
         ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toInt()),
@@ -190,7 +190,7 @@ void ConfigureMotionTouch::OnCemuhookUDPTest() {
 
 void ConfigureMotionTouch::OnConfigureTouchCalibration() {
     ui->touch_calibration_config->setEnabled(false);
-    ui->touch_calibration_config->setText(tr("Configuring"));
+    ui->touch_calibration_config->setText("Configuring");
     CalibrationConfigurationDialog* dialog = new CalibrationConfigurationDialog(
         this, ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toUInt()),
         static_cast<u8>(ui->udp_pad_index->currentIndex()), 24872);
@@ -208,7 +208,7 @@ void ConfigureMotionTouch::OnConfigureTouchCalibration() {
         LOG_ERROR(Frontend, "UDP touchpad calibration config failed");
     }
     ui->touch_calibration_config->setEnabled(true);
-    ui->touch_calibration_config->setText(tr("Configure"));
+    ui->touch_calibration_config->setText("Configure");
 }
 
 void ConfigureMotionTouch::closeEvent(QCloseEvent* event) {
@@ -221,23 +221,23 @@ void ConfigureMotionTouch::closeEvent(QCloseEvent* event) {
 void ConfigureMotionTouch::ShowUDPTestResult(bool result) {
     udp_test_in_progress = false;
     if (result) {
-        QMessageBox::information(this, tr("Test Successful"),
-                                 tr("Successfully received data from the server."));
+        QMessageBox::information(this, "Test Successful",
+                                 "Successfully received data from the server.");
     } else {
-        QMessageBox::warning(this, tr("Test Failed"),
-                             tr("Could not receive valid data from the server.<br>Please verify "
-                                "that the server is set up correctly and "
-                                "the address and port are correct."));
+        QMessageBox::warning(this, "Test Failed",
+                             "Could not receive valid data from the server.<br>Please verify "
+                             "that the server is set up correctly and "
+                             "the address and port are correct.");
     }
     ui->udp_test->setEnabled(true);
-    ui->udp_test->setText(tr("Test"));
+    ui->udp_test->setText("Test");
 }
 
 bool ConfigureMotionTouch::CanCloseDialog() {
     if (udp_test_in_progress) {
-        QMessageBox::warning(this, tr("Citra"),
-                             tr("UDP Test or calibration configuration is in progress.<br>Please "
-                                "wait for them to finish."));
+        QMessageBox::warning(this, "Citra",
+                             "UDP Test or calibration configuration is in progress.<br>Please "
+                             "wait for them to finish.");
         return false;
     }
     return true;

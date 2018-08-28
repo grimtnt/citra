@@ -30,7 +30,7 @@ ResultVal<size_t> DiskFile::Write(const u64 offset, const size_t length, const b
         return ERROR_INVALID_OPEN_FLAGS;
 
     file->Seek(offset, SEEK_SET);
-    size_t written = file->WriteBytes(buffer, length);
+    size_t written{file->WriteBytes(buffer, length)};
     if (flush)
         file->Flush();
     return MakeResult<size_t>(written);
@@ -53,19 +53,19 @@ bool DiskFile::Close() const {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 DiskDirectory::DiskDirectory(const std::string& path) {
-    u64 size = FileUtil::ScanDirectoryTree(path, directory);
+    u64 size{FileUtil::ScanDirectoryTree(path, directory)};
     directory.size = size;
     directory.isDirectory = true;
     children_iterator = directory.children.begin();
 }
 
 u32 DiskDirectory::Read(const u32 count, Entry* entries) {
-    u32 entries_read = 0;
+    u32 entries_read{};
 
     while (entries_read < count && children_iterator != directory.children.cend()) {
-        const FileUtil::FSTEntry& file = *children_iterator;
-        const std::string& filename = file.virtualName;
-        Entry& entry = entries[entries_read];
+        const FileUtil::FSTEntry& file{*children_iterator};
+        const std::string& filename{file.virtualName};
+        Entry& entry{entries[entries_read]};
 
         LOG_TRACE(Service_FS, "File {}: size={} dir={}", filename, file.size, file.isDirectory);
 

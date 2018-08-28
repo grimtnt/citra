@@ -20,7 +20,7 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->textLines->setEnabled(false);
-    ui->labelTitle->setText(tr("Title ID: %1")
+    ui->labelTitle->setText(QString("Title ID: %1")
                                 .arg(QString::fromStdString(Common::StringFromFormat(
                                     "%016llX", Kernel::g_current_process->codeset->program_id))));
     connect(ui->buttonClose, &QPushButton::clicked, this, &CheatDialog::OnCancel);
@@ -58,7 +58,7 @@ void CheatDialog::LoadCheats() {
 
 void CheatDialog::OnSave() {
     bool error{false};
-    QString error_message{tr("The following cheats are empty:\n\n%1")};
+    QString error_message{"The following cheats are empty:\n\n%1"};
     QStringList empty_cheat_names{};
     for (auto& cheat : cheats) {
         if (cheat->GetCheatLines().empty()) {
@@ -67,7 +67,7 @@ void CheatDialog::OnSave() {
         }
     }
     if (error) {
-        QMessageBox::critical(this, tr("Error"), error_message.arg(empty_cheat_names.join('\n')));
+        QMessageBox::critical(this, "Error", error_message.arg(empty_cheat_names.join('\n')));
         return;
     }
 
@@ -83,7 +83,7 @@ void CheatDialog::OnCancel() {
 void CheatDialog::OnRowSelected(int row, int column) {
     selection_changing = true;
     if (row == -1) {
-        ui->textLines->setPlainText("");
+        ui->textLines->clear();
         current_row = -1;
         selection_changing = false;
         ui->textLines->setEnabled(false);
@@ -169,20 +169,20 @@ void CheatDialog::OnAddCheat() {
 NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
     resize(166, 115);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-    setWindowTitle(tr("New Cheat"));
+    setWindowTitle("New Cheat");
     QVBoxLayout* main_layout{new QVBoxLayout(this)};
     QHBoxLayout* name_panel{new QHBoxLayout()};
     QLabel* name_label{new QLabel()};
     name_block = new QLineEdit();
-    name_label->setText(tr("Name: "));
+    name_label->setText("Name: ");
     name_panel->addWidget(name_label);
     name_panel->addWidget(name_block);
 
     QHBoxLayout* type_panel{new QHBoxLayout()};
     QLabel* type_label{new QLabel()};
     type_select = new QComboBox();
-    type_label->setText(tr("Type: "));
-    type_select->addItem(tr("Gateway"), 0);
+    type_label->setText("Type: ");
+    type_select->addItem("Gateway", 0);
     type_panel->addWidget(type_label);
     type_panel->addWidget(type_select);
 

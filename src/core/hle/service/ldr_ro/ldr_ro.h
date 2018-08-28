@@ -22,14 +22,12 @@ private:
     /**
      * RO::Initialize service function
      *  Inputs:
-     *      0 : 0x000100C2
      *      1 : CRS buffer pointer
      *      2 : CRS Size
      *      3 : Process memory address where the CRS will be mapped
      *      4 : handle translation descriptor (zero)
      *      5 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void Initialize(Kernel::HLERequestContext& ctx);
@@ -37,13 +35,11 @@ private:
     /**
      * RO::LoadCRR service function
      *  Inputs:
-     *      0 : 0x00020082
      *      1 : CRR buffer pointer
      *      2 : CRR Size
      *      3 : handle translation descriptor (zero)
      *      4 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void LoadCRR(Kernel::HLERequestContext& ctx);
@@ -51,12 +47,10 @@ private:
     /**
      * RO::UnloadCRR service function
      *  Inputs:
-     *      0 : 0x00030042
      *      1 : CRR buffer pointer
      *      2 : handle translation descriptor (zero)
      *      3 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void UnloadCRR(Kernel::HLERequestContext& ctx);
@@ -64,7 +58,6 @@ private:
     /**
      * RO::LoadCRO service function
      *  Inputs:
-     *      0 : 0x000402C2 (old) / 0x000902C2 (new)
      *      1 : CRO buffer pointer
      *      2 : memory address where the CRO will be mapped
      *      3 : CRO Size
@@ -79,7 +72,6 @@ private:
      *     12 : handle translation descriptor (zero)
      *     13 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : CRO fixed size
      *  Note:
@@ -97,14 +89,12 @@ private:
     /**
      * RO::UnloadCRO service function
      *  Inputs:
-     *      0 : 0x000500C2
      *      1 : mapped CRO pointer
      *      2 : zero? (RO service doesn't care)
      *      3 : original CRO pointer
      *      4 : handle translation descriptor (zero)
      *      5 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void UnloadCRO(Kernel::HLERequestContext& self);
@@ -112,12 +102,10 @@ private:
     /**
      * RO::LinkCRO service function
      *  Inputs:
-     *      0 : 0x00060042
      *      1 : mapped CRO pointer
      *      2 : handle translation descriptor (zero)
      *      3 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void LinkCRO(Kernel::HLERequestContext& self);
@@ -125,12 +113,10 @@ private:
     /**
      * RO::UnlinkCRO service function
      *  Inputs:
-     *      0 : 0x00070042
      *      1 : mapped CRO pointer
      *      2 : handle translation descriptor (zero)
      *      3 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void UnlinkCRO(Kernel::HLERequestContext& self);
@@ -138,12 +124,10 @@ private:
     /**
      * RO::Shutdown service function
      *  Inputs:
-     *      0 : 0x00080042
      *      1 : original CRS buffer pointer
      *      2 : handle translation descriptor (zero)
      *      3 : KProcess handle
      *  Outputs:
-     *      0 : Return header
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void Shutdown(Kernel::HLERequestContext& self);

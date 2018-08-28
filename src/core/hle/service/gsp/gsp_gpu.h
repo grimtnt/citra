@@ -368,7 +368,6 @@ private:
      * This Function is a no-op, We aren't emulating the CPU cache any time soon.
      *
      *  Inputs:
-     *      0 : Header code [0x001F0082]
      *      1 : Address
      *      2 : Size
      *      3 : Value 0, some descriptor for the KProcess Handle

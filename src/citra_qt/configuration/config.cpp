@@ -126,7 +126,6 @@ void Config::ReadValues() {
     Settings::values.use_shader_jit = qt_config->value("use_shader_jit", true).toBool();
     Settings::values.resolution_factor =
         static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
-    Settings::values.use_vsync = qt_config->value("use_vsync", false).toBool();
     Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
     Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
 
@@ -253,7 +252,6 @@ void Config::ReadValues() {
         }
     }
     UISettings::values.recent_files = qt_config->value("recentFiles").toStringList();
-    UISettings::values.language = qt_config->value("language", "").toString();
     qt_config->endGroup();
 
     qt_config->beginGroup("Shortcuts");
@@ -339,7 +337,6 @@ void Config::SaveValues() {
     qt_config->setValue("shaders_accurate_mul", Settings::values.shaders_accurate_mul);
     qt_config->setValue("use_shader_jit", Settings::values.use_shader_jit);
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
-    qt_config->setValue("use_vsync", Settings::values.use_vsync);
     qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);
 
@@ -434,7 +431,6 @@ void Config::SaveValues() {
     }
     qt_config->endArray();
     qt_config->setValue("recentFiles", UISettings::values.recent_files);
-    qt_config->setValue("language", UISettings::values.language);
     qt_config->endGroup();
 
     qt_config->beginGroup("Shortcuts");

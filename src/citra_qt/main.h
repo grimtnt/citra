@@ -158,15 +158,12 @@ private slots:
     void OnCoreError(Core::System::ResultStatus, const std::string&);
     /// Called whenever a user selects Help->About Citra
     void OnMenuAboutCitra();
-    void OnLanguageChanged(const QString& locale);
 
 private:
     bool ValidateMovie(const QString& path, u64 program_id = 0);
     Q_INVOKABLE void OnMoviePlaybackCompleted();
     void UpdateStatusBar();
-    void LoadTranslation();
     void SetupUIStrings();
-    void RetranslateStatusBar();
 
     Ui::MainWindow ui;
 
@@ -211,8 +208,6 @@ private:
     std::shared_ptr<CheatSearch> cheat_search_window;
 
     QAction* actions_recent_files[max_recent_files_item];
-
-    QTranslator translator;
 
     // stores default icon theme search paths for the platform
     QStringList default_theme_paths;

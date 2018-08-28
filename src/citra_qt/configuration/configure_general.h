@@ -19,15 +19,6 @@ public:
     ~ConfigureGeneral();
 
     void applyConfiguration();
-    void retranslateUi();
-
-    bool sd_card_root_changed;
-
-private slots:
-    void onLanguageChanged(int index);
-
-signals:
-    void languageChanged(const QString& locale);
 
 private:
     void setConfiguration();

@@ -19,8 +19,8 @@
 
 namespace FileSys {
 
-static const int kMaxSections = 8;   ///< Maximum number of sections (files) in an ExeFs
-static const int kBlockSize = 0x200; ///< Size of ExeFS blocks (in bytes)
+static const int kMaxSections{8};   ///< Maximum number of sections (files) in an ExeFs
+static const int kBlockSize{0x200}; ///< Size of ExeFS blocks (in bytes)
 
 /**
  * Get the decompressed size of an LZSS compressed ExeFS file
@@ -29,7 +29,7 @@ static const int kBlockSize = 0x200; ///< Size of ExeFS blocks (in bytes)
  * @return Size of decompressed buffer
  */
 static u32 LZSS_GetDecompressedSize(const u8* buffer, u32 size) {
-    u32 offset_size;
+    u32 offset_size{};
     std::memcpy(&offset_size, buffer + size - sizeof(u32), sizeof(u32));
     return offset_size + size;
 }
@@ -44,14 +44,14 @@ static u32 LZSS_GetDecompressedSize(const u8* buffer, u32 size) {
  */
 static bool LZSS_Decompress(const u8* compressed, u32 compressed_size, u8* decompressed,
                             u32 decompressed_size) {
-    const u8* footer = compressed + compressed_size - 8;
+    const u8* footer{compressed + compressed_size - 8};
 
-    u32 buffer_top_and_bottom;
+    u32 buffer_top_and_bottom{};
     std::memcpy(&buffer_top_and_bottom, footer, sizeof(u32));
 
-    u32 out = decompressed_size;
-    u32 index = compressed_size - ((buffer_top_and_bottom >> 24) & 0xFF);
-    u32 stop_index = compressed_size - (buffer_top_and_bottom & 0xFFFFFF);
+    u32 out{decompressed_size};
+    u32 index{compressed_size - ((buffer_top_and_bottom >> 24) & 0xFF)};
+    u32 stop_index{compressed_size - (buffer_top_and_bottom & 0xFFFFFF)};
 
     memset(decompressed, 0, decompressed_size);
     memcpy(decompressed, compressed, compressed_size);
@@ -104,13 +104,13 @@ static bool LZSS_Decompress(const u8* compressed, u32 compressed_size, u8* decom
 
 NCCHContainer::NCCHContainer(const std::string& filepath, u32 ncch_offset)
     : ncch_offset(ncch_offset), filepath(filepath) {
-    file = FileUtil::IOFile(filepath, "rb");
+    file = FileUtil::IOFile{filepath, "rb"};
 }
 
 Loader::ResultStatus NCCHContainer::OpenFile(const std::string& filepath, u32 ncch_offset) {
     this->filepath = filepath;
     this->ncch_offset = ncch_offset;
-    file = FileUtil::IOFile(filepath, "rb");
+    file = FileUtil::IOFile{filepath, "rb"};
 
     if (!file.IsOpen()) {
         LOG_WARNING(Service_FS, "Failed to open {}", filepath);
@@ -145,7 +145,7 @@ Loader::ResultStatus NCCHContainer::Load() {
             return Loader::ResultStatus::ErrorInvalidFormat;
 
         has_header = true;
-        bool failed_to_decrypt = false;
+        bool failed_to_decrypt{};
         if (!ncch_header.no_crypto) {
             is_encrypted = true;
 
@@ -157,7 +157,7 @@ Loader::ResultStatus NCCHContainer::Load() {
             } else {
                 using namespace HW::AES;
                 InitKeys();
-                std::array<u8, 16> key_y_primary, key_y_secondary;
+                std::array<u8, 16> key_y_primary{}, key_y_secondary{};
 
                 std::copy(ncch_header.signature, ncch_header.signature + key_y_primary.size(),
                           key_y_primary.begin());
@@ -240,9 +240,9 @@ Loader::ResultStatus NCCHContainer::Load() {
                         static_cast<u8>(value & 0xFF),
                     };
                 };
-                auto offset_exheader = u32ToBEArray(0x200); // exheader offset
-                auto offset_exefs = u32ToBEArray(ncch_header.exefs_offset * kBlockSize);
-                auto offset_romfs = u32ToBEArray(ncch_header.romfs_offset * kBlockSize);
+                auto offset_exheader{u32ToBEArray(0x200)}; // exheader offset
+                auto offset_exefs{u32ToBEArray(ncch_header.exefs_offset * kBlockSize)};
+                auto offset_romfs{u32ToBEArray(ncch_header.romfs_offset * kBlockSize)};
                 std::copy(offset_exheader.begin(), offset_exheader.end(),
                           exheader_ctr.begin() + 12);
                 std::copy(offset_exefs.begin(), offset_exefs.end(), exefs_ctr.begin() + 12);
@@ -275,7 +275,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                         LOG_ERROR(Service_FS, "Failed to decrypt");
                         return Loader::ResultStatus::ErrorEncrypted;
                     }
-                    CryptoPP::byte* data = reinterpret_cast<CryptoPP::byte*>(&exheader_header);
+                    CryptoPP::byte* data{reinterpret_cast<CryptoPP::byte*>(&exheader_header)};
                     CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption(
                         primary_key.data(), primary_key.size(), exheader_ctr.data())
                         .ProcessData(data, data, sizeof(exheader_header));
@@ -283,14 +283,14 @@ Loader::ResultStatus NCCHContainer::Load() {
             }
 
             is_compressed = (exheader_header.codeset_info.flags.flag & 1) == 1;
-            u32 entry_point = exheader_header.codeset_info.text.address;
-            u32 code_size = exheader_header.codeset_info.text.code_size;
-            u32 stack_size = exheader_header.codeset_info.stack_size;
-            u32 bss_size = exheader_header.codeset_info.bss_size;
-            u32 core_version = exheader_header.arm11_system_local_caps.core_version;
-            u8 priority = exheader_header.arm11_system_local_caps.priority;
-            u8 resource_limit_category =
-                exheader_header.arm11_system_local_caps.resource_limit_category;
+            u32 entry_point{exheader_header.codeset_info.text.address};
+            u32 code_size{exheader_header.codeset_info.text.code_size};
+            u32 stack_size{exheader_header.codeset_info.stack_size};
+            u32 bss_size{exheader_header.codeset_info.bss_size};
+            u32 core_version{exheader_header.arm11_system_local_caps.core_version};
+            u8 priority{exheader_header.arm11_system_local_caps.priority};
+            u8 resource_limit_category{
+                exheader_header.arm11_system_local_caps.resource_limit_category};
 
             LOG_DEBUG(Service_FS, "Name:                        {}",
                       exheader_header.codeset_info.name);
@@ -312,7 +312,7 @@ Loader::ResultStatus NCCHContainer::Load() {
         // DLC can have an ExeFS and a RomFS but no extended header
         if (ncch_header.exefs_size) {
             exefs_offset = ncch_header.exefs_offset * kBlockSize;
-            u32 exefs_size = ncch_header.exefs_size * kBlockSize;
+            u32 exefs_size{ncch_header.exefs_size * kBlockSize};
 
             LOG_DEBUG(Service_FS, "ExeFS offset:                0x{:08X}", exefs_offset);
             LOG_DEBUG(Service_FS, "ExeFS size:                  0x{:08X}", exefs_size);
@@ -322,13 +322,13 @@ Loader::ResultStatus NCCHContainer::Load() {
                 return Loader::ResultStatus::Error;
 
             if (is_encrypted) {
-                CryptoPP::byte* data = reinterpret_cast<CryptoPP::byte*>(&exefs_header);
+                CryptoPP::byte* data{reinterpret_cast<CryptoPP::byte*>(&exefs_header)};
                 CryptoPP::CTR_Mode<CryptoPP::AES>::Decryption(primary_key.data(),
                                                               primary_key.size(), exefs_ctr.data())
                     .ProcessData(data, data, sizeof(exefs_header));
             }
 
-            exefs_file = FileUtil::IOFile(filepath, "rb");
+            exefs_file = FileUtil::IOFile{filepath, "rb"};
             has_exefs = true;
         }
 
@@ -348,16 +348,16 @@ Loader::ResultStatus NCCHContainer::Load() {
 
 Loader::ResultStatus NCCHContainer::LoadOverrides() {
     // Check for split-off files, mark the archive as tainted if we will use them
-    std::string romfs_override = filepath + ".romfs";
+    std::string romfs_override{filepath + ".romfs"};
     if (FileUtil::Exists(romfs_override)) {
         is_tainted = true;
     }
 
     // If we have a split-off exefs file/folder, it takes priority
-    std::string exefs_override = filepath + ".exefs";
-    std::string exefsdir_override = filepath + ".exefsdir/";
+    std::string exefs_override{filepath + ".exefs"};
+    std::string exefsdir_override{filepath + ".exefsdir/"};
     if (FileUtil::Exists(exefs_override)) {
-        exefs_file = FileUtil::IOFile(exefs_override, "rb");
+        exefs_file = FileUtil::IOFile{exefs_override, "rb"};
 
         if (exefs_file.ReadBytes(&exefs_header, sizeof(ExeFs_Header)) == sizeof(ExeFs_Header)) {
             LOG_DEBUG(Service_FS, "Loading ExeFS section from {}", exefs_override);
@@ -380,7 +380,7 @@ Loader::ResultStatus NCCHContainer::LoadOverrides() {
 }
 
 Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vector<u8>& buffer) {
-    Loader::ResultStatus result = Load();
+    Loader::ResultStatus result{Load()};
     if (result != Loader::ResultStatus::Success)
         return result;
 
@@ -393,8 +393,8 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
     // instead of the ExeFS.
     if (std::strcmp(name, "logo") == 0) {
         if (ncch_header.logo_region_offset && ncch_header.logo_region_size) {
-            size_t logo_offset = ncch_header.logo_region_offset * kBlockSize;
-            size_t logo_size = ncch_header.logo_region_size * kBlockSize;
+            size_t logo_offset{ncch_header.logo_region_offset * kBlockSize};
+            size_t logo_size{ncch_header.logo_region_size * kBlockSize};
 
             buffer.resize(logo_size);
             file.Seek(ncch_offset + logo_offset, SEEK_SET);
@@ -416,18 +416,18 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
     LOG_DEBUG(Service_FS, "{} sections:", kMaxSections);
     // Iterate through the ExeFs archive until we find a section with the specified name...
     for (unsigned section_number = 0; section_number < kMaxSections; section_number++) {
-        const auto& section = exefs_header.section[section_number];
+        const auto& section{exefs_header.section[section_number]};
 
         // Load the specified section...
         if (strcmp(section.name, name) == 0) {
             LOG_DEBUG(Service_FS, "{} - offset: 0x{:08X}, size: 0x{:08X}, name: {}", section_number,
                       section.offset, section.size, section.name);
 
-            s64 section_offset =
-                (section.offset + exefs_offset + sizeof(ExeFs_Header) + ncch_offset);
+            s64 section_offset{
+                (section.offset + exefs_offset + sizeof(ExeFs_Header) + ncch_offset)};
             exefs_file.Seek(section_offset, SEEK_SET);
 
-            std::array<u8, 16> key;
+            std::array<u8, 16> key{};
             if (strcmp(section.name, "icon") == 0 || strcmp(section.name, "banner") == 0) {
                 key = primary_key;
             } else {
@@ -440,7 +440,7 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
 
             if (strcmp(section.name, ".code") == 0 && is_compressed) {
                 // Section is compressed, read compressed .code section...
-                std::unique_ptr<u8[]> temp_buffer;
+                std::unique_ptr<u8[]> temp_buffer{};
                 try {
                     temp_buffer.reset(new u8[section.size]);
                 } catch (std::bad_alloc&) {
@@ -455,7 +455,7 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
                 }
 
                 // Decompress .code section...
-                u32 decompressed_size = LZSS_GetDecompressedSize(&temp_buffer[0], section.size);
+                u32 decompressed_size{LZSS_GetDecompressedSize(&temp_buffer[0], section.size)};
                 buffer.resize(decompressed_size);
                 if (!LZSS_Decompress(&temp_buffer[0], section.size, &buffer[0], decompressed_size))
                     return Loader::ResultStatus::ErrorInvalidFormat;
@@ -476,7 +476,7 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
 
 Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
                                                              std::vector<u8>& buffer) {
-    std::string override_name;
+    std::string override_name{};
 
     // Map our section name to the extracted equivalent
     if (!strcmp(name, ".code"))
@@ -490,11 +490,11 @@ Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
     else
         return Loader::ResultStatus::Error;
 
-    std::string section_override = filepath + ".exefsdir/" + override_name;
-    FileUtil::IOFile section_file(section_override, "rb");
+    std::string section_override{filepath + ".exefsdir/" + override_name};
+    FileUtil::IOFile section_file{section_override, "rb"};
 
     if (section_file.IsOpen()) {
-        auto section_size = section_file.GetSize();
+        auto section_size{section_file.GetSize()};
         buffer.resize(section_size);
 
         section_file.Seek(0, SEEK_SET);
@@ -507,7 +507,7 @@ Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
 }
 
 Loader::ResultStatus NCCHContainer::ReadRomFS(std::shared_ptr<RomFSReader>& romfs_file) {
-    Loader::ResultStatus result = Load();
+    Loader::ResultStatus result{Load()};
     if (result != Loader::ResultStatus::Success)
         return result;
 
@@ -522,8 +522,8 @@ Loader::ResultStatus NCCHContainer::ReadRomFS(std::shared_ptr<RomFSReader>& romf
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
 
-    u32 romfs_offset = ncch_offset + (ncch_header.romfs_offset * kBlockSize) + 0x1000;
-    u32 romfs_size = (ncch_header.romfs_size * kBlockSize) - 0x1000;
+    u32 romfs_offset{ncch_offset + (ncch_header.romfs_offset * kBlockSize) + 0x1000};
+    u32 romfs_size{(ncch_header.romfs_size * kBlockSize) - 0x1000};
 
     LOG_DEBUG(Service_FS, "RomFS offset:           0x{:08X}", romfs_offset);
     LOG_DEBUG(Service_FS, "RomFS size:             0x{:08X}", romfs_size);
@@ -532,7 +532,7 @@ Loader::ResultStatus NCCHContainer::ReadRomFS(std::shared_ptr<RomFSReader>& romf
         return Loader::ResultStatus::Error;
 
     // We reopen the file, to allow its position to be independent from file's
-    FileUtil::IOFile romfs_file_inner(filepath, "rb");
+    FileUtil::IOFile romfs_file_inner{filepath, "rb"};
     if (!romfs_file_inner.IsOpen())
         return Loader::ResultStatus::Error;
 
@@ -549,9 +549,9 @@ Loader::ResultStatus NCCHContainer::ReadRomFS(std::shared_ptr<RomFSReader>& romf
 
 Loader::ResultStatus NCCHContainer::ReadOverrideRomFS(std::shared_ptr<RomFSReader>& romfs_file) {
     // Check for RomFS overrides
-    std::string split_filepath = filepath + ".romfs";
+    std::string split_filepath{filepath + ".romfs"};
     if (FileUtil::Exists(split_filepath)) {
-        FileUtil::IOFile romfs_file_inner(split_filepath, "rb");
+        FileUtil::IOFile romfs_file_inner{split_filepath, "rb"};
         if (romfs_file_inner.IsOpen()) {
             LOG_WARNING(Service_FS, "File {} overriding built-in RomFS", split_filepath);
             romfs_file = std::make_shared<RomFSReader>(std::move(romfs_file_inner), 0,
@@ -564,7 +564,7 @@ Loader::ResultStatus NCCHContainer::ReadOverrideRomFS(std::shared_ptr<RomFSReade
 }
 
 Loader::ResultStatus NCCHContainer::ReadProgramId(u64_le& program_id) {
-    Loader::ResultStatus result = Load();
+    Loader::ResultStatus result{Load()};
     if (result != Loader::ResultStatus::Success)
         return result;
 
@@ -576,7 +576,7 @@ Loader::ResultStatus NCCHContainer::ReadProgramId(u64_le& program_id) {
 }
 
 bool NCCHContainer::HasExeFS() {
-    Loader::ResultStatus result = Load();
+    Loader::ResultStatus result{Load()};
     if (result != Loader::ResultStatus::Success)
         return false;
 
@@ -584,7 +584,7 @@ bool NCCHContainer::HasExeFS() {
 }
 
 bool NCCHContainer::HasRomFS() {
-    Loader::ResultStatus result = Load();
+    Loader::ResultStatus result{Load()};
     if (result != Loader::ResultStatus::Success)
         return false;
 
@@ -592,7 +592,7 @@ bool NCCHContainer::HasRomFS() {
 }
 
 bool NCCHContainer::HasExHeader() {
-    Loader::ResultStatus result = Load();
+    Loader::ResultStatus result{Load()};
     if (result != Loader::ResultStatus::Success)
         return false;
 

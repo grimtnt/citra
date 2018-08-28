@@ -84,12 +84,12 @@ void GameListSearchField::setFilterResult(int visible, int total) {
     this->visible = visible;
     this->total = total;
 
-    QString result_of_text = tr("of");
+    QString result_of_text = "of";
     QString result_text;
     if (total == 1) {
-        result_text = tr("result");
+        result_text = "result";
     } else {
-        result_text = tr("results");
+        result_text = "results";
     }
     label_filter_result->setText(
         QString("%1 %2 %3 %4").arg(visible).arg(result_of_text).arg(total).arg(result_text));
@@ -129,10 +129,10 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
     layout_filter = new QHBoxLayout;
     layout_filter->setMargin(8);
     label_filter = new QLabel;
-    label_filter->setText(tr("Filter:"));
+    label_filter->setText("Filter:");
     edit_filter = new QLineEdit;
     edit_filter->clear();
-    edit_filter->setPlaceholderText(tr("Enter pattern to filter"));
+    edit_filter->setPlaceholderText("Enter pattern to filter");
     edit_filter->installEventFilter(keyReleaseEater);
     edit_filter->setClearButtonEnabled(true);
     connect(edit_filter, &QLineEdit::textChanged, parent, &GameList::onTextChanged);
@@ -451,9 +451,9 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
 }
 
 void GameList::AddGamePopup(QMenu& context_menu, u64 program_id) {
-    QAction* open_save_location = context_menu.addAction(tr("Open Save Data Location"));
-    QAction* open_application_location = context_menu.addAction(tr("Open Application Location"));
-    QAction* open_update_location = context_menu.addAction(tr("Open Update Data Location"));
+    QAction* open_save_location = context_menu.addAction("Open Save Data Location");
+    QAction* open_application_location = context_menu.addAction("Open Application Location");
+    QAction* open_update_location = context_menu.addAction("Open Update Data Location");
 
     open_save_location->setEnabled(program_id != 0);
     open_application_location->setVisible(FileUtil::Exists(
@@ -476,8 +476,8 @@ void GameList::AddCustomDirPopup(QMenu& context_menu, QStandardItem* child) {
     UISettings::GameDir& game_dir =
         *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
 
-    QAction* deep_scan = context_menu.addAction(tr("Scan Subfolders"));
-    QAction* delete_dir = context_menu.addAction(tr("Remove Game Directory"));
+    QAction* deep_scan = context_menu.addAction("Scan Subfolders");
+    QAction* delete_dir = context_menu.addAction("Remove Game Directory");
 
     deep_scan->setCheckable(true);
     deep_scan->setChecked(game_dir.deep_scan);
@@ -493,14 +493,14 @@ void GameList::AddCustomDirPopup(QMenu& context_menu, QStandardItem* child) {
 }
 
 void GameList::AddPermDirPopup(QMenu& context_menu, QStandardItem* child) {
-    UISettings::GameDir& game_dir =
-        *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
+    UISettings::GameDir& game_dir{
+        *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()};
 
-    QAction* move_up = context_menu.addAction(tr(u8"\U000025b2 Move Up"));
-    QAction* move_down = context_menu.addAction(tr(u8"\U000025bc Move Down "));
-    QAction* open_directory_location = context_menu.addAction(tr("Open Directory Location"));
+    QAction* move_up{context_menu.addAction("\U000025b2 Move Up")};
+    QAction* move_down{context_menu.addAction("\U000025bc Move Down")};
+    QAction* open_directory_location{context_menu.addAction("Open Directory Location")};
 
-    int row = child->row();
+    int row{child->row()};
 
     move_up->setEnabled(row > 0);
     move_down->setEnabled(row < item_model->invisibleRootItem()->rowCount() - 2);
@@ -751,7 +751,7 @@ GameListPlaceholder::GameListPlaceholder(GMainWindow* parent) : QWidget{parent} 
     layout->setAlignment(Qt::AlignCenter);
     image->setPixmap(QIcon::fromTheme("plus_folder").pixmap(200));
 
-    text->setText(tr("Double-click to add a new folder to the game list "));
+    text->setText("Double-click to add a new folder to the game list ");
     QFont font = text->font();
     font.setPointSize(20);
     text->setFont(font);

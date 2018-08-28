@@ -98,7 +98,7 @@ public:
             return ERROR_INVALID_PATH;
         }
 
-        SelfNCCHFilePath file_path;
+        SelfNCCHFilePath file_path{};
         std::memcpy(&file_path, binary.data(), sizeof(SelfNCCHFilePath));
 
         switch (static_cast<SelfNCCHFilePathType>(file_path.type)) {
@@ -113,9 +113,9 @@ public:
             return ERROR_COMMAND_NOT_ALLOWED;
 
         case SelfNCCHFilePathType::ExeFS: {
-            const auto& raw = file_path.exefs_filename;
-            auto end = std::find(raw.begin(), raw.end(), '\0');
-            std::string filename(raw.begin(), end);
+            const auto& raw{file_path.exefs_filename};
+            auto end{std::find(raw.begin(), raw.end(), '\0')};
+            std::string filename{raw.begin(), end};
             return OpenExeFS(filename);
         }
         default:
@@ -171,8 +171,8 @@ public:
 private:
     ResultVal<std::unique_ptr<FileBackend>> OpenRomFS() const {
         if (ncch_data.romfs_file) {
-            std::unique_ptr<DelayGenerator> delay_generator =
-                std::make_unique<RomFSDelayGenerator>();
+            std::unique_ptr<DelayGenerator> delay_generator{
+                std::make_unique<RomFSDelayGenerator>()};
             return MakeResult<std::unique_ptr<FileBackend>>(
                 std::make_unique<IVFCFile>(ncch_data.romfs_file, std::move(delay_generator)));
         } else {
@@ -183,8 +183,8 @@ private:
 
     ResultVal<std::unique_ptr<FileBackend>> OpenUpdateRomFS() const {
         if (ncch_data.update_romfs_file) {
-            std::unique_ptr<DelayGenerator> delay_generator =
-                std::make_unique<RomFSDelayGenerator>();
+            std::unique_ptr<DelayGenerator> delay_generator{
+                std::make_unique<RomFSDelayGenerator>()};
             return MakeResult<std::unique_ptr<FileBackend>>(std::make_unique<IVFCFile>(
                 ncch_data.update_romfs_file, std::move(delay_generator)));
         } else {
@@ -232,7 +232,7 @@ private:
 };
 
 void ArchiveFactory_SelfNCCH::Register(Loader::AppLoader& app_loader) {
-    u64 program_id = 0;
+    u64 program_id{};
     if (app_loader.ReadProgramId(program_id) != Loader::ResultStatus::Success) {
         LOG_WARNING(
             Service_FS,
@@ -248,21 +248,19 @@ void ArchiveFactory_SelfNCCH::Register(Loader::AppLoader& app_loader) {
                     program_id);
     }
 
-    NCCHData& data = ncch_data[program_id];
+    NCCHData& data{ncch_data[program_id]};
 
-    std::shared_ptr<RomFSReader> romfs_file_;
+    std::shared_ptr<RomFSReader> romfs_file_{};
     if (Loader::ResultStatus::Success == app_loader.ReadRomFS(romfs_file_)) {
-
         data.romfs_file = std::move(romfs_file_);
     }
 
-    std::shared_ptr<RomFSReader> update_romfs_file;
+    std::shared_ptr<RomFSReader> update_romfs_file{};
     if (Loader::ResultStatus::Success == app_loader.ReadUpdateRomFS(update_romfs_file)) {
-
         data.update_romfs_file = std::move(update_romfs_file);
     }
 
-    std::vector<u8> buffer;
+    std::vector<u8> buffer{};
 
     if (Loader::ResultStatus::Success == app_loader.ReadIcon(buffer))
         data.icon = std::make_shared<std::vector<u8>>(std::move(buffer));
@@ -277,8 +275,8 @@ void ArchiveFactory_SelfNCCH::Register(Loader::AppLoader& app_loader) {
 }
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_SelfNCCH::Open(const Path& path) {
-    auto archive = std::make_unique<SelfNCCHArchive>(
-        ncch_data[Kernel::g_current_process->codeset->program_id]);
+    auto archive{std::make_unique<SelfNCCHArchive>(
+        ncch_data[Kernel::g_current_process->codeset->program_id])};
     return MakeResult<std::unique_ptr<ArchiveBackend>>(std::move(archive));
 }
 

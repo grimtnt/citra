@@ -23,15 +23,15 @@ std::string GetSaveDataContainerPath(const std::string& sdmc_directory) {
 }
 
 std::string GetSaveDataPath(const std::string& mount_location, u64 program_id) {
-    u32 high = static_cast<u32>(program_id >> 32);
-    u32 low = static_cast<u32>(program_id & 0xFFFFFFFF);
+    u32 high{static_cast<u32>(program_id >> 32)};
+    u32 low{static_cast<u32>(program_id & 0xFFFFFFFF)};
     return Common::StringFromFormat("%s%08x/%08x/data/00000001/", mount_location.c_str(), high,
                                     low);
 }
 
 std::string GetSaveDataMetadataPath(const std::string& mount_location, u64 program_id) {
-    u32 high = static_cast<u32>(program_id >> 32);
-    u32 low = static_cast<u32>(program_id & 0xFFFFFFFF);
+    u32 high{static_cast<u32>(program_id >> 32)};
+    u32 low{static_cast<u32>(program_id & 0xFFFFFFFF)};
     return Common::StringFromFormat("%s%08x/%08x/data/00000001.metadata", mount_location.c_str(),
                                     high, low);
 }
@@ -44,7 +44,7 @@ ArchiveSource_SDSaveData::ArchiveSource_SDSaveData(const std::string& sdmc_direc
 }
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveSource_SDSaveData::Open(u64 program_id) {
-    std::string concrete_mount_point = GetSaveDataPath(mount_point, program_id);
+    std::string concrete_mount_point{GetSaveDataPath(mount_point, program_id)};
     if (!FileUtil::Exists(concrete_mount_point)) {
         // When a SaveData archive is created for the first time, it is not yet formatted and the
         // save file/directory structure expected by the game has not yet been initialized.
@@ -53,19 +53,19 @@ ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveSource_SDSaveData::Open(u64 pr
         return ERR_NOT_FORMATTED;
     }
 
-    auto archive = std::make_unique<SaveDataArchive>(std::move(concrete_mount_point));
+    auto archive{std::make_unique<SaveDataArchive>(std::move(concrete_mount_point))};
     return MakeResult<std::unique_ptr<ArchiveBackend>>(std::move(archive));
 }
 
 ResultCode ArchiveSource_SDSaveData::Format(u64 program_id,
                                             const FileSys::ArchiveFormatInfo& format_info) {
-    std::string concrete_mount_point = GetSaveDataPath(mount_point, program_id);
+    std::string concrete_mount_point{GetSaveDataPath(mount_point, program_id)};
     FileUtil::DeleteDirRecursively(concrete_mount_point);
     FileUtil::CreateFullPath(concrete_mount_point);
 
     // Write the format metadata
-    std::string metadata_path = GetSaveDataMetadataPath(mount_point, program_id);
-    FileUtil::IOFile file(metadata_path, "wb");
+    std::string metadata_path{GetSaveDataMetadataPath(mount_point, program_id)};
+    FileUtil::IOFile file{metadata_path, "wb"};
 
     if (file.IsOpen()) {
         file.WriteBytes(&format_info, sizeof(format_info));
@@ -75,8 +75,8 @@ ResultCode ArchiveSource_SDSaveData::Format(u64 program_id,
 }
 
 ResultVal<ArchiveFormatInfo> ArchiveSource_SDSaveData::GetFormatInfo(u64 program_id) const {
-    std::string metadata_path = GetSaveDataMetadataPath(mount_point, program_id);
-    FileUtil::IOFile file(metadata_path, "rb");
+    std::string metadata_path{GetSaveDataMetadataPath(mount_point, program_id)};
+    FileUtil::IOFile file{metadata_path, "rb"};
 
     if (!file.IsOpen()) {
         LOG_ERROR(Service_FS, "Could not open metadata information for archive");

@@ -115,7 +115,6 @@ public:
          *  Inputs:
          *      1 : None
          *  Outputs:
-         *      0 : Result Header code
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : Region value loaded from SecureInfo offset 0x100
          */
@@ -126,7 +125,6 @@ public:
          *  Inputs:
          *      1 : 20 bit application ID salt
          *  Outputs:
-         *      0 : Result Header code
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : Hash/"ID" lower word
          *      3 : Hash/"ID" upper word
@@ -138,7 +136,6 @@ public:
          *  Inputs:
          *      1 : None
          *  Outputs:
-         *      0 : Result Header code
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : 1 if the system is a Canada or USA model, 0 otherwise
          */
@@ -146,8 +143,6 @@ public:
 
         /**
          * CFG::GetSystemModel service function
-         *  Inputs:
-         *      0 : 0x00050000
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : Model of the console
@@ -156,8 +151,6 @@ public:
 
         /**
          * CFG::GetModelNintendo2DS service function
-         *  Inputs:
-         *      0 : 0x00060000
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : 0 if the system is a Nintendo 2DS, 1 otherwise
@@ -167,7 +160,6 @@ public:
         /**
          * CFG::GetConfigInfoBlk2 service function
          *  Inputs:
-         *      0 : 0x00010082
          *      1 : Size
          *      2 : Block ID
          *      3 : Descriptor for the output buffer
@@ -180,7 +172,6 @@ public:
         /**
          * CFG::GetConfigInfoBlk8 service function
          *  Inputs:
-         *      0 : 0x04010082 / 0x08010082
          *      1 : Size
          *      2 : Block ID
          *      3 : Descriptor for the output buffer
@@ -193,7 +184,6 @@ public:
         /**
          * CFG::SetConfigInfoBlk4 service function
          *  Inputs:
-         *      0 : 0x04020082 / 0x08020082
          *      1 : Block ID
          *      2 : Size
          *      3 : Descriptor for the output buffer
@@ -208,8 +198,6 @@ public:
 
         /**
          * CFG::UpdateConfigNANDSavegame service function
-         *  Inputs:
-         *      0 : 0x04030000 / 0x08030000
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          */
@@ -217,8 +205,6 @@ public:
 
         /**
          * CFG::FormatConfig service function
-         *  Inputs:
-         *      0 : 0x08060000
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          */

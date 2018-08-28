@@ -182,10 +182,10 @@ void CheatSearch::OnScan(bool is_next_scan) {
     ui->tableFound->setRowCount(0);
 
     if (previous_found.size() > 50000) {
-        ui->lblCount->setText(tr("Found: 50000+"));
+        ui->lblCount->setText("Found: 50000+");
     } else {
         LoadTable(previous_found);
-        ui->lblCount->setText(tr("Found: %1").arg(previous_found.size()));
+        ui->lblCount->setText(QString("Found: %1").arg(previous_found.size()));
     }
 
     ui->btnNextScan->setEnabled(previous_found.size() > 0);
@@ -335,7 +335,7 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, const QString& address
     : QDialog(parent) {
     resize(300, 30);
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
-    setWindowTitle(tr("Modify Address"));
+    setWindowTitle("Modify Address");
     setSizeGripEnabled(false);
 
     QVBoxLayout* main_layout{new QVBoxLayout(this)};

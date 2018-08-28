@@ -88,8 +88,6 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     qRegisterMetaType<size_t>("size_t");
     qRegisterMetaType<Service::AM::InstallStatus>("Service::AM::InstallStatus");
 
-    LoadTranslation();
-
     setAcceptDrops(true);
     ui.setupUi(this);
     statusBar()->hide();
@@ -155,15 +153,15 @@ void GMainWindow::InitializeWidgets() {
     statusBar()->addPermanentWidget(progress_bar);
 
     emu_speed_label = new QLabel();
-    emu_speed_label->setToolTip(tr("Current emulation speed. Values higher or lower than 100% "
-                                   "indicate emulation is running faster or slower than a 3DS."));
+    emu_speed_label->setToolTip("Current emulation speed. Values higher or lower than 100% "
+                                "indicate emulation is running faster or slower than a 3DS.");
     game_fps_label = new QLabel();
-    game_fps_label->setToolTip(tr("How many frames per second the game is currently displaying. "
-                                  "This will vary from game to game and scene to scene."));
+    game_fps_label->setToolTip("How many frames per second the game is currently displaying. "
+                               "This will vary from game to game and scene to scene.");
     emu_frametime_label = new QLabel();
     emu_frametime_label->setToolTip(
-        tr("Time taken to emulate a 3DS frame, not counting framelimiting or v-sync. For "
-           "full-speed emulation this should be at most 16.67 ms."));
+        "Time taken to emulate a 3DS frame, not counting framelimiting. For "
+        "full-speed emulation this should be at most 16.67 ms.");
 
     for (auto& label : {emu_speed_label, game_fps_label, emu_frametime_label}) {
         label->setVisible(false);
@@ -195,7 +193,7 @@ void GMainWindow::InitializeRecentFileMenuActions() {
     }
     ui.menu_recent_files->addSeparator();
     QAction* action_clear_recent_files = new QAction(this);
-    action_clear_recent_files->setText(tr("Clear Recent Files"));
+    action_clear_recent_files->setText("Clear Recent Files");
     connect(action_clear_recent_files, &QAction::triggered, this, [this] {
         UISettings::values.recent_files.clear();
         UpdateRecentFiles();
@@ -354,7 +352,10 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
     connect(ui.action_Dump_RAM, &QAction::triggered, this, [&] {
-        FileUtil::IOFile file("ramdump.bin", "wb");
+        QString path{QFileDialog::getSaveFileName(this, "Save RAM Dump", ".")};
+        if (path.isEmpty())
+            return;
+        FileUtil::IOFile file(path.toStdString(), "wb");
         u8* ram = new u8[0x08000000];
         Memory::ReadBlock(0x08000000, ram, 0x08000000);
         file.WriteBytes(ram, 0x08000000);
@@ -366,7 +367,7 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::ToggleWindowMode);
     connect(ui.action_Display_Dock_Widget_Headers, &QAction::triggered, this,
             &GMainWindow::OnDisplayTitleBars);
-    ui.action_Show_Filter_Bar->setShortcut(tr("CTRL+F"));
+    ui.action_Show_Filter_Bar->setShortcut(QKeySequence("CTRL+F"));
     connect(ui.action_Show_Filter_Bar, &QAction::triggered, this, &GMainWindow::OnToggleFilterBar);
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
     ui.action_Fullscreen->setShortcut(GetHotkey("Main Window", "Fullscreen", this)->key());
@@ -437,12 +438,10 @@ bool GMainWindow::LoadROM(const QString& filename) {
     render_window->InitRenderTarget();
     render_window->MakeCurrent();
 
-    const char* below_gl33_title = "OpenGL 3.3 Unsupported";
-    const char* below_gl33_message = "Your GPU may not support OpenGL 3.3, or you do not "
-                                     "have the latest graphics driver.";
-
     if (!gladLoadGL()) {
-        QMessageBox::critical(this, tr(below_gl33_title), tr(below_gl33_message));
+        QMessageBox::critical(this, "OpenGL 3.3 Unsupported",
+                              "Your GPU may not support OpenGL 3.3, or you do not "
+                              "have the latest graphics driver.");
         return false;
     }
 
@@ -455,92 +454,93 @@ bool GMainWindow::LoadROM(const QString& filename) {
         case Core::System::ResultStatus::ErrorGetLoader:
             LOG_CRITICAL(Frontend, "Failed to obtain loader for {}!", filename.toStdString());
             QMessageBox::critical(
-                this, tr("Invalid ROM Format"),
-                tr("Your ROM format is not supported.<br/>Please follow the guides to redump your "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Game-Cartridges/'>game "
-                   "cartridges</a> or "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Installed-Titles/'>installed "
-                   "titles</a>."));
+                this, "Invalid ROM Format",
+                "Your ROM format is not supported.<br/>Please follow the guides to redump your "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Game-Cartridges/'>game "
+                "cartridges</a> or "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Installed-Titles/'>installed "
+                "titles</a>.");
             break;
 
         case Core::System::ResultStatus::ErrorSystemMode:
             LOG_CRITICAL(Frontend, "Failed to load ROM!");
             QMessageBox::critical(
-                this, tr("ROM Corrupted"),
-                tr("Your ROM is corrupted. <br/>Please follow the guides to redump your "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Game-Cartridges/'>game "
-                   "cartridges</a> or "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Installed-Titles/'>installed "
-                   "titles</a>."));
+                this, "ROM Corrupted",
+                "Your ROM is corrupted. <br/>Please follow the guides to redump your "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Game-Cartridges/'>game "
+                "cartridges</a> or "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Installed-Titles/'>installed "
+                "titles</a>.");
             break;
 
         case Core::System::ResultStatus::ErrorLoader_ErrorEncrypted: {
             QMessageBox::critical(
-                this, tr("ROM Encrypted"),
-                tr("Your ROM is encrypted. <br/>Please follow the guides to redump your "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Game-Cartridges/'>game "
-                   "cartridges</a> or "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Installed-Titles/'>installed "
-                   "titles</a>."));
+                this, "ROM Encrypted",
+                "Your ROM is encrypted. <br/>Please follow the guides to redump your "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Game-Cartridges/'>game "
+                "cartridges</a> or "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Installed-Titles/'>installed "
+                "titles</a>.");
             break;
         }
         case Core::System::ResultStatus::ErrorLoader_ErrorInvalidFormat:
             QMessageBox::critical(
-                this, tr("Invalid ROM Format"),
-                tr("Your ROM format is not supported.<br/>Please follow the guides to redump your "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Game-Cartridges/'>game "
-                   "cartridges</a> or "
-                   "<a "
-                   "href='https://github.com/valentinvanelslande/citra/wiki/"
-                   "Dumping-Installed-Titles/'>installed "
-                   "titles</a>."));
+                this, "Invalid ROM Format",
+                "Your ROM format is not supported.<br/>Please follow the guides to redump your "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Game-Cartridges/'>game "
+                "cartridges</a> or "
+                "<a "
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
+                "Dumping-Installed-Titles/'>installed "
+                "titles</a>.");
             break;
 
         case Core::System::ResultStatus::ErrorVideoCore:
             QMessageBox::critical(
-                this, tr("Video Core Error"),
-                tr("An error has occured. Please see the log for more details."
-                   "To access the log, Click Open Log Location in the general tab of the "
-                   "configuration window.<br/><br/>"
-                   "Ensure that you have the latest graphics drivers for your GPU."));
+                this, "Video Core Error",
+                "An error has occured. Please see the log for more details."
+                "To access the log, Click Open Log Location in the general tab of the "
+                "configuration window.<br/><br/>"
+                "Ensure that you have the latest graphics drivers for your GPU.");
             break;
 
         case Core::System::ResultStatus::ErrorVideoCore_ErrorGenericDrivers:
             QMessageBox::critical(
-                this, tr("Video Core Error"),
-                tr("You are running default Windows drivers "
-                   "for your GPU. You need to install the "
-                   "proper drivers for your graphics card from the manufacturer's website."));
+                this, "Video Core Error",
+                "You are running default Windows drivers "
+                "for your GPU. You need to install the "
+                "proper drivers for your graphics card from the manufacturer's website.");
             break;
 
         case Core::System::ResultStatus::ErrorVideoCore_ErrorBelowGL33:
-            QMessageBox::critical(this, tr(below_gl33_title), tr(below_gl33_message));
+            QMessageBox::critical(this, "OpenGL 3.3 Unsupported",
+                                  "Your GPU may not support OpenGL 3.3, or you do not "
+                                  "have the latest graphics driver.");
             break;
 
         default:
-            QMessageBox::critical(
-                this, tr("Error while loading ROM!"),
-                tr("An unknown error occured. Please see the log for more details."));
+            QMessageBox::critical(this, "Error while loading ROM!",
+                                  "An unknown error occured. Please see the log for more details.");
             break;
         }
         return false;
     }
 
-    std::string title;
+    std::string title{};
     system.GetAppLoader().ReadTitle(title);
     game_title = QString::fromStdString(title);
     SetupUIStrings();
@@ -637,7 +637,7 @@ void GMainWindow::ShutdownGame() {
 
     // Update the GUI
     ui.action_Start->setEnabled(false);
-    ui.action_Start->setText(tr("Start"));
+    ui.action_Start->setText("Start");
     ui.action_Pause->setEnabled(false);
     ui.action_Stop->setEnabled(false);
     ui.action_Restart->setEnabled(false);
@@ -694,8 +694,8 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
 
     switch (config.error_type) {
     case HLE::Applets::ErrEulaErrorType::ErrorCode: {
-        QMessageBox::critical(this, tr("ErrEula"),
-                              tr("Error Code: %1")
+        QMessageBox::critical(this, "ErrEula",
+                              QString("Error Code: %1")
                                   .arg(QString::fromStdString(
                                       Common::StringFromFormat("0x%08X", config.error_code))));
         break;
@@ -704,8 +704,8 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::ErrorText: {
         std::string error = Common::UTF16ToUTF8(config.error_text);
         QMessageBox::critical(
-            this, tr("ErrEula"),
-            tr("Error Code: %1\n\n%2")
+            this, "ErrEula",
+            QString("Error Code: %1\n\n%2")
                 .arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code)),
                      QString::fromStdString(error)));
         break;
@@ -714,7 +714,7 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::Eula:
     case HLE::Applets::ErrEulaErrorType::EulaDrawOnly:
     case HLE::Applets::ErrEulaErrorType::EulaFirstBoot: {
-        QMessageBox::information(this, tr("ErrEula"), tr("EULA accepted"));
+        QMessageBox::information(this, "ErrEula", "EULA accepted");
         break;
     }
     }
@@ -744,7 +744,7 @@ void GMainWindow::UpdateRecentFiles() {
         std::min(UISettings::values.recent_files.size(), max_recent_files_item);
 
     for (int i = 0; i < num_recent_files; i++) {
-        const QString text = QString("&%1. %2").arg(i + 1).arg(
+        const QString text = QString("%1. %2").arg(i + 1).arg(
             QFileInfo(UISettings::values.recent_files[i]).fileName());
         actions_recent_files[i]->setText(text);
         actions_recent_files[i]->setData(UISettings::values.recent_files[i]);
@@ -791,13 +791,13 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
         return;
     }
 
-    QString qpath = QString::fromStdString(path);
+    QString qpath{QString::fromStdString(path)};
 
-    QDir dir(qpath);
+    QDir dir{qpath};
     if (!dir.exists()) {
         QMessageBox::critical(
-            this, tr("Error Opening %1 Folder").arg(QString::fromStdString(open_target)),
-            tr("Folder does not exist!"));
+            this, QString("Error Opening %1 Folder").arg(QString::fromStdString(open_target)),
+            "Folder does not exist!");
         return;
     }
 
@@ -823,14 +823,15 @@ void GMainWindow::OnGameListOpenDirectory(QString directory) {
         path = directory;
     }
     if (!QFileInfo::exists(path)) {
-        QMessageBox::critical(this, tr("Error Opening %1").arg(path), tr("Folder does not exist!"));
+        QMessageBox::critical(this, QString("Error Opening %1").arg(path),
+                              "Folder does not exist!");
         return;
     }
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
 
 void GMainWindow::OnGameListAddDirectory() {
-    QString dir_path = QFileDialog::getExistingDirectory(this, tr("Select Directory"));
+    QString dir_path{QFileDialog::getExistingDirectory(this, "Select Directory")};
     if (dir_path.isEmpty())
         return;
     UISettings::GameDir game_dir{dir_path, false, true};
@@ -854,11 +855,10 @@ void GMainWindow::OnMenuLoadFile() {
     for (const auto& piece : game_list->supported_file_extensions)
         extensions += "*." + piece + " ";
 
-    QString file_filter = tr("3DS Executable") + " (" + extensions + ")";
-    file_filter += ";;" + tr("All Files (*.*)");
+    QString file_filter{QString("3DS Executable (%1);;All Files (*.*)").arg(extensions)};
 
-    QString filename = QFileDialog::getOpenFileName(this, tr("Load File"),
-                                                    UISettings::values.roms_path, file_filter);
+    QString filename{
+        QFileDialog::getOpenFileName(this, "Load File", UISettings::values.roms_path, file_filter)};
     if (!filename.isEmpty()) {
         UISettings::values.roms_path = QFileInfo(filename).path();
 
@@ -867,9 +867,9 @@ void GMainWindow::OnMenuLoadFile() {
 }
 
 void GMainWindow::OnMenuInstallCIA() {
-    QStringList filepaths = QFileDialog::getOpenFileNames(
-        this, tr("Install CIAs"), UISettings::values.roms_path,
-        tr("CTR Importable Archive (*.CIA*)") + ";;" + tr("All Files (*.*)"));
+    QStringList filepaths{
+        QFileDialog::getOpenFileNames(this, "Install CIA", UISettings::values.roms_path,
+                                      "CTR Importable Archive (*.CIA*);;All Files (*.*)")};
     if (filepaths.isEmpty())
         return;
 
@@ -895,28 +895,28 @@ void GMainWindow::OnUpdateProgress(size_t written, size_t total) {
 }
 
 void GMainWindow::OnCIAInstallReport(Service::AM::InstallStatus status, QString filepath) {
-    QString filename = QFileInfo(filepath).fileName();
+    QString filename{QFileInfo(filepath).fileName()};
     switch (status) {
     case Service::AM::InstallStatus::Success:
-        statusBar()->showMessage(tr("%1 installed").arg(filename));
+        statusBar()->showMessage(QString("%1 installed").arg(filename));
         break;
     case Service::AM::InstallStatus::ErrorFailedToOpenFile:
-        QMessageBox::critical(this, tr("Unable to open File"),
-                              tr("Could not open %1").arg(filename));
+        QMessageBox::critical(this, "Unable to open File",
+                              QString("Could not open %1").arg(filename));
         break;
     case Service::AM::InstallStatus::ErrorAborted:
         QMessageBox::critical(
-            this, tr("Installation aborted"),
-            tr("The installation of %1 was aborted. Please see the log for more details")
+            this, "Installation aborted",
+            QString("The installation of %1 was aborted. Please see the log for more details")
                 .arg(filename));
         break;
     case Service::AM::InstallStatus::ErrorInvalid:
-        QMessageBox::critical(this, tr("Invalid File"), tr("%1 is not a valid CIA").arg(filename));
+        QMessageBox::critical(this, "Invalid File", QString("%1 is not a valid CIA").arg(filename));
         break;
     case Service::AM::InstallStatus::ErrorEncrypted:
-        QMessageBox::critical(this, tr("Encrypted File"),
-                              tr("%1 must be decrypted "
-                                 "before being used with Citra. A real 3DS is required.")
+        QMessageBox::critical(this, "Encrypted File",
+                              QString("%1 must be decrypted "
+                                      "before being used with Citra. A real 3DS is required.")
                                   .arg(filename));
         break;
     }
@@ -937,8 +937,8 @@ void GMainWindow::OnMenuRecentFile() {
         BootGame(filename);
     } else {
         // Display an error message and remove the file from the list.
-        QMessageBox::information(this, tr("File not found"),
-                                 tr("File \"%1\" not found").arg(filename));
+        QMessageBox::information(this, "File not found",
+                                 QString("File \"%1\" not found").arg(filename));
 
         UISettings::values.recent_files.removeOne(filename);
         UpdateRecentFiles();
@@ -960,7 +960,7 @@ void GMainWindow::OnStartGame() {
     connect(emu_thread.get(), &EmuThread::ErrorThrown, this, &GMainWindow::OnCoreError);
 
     ui.action_Start->setEnabled(false);
-    ui.action_Start->setText(tr("Continue"));
+    ui.action_Start->setText("Continue");
     ui.action_Pause->setEnabled(true);
     ui.action_Stop->setEnabled(true);
     ui.action_Restart->setEnabled(true);
@@ -1094,19 +1094,15 @@ void GMainWindow::OnSwapScreens() {
 
 void GMainWindow::OnConfigure() {
     ConfigureDialog configureDialog(this);
-    connect(&configureDialog, &ConfigureDialog::languageChanged, this,
-            &GMainWindow::OnLanguageChanged);
-    auto old_theme = UISettings::values.theme;
-    auto result = configureDialog.exec();
+    auto old_theme{UISettings::values.theme};
+    auto result{configureDialog.exec()};
     if (result == QDialog::Accepted) {
         configureDialog.applyConfiguration();
         if (UISettings::values.theme != old_theme) {
             UpdateUITheme();
             emit UpdateThemedIcons();
         }
-        if (configureDialog.sd_card_root_changed) {
-            game_list->PopulateAsync(UISettings::values.game_dirs);
-        }
+        game_list->PopulateAsync(UISettings::values.game_dirs);
         SyncMenuUISettings();
         config->Save();
     }
@@ -1130,10 +1126,10 @@ void GMainWindow::OnControlPanel() {
 }
 
 void GMainWindow::OnSetPlayCoins() {
-    bool ok;
-    u16 play_coins = static_cast<u16>(
-        QInputDialog::getInt(this, tr("Set Play Coins"), tr("Play Coins:"), 0, 0, 300, 1, &ok,
-                             Qt::WindowSystemMenuHint | Qt::WindowTitleHint));
+    bool ok{};
+    u16 play_coins{static_cast<u16>(
+        QInputDialog::getInt(this, "Set Play Coins", "Play Coins:", 0, 0, 300, 1, &ok,
+                             Qt::WindowSystemMenuHint | Qt::WindowTitleHint))};
     if (ok)
         Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
 }
@@ -1148,8 +1144,8 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnRecordMovie() {
-    const QString path =
-        QFileDialog::getSaveFileName(this, tr("Record Movie"), "", tr("Citra TAS Movie (*.ctm)"));
+    const QString path{
+        QFileDialog::getSaveFileName(this, "Record Movie", "", "Citra TAS Movie (*.ctm)")};
     if (path.isEmpty())
         return;
     if (emulation_running) {
@@ -1157,8 +1153,8 @@ void GMainWindow::OnRecordMovie() {
     } else {
         movie_record_on_start = true;
         movie_record_path = path;
-        QMessageBox::information(this, tr("Record Movie"),
-                                 tr("Recording will start once you boot a game."));
+        QMessageBox::information(this, "Record Movie",
+                                 "Recording will start once you boot a game.");
     }
     ui.action_Record_Movie->setEnabled(false);
     ui.action_Play_Movie->setEnabled(false);
@@ -1167,38 +1163,38 @@ void GMainWindow::OnRecordMovie() {
 
 bool GMainWindow::ValidateMovie(const QString& path, u64 program_id) {
     using namespace Core;
-    Movie::ValidationResult result =
-        Core::Movie::GetInstance().ValidateMovie(path.toStdString(), program_id);
-    const QString revision_dismatch_text =
-        tr("The movie file you are trying to load was created on a different revision of Citra."
-           "<br/>Citra has had some changes during the time, and the playback may desync or not "
-           "work as expected."
-           "<br/><br/>Are you sure you still want to load the movie file?");
-    const QString game_dismatch_text =
-        tr("The movie file you are trying to load was recorded with a different game."
-           "<br/>The playback may not work as expected, and it may cause unexpected results."
-           "<br/><br/>Are you sure you still want to load the movie file?");
-    const QString invalid_movie_text =
-        tr("The movie file you are trying to load is invalid."
-           "<br/>Either the file is corrupted, or Citra has had made some major changes to the "
-           "Movie module."
-           "<br/>Please choose a different movie file and try again.");
-    int answer;
+    Movie::ValidationResult result{
+        Core::Movie::GetInstance().ValidateMovie(path.toStdString(), program_id)};
+    const QString revision_dismatch_text{
+        "The movie file you are trying to load was created on a different revision of Citra."
+        "<br/>Citra has had some changes during the time, and the playback may desync or not "
+        "work as expected."
+        "<br/><br/>Are you sure you still want to load the movie file?"};
+    const QString game_dismatch_text{
+        "The movie file you are trying to load was recorded with a different game."
+        "<br/>The playback may not work as expected, and it may cause unexpected results."
+        "<br/><br/>Are you sure you still want to load the movie file?"};
+    const QString invalid_movie_text{
+        "The movie file you are trying to load is invalid."
+        "<br/>Either the file is corrupted, or Citra has had made some major changes to the "
+        "Movie module."
+        "<br/>Please choose a different movie file and try again."};
+    int answer{};
     switch (result) {
     case Movie::ValidationResult::RevisionDismatch:
-        answer = QMessageBox::question(this, tr("Revision Dismatch"), revision_dismatch_text,
+        answer = QMessageBox::question(this, "Revision Dismatch", revision_dismatch_text,
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         if (answer != QMessageBox::Yes)
             return false;
         break;
     case Movie::ValidationResult::GameDismatch:
-        answer = QMessageBox::question(this, tr("Game Dismatch"), game_dismatch_text,
+        answer = QMessageBox::question(this, "Game Dismatch", game_dismatch_text,
                                        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         if (answer != QMessageBox::Yes)
             return false;
         break;
     case Movie::ValidationResult::Invalid:
-        QMessageBox::critical(this, tr("Invalid Movie File"), invalid_movie_text);
+        QMessageBox::critical(this, "Invalid Movie File", invalid_movie_text);
         return false;
     default:
         break;
@@ -1207,8 +1203,8 @@ bool GMainWindow::ValidateMovie(const QString& path, u64 program_id) {
 }
 
 void GMainWindow::OnPlayMovie() {
-    const QString path =
-        QFileDialog::getOpenFileName(this, tr("Play Movie"), "", tr("Citra TAS Movie (*.ctm)"));
+    const QString path{
+        QFileDialog::getOpenFileName(this, "Play Movie", "", "Citra TAS Movie (*.ctm)")};
     if (path.isEmpty())
         return;
 
@@ -1217,12 +1213,12 @@ void GMainWindow::OnPlayMovie() {
             return;
     } else {
         u64 program_id = Core::Movie::GetInstance().GetMovieProgramID(path.toStdString());
-        QString game_path = game_list->FindGameByProgramID(program_id);
+        QString game_path{game_list->FindGameByProgramID(program_id)};
         if (game_path.isEmpty()) {
-            QMessageBox::warning(this, tr("Game Not Found"),
-                                 tr("The movie you are trying to play is from a game that is not "
-                                    "in the game list. If you own the game, please add the game "
-                                    "folder to the game list and try to play the movie again."));
+            QMessageBox::warning(this, "Game Not Found",
+                                 "The movie you are trying to play is from a game that is not "
+                                 "in the game list. If you own the game, please add the game "
+                                 "folder to the game list and try to play the movie again.");
             return;
         }
         if (!ValidateMovie(path, program_id))
@@ -1239,15 +1235,14 @@ void GMainWindow::OnPlayMovie() {
 
 void GMainWindow::OnStopRecordingPlayback() {
     if (movie_record_on_start) {
-        QMessageBox::information(this, tr("Record Movie"), tr("Movie recording cancelled."));
+        QMessageBox::information(this, "Record Movie", "Movie recording cancelled.");
         movie_record_on_start = false;
         movie_record_path.clear();
     } else {
-        const bool was_recording = Core::Movie::GetInstance().IsRecordingInput();
+        const bool was_recording{Core::Movie::GetInstance().IsRecordingInput()};
         Core::Movie::GetInstance().Shutdown();
         if (was_recording) {
-            QMessageBox::information(this, tr("Movie Saved"),
-                                     tr("The movie is successfully saved."));
+            QMessageBox::information(this, "Movie Saved", "The movie is successfully saved.");
         }
     }
     ui.action_Record_Movie->setEnabled(true);
@@ -1261,17 +1256,19 @@ void GMainWindow::UpdateStatusBar() {
         return;
     }
 
-    auto results = Core::System::GetInstance().GetAndResetPerfStats();
+    auto results{Core::System::GetInstance().GetAndResetPerfStats()};
 
     if (Settings::values.use_frame_limit) {
-        emu_speed_label->setText(tr("Speed: %1% / %2%")
+        emu_speed_label->setText(QString("Speed: %1% / %2%")
                                      .arg(results.emulation_speed * 100.0, 0, 'f', 0)
                                      .arg(Settings::values.frame_limit));
     } else {
-        emu_speed_label->setText(tr("Speed: %1%").arg(results.emulation_speed * 100.0, 0, 'f', 0));
+        emu_speed_label->setText(
+            QString("Speed: %1%").arg(results.emulation_speed * 100.0, 0, 'f', 0));
     }
-    game_fps_label->setText(tr("Game: %1 FPS").arg(results.game_fps, 0, 'f', 0));
-    emu_frametime_label->setText(tr("Frame: %1 ms").arg(results.frametime * 1000.0, 0, 'f', 2));
+    game_fps_label->setText(QString("Game: %1 FPS").arg(results.game_fps, 0, 'f', 0));
+    emu_frametime_label->setText(
+        QString("Frame: %1 ms").arg(results.frametime * 1000.0, 0, 'f', 2));
 
     emu_speed_label->setVisible(true);
     game_fps_label->setVisible(true);
@@ -1279,15 +1276,15 @@ void GMainWindow::UpdateStatusBar() {
 }
 
 void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::string& details) {
-    QString status_message;
-    QString title, message;
+    QString status_message{};
+    QString title{}, message{};
     switch (result) {
     case Core::System::ResultStatus::ErrorSystemFiles: {
-        const QString common_message =
-            tr("%1 is missing. Please <a "
-               "href='https://github.com/valentinvanelslande/citra/wiki/"
-               "Dumping-System-Archives-from-a-3DS-Console/'>dump your system "
-               "archives</a>.<br/>Continuing emulation may result in crashes and bugs.");
+        const QString common_message{
+            "%1 is missing. Please <a "
+            "href='https://github.com/valentinvanelslande/citra/wiki/"
+            "Dumping-System-Archives-from-a-3DS-Console/'>dump your system "
+            "archives</a>.<br/>Continuing emulation may result in crashes and bugs."};
 
         if (!details.empty()) {
             message = common_message.arg(QString::fromStdString(details));
@@ -1295,7 +1292,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
             message = common_message.arg("A system archive");
         }
 
-        title = tr("System Archive Not Found");
+        title = "System Archive Not Found";
         status_message = "System Archive Missing";
         break;
     }
@@ -1305,10 +1302,10 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     }
 
     default:
-        title = tr("Fatal Error");
-        message = tr("A fatal error occured. Check the log for details.<br/>To access the log, "
-                     "Click Open Log Location in the general tab of the configuration "
-                     "window.<br/>Continuing emulation may result in crashes and bugs.");
+        title = "Fatal Error";
+        message = "A fatal error occured. Check the log for details.<br/>To access the log, "
+                  "Click Open Log Location in the general tab of the configuration "
+                  "window.<br/>Continuing emulation may result in crashes and bugs.";
         status_message = "Fatal Error encountered";
         break;
     }
@@ -1317,8 +1314,8 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     message_box.setWindowTitle(title);
     message_box.setText(message);
     message_box.setIcon(QMessageBox::Icon::Critical);
-    QPushButton* continue_button = message_box.addButton(tr("Continue"), QMessageBox::RejectRole);
-    QPushButton* abort_button = message_box.addButton(tr("Abort"), QMessageBox::AcceptRole);
+    QPushButton* continue_button = message_box.addButton("Continue", QMessageBox::RejectRole);
+    QPushButton* abort_button = message_box.addButton("Abort", QMessageBox::AcceptRole);
     if (result != Core::System::ResultStatus::ShutdownRequested)
         message_box.exec();
 
@@ -1347,7 +1344,7 @@ bool GMainWindow::ConfirmClose() {
         return true;
 
     QMessageBox::StandardButton answer =
-        QMessageBox::question(this, tr("Citra"), tr("Are you sure you want to close Citra?"),
+        QMessageBox::question(this, "Citra", "Are you sure you want to close Citra?",
                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     return answer != QMessageBox::No;
 }
@@ -1409,8 +1406,8 @@ bool GMainWindow::ConfirmChangeGame() {
         return true;
 
     auto answer = QMessageBox::question(
-        this, tr("Citra"),
-        tr("Are you sure you want to stop the emulation? Any unsaved progress will be lost."),
+        this, "Citra",
+        "Are you sure you want to stop the emulation? Any unsaved progress will be lost.",
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     return answer != QMessageBox::No;
 }
@@ -1444,46 +1441,8 @@ void GMainWindow::UpdateUITheme() {
     QIcon::setThemeSearchPaths(theme_paths);
 }
 
-void GMainWindow::LoadTranslation() {
-    // If the selected language is English, no need to install any translation
-    if (UISettings::values.language == "en") {
-        return;
-    }
-
-    bool loaded;
-
-    if (UISettings::values.language.isEmpty()) {
-        // If the selected language is empty, use system locale
-        loaded = translator.load(QLocale(), "", "", ":/languages/");
-    } else {
-        // Otherwise load from the specified file
-        loaded = translator.load(UISettings::values.language, ":/languages/");
-    }
-
-    if (loaded) {
-        qApp->installTranslator(&translator);
-    } else {
-        UISettings::values.language = "en";
-    }
-}
-
-void GMainWindow::OnLanguageChanged(const QString& locale) {
-    if (UISettings::values.language != "en") {
-        qApp->removeTranslator(&translator);
-    }
-
-    UISettings::values.language = locale;
-    LoadTranslation();
-    ui.retranslateUi(this);
-    RetranslateStatusBar();
-    SetupUIStrings();
-
-    if (emulation_running)
-        ui.action_Start->setText(tr("Continue"));
-}
-
 void GMainWindow::OnMoviePlaybackCompleted() {
-    QMessageBox::information(this, tr("Playback Completed"), tr("Movie playback completed."));
+    QMessageBox::information(this, "Playback Completed", "Movie playback completed.");
     ui.action_Record_Movie->setEnabled(true);
     ui.action_Play_Movie->setEnabled(true);
     ui.action_Stop_Recording_Playback->setEnabled(false);
@@ -1491,9 +1450,9 @@ void GMainWindow::OnMoviePlaybackCompleted() {
 
 void GMainWindow::SetupUIStrings() {
     if (game_title.isEmpty()) {
-        setWindowTitle(tr("Citra Valentin %1").arg(Common::g_build_fullname));
+        setWindowTitle(QString("Citra Valentin %1").arg(Common::g_build_fullname));
     } else {
-        setWindowTitle(tr("Citra Valentin %1| %2").arg(Common::g_build_fullname, game_title));
+        setWindowTitle(QString("Citra Valentin %1| %2").arg(Common::g_build_fullname, game_title));
     }
 }
 
@@ -1509,21 +1468,6 @@ void GMainWindow::SyncMenuUISettings() {
     ui.action_Screen_Layout_Side_by_Side->setChecked(Settings::values.layout_option ==
                                                      Settings::LayoutOption::SideScreen);
     ui.action_Screen_Layout_Swap_Screens->setChecked(Settings::values.swap_screen);
-}
-
-void GMainWindow::RetranslateStatusBar() {
-    if (emu_thread)
-        UpdateStatusBar();
-
-    emu_speed_label->setToolTip(tr("Current emulation speed. Values higher or lower than 100% "
-                                   "indicate emulation is running faster or slower than a 3DS."));
-
-    game_fps_label->setToolTip(tr("How many frames per second the game is currently displaying. "
-                                  "This will vary from game to game and scene to scene."));
-
-    emu_frametime_label->setToolTip(
-        tr("Time taken to emulate a 3DS frame, not counting framelimiting or v-sync. For "
-           "full-speed emulation this should be at most 16.67 ms."));
 }
 
 #ifdef main

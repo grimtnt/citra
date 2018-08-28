@@ -74,7 +74,7 @@ APT_U::APT_U(std::shared_ptr<Module> apt)
         {0x003F0040, nullptr, "ReplySleepNotificationComplete"},
         {0x00400042, &APT_U::SendCaptureBufferInfo, "SendCaptureBufferInfo"},
         {0x00410040, &APT_U::ReceiveCaptureBufferInfo, "ReceiveCaptureBufferInfo"},
-        {0x00420080, nullptr, "SleepSystem"},
+        {0x00420080, &APT_U::SleepSystem, "SleepSystem"},
         {0x00430040, &APT_U::NotifyToWait, "NotifyToWait"},
         {0x00440000, &APT_U::GetSharedFont, "GetSharedFont"},
         {0x00450040, nullptr, "GetWirelessRebootInfo"},

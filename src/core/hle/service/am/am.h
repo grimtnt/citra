@@ -155,7 +155,6 @@ public:
          * AM::GetNumPrograms service function
          * Gets the number of installed titles in the requested media type
          *  Inputs:
-         *      0 : Command header (0x00010040)
          *      1 : Media type to load the titles from
          *  Outputs:
          *      1 : Result, 0 on success, otherwise error code
@@ -299,7 +298,6 @@ public:
          * AM::GetDLCContentInfoCount service function
          * Explicitly checks that TID high value is 0004008C or an error is returned.
          *  Inputs:
-         *      0 : Command header (0x100100C0)
          *      1 : MediaType
          *    2-3 : u64, Title ID
          *  Outputs:
@@ -373,7 +371,6 @@ public:
          * AM::BeginImportProgram service function
          * Begin importing from a CTR Installable Archive
          *  Inputs:
-         *      0 : Command header (0x04020040)
          *      1 : Media type to install title to
          *  Outputs:
          *      1 : Result, 0 on success, otherwise error code
@@ -385,7 +382,6 @@ public:
          * AM::EndImportProgram service function
          * Finish importing from a CTR Installable Archive
          *  Inputs:
-         *      0 : Command header (0x04050002)
          *      1-2 : CIAFile handle application wrote to
          *  Outputs:
          *      1 : Result, 0 on success, otherwise error code
@@ -396,7 +392,6 @@ public:
          * AM::GetProgramInfoFromCia service function
          * Get TitleInfo from a CIA file handle
          *  Inputs:
-         *      0 : Command header (0x04080042)
          *      1 : Media type of the title
          *      2-3 : File handle CIA data can be read from
          *  Outputs:
@@ -409,7 +404,6 @@ public:
          * AM::GetSystemMenuDataFromCia service function
          * Loads a CIA file's SMDH data into a specified buffer
          *  Inputs:
-         *      0 : Command header (0x04090004)
          *      1-2 : File handle CIA data can be read from
          *      3-4 : Output buffer
          *  Outputs:
@@ -421,7 +415,6 @@ public:
          * AM::GetDependencyListFromCia service function
          * Loads a CIA's dependency list into a specified buffer
          *  Inputs:
-         *      0 : Command header (0x040A0002)
          *      1-2 : File handle CIA data can be read from
          *      64-65 : Output buffer
          *  Outputs:
@@ -433,7 +426,6 @@ public:
          * AM::GetTransferSizeFromCia service function
          * Returns the total expected transfer size up to the CIA meta offset from a CIA
          *  Inputs:
-         *      0 : Command header (0x040B0002)
          *      1-2 : File handle CIA data can be read from
          *  Outputs:
          *      1 : Result, 0 on success, otherwise error code
@@ -445,7 +437,6 @@ public:
          * AM::GetCoreVersionFromCia service function
          * Returns the core version from a CIA
          *  Inputs:
-         *      0 : Command header (0x040C0002)
          *      1-2 : File handle CIA data can be read from
          *  Outputs:
          *      1 : Result, 0 on success, otherwise error code
@@ -457,7 +448,6 @@ public:
          * AM::GetRequiredSizeFromCia service function
          * Returns the required amount of free space required to install a given CIA file
          *  Inputs:
-         *      0 : Command header (0x040D0042)
          *      1 : Media type to install title to
          *      2-3 : File handle CIA data can be read from
          *  Outputs:
@@ -470,7 +460,6 @@ public:
          * AM::DeleteProgram service function
          * Deletes a program
          *  Inputs:
-         *      0 : Command header (0x041000C0)
          *      1 : Media type
          *      2-3 : Title ID
          *  Outputs:
@@ -482,7 +471,6 @@ public:
          * AM::GetMetaSizeFromCia service function
          * Returns the size of a given CIA's meta section
          *  Inputs:
-         *      0 : Command header (0x04130002)
          *      1-2 : File handle CIA data can be read from
          *  Outputs:
          *      1 : Result, 0 on success, otherwise error code
@@ -494,7 +482,6 @@ public:
          * AM::GetMetaDataFromCia service function
          * Loads meta section data from a CIA file into a given buffer
          *  Inputs:
-         *      0 : Command header (0x04140044)
          *      1-2 : File handle CIA data can be read from
          *      3-4 : Output buffer
          *  Outputs:

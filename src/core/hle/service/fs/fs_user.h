@@ -105,7 +105,6 @@ private:
     /*
      * FS_User::DeleteDirectoryRecursively service function
      *  Inputs:
-     *      0 : Command header 0x08070142
      *      1 : Transaction
      *      2 : Archive handle lower word
      *      3 : Archive handle upper word
@@ -120,7 +119,6 @@ private:
     /*
      * FS_User::CreateFile service function
      *  Inputs:
-     *      0 : Command header 0x08080202
      *      1 : Transaction
      *      2 : Archive handle lower word
      *      3 : Archive handle upper word
@@ -201,11 +199,9 @@ private:
     /**
      * FS_User::CloseArchive service function
      *  Inputs:
-     *      0 : 0x080E0080
      *      1 : Archive handle low word
      *      2 : Archive handle high word
      *  Outputs:
-     *      0 : 0x080E0040
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void CloseArchive(Kernel::HLERequestContext& ctx);
@@ -221,7 +217,6 @@ private:
     /**
      * FS_User::IsSdmcWriteable service function
      *  Outputs:
-     *      0 : Command header 0x08180080
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Whether the Sdmc is currently writeable
      */
@@ -266,7 +261,6 @@ private:
     /**
      * FS_User::GetFreeBytes service function
      *  Inputs:
-     *      0: 0x08120080
      *      1: Archive handle low word
      *      2: Archive handle high word
      *  Outputs:
@@ -279,7 +273,6 @@ private:
     /**
      * FS_User::CreateExtSaveData service function
      *  Inputs:
-     *      0 : 0x08510242
      *      1 : Media type (NAND / SDMC)
      *      2 : Low word of the saveid to create
      *      3 : High word of the saveid to create
@@ -298,7 +291,6 @@ private:
     /**
      * FS_User::DeleteExtSaveData service function
      *  Inputs:
-     *      0 : 0x08520100
      *      1 : Media type (NAND / SDMC)
      *      2 : Low word of the saveid to create
      *      3 : High word of the saveid to create
@@ -310,8 +302,6 @@ private:
 
     /**
      * FS_User::CardSlotIsInserted service function.
-     *  Inputs:
-     *      0 : 0x08210000
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Whether there is a game card inserted into the slot or not.
@@ -321,7 +311,6 @@ private:
     /**
      * FS_User::DeleteSystemSaveData service function.
      *  Inputs:
-     *      0 : 0x08570080
      *      1 : High word of the SystemSaveData id to delete
      *      2 : Low word of the SystemSaveData id to delete
      *  Outputs:
@@ -332,7 +321,6 @@ private:
     /**
      * FS_User::CreateSystemSaveData service function.
      *  Inputs:
-     *      0 : 0x08560240
      *      1 : u8 MediaType of the system save data
      *      2 : SystemSaveData id to create
      *      3 : Total size
@@ -353,7 +341,6 @@ private:
      *  command 0x08560240 (CreateSystemSaveData).
      *
      *  Inputs:
-     *      0 : 0x08100200
      *      1 : SystemSaveData id to create
      *      2 : Total size
      *      3 : Block size
@@ -370,7 +357,6 @@ private:
     /**
      * FS_User::InitializeWithSdkVersion service function.
      *  Inputs:
-     *      0 : 0x08610042
      *      1 : Used SDK Version
      *      2 : ProcessId Header
      *      3 : placeholder for ProcessId
@@ -382,7 +368,6 @@ private:
     /**
      * FS_User::SetPriority service function.
      *  Inputs:
-     *      0 : 0x08620040
      *      1 : priority
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -391,8 +376,6 @@ private:
 
     /**
      * FS_User::GetPriority service function.
-     *  Inputs:
-     *      0 : 0x08630000
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : priority
@@ -402,7 +385,6 @@ private:
     /**
      * FS_User::GetArchiveResource service function.
      *  Inputs:
-     *      0 : 0x08490040
      *      1 : Media type
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -416,14 +398,12 @@ private:
     /**
      * FS_User::GetFormatInfo service function.
      *  Inputs:
-     *      0 : 0x084500C2
      *      1 : Archive ID
      *      2 : Archive path type
      *      3 : Archive path size
      *      4 : (PathSize << 14) | 2
      *      5 : Archive low path
      *  Outputs:
-     *      0 : 0x08450140
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Total size
      *      3 : Number of directories
@@ -435,10 +415,8 @@ private:
     /**
      * FS_User::GetProgramLaunchInfo service function.
      *  Inputs:
-     *      0 : 0x082F0040
      *      1 : Process ID
      *  Outputs:
-     *      0 : 0x082F0140
      *      1 : Result of function, 0 on success, otherwise error code
      *      2-3 : Program ID
      *      4 : Media type
@@ -449,7 +427,6 @@ private:
     /**
      * FS_User::Obsoleted_3_0_CreateExtSaveData service function.
      *  Inputs:
-     *      0 : 0x08300182
      *      1 : Media type
      *      2 : Low word of the saveid to create
      *      3 : High word of the saveid to create
@@ -466,7 +443,6 @@ private:
     /**
      * FS_User::Obsoleted_3_0_DeleteExtSaveData service function.
      *  Inputs:
-     *      0 : 0x08350080
      *      1 : Media type
      *      2 : Save ID Low (high is always 0x00000000)
      *  Outputs:
@@ -476,10 +452,7 @@ private:
 
     /**
      * FS_User::GetNumSeeds service function.
-     *  Inputs:
-     *      0 : 0x087D0000
      *  Outputs:
-     *      0 : 0x087D0080
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Number of seeds in the SEEDDB
      */
@@ -488,13 +461,11 @@ private:
     /**
      * FS_User::SetSaveDataSecureValue service function.
      *  Inputs:
-     *      0 : 0x08650140
      *      1-2 : Secure Value
      *      3 : Secure Value Slot
      *      4 : Title Id
      *      5 : Title Variation
      *  Outputs:
-     *      0 : 0x08650140
      *      1 : Result of function, 0 on success, otherwise error code
      */
     void SetSaveDataSecureValue(Kernel::HLERequestContext& ctx);
@@ -502,12 +473,10 @@ private:
     /**
      * FS_User::GetSaveDataSecureValue service function.
      *  Inputs:
-     *      0 : 0x086600C0
      *      1 : Secure Value Slot
      *      2 : Title Id
      *      3 : Title Variation
      *  Outputs:
-     *      0 : 0x086600C0
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : If Secure Value doesn't exist, 0, if it exists, 1
      *      3-4 : Secure Value
@@ -515,12 +484,10 @@ private:
     void GetSaveDataSecureValue(Kernel::HLERequestContext& ctx);
 
     /**
-     * FS_User::GetSaveDataSecureValue service function.
+     * FS_User::GetThisSaveDataSecureValue service function.
      *  Inputs:
-     *      0 : 0x086F0040
      *      1 : Secure Value Slot
      *  Outputs:
-     *      0 : 0x086F0040
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : If Secure Value doesn't exist, 0, if it exists, 1
      *      3-4 : Secure Value

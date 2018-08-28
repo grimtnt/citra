@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>361</width>
-    <height>503</height>
+    <width>338</width>
+    <height>470</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -87,20 +87,6 @@
                <string>...</string>
               </property>
              </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout_interface_language">
-            <item>
-             <widget class="QLabel" name="language_label">
-              <property name="text">
-               <string>Interface language</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="language_combobox"/>
             </item>
            </layout>
           </item>

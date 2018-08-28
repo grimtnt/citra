@@ -27,15 +27,15 @@ ResultVal<std::tuple<MediaType, u64>> ParsePath(const Path& path, T program_id_r
         return ERROR_INVALID_PATH;
     }
 
-    std::vector<u8> vec_data = path.AsBinary();
+    std::vector<u8> vec_data{path.AsBinary()};
 
     if (vec_data.size() != 12) {
         LOG_ERROR(Service_FS, "Wrong path length {}", vec_data.size());
         return ERROR_INVALID_PATH;
     }
 
-    const u32* data = reinterpret_cast<const u32*>(vec_data.data());
-    auto media_type = static_cast<MediaType>(data[0]);
+    const u32* data{reinterpret_cast<const u32*>(vec_data.data())};
+    auto media_type{static_cast<MediaType>(data[0])};
 
     if (media_type != MediaType::SDMC && media_type != MediaType::GameCard) {
         LOG_ERROR(Service_FS, "Unsupported media type {}", static_cast<u32>(media_type));
@@ -65,8 +65,8 @@ ArchiveFactory_OtherSaveDataPermitted::ArchiveFactory_OtherSaveDataPermitted(
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_OtherSaveDataPermitted::Open(
     const Path& path) {
-    MediaType media_type;
-    u64 program_id;
+    MediaType media_type{};
+    u64 program_id{};
     CASCADE_RESULT(std::tie(media_type, program_id), ParsePathPermitted(path));
 
     if (media_type == MediaType::GameCard) {
@@ -85,8 +85,8 @@ ResultCode ArchiveFactory_OtherSaveDataPermitted::Format(
 
 ResultVal<ArchiveFormatInfo> ArchiveFactory_OtherSaveDataPermitted::GetFormatInfo(
     const Path& path) const {
-    MediaType media_type;
-    u64 program_id;
+    MediaType media_type{};
+    u64 program_id{};
     CASCADE_RESULT(std::tie(media_type, program_id), ParsePathPermitted(path));
 
     if (media_type == MediaType::GameCard) {
@@ -103,8 +103,8 @@ ArchiveFactory_OtherSaveDataGeneral::ArchiveFactory_OtherSaveDataGeneral(
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_OtherSaveDataGeneral::Open(
     const Path& path) {
-    MediaType media_type;
-    u64 program_id;
+    MediaType media_type{};
+    u64 program_id{};
     CASCADE_RESULT(std::tie(media_type, program_id), ParsePathGeneral(path));
 
     if (media_type == MediaType::GameCard) {
@@ -117,8 +117,8 @@ ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_OtherSaveDataGeneral::
 
 ResultCode ArchiveFactory_OtherSaveDataGeneral::Format(
     const Path& path, const FileSys::ArchiveFormatInfo& format_info) {
-    MediaType media_type;
-    u64 program_id;
+    MediaType media_type{};
+    u64 program_id{};
     CASCADE_RESULT(std::tie(media_type, program_id), ParsePathGeneral(path));
 
     if (media_type == MediaType::GameCard) {
@@ -131,8 +131,8 @@ ResultCode ArchiveFactory_OtherSaveDataGeneral::Format(
 
 ResultVal<ArchiveFormatInfo> ArchiveFactory_OtherSaveDataGeneral::GetFormatInfo(
     const Path& path) const {
-    MediaType media_type;
-    u64 program_id;
+    MediaType media_type{};
+    u64 program_id{};
     CASCADE_RESULT(std::tie(media_type, program_id), ParsePathGeneral(path));
 
     if (media_type == MediaType::GameCard) {

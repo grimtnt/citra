@@ -17,7 +17,6 @@ private:
     /**
      * PS_PS::SignRsaSha256 service function
      *  Inputs:
-     *      0 : Header Code[0x00010244]
      *    1-8 : SHA256 hash to sign.
      *      9 : Unused. Intended as the signature size.
      *     10 : Descriptor for static buffer
@@ -34,7 +33,6 @@ private:
     /**
      * PS_PS::VerifyRsaSha256 service function
      *  Inputs:
-     *      0 : Header Code[0x00020244]
      *    1-8 : SHA256 hash to compare with.
      *      9 : Unused. Intended as the signature size.
      *     10 : Descriptor for static buffer
@@ -51,7 +49,6 @@ private:
     /**
      * PS_PS::EncryptDecryptAes service function
      *  Inputs:
-     *      0 : Header Code[0x00040204]
      *      1 : Size in bytes
      *      2 : Unused. Destination size in bytes
      *    3-6 : IV / CTR
@@ -70,7 +67,6 @@ private:
     /**
      * PS_PS::EncryptSignDecryptVerifyAesCcm service function
      *  Inputs:
-     *      0 : Header Code[0x00050284]
      *      1 : Input buffer size
      *      2 : Output buffer size
      *      3 : Total CBC-MAC associated data, in bytes.
@@ -91,7 +87,6 @@ private:
     /**
      * PS_PS::GetRomId service function
      *  Inputs:
-     *      0 : Header Code[0x00060040]
      *      1 :
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -101,7 +96,6 @@ private:
     /**
      * PS_PS::GetRomId2 service function
      *  Inputs:
-     *      0 : Header Code[0x00070040]
      *      1 :
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -111,7 +105,6 @@ private:
     /**
      * PS_PS::GetRomMakerCode service function
      *  Inputs:
-     *      0 : Header Code[0x00080040]
      *      1 :
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -120,8 +113,6 @@ private:
 
     /**
      * PS_PS::GetCTRCardAutoStartupBit service function
-     *  Inputs:
-     *      0 : Header Code[0x00090000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : u8, 0 = auto startup bit not set, 1 = auto startup bit set
@@ -130,8 +121,6 @@ private:
 
     /**
      * PS_PS::GetLocalFriendCodeSeed service function
-     *  Inputs:
-     *      0 : Header Code[0x000A0000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : LocalFriendCodeSeed lower word
@@ -141,8 +130,6 @@ private:
 
     /**
      * PS_PS::GetDeviceId service function
-     *  Inputs:
-     *      0 : Header Code[0x000B0000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : u32, DeviceID
@@ -151,8 +138,6 @@ private:
 
     /**
      * PS_PS::SeedRNG service function
-     *  Inputs:
-     *      0 : Header Code[0x000C0000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      */
@@ -161,7 +146,6 @@ private:
     /**
      * PS_PS::GenerateRandomBytes service function
      *  Inputs:
-     *      0 : Header Code[0x000D0042]
      *      1 : Output buffer size
      *      2 : (Size<<8) | 0x4
      *      3 : Output buffer pointer
@@ -173,7 +157,6 @@ private:
     /**
      * PS_PS::InterfaceForPXI_0x04010084 service function
      *  Inputs:
-     *      0 : Header Code[0x000E0082]
      *      1 : Input buffer size
      *      2 : Output buffer size
      *      3 : (insize<<8) | 0x4
@@ -189,7 +172,6 @@ private:
     /**
      * PS_PS::InterfaceForPXI_0x04020082 service function
      *  Inputs:
-     *      0 : Header Code[0x000F0082]
      *      1 : insize
      *      2 : u8 flag
      *      3 : (insize<<8) | 0x4
@@ -203,7 +185,6 @@ private:
     /**
      * PS_PS::InterfaceForPXI_0x04030044 service function
      *  Inputs:
-     *      0 : Header Code[0x00100042]
      *      1 :
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -214,7 +195,6 @@ private:
     /**
      * PS_PS::InterfaceForPXI_0x04040044 service function
      *  Inputs:
-     *      0 : Header Code[0x00110042]
      *      1 :
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code

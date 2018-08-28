@@ -19,7 +19,6 @@ private:
     /**
      * MIC::MapSharedMem service function
      *  Inputs:
-     *      0 : Header Code[0x00010042]
      *      1 : Shared-mem size
      *      2 : CopyHandleDesc
      *      3 : Shared-mem handle
@@ -30,8 +29,6 @@ private:
 
     /**
      * MIC::UnmapSharedMem service function
-     *  Inputs:
-     *      0 : Header Code[0x00020000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      */
@@ -40,7 +37,6 @@ private:
     /**
      * MIC::StartSampling service function
      *  Inputs:
-     *      0 : Header Code[0x00030140]
      *      1 : Encoding
      *      2 : SampleRate
      *      3 : Base offset for audio data in sharedmem
@@ -54,7 +50,6 @@ private:
     /**
      * MIC::AdjustSampling service function
      *  Inputs:
-     *      0 : Header Code[0x00040040]
      *      1 : SampleRate
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -63,8 +58,6 @@ private:
 
     /**
      * MIC::StopSampling service function
-     *  Inputs:
-     *      0 : Header Code[0x00050000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      */
@@ -72,8 +65,6 @@ private:
 
     /**
      * MIC::IsSampling service function
-     *  Inputs:
-     *      0 : Header Code[0x00060000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : 0 = sampling, non-zero = sampling
@@ -82,8 +73,6 @@ private:
 
     /**
      * MIC::GetBufferFullEvent service function
-     *  Inputs:
-     *      0 : Header Code[0x00070000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      3 : Event handle
@@ -93,7 +82,6 @@ private:
     /**
      * MIC::SetGain service function
      *  Inputs:
-     *      0 : Header Code[0x00080040]
      *      1 : Gain
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -102,8 +90,6 @@ private:
 
     /**
      * MIC::GetGain service function
-     *  Inputs:
-     *      0 : Header Code[0x00090000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Gain
@@ -113,7 +99,6 @@ private:
     /**
      * MIC::SetPower service function
      *  Inputs:
-     *      0 : Header Code[0x000A0040]
      *      1 : Power (0 = off, 1 = on)
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -122,8 +107,6 @@ private:
 
     /**
      * MIC::GetPower service function
-     *  Inputs:
-     *      0 : Header Code[0x000B0000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Power
@@ -133,7 +116,6 @@ private:
     /**
      * MIC::SetIirFilterMic service function
      *  Inputs:
-     *      0 : Header Code[0x000C0042]
      *      1 : Size
      *      2 : (Size << 4) | 0xA
      *      3 : Pointer to IIR Filter Data
@@ -145,7 +127,6 @@ private:
     /**
      * MIC::SetClamp service function
      *  Inputs:
-     *      0 : Header Code[0x000D0040]
      *      1 : Clamp (0 = don't clamp, non-zero = clamp)
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -154,8 +135,6 @@ private:
 
     /**
      * MIC::GetClamp service function
-     *  Inputs:
-     *      0 : Header Code[0x000E0000]
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
      *      2 : Clamp (0 = don't clamp, non-zero = clamp)
@@ -165,7 +144,6 @@ private:
     /**
      * MIC::SetAllowShellClosed service function
      *  Inputs:
-     *      0 : Header Code[0x000F0040]
      *      1 : Sampling allowed while shell closed (0 = disallow, non-zero = allow)
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code
@@ -175,7 +153,6 @@ private:
     /**
      * MIC_U::SetClientVersion service function
      *  Inputs:
-     *      0 : Header Code[0x00100040]
      *      1 : Used SDK Version
      *  Outputs:
      *      1 : Result of function, 0 on success, otherwise error code

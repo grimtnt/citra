@@ -20,14 +20,6 @@ public:
 
     void applyConfiguration();
 
-    bool sd_card_root_changed;
-
-private slots:
-    void onLanguageChanged(const QString& locale);
-
-signals:
-    void languageChanged(const QString& locale);
-
 private:
     std::unique_ptr<Ui::ConfigureDialog> ui;
 };

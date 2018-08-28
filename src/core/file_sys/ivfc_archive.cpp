@@ -22,7 +22,7 @@ std::string IVFCArchive::GetName() const {
 
 ResultVal<std::unique_ptr<FileBackend>> IVFCArchive::OpenFile(const Path& path,
                                                               const Mode& mode) const {
-    std::unique_ptr<DelayGenerator> delay_generator = std::make_unique<IVFCDelayGenerator>();
+    std::unique_ptr<DelayGenerator> delay_generator{std::make_unique<IVFCDelayGenerator>()};
     return MakeResult<std::unique_ptr<FileBackend>>(
         std::make_unique<IVFCFile>(romfs_file, std::move(delay_generator)));
 }
@@ -121,7 +121,7 @@ IVFCFileInMemory::IVFCFileInMemory(std::vector<u8> bytes, u64 offset, u64 size,
 
 ResultVal<size_t> IVFCFileInMemory::Read(const u64 offset, const size_t length, u8* buffer) const {
     LOG_TRACE(Service_FS, "called offset={}, length={}", offset, length);
-    size_t read_length = (size_t)std::min((u64)length, data_size - offset);
+    size_t read_length{(size_t)std::min((u64)length, data_size - offset)};
 
     std::memcpy(buffer, romfs_file.data() + data_offset + offset, read_length);
     return MakeResult<size_t>(read_length);

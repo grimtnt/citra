@@ -40,7 +40,3 @@ void ConfigureHacks::applyConfiguration() {
     if (Core::System::GetInstance().IsPoweredOn())
         Core::CPU().SyncSettings();
 }
-
-void ConfigureHacks::retranslateUi() {
-    ui->retranslateUi(this);
-}

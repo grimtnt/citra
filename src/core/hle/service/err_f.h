@@ -21,10 +21,8 @@ public:
 private:
     /* ThrowFatalError function
      * Inputs:
-     *       0 : Header code [0x00010800]
      *    1-32 : FatalErrInfo
      * Outputs:
-     *       0 : Header code
      *       1 : Result code
      */
     void ThrowFatalError(Kernel::HLERequestContext& ctx);

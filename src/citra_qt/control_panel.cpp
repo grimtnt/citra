@@ -73,9 +73,7 @@ ControlPanel::ControlPanel(QWidget* parent)
     connect(ui->network_state,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &ControlPanel::OnNetworkStateChanged);
-
-    setWindowTitle(tr("Control Panel"));
-    setFixedSize(size());
+    setWindowTitle("Control Panel");
 }
 
 ControlPanel::~ControlPanel() {}

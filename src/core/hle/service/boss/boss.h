@@ -23,7 +23,6 @@ public:
         /**
          * BOSS::InitializeSession service function
          *  Inputs:
-         *      0 : Header Code[0x00010082]
          *    1-2 : programID, normally zero for using the programID determined from the input PID
          *      3 : 0x20, ARM11-kernel processID translate-header.
          *  Outputs:
@@ -34,7 +33,6 @@ public:
         /**
          * BOSS::RegisterStorage service function
          *  Inputs:
-         *      0 : Header Code[0x00020100]
          *    1-2 : u64 extdataID
          *      3 : u32 boss_size
          *      4 : u8 extdata_type: 0 = NAND, 1 = SD
@@ -45,8 +43,6 @@ public:
 
         /**
          * BOSS::UnregisterStorage service function
-         *  Inputs:
-         *      0 : Header Code[0x00030000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          */
@@ -54,8 +50,6 @@ public:
 
         /**
          * BOSS::GetStorageInfo service function
-         *  Inputs:
-         *      0 : Header Code[0x00040000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u32 unknown value
@@ -65,7 +59,6 @@ public:
         /**
          * BOSS::RegisterPrivateRootCa service function
          *  Inputs:
-         *      0 : Header Code[0x00050042]
          *      1 : u32 Size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -79,7 +72,6 @@ public:
         /**
          * BOSS::RegisterPrivateClientCert service function
          *  Inputs:
-         *      0 : Header Code[0x00060084]
          *      1 : u32 buffer 1 size
          *      2 : u32 buffer 2 size
          *      3 : MappedBufferDesc1(permission = R)
@@ -97,8 +89,6 @@ public:
 
         /**
          * BOSS::GetNewArrivalFlag service function
-         *  Inputs:
-         *      0 : Header Code[0x00070000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u8 flag
@@ -108,7 +98,6 @@ public:
         /**
          * BOSS::RegisterNewArrivalEvent service function
          *  Inputs:
-         *      0 : Header Code[0x00080002]
          *      1 : u32 unknown1
          *      2 : u32 unknown2
          *  Outputs:
@@ -119,7 +108,6 @@ public:
         /**
          * BOSS::SetOptoutFlag service function
          *  Inputs:
-         *      0 : Header Code[0x00090040]
          *      1 : u8 output_flag
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -128,8 +116,6 @@ public:
 
         /**
          * BOSS::GetOptoutFlag service function
-         *  Inputs:
-         *      0 : Header Code[0x000A0000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u8 output_flag
@@ -139,7 +125,6 @@ public:
         /**
          * BOSS::RegisterTask service function
          *  Inputs:
-         *      0 : Header Code[0x000B00C2]
          *      1 : TaskID buffer size
          *      2 : u8 unknown value, Usually zero, regardless of HTTP GET/POST.
          *      3 : u8 unknown value, Usually zero, regardless of HTTP GET/POST.
@@ -155,7 +140,6 @@ public:
         /**
          * BOSS::UnregisterTask service function
          *  Inputs:
-         *      0 : Header Code[0x000C0082]
          *      1 : TaskID buffer size
          *      2 : u8 unknown value
          *      3 : MappedBufferDesc1(permission = R)
@@ -170,7 +154,6 @@ public:
         /**
          * BOSS::ReconfigureTask service function
          *  Inputs:
-         *      0 : Header Code[0x000D0082]
          *      1 : TaskID buffer size
          *      2 : u8 unknown value
          *      3 : MappedBufferDesc1(permission = R)
@@ -184,8 +167,6 @@ public:
 
         /**
          * BOSS::GetTaskIdList service function
-         *  Inputs:
-         *      0 : Header Code[0x000E0000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          */
@@ -194,7 +175,6 @@ public:
         /**
          * BOSS::GetStepIdList service function
          *  Inputs:
-         *      0 : Header Code[0x000F0042]
          *      1 : u32 buffer size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -209,7 +189,6 @@ public:
         /**
          * BOSS::GetNsDataIdList service function
          *  Inputs:
-         *      0 : Header Code[0x00100102]
          *      1 : u32 filter
          *      2 : u32 Buffer size in words(max entries)
          *      3 : u16, starting word-index in the internal NsDataId list
@@ -228,7 +207,6 @@ public:
         /**
          * BOSS::GetNsDataIdList1 service function
          *  Inputs:
-         *      0 : Header Code[0x00110102]
          *      1 : u32 filter
          *      2 : u32 Buffer size in words(max entries)
          *      3 : u16, starting word-index in the internal NsDataId list
@@ -247,7 +225,6 @@ public:
         /**
          * BOSS::GetNsDataIdList2 service function
          *  Inputs:
-         *      0 : Header Code[0x00120102]
          *      1 : u32 filter
          *      2 : u32 Buffer size in words(max entries)
          *      3 : u16, starting word-index in the internal NsDataId list
@@ -266,7 +243,6 @@ public:
         /**
          * BOSS::GetNsDataIdList3 service function
          *  Inputs:
-         *      0 : Header Code[0x00130102]
          *      1 : u32 filter
          *      2 : u32 Buffer size in words(max entries)
          *      3 : u16, starting word-index in the internal NsDataId list
@@ -286,7 +262,6 @@ public:
         /**
          * BOSS::SendProperty service function
          *  Inputs:
-         *      0 : Header Code[0x00140082]
          *      1 : u16 PropertyID
          *      2 : u32 size
          *      3 : MappedBufferDesc(permission = R)
@@ -301,7 +276,6 @@ public:
         /**
          * BOSS::SendPropertyHandle service function
          *  Inputs:
-         *      0 : Header Code[0x00150042]
          *      2 : u16 PropertyID
          *      3 : 0x0
          *      4 : Handle
@@ -313,7 +287,6 @@ public:
         /**
          * BOSS::ReceiveProperty service function
          *  Inputs:
-         *      0 : Header Code[0x00160082]
          *      1 : u16 PropertyID
          *      2 : u32 Size
          *      3 : MappedBufferDesc(permission = W)
@@ -329,7 +302,6 @@ public:
         /**
          * BOSS::UpdateTaskInterval service function
          *  Inputs:
-         *      0 : Header Code[0x00170082]
          *      1 : u32 unknown value
          *      2 : u8 unknown value
          *      3 : MappedBufferDesc1(permission = R)
@@ -344,7 +316,6 @@ public:
         /**
          * BOSS::UpdateTaskCount service function
          *  Inputs:
-         *      0 : Header Code[0x00180082]
          *      1 : u32 buff_size
          *      2 : u32 unknown2
          *      3 : MappedBufferDesc(permission = R)
@@ -359,7 +330,6 @@ public:
         /**
          * BOSS::GetTaskInterval service function
          *  Inputs:
-         *      0 : Header Code[0x00190042]
          *      1 : u32 size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -374,7 +344,6 @@ public:
         /**
          * BOSS::GetTaskCount service function
          *  Inputs:
-         *      0 : Header Code[0x001A0042]
          *      1 : u32 size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -389,7 +358,6 @@ public:
         /**
          * BOSS::GetTaskServiceStatus service function
          *  Inputs:
-         *      0 : Header Code[0x001B0042]
          *      1 : u32 size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -404,7 +372,6 @@ public:
         /**
          * BOSS::StartTask service function
          *  Inputs:
-         *      0 : Header Code[0x001C0042]
          *      1 : TaskID buffer size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -418,7 +385,6 @@ public:
         /**
          * BOSS::StartTaskImmediate service function
          *  Inputs:
-         *      0 : Header Code[0x001D0042]
          *      1 : TaskID buffer size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -432,7 +398,6 @@ public:
         /**
          * BOSS::CancelTask service function
          *  Inputs:
-         *      0 : Header Code[0x001E0042]
          *      1 : TaskID buffer size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -445,8 +410,6 @@ public:
 
         /**
          * BOSS::GetTaskFinishHandle service function
-         *  Inputs:
-         *      0 : Header Code[0x001F0000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : 0x0
@@ -457,7 +420,6 @@ public:
         /**
          * BOSS::GetTaskState service function
          *  Inputs:
-         *      0 : Header Code[0x00200082]
          *      1 : TaskID buffer size
          *      2 : u8 state
          *      3 : MappedBufferDesc(permission = R)
@@ -475,7 +437,6 @@ public:
         /**
          * BOSS::GetTaskResult service function
          *  Inputs:
-         *      0 : Header Code[0x00210042]
          *      1 : u32 size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -492,7 +453,6 @@ public:
         /**
          * BOSS::GetTaskCommErrorCode service function
          *  Inputs:
-         *      0 : Header Code[0x00220042]
          *      1 : u32 size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -509,7 +469,6 @@ public:
         /**
          * BOSS::GetTaskStatus service function
          *  Inputs:
-         *      0 : Header Code[0x002300C2]
          *      1 : u32 size
          *      2 : u8 unknown value
          *      3 : u8 unknown value
@@ -526,7 +485,6 @@ public:
         /**
          * BOSS::GetTaskError service function
          *  Inputs:
-         *      0 : Header Code[0x00240082]
          *      1 : u32 size
          *      2 : u8 unknown value
          *      3 : MappedBufferDesc(permission = R)
@@ -542,7 +500,6 @@ public:
         /**
          * BOSS::GetTaskInfo service function
          *  Inputs:
-         *      0 : Header Code[0x00250082]
          *      1 : u32 size
          *      2 : u8 unknown value
          *      3 : MappedBufferDesc(permission = R)
@@ -557,7 +514,6 @@ public:
         /**
          * BOSS::DeleteNsData service function
          *  Inputs:
-         *      0 : Header Code[0x00260040]
          *      1 : u32 NsDataID
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -567,7 +523,6 @@ public:
         /**
          * BOSS::GetNsDataHeaderInfo service function
          *  Inputs:
-         *      0 : Header Code[0x002700C2]
          *      1 : u32, NsDataID
          *      2 : u8, type
          *      3 : u32, Size
@@ -583,7 +538,6 @@ public:
         /**
          * BOSS::ReadNsData service function
          *  Inputs:
-         *      0 : Header Code[0x00280102]
          *      1 : u32, NsDataID
          *    2-3 : u64, offset
          *      4 : u32, Size
@@ -601,7 +555,6 @@ public:
         /**
          * BOSS::SetNsDataAdditionalInfo service function
          *  Inputs:
-         *      0 : Header Code[0x00290080]
          *      1 : u32 unknown value
          *      2 : u32 unknown value
          *  Outputs:
@@ -612,7 +565,6 @@ public:
         /**
          * BOSS::GetNsDataAdditionalInfo service function
          *  Inputs:
-         *      0 : Header Code[0x002A0040]
          *      1 : u32 unknown value
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -623,7 +575,6 @@ public:
         /**
          * BOSS::SetNsDataNewFlag service function
          *  Inputs:
-         *      0 : Header Code[0x002B0080]
          *      1 : u32 unknown value
          *      2 : u8 flag
          *  Outputs:
@@ -634,7 +585,6 @@ public:
         /**
          * BOSS::GetNsDataNewFlag service function
          *  Inputs:
-         *      0 : Header Code[0x002C0040]
          *      1 : u32 unknown value
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -645,7 +595,6 @@ public:
         /**
          * BOSS::GetNsDataLastUpdate service function
          *  Inputs:
-         *      0 : Header Code[0x002D0040]
          *      1 : u32 unknown value
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -657,7 +606,6 @@ public:
         /**
          * BOSS::GetErrorCode service function
          *  Inputs:
-         *      0 : Header Code[0x002E0040]
          *      1 : u8 input
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -668,7 +616,6 @@ public:
         /**
          * BOSS::RegisterStorageEntry service function
          *  Inputs:
-         *      0 : Header Code[0x002F0140]
          *      1 : u32 unknown value
          *      2 : u32 unknown value
          *      3 : u32 unknown value
@@ -681,8 +628,6 @@ public:
 
         /**
          * BOSS::GetStorageEntryInfo service function
-         *  Inputs:
-         *      0 : Header Code[0x00300000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u32 unknown value
@@ -693,7 +638,6 @@ public:
         /**
          * BOSS::SetStorageOption service function
          *  Inputs:
-         *      0 : Header Code[0x00310100]
          *      1 : u8 unknown value
          *      2 : u32 unknown value
          *      3 : u16 unknown value
@@ -705,8 +649,6 @@ public:
 
         /**
          * BOSS::GetStorageOption service function
-         *  Inputs:
-         *      0 : Header Code[0x00320000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : u8 unknown value
@@ -719,7 +661,6 @@ public:
         /**
          * BOSS::StartBgImmediate service function
          *  Inputs:
-         *      0 : Header Code[0x00330042]
          *      1 : TaskID buffer size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32, buff_addr
@@ -733,7 +674,6 @@ public:
         /**
          * BOSS::GetTaskProperty0 service function
          *  Inputs:
-         *      0 : Header Code[0x00340042]
          *      1 : u32 size
          *      2 : MappedBufferDesc(permission = R)
          *      3 : u32 buff_addr
@@ -748,7 +688,6 @@ public:
         /**
          * BOSS::RegisterImmediateTask service function
          *  Inputs:
-         *      0 : Header Code[0x003500C2]
          *      1 : u32 size
          *      2 : u8 unknown value
          *      3 : u8 unknown value
@@ -764,7 +703,6 @@ public:
         /**
          * BOSS::SetTaskQuery service function
          *  Inputs:
-         *      0 : Header Code[0x00360084]
          *      1 : u32 buffer1 size
          *      2 : u32 buffer2 size
          *      3 : MappedBufferDesc1(permission = R)
@@ -783,7 +721,6 @@ public:
         /**
          * BOSS::GetTaskQuery service function
          *  Inputs:
-         *      0 : Header Code[0x00370084]
          *      1 : u32 buffer1 size
          *      2 : u32 buffer2 size
          *      3 : MappedBufferDesc1(permission = R)
@@ -802,7 +739,6 @@ public:
         /**
          * BOSS_P::InitializeSessionPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x04010082]
          *    1-2 : programID, normally zero for using the programID determined from the input PID
          *      3 : 0x20, ARM11-kernel processID translate-header.
          *  Outputs:
@@ -813,7 +749,6 @@ public:
         /**
          * BOSS_P::GetAppNewFlag service function
          *  Inputs:
-         *      0 : Header Code[0x04040080]
          *    1-2 : u64 ProgramID
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -824,7 +759,6 @@ public:
         /**
          * BOSS_P::GetNsDataIdListPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x040D0182]
          *    1-2 : u64 ProgramID
          *      3 : u32 filter
          *      4 : u32 Buffer size in words(max entries)
@@ -844,7 +778,6 @@ public:
         /**
          * BOSS_P::GetNsDataIdListPrivileged1 service function
          *  Inputs:
-         *      0 : Header Code[0x040E0182]
          *    1-2 : u64 ProgramID
          *      3 : u32 filter
          *      4 : u32 Buffer size in words(max entries)
@@ -864,7 +797,6 @@ public:
         /**
          * BOSS_P::SendPropertyPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x04130082]
          *      1 : u16 PropertyID
          *      2 : u32 size
          *      3 : MappedBufferDesc(permission = R)
@@ -879,7 +811,6 @@ public:
         /**
          * BOSS_P::DeleteNsDataPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x041500C0]
          *    1-2 : u64 ProgramID
          *      3 : u32 NsDataID
          *  Outputs:
@@ -890,7 +821,6 @@ public:
         /**
          * BOSS_P::GetNsDataHeaderInfoPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x04160142]
          *    1-2 : u64 ProgramID
          *      3 : u32, NsDataID
          *      4 : u8, type
@@ -907,7 +837,6 @@ public:
         /**
          * BOSS_P::ReadNsDataPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x04170182]
          *    1-2 : u64 ProgramID
          *      3 : u32, NsDataID
          *    4-5 : u64, offset
@@ -926,7 +855,6 @@ public:
         /**
          * BOSS_P::SetNsDataNewFlagPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x041A0100]
          *    1-2 : u64 ProgramID
          *      3 : u32 unknown value
          *      4 : u8 flag
@@ -938,7 +866,6 @@ public:
         /**
          * BOSS_P::GetNsDataNewFlagPrivileged service function
          *  Inputs:
-         *      0 : Header Code[0x041B00C0]
          *    1-2 : u64 ProgramID
          *      3 : u32 unknown value
          *  Outputs:

@@ -10,8 +10,6 @@
 ConfigureDialog::ConfigureDialog(QWidget* parent)
     : QDialog{parent}, ui{std::make_unique<Ui::ConfigureDialog>()} {
     ui->setupUi(this);
-    connect(ui->generalTab, &ConfigureGeneral::languageChanged, this,
-            &ConfigureDialog::onLanguageChanged);
 }
 
 ConfigureDialog::~ConfigureDialog() {}
@@ -24,19 +22,6 @@ void ConfigureDialog::applyConfiguration() {
     ui->audioTab->applyConfiguration();
     ui->cameraTab->applyConfiguration();
     ui->hacksTab->applyConfiguration();
-    sd_card_root_changed = ui->generalTab->sd_card_root_changed;
     Settings::Apply();
     Settings::LogSettings();
-}
-
-void ConfigureDialog::onLanguageChanged(const QString& locale) {
-    emit languageChanged(locale);
-    ui->retranslateUi(this);
-    ui->generalTab->retranslateUi();
-    ui->systemTab->retranslateUi();
-    ui->inputTab->retranslateUi();
-    ui->graphicsTab->retranslateUi();
-    ui->audioTab->retranslateUi();
-    ui->cameraTab->retranslateUi();
-    ui->hacksTab->retranslateUi();
 }

@@ -50,7 +50,7 @@ bool ArchiveFactory_SDMCWriteOnly::Initialize() {
 }
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_SDMCWriteOnly::Open(const Path& path) {
-    auto archive = std::make_unique<SDMCWriteOnlyArchive>(sdmc_directory);
+    auto archive{std::make_unique<SDMCWriteOnlyArchive>(sdmc_directory)};
     return MakeResult<std::unique_ptr<ArchiveBackend>>(std::move(archive));
 }
 

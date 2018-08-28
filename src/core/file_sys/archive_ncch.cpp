@@ -61,31 +61,31 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
         return ERROR_INVALID_PATH;
     }
 
-    NCCHFilePath openfile_path;
+    NCCHFilePath openfile_path{};
     std::memcpy(&openfile_path, binary.data(), sizeof(NCCHFilePath));
 
-    std::string file_path =
-        Service::AM::GetTitleContentPath(media_type, title_id, openfile_path.content_index);
-    auto ncch_container = NCCHContainer(file_path);
+    std::string file_path{
+        Service::AM::GetTitleContentPath(media_type, title_id, openfile_path.content_index)};
+    auto ncch_container{NCCHContainer(file_path)};
 
-    Loader::ResultStatus result;
-    std::unique_ptr<FileBackend> file;
+    Loader::ResultStatus result{};
+    std::unique_ptr<FileBackend> file{};
 
     // NCCH RomFS
     NCCHFilePathType filepath_type = static_cast<NCCHFilePathType>(openfile_path.filepath_type);
     if (filepath_type == NCCHFilePathType::RomFS) {
-        std::shared_ptr<RomFSReader> romfs_file;
+        std::shared_ptr<RomFSReader> romfs_file{};
 
         result = ncch_container.ReadRomFS(romfs_file);
-        std::unique_ptr<DelayGenerator> delay_generator = std::make_unique<RomFSDelayGenerator>();
+        std::unique_ptr<DelayGenerator> delay_generator{std::make_unique<RomFSDelayGenerator>()};
         file = std::make_unique<IVFCFile>(std::move(romfs_file), std::move(delay_generator));
     } else if (filepath_type == NCCHFilePathType::Code ||
                filepath_type == NCCHFilePathType::ExeFS) {
-        std::vector<u8> buffer;
+        std::vector<u8> buffer{};
 
         // Load NCCH .code or icon/banner/logo
         result = ncch_container.LoadSectionExeFS(openfile_path.exefs_filepath.data(), buffer);
-        std::unique_ptr<DelayGenerator> delay_generator = std::make_unique<ExeFSDelayGenerator>();
+        std::unique_ptr<DelayGenerator> delay_generator{std::make_unique<ExeFSDelayGenerator>()};
         file = std::make_unique<NCCHFile>(std::move(buffer), std::move(delay_generator));
     } else {
         LOG_ERROR(Service_FS, "Unknown NCCH archive type {}!", openfile_path.filepath_type);
@@ -94,22 +94,22 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
 
     if (result != Loader::ResultStatus::Success) {
         // High Title ID of the archive: The category (https://3dbrew.org/wiki/Title_list).
-        constexpr u32 shared_data_archive = 0x0004009B;
-        constexpr u32 system_data_archive = 0x000400DB;
+        constexpr u32 shared_data_archive{0x0004009B};
+        constexpr u32 system_data_archive{0x000400DB};
 
         // Low Title IDs.
-        constexpr u32 mii_data = 0x00010202;
-        constexpr u32 region_manifest = 0x00010402;
-        constexpr u32 ng_word_list = 0x00010302;
-        constexpr u32 shared_font = 0x00014002;
+        constexpr u32 mii_data{0x00010202};
+        constexpr u32 region_manifest{0x00010402};
+        constexpr u32 ng_word_list{0x00010302};
+        constexpr u32 shared_font{0x00014002};
 
-        u32 high = static_cast<u32>(title_id >> 32);
-        u32 low = static_cast<u32>(title_id & 0xFFFFFFFF);
+        u32 high{static_cast<u32>(title_id >> 32)};
+        u32 low{static_cast<u32>(title_id & 0xFFFFFFFF)};
 
         LOG_DEBUG(Service_FS, "Full Path: {}. Category: 0x{:X}. Path: 0x{:X}.", path.DebugStr(),
                   high, low);
 
-        std::string archive_name;
+        std::string archive_name{};
         if (high == shared_data_archive) {
             if (low == mii_data)
                 archive_name = "Mii Data";
@@ -119,12 +119,12 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
                 LOG_WARNING(
                     Service_FS,
                     "Shared Font file missing. Loading open source replacement from memory");
-                std::vector<u8> shared_font_file;
+                std::vector<u8> shared_font_file{};
                 shared_font_file.assign(SHARED_FONT_DATA, SHARED_FONT_DATA + SHARED_FONT_DATA_len);
-                u64 romfs_offset = 0;
-                u64 romfs_size = shared_font_file.size();
-                std::unique_ptr<DelayGenerator> delay_generator =
-                    std::make_unique<RomFSDelayGenerator>();
+                u64 romfs_offset{};
+                u64 romfs_size{shared_font_file.size()};
+                std::unique_ptr<DelayGenerator> delay_generator{
+                    std::make_unique<RomFSDelayGenerator>()};
                 file = std::make_unique<IVFCFileInMemory>(std::move(shared_font_file), romfs_offset,
                                                           romfs_size, std::move(delay_generator));
                 return MakeResult<std::unique_ptr<FileBackend>>(std::move(file));
@@ -134,13 +134,13 @@ ResultVal<std::unique_ptr<FileBackend>> NCCHArchive::OpenFile(const Path& path,
                 LOG_WARNING(
                     Service_FS,
                     "Bad Word List file missing. Loading open source replacement from memory");
-                std::vector<u8> bad_word_list_file;
+                std::vector<u8> bad_word_list_file{};
                 bad_word_list_file.assign(BAD_WORD_LIST_DATA,
                                           BAD_WORD_LIST_DATA + BAD_WORD_LIST_DATA_len);
-                u64 romfs_offset = 0;
-                u64 romfs_size = bad_word_list_file.size();
-                std::unique_ptr<DelayGenerator> delay_generator =
-                    std::make_unique<RomFSDelayGenerator>();
+                u64 romfs_offset{};
+                u64 romfs_size{bad_word_list_file.size()};
+                std::unique_ptr<DelayGenerator> delay_generator{
+                    std::make_unique<RomFSDelayGenerator>()};
                 file =
                     std::make_unique<IVFCFileInMemory>(std::move(bad_word_list_file), romfs_offset,
                                                        romfs_size, std::move(delay_generator));
@@ -227,11 +227,11 @@ NCCHFile::NCCHFile(std::vector<u8> buffer, std::unique_ptr<DelayGenerator> delay
 
 ResultVal<size_t> NCCHFile::Read(const u64 offset, const size_t length, u8* buffer) const {
     LOG_TRACE(Service_FS, "called offset={}, length={}", offset, length);
-    size_t length_left = static_cast<size_t>(data_size - offset);
-    size_t read_length = static_cast<size_t>(std::min(length, length_left));
+    size_t length_left{static_cast<size_t>(data_size - offset)};
+    size_t read_length{static_cast<size_t>(std::min(length, length_left))};
 
-    size_t available_size = static_cast<size_t>(file_buffer.size() - offset);
-    size_t copy_size = std::min(length, available_size);
+    size_t available_size{static_cast<size_t>(file_buffer.size() - offset)};
+    size_t copy_size{std::min(length, available_size)};
     memcpy(buffer, file_buffer.data() + offset, copy_size);
 
     return MakeResult<size_t>(copy_size);
@@ -263,17 +263,17 @@ ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_NCCH::Open(const Path&
         return ERROR_INVALID_PATH;
     }
 
-    std::vector<u8> binary = path.AsBinary();
+    std::vector<u8> binary{path.AsBinary()};
     if (binary.size() != sizeof(NCCHArchivePath)) {
         LOG_ERROR(Service_FS, "Wrong path size {}", binary.size());
         return ERROR_INVALID_PATH;
     }
 
-    NCCHArchivePath open_path;
+    NCCHArchivePath open_path{};
     std::memcpy(&open_path, binary.data(), sizeof(NCCHArchivePath));
 
-    auto archive = std::make_unique<NCCHArchive>(
-        open_path.tid, static_cast<Service::FS::MediaType>(open_path.media_type & 0xFF));
+    auto archive{std::make_unique<NCCHArchive>(
+        open_path.tid, static_cast<Service::FS::MediaType>(open_path.media_type & 0xFF))};
     return MakeResult<std::unique_ptr<ArchiveBackend>>(std::move(archive));
 }
 

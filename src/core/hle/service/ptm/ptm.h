@@ -137,11 +137,9 @@ public:
         /**
          * PTM::ConfigureNew3DSCPU service function
          * Inputs:
-         *      0 : Header code [0x08180040]
          *      1 : u8 value, only bit0-1 are used here.
          *          Bit 0 enables higher core clock, and bit 1 enables additional (L2) cache.
          * Outputs:
-         *      0 : Header code
          *      1 : Result code
          * Note:
          *     This just uses svcKernelSetState with Type10 where Param0=<input u8 value from the

@@ -6,14 +6,6 @@
 #include <cmath>
 #include "citra_qt/util/util.h"
 
-QFont GetMonospaceFont() {
-    QFont font("monospace");
-    // Automatic fallback to a monospace font on on platforms without a font called "monospace"
-    font.setStyleHint(QFont::Monospace);
-    font.setFixedPitch(true);
-    return font;
-}
-
 QString ReadableByteSize(qulonglong size) {
     static const std::array<const char*, 6> units = {"B", "KiB", "MiB", "GiB", "TiB", "PiB"};
     if (size == 0)

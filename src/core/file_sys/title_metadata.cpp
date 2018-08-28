@@ -34,7 +34,7 @@ static u32 GetSignatureSize(u32 signature_type) {
 }
 
 Loader::ResultStatus TitleMetadata::Load(const std::string& file_path) {
-    FileUtil::IOFile file(file_path, "rb");
+    FileUtil::IOFile file{file_path, "rb"};
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
 
@@ -43,7 +43,7 @@ Loader::ResultStatus TitleMetadata::Load(const std::string& file_path) {
     if (!file.ReadBytes(file_data.data(), file.GetSize()))
         return Loader::ResultStatus::Error;
 
-    Loader::ResultStatus result = Load(file_data);
+    Loader::ResultStatus result{Load(file_data)};
     if (result != Loader::ResultStatus::Success)
         LOG_ERROR(Service_FS, "Failed to load TMD from file {}!", file_path);
 
@@ -51,18 +51,18 @@ Loader::ResultStatus TitleMetadata::Load(const std::string& file_path) {
 }
 
 Loader::ResultStatus TitleMetadata::Load(const std::vector<u8> file_data, size_t offset) {
-    size_t total_size = static_cast<size_t>(file_data.size() - offset);
+    size_t total_size{static_cast<size_t>(file_data.size() - offset)};
     if (total_size < sizeof(u32_be))
         return Loader::ResultStatus::Error;
 
     memcpy(&signature_type, &file_data[offset], sizeof(u32_be));
 
     // Signature lengths are variable, and the body follows the signature
-    u32 signature_size = GetSignatureSize(signature_type);
+    u32 signature_size{GetSignatureSize(signature_type)};
 
     // The TMD body start position is rounded to the nearest 0x40 after the signature
-    size_t body_start = Common::AlignUp(signature_size + sizeof(u32), 0x40);
-    size_t body_end = body_start + sizeof(Body);
+    size_t body_start{Common::AlignUp(signature_size + sizeof(u32), 0x40)};
+    size_t body_end{body_start + sizeof(Body)};
 
     if (total_size < body_end)
         return Loader::ResultStatus::Error;
@@ -72,8 +72,8 @@ Loader::ResultStatus TitleMetadata::Load(const std::vector<u8> file_data, size_t
     memcpy(tmd_signature.data(), &file_data[offset + sizeof(u32_be)], signature_size);
     memcpy(&tmd_body, &file_data[offset + body_start], sizeof(TitleMetadata::Body));
 
-    size_t expected_size =
-        body_start + sizeof(Body) + static_cast<u16>(tmd_body.content_count) * sizeof(ContentChunk);
+    size_t expected_size{body_start + sizeof(Body) +
+                         static_cast<u16>(tmd_body.content_count) * sizeof(ContentChunk)};
     if (total_size < expected_size) {
         LOG_ERROR(Service_FS, "Malformed TMD, expected size 0x{:x}, got 0x{:x}!", expected_size,
                   total_size);
@@ -81,7 +81,7 @@ Loader::ResultStatus TitleMetadata::Load(const std::vector<u8> file_data, size_t
     }
 
     for (u16 i = 0; i < tmd_body.content_count; i++) {
-        ContentChunk chunk;
+        ContentChunk chunk{};
 
         memcpy(&chunk, &file_data[offset + body_end + (i * sizeof(ContentChunk))],
                sizeof(ContentChunk));
@@ -92,7 +92,7 @@ Loader::ResultStatus TitleMetadata::Load(const std::vector<u8> file_data, size_t
 }
 
 Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
-    FileUtil::IOFile file(file_path, "wb");
+    FileUtil::IOFile file{file_path, "wb"};
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
 
@@ -100,13 +100,13 @@ Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
         return Loader::ResultStatus::Error;
 
     // Signature lengths are variable, and the body follows the signature
-    u32 signature_size = GetSignatureSize(signature_type);
+    u32 signature_size{GetSignatureSize(signature_type)};
 
     if (!file.WriteBytes(tmd_signature.data(), signature_size))
         return Loader::ResultStatus::Error;
 
     // The TMD body start position is rounded to the nearest 0x40 after the signature
-    size_t body_start = Common::AlignUp(signature_size + sizeof(u32), 0x40);
+    size_t body_start{Common::AlignUp(signature_size + sizeof(u32), 0x40)};
     file.Seek(body_start, SEEK_SET);
 
     // Update our TMD body values and hashes
@@ -119,13 +119,13 @@ Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
     tmd_body.contentinfo[0].index = 0;
     tmd_body.contentinfo[0].command_count = static_cast<u16>(tmd_chunks.size());
 
-    CryptoPP::SHA256 chunk_hash;
+    CryptoPP::SHA256 chunk_hash{};
     for (u16 i = 0; i < tmd_body.content_count; i++) {
         chunk_hash.Update(reinterpret_cast<u8*>(&tmd_chunks[i]), sizeof(ContentChunk));
     }
     chunk_hash.Final(tmd_body.contentinfo[0].hash.data());
 
-    CryptoPP::SHA256 contentinfo_hash;
+    CryptoPP::SHA256 contentinfo_hash{};
     for (size_t i = 0; i < tmd_body.contentinfo.size(); i++) {
         chunk_hash.Update(reinterpret_cast<u8*>(&tmd_body.contentinfo[i]), sizeof(ContentInfo));
     }
@@ -136,7 +136,7 @@ Loader::ResultStatus TitleMetadata::Save(const std::string& file_path) {
         return Loader::ResultStatus::Error;
 
     for (u16 i = 0; i < tmd_body.content_count; i++) {
-        ContentChunk chunk = tmd_chunks[i];
+        ContentChunk chunk{tmd_chunks[i]};
         if (file.WriteBytes(&chunk, sizeof(ContentChunk)) != sizeof(ContentChunk))
             return Loader::ResultStatus::Error;
     }
@@ -224,8 +224,8 @@ void TitleMetadata::Print() const {
 
     // For each content info, print their content chunk range
     for (size_t i = 0; i < tmd_body.contentinfo.size(); i++) {
-        u16 index = static_cast<u16>(tmd_body.contentinfo[i].index);
-        u16 count = static_cast<u16>(tmd_body.contentinfo[i].command_count);
+        u16 index{static_cast<u16>(tmd_body.contentinfo[i].index)};
+        u16 count{static_cast<u16>(tmd_body.contentinfo[i].command_count)};
 
         if (count == 0)
             continue;
@@ -236,7 +236,7 @@ void TitleMetadata::Print() const {
             if (j > tmd_body.content_count)
                 break;
 
-            const ContentChunk& chunk = tmd_chunks[j];
+            const ContentChunk& chunk{tmd_chunks[j]};
             LOG_DEBUG(Service_FS, "    ID {:08X}, Index {:04X}, Type {:04x}, Size {:016X}",
                       static_cast<u32>(chunk.id), static_cast<u32>(chunk.index),
                       static_cast<u32>(chunk.type), static_cast<u64>(chunk.size));

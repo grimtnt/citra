@@ -20,7 +20,7 @@ ConfigureAudio::ConfigureAudio(QWidget* parent)
     }
 
     connect(ui->volume_slider, &QSlider::valueChanged, [this] {
-        ui->volume_indicator->setText(tr("%1 %").arg(ui->volume_slider->sliderPosition()));
+        ui->volume_indicator->setText(QString("%1 %").arg(ui->volume_slider->sliderPosition()));
     });
 
     setConfiguration();
@@ -59,7 +59,7 @@ void ConfigureAudio::setConfiguration() {
     ui->audio_device_combo_box->setCurrentIndex(new_device_index);
 
     ui->volume_slider->setValue(Settings::values.volume * ui->volume_slider->maximum());
-    ui->volume_indicator->setText(tr("%1 %").arg(ui->volume_slider->sliderPosition()));
+    ui->volume_indicator->setText(QString("%1 %").arg(ui->volume_slider->sliderPosition()));
     ui->headphones_connected->setChecked(Settings::values.headphones_connected);
 }
 
@@ -85,8 +85,4 @@ void ConfigureAudio::updateAudioDevices(int sink_index) {
     for (const auto& device : device_list) {
         ui->audio_device_combo_box->addItem(device.c_str());
     }
-}
-
-void ConfigureAudio::retranslateUi() {
-    ui->retranslateUi(this);
 }

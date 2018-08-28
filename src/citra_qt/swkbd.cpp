@@ -11,7 +11,7 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     : QDialog{parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint},
       ui{std::make_unique<Ui::SoftwareKeyboardDialog>()} {
     ui->setupUi(this);
-    setWindowTitle(tr("Software Keyboard"));
+    setWindowTitle("Software Keyboard");
     switch (config.num_buttons_m1) {
     case HLE::Applets::SwkbdButtonConfig::SingleButton:
         ui->button0->setEnabled(

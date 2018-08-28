@@ -19,7 +19,6 @@ public:
     ~ConfigureCamera();
 
     void applyConfiguration();
-    void retranslateUi();
 
     void timerEvent(QTimerEvent*) override;
 

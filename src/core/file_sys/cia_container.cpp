@@ -22,11 +22,11 @@ Loader::ResultStatus CIAContainer::Load(const FileBackend& backend) {
     std::vector<u8> header_data(sizeof(Header));
 
     // Load the CIA Header
-    ResultVal<size_t> read_result = backend.Read(0, sizeof(Header), header_data.data());
+    ResultVal<size_t> read_result{backend.Read(0, sizeof(Header), header_data.data())};
     if (read_result.Failed() || *read_result != sizeof(Header))
         return Loader::ResultStatus::Error;
 
-    Loader::ResultStatus result = LoadHeader(header_data);
+    Loader::ResultStatus result{LoadHeader(header_data)};
     if (result != Loader::ResultStatus::Success)
         return result;
 
@@ -56,7 +56,7 @@ Loader::ResultStatus CIAContainer::Load(const FileBackend& backend) {
 }
 
 Loader::ResultStatus CIAContainer::Load(const std::string& filepath) {
-    FileUtil::IOFile file(filepath, "rb");
+    FileUtil::IOFile file{filepath, "rb"};
     if (!file.IsOpen())
         return Loader::ResultStatus::Error;
 
@@ -95,7 +95,7 @@ Loader::ResultStatus CIAContainer::Load(const std::string& filepath) {
 }
 
 Loader::ResultStatus CIAContainer::Load(const std::vector<u8>& file_data) {
-    Loader::ResultStatus result = LoadHeader(file_data);
+    Loader::ResultStatus result{LoadHeader(file_data)};
     if (result != Loader::ResultStatus::Success)
         return result;
 
@@ -162,17 +162,17 @@ u64 CIAContainer::GetTitleMetadataOffset() const {
 }
 
 u64 CIAContainer::GetMetadataOffset() const {
-    u64 tmd_end_offset = GetContentOffset();
+    u64 tmd_end_offset{GetContentOffset()};
 
     // Meta exists after all content in the CIA
-    u64 offset = Common::AlignUp(tmd_end_offset + cia_header.content_size, CIA_SECTION_ALIGNMENT);
+    u64 offset{Common::AlignUp(tmd_end_offset + cia_header.content_size, CIA_SECTION_ALIGNMENT)};
 
     return offset;
 }
 
 u64 CIAContainer::GetContentOffset(u16 index) const {
-    u64 offset =
-        Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, CIA_SECTION_ALIGNMENT);
+    u64 offset{
+        Common::AlignUp(GetTitleMetadataOffset() + cia_header.tmd_size, CIA_SECTION_ALIGNMENT)};
     for (u16 i = 0; i < index; i++) {
         offset += GetContentSize(i);
     }

@@ -20,9 +20,9 @@
 namespace FileSys {
 
 std::string GetSystemSaveDataPath(const std::string& mount_point, const Path& path) {
-    const std::vector<u8> vec_data = path.AsBinary();
-    u32 save_low;
-    u32 save_high;
+    const std::vector<u8> vec_data{path.AsBinary()};
+    u32 save_low{};
+    u32 save_high{};
     std::memcpy(&save_low, &vec_data[4], sizeof(u32));
     std::memcpy(&save_high, &vec_data[0], sizeof(u32));
     return Common::StringFromFormat("%s%08X/%08X/", mount_point.c_str(), save_low, save_high);
@@ -33,7 +33,7 @@ std::string GetSystemSaveDataContainerPath(const std::string& mount_point) {
 }
 
 Path ConstructSystemSaveDataBinaryPath(u32 high, u32 low) {
-    std::vector<u8> binary_path;
+    std::vector<u8> binary_path{};
     binary_path.reserve(8);
 
     // Append each word byte by byte

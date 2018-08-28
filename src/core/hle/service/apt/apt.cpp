@@ -644,6 +644,15 @@ void Module::Interface::ReceiveCaptureBufferInfo(Kernel::HLERequestContext& ctx)
     rb.PushStaticBuffer(std::move(apt->screen_capture_buffer), 0);
 }
 
+void Module::Interface::SleepSystem(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x42, 2, 0}; // 0x00420080
+    u64 time{rp.Pop<u64>()};
+    std::this_thread::sleep_for(std::chrono::nanoseconds{time});
+
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    rb.Push(RESULT_SUCCESS);
+}
+
 void Module::Interface::SetScreenCapPostPermission(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x55, 1, 0}; // 0x00550040
 

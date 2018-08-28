@@ -21,6 +21,8 @@
 
 namespace FileSys {
 
+constexpr u32 SharedExtDataHigh{0x48000};
+
 /**
  * A modified version of DiskFile for fixed-size file used by ExtSaveData
  * The file size can't be changed by SetSize or Write.
@@ -64,8 +66,8 @@ public:
         static constexpr u64 slope(183);
         static constexpr u64 offset(524879);
         static constexpr u64 minimum(631826);
-        u64 ipc_delay_nanoseconds =
-            std::max<u64>(static_cast<u64>(length) * slope + offset, minimum);
+        u64 ipc_delay_nanoseconds{
+            std::max<u64>(static_cast<u64>(length) * slope + offset, minimum)};
         return ipc_delay_nanoseconds;
     }
 };
@@ -89,7 +91,7 @@ public:
                                                      const Mode& mode) const override {
         LOG_DEBUG(Service_FS, "called path={} mode={:01X}", path.DebugStr(), mode.hex);
 
-        const PathParser path_parser(path);
+        const PathParser path_parser{path};
 
         if (!path_parser.IsValid()) {
             LOG_ERROR(Service_FS, "Invalid path {}", path.DebugStr());
@@ -106,7 +108,7 @@ public:
             return ERROR_UNSUPPORTED_OPEN_FLAGS;
         }
 
-        const auto full_path = path_parser.BuildHostPath(mount_point);
+        const auto full_path{path_parser.BuildHostPath(mount_point)};
 
         switch (path_parser.GetHostStatus(mount_point)) {
         case PathParser::InvalidMountPoint:
@@ -126,19 +128,19 @@ public:
             break; // Expected 'success' case
         }
 
-        FileUtil::IOFile file(full_path, "r+b");
+        FileUtil::IOFile file{full_path, "r+b"};
         if (!file.IsOpen()) {
             LOG_CRITICAL(Service_FS, "(unreachable) Unknown error opening {}", full_path);
             return ERROR_FILE_NOT_FOUND;
         }
 
-        Mode rwmode;
+        Mode rwmode{};
         rwmode.write_flag.Assign(1);
         rwmode.read_flag.Assign(1);
-        std::unique_ptr<DelayGenerator> delay_generator =
-            std::make_unique<ExtSaveDataDelayGenerator>();
-        auto disk_file =
-            std::make_unique<FixSizeDiskFile>(std::move(file), rwmode, std::move(delay_generator));
+        std::unique_ptr<DelayGenerator> delay_generator{
+            std::make_unique<ExtSaveDataDelayGenerator>()};
+        auto disk_file{
+            std::make_unique<FixSizeDiskFile>(std::move(file), rwmode, std::move(delay_generator))};
         return MakeResult<std::unique_ptr<FileBackend>>(std::move(disk_file));
     }
 
@@ -160,9 +162,9 @@ struct ExtSaveDataArchivePath {
 static_assert(sizeof(ExtSaveDataArchivePath) == 12, "Incorrect path size");
 
 std::string GetExtSaveDataPath(const std::string& mount_point, const Path& path) {
-    std::vector<u8> vec_data = path.AsBinary();
+    std::vector<u8> vec_data{path.AsBinary()};
 
-    ExtSaveDataArchivePath path_data;
+    ExtSaveDataArchivePath path_data{};
     std::memcpy(&path_data, vec_data.data(), sizeof(path_data));
 
     return Common::StringFromFormat("%s%08X/%08X/", mount_point.c_str(), path_data.save_high,
@@ -178,7 +180,7 @@ std::string GetExtDataContainerPath(const std::string& mount_point, bool shared)
 }
 
 Path ConstructExtDataBinaryPath(u32 media_type, u32 high, u32 low) {
-    ExtSaveDataArchivePath path;
+    ExtSaveDataArchivePath path{};
     path.media_type = media_type;
     path.save_high = high;
     path.save_low = low;
@@ -208,9 +210,7 @@ Path ArchiveFactory_ExtSaveData::GetCorrectedPath(const Path& path) {
     if (!shared)
         return path;
 
-    static constexpr u32 SharedExtDataHigh = 0x48000;
-
-    ExtSaveDataArchivePath new_path;
+    ExtSaveDataArchivePath new_path{};
     std::memcpy(&new_path, path.AsBinary().data(), sizeof(new_path));
 
     // The FS module overwrites the high value of the saveid when dealing with the SharedExtSaveData
@@ -224,7 +224,7 @@ Path ArchiveFactory_ExtSaveData::GetCorrectedPath(const Path& path) {
 }
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_ExtSaveData::Open(const Path& path) {
-    std::string fullpath = GetExtSaveDataPath(mount_point, GetCorrectedPath(path)) + "user/";
+    std::string fullpath{GetExtSaveDataPath(mount_point, GetCorrectedPath(path)) + "user/"};
     if (!FileUtil::Exists(fullpath)) {
         // TODO(Subv): Verify the archive behavior of SharedExtSaveData compared to ExtSaveData.
         // ExtSaveData seems to return FS_NotFound (120) when the archive doesn't exist.
@@ -234,23 +234,23 @@ ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_ExtSaveData::Open(cons
             return ERR_NOT_FORMATTED;
         }
     }
-    auto archive = std::make_unique<ExtSaveDataArchive>(fullpath);
+    auto archive{std::make_unique<ExtSaveDataArchive>(fullpath)};
     return MakeResult<std::unique_ptr<ArchiveBackend>>(std::move(archive));
 }
 
 ResultCode ArchiveFactory_ExtSaveData::Format(const Path& path,
                                               const FileSys::ArchiveFormatInfo& format_info) {
-    auto corrected_path = GetCorrectedPath(path);
+    auto corrected_path{GetCorrectedPath(path)};
 
     // These folders are always created with the ExtSaveData
-    std::string user_path = GetExtSaveDataPath(mount_point, corrected_path) + "user/";
-    std::string boss_path = GetExtSaveDataPath(mount_point, corrected_path) + "boss/";
+    std::string user_path{GetExtSaveDataPath(mount_point, corrected_path) + "user/"};
+    std::string boss_path{GetExtSaveDataPath(mount_point, corrected_path) + "boss/"};
     FileUtil::CreateFullPath(user_path);
     FileUtil::CreateFullPath(boss_path);
 
     // Write the format metadata
-    std::string metadata_path = GetExtSaveDataPath(mount_point, corrected_path) + "metadata";
-    FileUtil::IOFile file(metadata_path, "wb");
+    std::string metadata_path{GetExtSaveDataPath(mount_point, corrected_path) + "metadata"};
+    FileUtil::IOFile file{metadata_path, "wb"};
 
     if (!file.IsOpen()) {
         // TODO(Subv): Find the correct error code
@@ -262,8 +262,8 @@ ResultCode ArchiveFactory_ExtSaveData::Format(const Path& path,
 }
 
 ResultVal<ArchiveFormatInfo> ArchiveFactory_ExtSaveData::GetFormatInfo(const Path& path) const {
-    std::string metadata_path = GetExtSaveDataPath(mount_point, path) + "metadata";
-    FileUtil::IOFile file(metadata_path, "rb");
+    std::string metadata_path{GetExtSaveDataPath(mount_point, path) + "metadata"};
+    FileUtil::IOFile file{metadata_path, "rb"};
 
     if (!file.IsOpen()) {
         LOG_ERROR(Service_FS, "Could not open metadata information for archive");
@@ -278,8 +278,8 @@ ResultVal<ArchiveFormatInfo> ArchiveFactory_ExtSaveData::GetFormatInfo(const Pat
 
 void ArchiveFactory_ExtSaveData::WriteIcon(const Path& path, const u8* icon_data,
                                            size_t icon_size) {
-    std::string game_path = FileSys::GetExtSaveDataPath(GetMountPoint(), path);
-    FileUtil::IOFile icon_file(game_path + "icon", "wb");
+    std::string game_path{FileSys::GetExtSaveDataPath(GetMountPoint(), path)};
+    FileUtil::IOFile icon_file{game_path + "icon", "wb"};
     icon_file.WriteBytes(icon_data, icon_size);
 }
 

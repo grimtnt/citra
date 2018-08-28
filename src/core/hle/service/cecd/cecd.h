@@ -242,7 +242,6 @@ public:
         /**
          * CECD::Open service function
          *  Inputs:
-         *      0 : Header Code[0x000100C2]
          *      1 : NCCH Program ID
          *      2 : Path type
          *      3 : File open flag
@@ -257,7 +256,6 @@ public:
         /**
          * CECD::Read service function
          *  Inputs:
-         *      0 : Header Code[0x00020042]
          *      1 : Buffer size (unused)
          *      2 : Descriptor for mapping a write-only buffer in the target process
          *      3 : Buffer address
@@ -272,7 +270,6 @@ public:
         /**
          * CECD::ReadMessage service function
          *  Inputs:
-         *      0 : Header Code[0x00030104]
          *      1 : NCCH Program ID
          *      2 : bool is_outbox
          *      3 : Message ID size (unused, always 8)
@@ -294,7 +291,6 @@ public:
         /**
          * CECD::ReadMessageWithHMAC service function
          *  Inputs:
-         *      0 : Header Code[0x00040106]
          *      1 : NCCH Program ID
          *      2 : bool is_outbox
          *      3 : Message ID size(unused, always 8)
@@ -320,8 +316,7 @@ public:
         /**
          * CECD::Write service function
          *  Inputs:
-         *      0 : Header Code[0x00050042]
-         *      1 : Buffer size(unused)
+         *      1 : Buffer size (unused)
          *      2 : Descriptor for mapping a read-only buffer in the target process
          *      3 : Buffer address
          *  Outputs:
@@ -334,10 +329,9 @@ public:
         /**
          * CECD::WriteMessage service function
          *  Inputs:
-         *      0 : Header Code[0x00060104]
          *      1 : NCCH Program ID
          *      2 : bool is_outbox
-         *      3 : Message ID size(unused, always 8)
+         *      3 : Message ID size (unused, always 8)
          *      4 : Buffer size(unused)
          *      5 : Descriptor for mapping a read-only buffer in the target process
          *      6 : Buffer address
@@ -355,7 +349,6 @@ public:
         /**
          * CECD::WriteMessageWithHMAC service function
          *  Inputs:
-         *      0 : Header Code[0x00070106]
          *      1 : NCCH Program ID
          *      2 : bool is_outbox
          *      3 : Message ID size(unused, always 8)
@@ -380,7 +373,6 @@ public:
         /**
          * CECD::Delete service function
          *  Inputs:
-         *      0 : Header Code[0x00080102]
          *      1 : NCCH Program ID
          *      2 : Path type
          *      3 : bool is_outbox
@@ -397,7 +389,6 @@ public:
         /**
          * CECD::SetData service function
          *  Inputs:
-         *      0 : Header Code[0x000900C2]
          *      1 : NCCH Program ID
          *      2 : Path type
          *      3 : bool is_outbox
@@ -413,7 +404,6 @@ public:
         /**
          * CECD::ReadData service function
          *  Inputs:
-         *      0 : Header Code[0x000A00C4]
          *      1 : Destination buffer size (unused)
          *      2 : Info type
          *      3 : Param buffer size (unused)
@@ -433,7 +423,6 @@ public:
         /**
          * CECD::Start service function
          *  Inputs:
-         *      0 : Header Code[0x000B0040]
          *      1 : Command
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -443,7 +432,6 @@ public:
         /**
          * CECD::Stop service function
          *  Inputs:
-         *      0 : Header Code[0x000C0040]
          *      1 : Command
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
@@ -453,7 +441,6 @@ public:
         /**
          * CECD::GetCecInfoBuffer service function
          *  Inputs:
-         *      0 : Header Code[0x000D0082]
          *      1 : unknown
          *      2 : unknown, buffer size?
          *      3 : Descriptor for mapping a write-only buffer in the target process
@@ -466,8 +453,6 @@ public:
 
         /**
          * GetCecdState service function
-         *  Inputs:
-         *      0: Header Code[0x000E0000]
          *  Outputs:
          *      1: ResultCode
          *      2: CecdState
@@ -476,8 +461,6 @@ public:
 
         /**
          * GetCecInfoEventHandle service function
-         *  Inputs:
-         *      0: Header Code[0x000F0000]
          *  Outputs:
          *      1: ResultCode
          *      3: Event Handle
@@ -486,8 +469,6 @@ public:
 
         /**
          * GetChangeStateEventHandle service function
-         *  Inputs:
-         *      0: Header Code[0x00100000]
          *  Outputs:
          *      1: ResultCode
          *      3: Event Handle
@@ -497,7 +478,6 @@ public:
         /**
          * CECD::OpenAndWrite service function
          *  Inputs:
-         *      0 : Header Code[0x00110104]
          *      1 : Buffer size (unused)
          *      2 : NCCH Program ID
          *      3 : Path type
@@ -516,7 +496,6 @@ public:
         /**
          * CECD::OpenAndRead service function
          *  Inputs:
-         *      0 : Header Code[0x00120104]
          *      1 : Buffer size (unused)
          *      2 : NCCH Program ID
          *      3 : Path type
@@ -536,7 +515,6 @@ public:
         /**
          * CECD::GetEventLog service function
          *  Inputs:
-         *      0 : Header Code[0x001E0082]
          *      1 : unknown
          *      2 : unknown
          *      3 : buffer descriptor
@@ -549,8 +527,6 @@ public:
 
         /**
          * CECD::GetEventLogStart service function
-         *  Inputs:
-         *      0 : Header Code[0x001F0000]
          *  Outputs:
          *      1 : Result of function, 0 on success, otherwise error code
          *      2 : unknown
@@ -559,8 +535,6 @@ public:
 
         /**
          * GetCecInfoEventHandleSys service function
-         *  Inputs:
-         *      0: Header Code[0x40020002]
          *  Outputs:
          *      1: ResultCode
          *      3: Event Handle

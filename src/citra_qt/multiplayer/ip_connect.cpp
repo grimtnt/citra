@@ -75,12 +75,12 @@ void IpConnectWindow::Connect() {
 
 void IpConnectWindow::BeginConnecting() {
     ui->connect->setEnabled(false);
-    ui->connect->setText(tr("Connecting"));
+    ui->connect->setText("Connecting");
 }
 
 void IpConnectWindow::EndConnecting() {
     ui->connect->setEnabled(true);
-    ui->connect->setText(tr("Connect"));
+    ui->connect->setText("Connect");
 }
 
 void IpConnectWindow::OnConnection() {
