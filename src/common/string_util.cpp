@@ -68,7 +68,9 @@ bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list ar
     // will be present in the middle of a multibyte sequence.
     //
     // This is why we lookup an ANSI (cp1252) locale here and use _vsnprintf_l.
-    static locale_t c_locale{}(!c_locale)c_locale = _create_locale(LC_ALL, ".1252");
+    static locale_t c_locale{};
+    if (!c_locale)
+        c_locale = _create_locale(LC_ALL, ".1252");
     writtenCount = _vsnprintf_l(out, outsize, format, c_locale, args);
 #else
     writtenCount = vsnprintf(out, outsize, format, args);
