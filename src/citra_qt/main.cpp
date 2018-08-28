@@ -976,7 +976,8 @@ void GMainWindow::OnPauseGame() {
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
-    cheats_window->close();
+    if (cheats_window != nullptr)
+        cheats_window->close();
 }
 
 void GMainWindow::ToggleFullscreen() {
