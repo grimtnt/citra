@@ -45,7 +45,7 @@
      <x>0</x>
      <y>0</y>
      <width>1081</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -74,10 +74,10 @@
     <addaction name="action_Restart"/>
     <addaction name="separator"/>
     <addaction name="action_Configure"/>
-    <addaction name="action_Cheats"/>
-    <addaction name="action_Cheat_Search"/>
     <addaction name="action_Control_Panel"/>
+    <addaction name="action_Cheats"/>
     <addaction name="action_Dump_RAM"/>
+    <addaction name="action_Set_Play_Coins"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -128,16 +128,9 @@
     <addaction name="action_Play_Movie"/>
     <addaction name="action_Stop_Recording_Playback"/>
    </widget>
-   <widget class="QMenu" name="menu_Misc">
-    <property name="title">
-     <string>Misc</string>
-    </property>
-    <addaction name="action_Set_Play_Coins"/>
-   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Emulation"/>
    <addaction name="menu_View"/>
-   <addaction name="menu_Misc"/>
    <addaction name="menu_Movie"/>
    <addaction name="menu_Multiplayer"/>
    <addaction name="menu_Help"/>
@@ -200,6 +193,9 @@
    </property>
   </action>
   <action name="action_Cheats">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Cheats...</string>
    </property>
@@ -372,6 +368,9 @@
    </property>
   </action>
   <action name="action_Set_Play_Coins">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Set Play Coins</string>
    </property>

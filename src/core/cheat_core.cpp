@@ -24,7 +24,7 @@ static void CheatTickCallback(u64, int cycles_late) {
 }
 
 void Init() {
-    std::string cheats_dir = FileUtil::GetUserPath(D_USER_IDX) + "cheats";
+    std::string cheats_dir{FileUtil::GetUserPath(D_USER_IDX) + "cheats"};
     if (!FileUtil::Exists(cheats_dir)) {
         FileUtil::CreateDir(cheats_dir);
     }
@@ -49,7 +49,7 @@ static std::string GetFilePath() {
 }
 
 CheatEngine::CheatEngine() {
-    const auto file_path = GetFilePath();
+    const auto file_path{GetFilePath()};
     if (!FileUtil::Exists(file_path))
         FileUtil::CreateEmptyFile(file_path);
     cheats_list = ReadFileContents();

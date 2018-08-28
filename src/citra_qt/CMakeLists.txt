@@ -10,10 +10,8 @@ add_executable(citra-qt
     aboutdialog.h
     bootmanager.cpp
     bootmanager.h
-    cheat_gui.cpp
-    cheat_gui.h
-    cheatsearch.cpp
-    cheatsearch.h
+    cheats.cpp
+    cheats.h
     camera/camera_util.cpp
     camera/camera_util.h
     camera/still_image_camera.cpp
@@ -86,8 +84,7 @@ set(UIS
     swkbd.ui
     aboutdialog.ui
     hotkeys.ui
-    cheat_gui.ui
-    cheatsearch.ui
+    cheats.ui
     main.ui
     control_panel.ui
     multiplayer/ip_connect.ui

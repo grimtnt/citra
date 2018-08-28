@@ -10,7 +10,6 @@
 #include <QLabel>
 #include <QMainWindow>
 #include <QTimer>
-#include <QTranslator>
 #include "citra_qt/swkbd.h"
 #include "core/core.h"
 #include "core/hle/applets/erreula.h"
@@ -19,7 +18,7 @@
 #include "ui_main.h"
 
 class AboutDialog;
-class CheatSearch;
+class CheatDialog;
 class Config;
 class ControlPanel;
 class ClickableLabel;
@@ -141,7 +140,6 @@ private slots:
     void OnConfigure();
     void OnSetPlayCoins();
     void OnCheats();
-    void OnCheatSearch();
     void OnControlPanel();
     void OnToggleFilterBar();
     void OnDisplayTitleBars(bool);
@@ -205,7 +203,7 @@ private:
     std::unique_ptr<SoftwareKeyboardDialog> swkbd;
 
     std::shared_ptr<ControlPanel> control_panel;
-    std::shared_ptr<CheatSearch> cheat_search_window;
+    std::shared_ptr<CheatDialog> cheats_window;
 
     QAction* actions_recent_files[max_recent_files_item];
 

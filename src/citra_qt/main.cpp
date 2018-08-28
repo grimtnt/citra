@@ -21,8 +21,7 @@
 #include "citra_qt/bootmanager.h"
 #include "citra_qt/camera/qt_multimedia_camera.h"
 #include "citra_qt/camera/still_image_camera.h"
-#include "citra_qt/cheat_gui.h"
-#include "citra_qt/cheatsearch.h"
+#include "citra_qt/cheats.h"
 #include "citra_qt/configuration/config.h"
 #include "citra_qt/configuration/configure_dialog.h"
 #include "citra_qt/control_panel.h"
@@ -292,7 +291,6 @@ void GMainWindow::RestoreUIState() {
     render_window->restoreGeometry(UISettings::values.renderwindow_geometry);
 
     ui.action_Cheats->setEnabled(false);
-    ui.action_Cheat_Search->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
 
     game_list->LoadInterfaceLayout();
@@ -349,7 +347,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Restart, &QAction::triggered, this, [this] { BootGame(QString(game_path)); });
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
-    connect(ui.action_Cheat_Search, &QAction::triggered, this, &GMainWindow::OnCheatSearch);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
     connect(ui.action_Dump_RAM, &QAction::triggered, this, [&] {
         QString path{QFileDialog::getSaveFileName(this, "Save RAM Dump", ".")};
@@ -611,6 +608,9 @@ void GMainWindow::BootGame(const QString& filename) {
         std::unique_lock<std::mutex> lock(applet_mutex);
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
+
+    if (cheats_window != nullptr)
+        cheats_window->UpdateTitleID();
 }
 
 void GMainWindow::ShutdownGame() {
@@ -642,7 +642,6 @@ void GMainWindow::ShutdownGame() {
     ui.action_Stop->setEnabled(false);
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
-    ui.action_Cheat_Search->setEnabled(false);
     ui.action_Dump_RAM->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
     render_window->hide();
@@ -651,8 +650,6 @@ void GMainWindow::ShutdownGame() {
     else
         game_list->show();
     game_list->setFilterFocus();
-    if (cheat_search_window != nullptr)
-        cheat_search_window->close();
 
     // Disable status bar updates
     status_bar_update_timer.stop();
@@ -965,7 +962,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Stop->setEnabled(true);
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
-    ui.action_Cheat_Search->setEnabled(true);
     ui.action_Dump_RAM->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
 }
@@ -980,6 +976,7 @@ void GMainWindow::OnPauseGame() {
 
 void GMainWindow::OnStopGame() {
     ShutdownGame();
+    cheats_window->close();
 }
 
 void GMainWindow::ToggleFullscreen() {
@@ -1109,14 +1106,9 @@ void GMainWindow::OnConfigure() {
 }
 
 void GMainWindow::OnCheats() {
-    CheatDialog dialog;
-    dialog.exec();
-}
-
-void GMainWindow::OnCheatSearch() {
-    if (cheat_search_window == nullptr)
-        cheat_search_window = std::make_shared<CheatSearch>(this);
-    cheat_search_window->show();
+    if (cheats_window == nullptr)
+        cheats_window = std::make_shared<CheatDialog>(this);
+    cheats_window->show();
 }
 
 void GMainWindow::OnControlPanel() {
