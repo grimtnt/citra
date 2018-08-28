@@ -559,6 +559,11 @@ bool GMainWindow::LoadROM(const QString& filename) {
     Discord_UpdatePresence(&presence);
 #endif
 
+    if (cheats_window != nullptr)
+        cheats_window->UpdateTitleID();
+    else
+        CheatCore::RefreshCheats();
+
     return true;
 }
 
@@ -608,9 +613,6 @@ void GMainWindow::BootGame(const QString& filename) {
         std::unique_lock<std::mutex> lock(applet_mutex);
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
-
-    if (cheats_window != nullptr)
-        cheats_window->UpdateTitleID();
 }
 
 void GMainWindow::ShutdownGame() {
@@ -1291,6 +1293,8 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     }
 
     case Core::System::ResultStatus::ShutdownRequested: {
+        if (cheats_window != nullptr)
+            cheats_window->close();
         break;
     }
 

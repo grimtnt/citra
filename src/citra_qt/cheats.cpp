@@ -65,11 +65,11 @@ CheatDialog::CheatDialog(QWidget* parent)
 CheatDialog::~CheatDialog() {}
 
 void CheatDialog::UpdateTitleID() {
+    CheatCore::RefreshCheats();
     ui->labelTitle->setText(QString("Title ID: %1")
                                 .arg(QString::fromStdString(Common::StringFromFormat(
                                     "%016llX", Kernel::g_current_process->codeset->program_id))));
     LoadCheats();
-    CheatCore::RefreshCheats();
     ui->textLines->setEnabled(false);
     selection_changing = true;
     ui->textLines->clear();

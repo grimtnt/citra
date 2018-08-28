@@ -37,6 +37,8 @@ void Shutdown() {
 }
 
 void RefreshCheats() {
+    if (cheat_engine == nullptr)
+        cheat_engine = std::make_unique<CheatEngine::CheatEngine>();
     cheat_engine->RefreshCheats();
 }
 } // namespace CheatCore

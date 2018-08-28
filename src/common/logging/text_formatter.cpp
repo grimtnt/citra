@@ -19,11 +19,11 @@
 namespace Log {
 
 std::string FormatLogMessage(const Entry& entry) {
-    unsigned int time_seconds = static_cast<unsigned int>(entry.timestamp.count() / 1000000);
-    unsigned int time_fractional = static_cast<unsigned int>(entry.timestamp.count() % 1000000);
+    unsigned int time_seconds{static_cast<unsigned int>(entry.timestamp.count() / 1000000)};
+    unsigned int time_fractional{static_cast<unsigned int>(entry.timestamp.count() % 1000000)};
 
-    const char* class_name = GetLogClassName(entry.log_class);
-    const char* level_name = GetLevelName(entry.log_level);
+    const char* class_name{GetLogClassName(entry.log_class)};
+    const char* level_name{GetLevelName(entry.log_level)};
 
     return fmt::format("[{:d}.{:d}] {} <{}> {}:{}:{}: {}", time_seconds, time_fractional,
                        class_name, level_name, entry.filename, entry.function, entry.line_num,
@@ -31,7 +31,7 @@ std::string FormatLogMessage(const Entry& entry) {
 }
 
 void PrintMessage(const Entry& entry) {
-    auto str = FormatLogMessage(entry) + '\n';
+    auto str{FormatLogMessage(entry) + '\n'};
     fputs(str.c_str(), stderr);
 }
 
@@ -45,32 +45,32 @@ void PrintColoredMessage(const Entry& entry) {
     CONSOLE_SCREEN_BUFFER_INFO original_info = {};
     GetConsoleScreenBufferInfo(console_handle, &original_info);
 
-    WORD color {}
+    WORD color{};
     switch (entry.log_level) {
-    switch (entry.log_level) {
-    case Level::Trace: // Grey
-        color = FOREGROUND_INTENSITY;
-        break;
-    case Level::Debug: // Cyan
-        color = FOREGROUND_GREEN | FOREGROUND_BLUE;
-        break;
-    case Level::Info: // Bright gray
-        color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-        break;
-    case Level::Warning: // Bright yellow
-        color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
-        break;
-    case Level::Error: // Bright red
-        color = FOREGROUND_RED | FOREGROUND_INTENSITY;
-        break;
-    case Level::Critical: // Bright magenta
-        color = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
-        break;
-    case Level::Count:
-        UNREACHABLE();
-    }
+        switch (entry.log_level) {
+        case Level::Trace: // Grey
+            color = FOREGROUND_INTENSITY;
+            break;
+        case Level::Debug: // Cyan
+            color = FOREGROUND_GREEN | FOREGROUND_BLUE;
+            break;
+        case Level::Info: // Bright gray
+            color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+            break;
+        case Level::Warning: // Bright yellow
+            color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+            break;
+        case Level::Error: // Bright red
+            color = FOREGROUND_RED | FOREGROUND_INTENSITY;
+            break;
+        case Level::Critical: // Bright magenta
+            color = FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+            break;
+        case Level::Count:
+            UNREACHABLE();
+        }
 
-    SetConsoleTextAttribute(console_handle, color);
+        SetConsoleTextAttribute(console_handle, color);
 #else
 #define ESC "\x1b"
     const char* color = "";
@@ -100,13 +100,13 @@ void PrintColoredMessage(const Entry& entry) {
     fputs(color, stderr);
 #endif
 
-    PrintMessage(entry);
+        PrintMessage(entry);
 
 #ifdef _WIN32
-    SetConsoleTextAttribute(console_handle, original_info.wAttributes);
+        SetConsoleTextAttribute(console_handle, original_info.wAttributes);
 #else
     fputs(ESC "[0m", stderr);
 #undef ESC
 #endif
-}
+    }
 } // namespace Log
