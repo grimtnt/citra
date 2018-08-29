@@ -118,12 +118,12 @@ ResultVal<size_t> CIAFile::WriteContentData(u64 offset, size_t length, const u8*
     // has been written since we might get a written buffer which contains multiple .app
     // contents or only part of a larger .app's contents.
     u64 offset_max = offset + length;
-    for (int i = 0; i < container.GetTitleMetadata().GetContentCount(); i++) {
+    for (int i{}; i < container.GetTitleMetadata().GetContentCount(); i++) {
         if (content_written[i] < container.GetContentSize(i)) {
             // The size, minimum unwritten offset, and maximum unwritten offset of this content
-            u64 size = container.GetContentSize(i);
-            u64 range_min = container.GetContentOffset(i) + content_written[i];
-            u64 range_max = container.GetContentOffset(i) + size;
+            u64 size{container.GetContentSize(i)};
+            u64 range_min{container.GetContentOffset(i) + content_written[i]};
+            u64 range_max{container.GetContentOffset(i) + size};
 
             // The unwritten range for this content is beyond the buffered data we have
             // or comes before the buffered data we have, so skip this content ID.
@@ -131,13 +131,13 @@ ResultVal<size_t> CIAFile::WriteContentData(u64 offset, size_t length, const u8*
                 continue;
 
             // Figure out how much of this content ID we have just recieved/can write out
-            u64 available_to_write = std::min(offset_max, range_max) - range_min;
+            u64 available_to_write{std::min(offset_max, range_max) - range_min};
 
             // Since the incoming TMD has already been written, we can use GetTitleContentPath
             // to get the content paths to write to.
-            FileSys::TitleMetadata tmd = container.GetTitleMetadata();
-            FileUtil::IOFile file(GetTitleContentPath(media_type, tmd.GetTitleID(), i, is_update),
-                                  content_written[i] ? "ab" : "wb");
+            FileSys::TitleMetadata tmd{container.GetTitleMetadata()};
+            FileUtil::IOFile file{GetTitleContentPath(media_type, tmd.GetTitleID(), i, is_update),
+                                  content_written[i] ? "ab" : "wb"};
 
             if (!file.IsOpen())
                 return FileSys::ERROR_INSUFFICIENT_SPACE;
@@ -167,9 +167,9 @@ ResultVal<size_t> CIAFile::Write(u64 offset, size_t length, bool flush, const u8
     // content sizes so it ends up becoming a problem of keeping track of how much has been
     // written and what we have been able to pick up.
     if (install_state == CIAInstallState::InstallStarted) {
-        size_t buf_copy_size = std::min(length, FileSys::CIA_HEADER_SIZE);
-        size_t buf_max_size =
-            std::min(static_cast<size_t>(offset + length), FileSys::CIA_HEADER_SIZE);
+        size_t buf_copy_size{std::min(length, FileSys::CIA_HEADER_SIZE)};
+        size_t buf_max_size{
+            std::min(static_cast<size_t>(offset + length), FileSys::CIA_HEADER_SIZE)};
         data.resize(buf_max_size);
         memcpy(data.data() + offset, buffer, buf_copy_size);
 
@@ -188,13 +188,13 @@ ResultVal<size_t> CIAFile::Write(u64 offset, size_t length, bool flush, const u8
     // If we have been given data before (or including) .app content, pull it into
     // our buffer, but only pull *up to* the content offset, no further.
     if (offset < container.GetContentOffset()) {
-        size_t buf_loaded = data.size();
-        size_t copy_offset = std::max(static_cast<size_t>(offset), buf_loaded);
-        size_t buf_offset = buf_loaded - offset;
-        size_t buf_copy_size =
+        size_t buf_loaded{data.size()};
+        size_t copy_offset{std::max(static_cast<size_t>(offset), buf_loaded)};
+        size_t buf_offset{buf_loaded - offset};
+        size_t buf_copy_size{
             std::min(length, static_cast<size_t>(container.GetContentOffset() - offset)) -
-            buf_loaded;
-        size_t buf_max_size = std::min(offset + length, container.GetContentOffset());
+            buf_loaded};
+        size_t buf_max_size{std::min(offset + length, container.GetContentOffset())};
         data.resize(buf_max_size);
         memcpy(data.data() + copy_offset, buffer + buf_offset, buf_copy_size);
     }
@@ -204,7 +204,7 @@ ResultVal<size_t> CIAFile::Write(u64 offset, size_t length, bool flush, const u8
     // The end of our TMD is at the beginning of Content data, so ensure we have that much
     // buffered before trying to parse.
     if (written >= container.GetContentOffset() && install_state != CIAInstallState::TMDLoaded) {
-        auto result = WriteTitleMetadata(offset, length, buffer);
+        auto result{WriteTitleMetadata(offset, length, buffer)};
         if (result.Failed())
             return result;
     }
@@ -214,7 +214,7 @@ ResultVal<size_t> CIAFile::Write(u64 offset, size_t length, bool flush, const u8
         return MakeResult<size_t>(length);
 
     // From this point forward, data will no longer be buffered in data
-    auto result = WriteContentData(offset, length, buffer);
+    auto result{WriteContentData(offset, length, buffer)};
     if (result.Failed())
         return result;
 
@@ -230,8 +230,8 @@ bool CIAFile::SetSize(u64 size) const {
 }
 
 bool CIAFile::Close() const {
-    bool complete = true;
-    for (size_t i = 0; i < container.GetTitleMetadata().GetContentCount(); i++) {
+    bool complete{true};
+    for (size_t i{}; i < container.GetTitleMetadata().GetContentCount(); i++) {
         if (content_written[i] < container.GetContentSize(static_cast<u16>(i)))
             complete = false;
     }
@@ -244,13 +244,13 @@ bool CIAFile::Close() const {
     }
 
     // Clean up older content data if we installed newer content on top
-    std::string old_tmd_path =
-        GetTitleMetadataPath(media_type, container.GetTitleMetadata().GetTitleID(), false);
-    std::string new_tmd_path =
-        GetTitleMetadataPath(media_type, container.GetTitleMetadata().GetTitleID(), true);
+    std::string old_tmd_path{
+        GetTitleMetadataPath(media_type, container.GetTitleMetadata().GetTitleID(), false)};
+    std::string new_tmd_path{
+        GetTitleMetadataPath(media_type, container.GetTitleMetadata().GetTitleID(), true)};
     if (FileUtil::Exists(new_tmd_path) && old_tmd_path != new_tmd_path) {
-        FileSys::TitleMetadata old_tmd;
-        FileSys::TitleMetadata new_tmd;
+        FileSys::TitleMetadata old_tmd{};
+        FileSys::TitleMetadata new_tmd{};
 
         old_tmd.Load(old_tmd_path);
         new_tmd.Load(new_tmd_path);
@@ -259,7 +259,7 @@ bool CIAFile::Close() const {
         // TMD. If a CIA contains (and wrote to) an identical ID, it should be kept while
         // IDs which only existed for the old TMD should be deleted.
         for (u16 old_index = 0; old_index < old_tmd.GetContentCount(); old_index++) {
-            bool abort = false;
+            bool abort{};
             for (u16 new_index = 0; new_index < new_tmd.GetContentCount(); new_index++) {
                 if (old_tmd.GetContentIDByIndex(old_index) ==
                     new_tmd.GetContentIDByIndex(new_index)) {
@@ -288,12 +288,12 @@ InstallStatus InstallCIA(const std::string& path,
         return InstallStatus::ErrorFileNotFound;
     }
 
-    FileSys::CIAContainer container;
+    FileSys::CIAContainer container{};
     if (container.Load(path) == Loader::ResultStatus::Success) {
-        Service::AM::CIAFile installFile(
-            Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID()));
+        Service::AM::CIAFile installFile{
+            Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID())};
 
-        for (size_t i = 0; i < container.GetTitleMetadata().GetContentCount(); i++) {
+        for (size_t i{}; i < container.GetTitleMetadata().GetContentCount(); i++) {
             if (container.GetTitleMetadata().GetContentTypeByIndex(static_cast<u16>(i)) &
                 FileSys::TMDContentTypeFlag::Encrypted) {
                 LOG_ERROR(Service_AM, "File {} is encrypted! Aborting...", path);
@@ -301,16 +301,16 @@ InstallStatus InstallCIA(const std::string& path,
             }
         }
 
-        FileUtil::IOFile file(path, "rb");
+        FileUtil::IOFile file{path, "rb"};
         if (!file.IsOpen())
             return InstallStatus::ErrorFailedToOpenFile;
 
-        std::array<u8, 0x10000> buffer;
-        size_t total_bytes_read = 0;
+        std::array<u8, 0x10000> buffer{};
+        size_t total_bytes_read{};
         while (total_bytes_read != file.GetSize()) {
-            size_t bytes_read = file.ReadBytes(buffer.data(), buffer.size());
-            auto result = installFile.Write(static_cast<u64>(total_bytes_read), bytes_read, true,
-                                            static_cast<u8*>(buffer.data()));
+            size_t bytes_read{file.ReadBytes(buffer.data(), buffer.size())};
+            auto result{installFile.Write(static_cast<u64>(total_bytes_read), bytes_read, true,
+                                          static_cast<u8*>(buffer.data()))};
 
             if (update_callback)
                 update_callback(total_bytes_read, file.GetSize());
@@ -332,9 +332,9 @@ InstallStatus InstallCIA(const std::string& path,
 }
 
 Service::FS::MediaType GetTitleMediaType(u64 titleId) {
-    u16 platform = static_cast<u16>(titleId >> 48);
-    u16 category = static_cast<u16>((titleId >> 32) & 0xFFFF);
-    u8 variation = static_cast<u8>(titleId & 0xFF);
+    u16 platform{static_cast<u16>(titleId >> 48)};
+    u16 category{static_cast<u16>((titleId >> 32) & 0xFFFF)};
+    u8 variation{static_cast<u8>(titleId & 0xFF)};
 
     if (platform != PLATFORM_CTR)
         return Service::FS::MediaType::NAND;
@@ -346,7 +346,7 @@ Service::FS::MediaType GetTitleMediaType(u64 titleId) {
 }
 
 std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid, bool update) {
-    std::string content_path = GetTitlePath(media_type, tid) + "content/";
+    std::string content_path{GetTitlePath(media_type, tid) + "content/"};
 
     if (media_type == Service::FS::MediaType::GameCard) {
         LOG_ERROR(Service_AM, "Invalid request for nonexistent gamecard title metadata!");
@@ -356,17 +356,17 @@ std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid, boo
     // The TMD ID is usually held in the title databases, which we don't implement.
     // For now, just scan for any .tmd files which exist, the smallest will be the
     // base ID and the largest will be the (currently installing) update ID.
-    constexpr u32 MAX_TMD_ID = 0xFFFFFFFF;
-    u32 base_id = MAX_TMD_ID;
-    u32 update_id = 0;
-    FileUtil::FSTEntry entries;
+    constexpr u32 MAX_TMD_ID{0xFFFFFFFF};
+    u32 base_id{MAX_TMD_ID};
+    u32 update_id{};
+    FileUtil::FSTEntry entries{};
     FileUtil::ScanDirectoryTree(content_path, entries);
     for (const FileUtil::FSTEntry& entry : entries.children) {
-        std::string filename_filename, filename_extension;
+        std::string filename_filename{}, filename_extension{};
         Common::SplitPath(entry.virtualName, nullptr, &filename_filename, &filename_extension);
 
         if (filename_extension == ".tmd") {
-            u32 id = std::stoul(filename_filename.c_str(), nullptr, 16);
+            u32 id{static_cast<u32>(std::stoul(filename_filename.c_str(), nullptr, 16))};
             base_id = std::min(base_id, id);
             update_id = std::max(update_id, id);
         }
@@ -385,7 +385,7 @@ std::string GetTitleMetadataPath(Service::FS::MediaType media_type, u64 tid, boo
 
 std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 index,
                                 bool update) {
-    std::string content_path = GetTitlePath(media_type, tid) + "content/";
+    std::string content_path{GetTitlePath(media_type, tid) + "content/"};
 
     if (media_type == Service::FS::MediaType::GameCard) {
         // TODO(shinyquagsire23): get current app file if TID matches?
@@ -394,10 +394,10 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
         return "";
     }
 
-    std::string tmd_path = GetTitleMetadataPath(media_type, tid, update);
+    std::string tmd_path{GetTitleMetadataPath(media_type, tid, update)};
 
-    u32 content_id = 0;
-    FileSys::TitleMetadata tmd;
+    u32 content_id{};
+    FileSys::TitleMetadata tmd{};
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
         if (index < tmd.GetContentCount()) {
             content_id = tmd.GetContentIDByIndex(index);
@@ -421,8 +421,8 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
 }
 
 std::string GetTitlePath(Service::FS::MediaType media_type, u64 tid) {
-    u32 high = static_cast<u32>(tid >> 32);
-    u32 low = static_cast<u32>(tid & 0xFFFFFFFF);
+    u32 high{static_cast<u32>(tid >> 32)};
+    u32 low{static_cast<u32>(tid & 0xFFFFFFFF)};
 
     if (media_type == Service::FS::MediaType::NAND || media_type == Service::FS::MediaType::SDMC)
         return Common::StringFromFormat("%s%08x/%08x/", GetMediaTitlePath(media_type).c_str(), high,
@@ -462,18 +462,18 @@ std::string GetMediaTitlePath(Service::FS::MediaType media_type) {
 void Module::ScanForTitles(Service::FS::MediaType media_type) {
     am_title_list[static_cast<u32>(media_type)].clear();
 
-    std::string title_path = GetMediaTitlePath(media_type);
+    std::string title_path{GetMediaTitlePath(media_type)};
 
-    FileUtil::FSTEntry entries;
+    FileUtil::FSTEntry entries{};
     FileUtil::ScanDirectoryTree(title_path, entries, 1);
     for (const FileUtil::FSTEntry& tid_high : entries.children) {
         for (const FileUtil::FSTEntry& tid_low : tid_high.children) {
-            std::string tid_string = tid_high.virtualName + tid_low.virtualName;
+            std::string tid_string{tid_high.virtualName + tid_low.virtualName};
 
             if (tid_string.length() == TITLE_ID_VALID_LENGTH) {
-                u64 tid = std::stoull(tid_string.c_str(), nullptr, 16);
+                u64 tid{std::stoull(tid_string.c_str(), nullptr, 16)};
 
-                FileSys::NCCHContainer container(GetTitleContentPath(media_type, tid));
+                FileSys::NCCHContainer container{GetTitleContentPath(media_type, tid)};
                 if (container.Load() == Loader::ResultStatus::Success)
                     am_title_list[static_cast<u32>(media_type)].push_back(tid);
             }
@@ -503,14 +503,14 @@ void Module::Interface::GetNumPrograms(Kernel::HLERequestContext& ctx) {
 void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1002, 4, 4}; // 0x10020104
 
-    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type{static_cast<Service::FS::MediaType>(rp.Pop<u8>())};
     u64 title_id{rp.Pop<u64>()};
     u32 content_count{rp.Pop<u32>()};
     auto& content_requested_in{rp.PopMappedBuffer()};
     auto& content_info_out{rp.PopMappedBuffer()};
 
     // Validate that only DLC TIDs are passed in
-    u32 tid_high = static_cast<u32>(title_id >> 32);
+    u32 tid_high{static_cast<u32>(title_id >> 32)};
     if (tid_high != TID_HIGH_DLC) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
         rb.Push(ResultCode(ErrCodes::InvalidTIDInList, ErrorModule::AM,
@@ -523,16 +523,16 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
     std::vector<u16_le> content_requested(content_count);
     content_requested_in.Read(content_requested.data(), 0, content_count * sizeof(u16));
 
-    std::string tmd_path = GetTitleMetadataPath(media_type, title_id);
+    std::string tmd_path{GetTitleMetadataPath(media_type, title_id)};
 
-    u32 content_read = 0;
-    FileSys::TitleMetadata tmd;
+    u32 content_read{};
+    FileSys::TitleMetadata tmd{};
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
-        std::size_t write_offset = 0;
+        std::size_t write_offset{};
         // Get info for each content index requested
-        for (size_t i = 0; i < content_count; i++) {
-            std::shared_ptr<FileUtil::IOFile> romfs_file;
-            u64 romfs_offset = 0;
+        for (size_t i{}; i < content_count; i++) {
+            std::shared_ptr<FileUtil::IOFile> romfs_file{};
+            u64 romfs_offset{};
 
             if (content_requested[i] >= tmd.GetContentCount()) {
                 LOG_ERROR(Service_AM,
@@ -574,13 +574,13 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x1003, 5, 2}; // 0x10030142
 
     u32 content_count{rp.Pop<u32>()};
-    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type{static_cast<Service::FS::MediaType>(rp.Pop<u8>())};
     u64 title_id{rp.Pop<u64>()};
     u32 start_index{rp.Pop<u32>()};
     auto& content_info_out{rp.PopMappedBuffer()};
 
     // Validate that only DLC TIDs are passed in
-    u32 tid_high = static_cast<u32>(title_id >> 32);
+    u32 tid_high{static_cast<u32>(title_id >> 32)};
     if (tid_high != TID_HIGH_DLC) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidTIDInList, ErrorModule::AM,
@@ -590,17 +590,17 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    std::string tmd_path = GetTitleMetadataPath(media_type, title_id);
+    std::string tmd_path{GetTitleMetadataPath(media_type, title_id)};
 
-    u32 copied = 0;
-    FileSys::TitleMetadata tmd;
+    u32 copied{};
+    FileSys::TitleMetadata tmd{};
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
-        u32 end_index =
-            std::min(start_index + content_count, static_cast<u32>(tmd.GetContentCount()));
-        std::size_t write_offset = 0;
+        u32 end_index{
+            std::min(start_index + content_count, static_cast<u32>(tmd.GetContentCount()))};
+        std::size_t write_offset{};
         for (u32 i = start_index; i < end_index; i++) {
-            std::shared_ptr<FileUtil::IOFile> romfs_file;
-            u64 romfs_offset = 0;
+            std::shared_ptr<FileUtil::IOFile> romfs_file{};
+            u64 romfs_offset{};
 
             ContentInfo content_info = {};
             content_info.index = static_cast<u16>(i);
@@ -636,7 +636,7 @@ void Module::Interface::DeleteContents(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(content_ids_in);
-    LOG_WARNING(Service_AM, "(STUBBED) media_type={}, title_id=0x{:016x}, content_count={}",
+    LOG_WARNING(Service_AM, "(STUBBED) called, media_type={}, title_id=0x{:016x}, content_count={}",
                 media_type, title_id, content_count);
 }
 
@@ -655,8 +655,8 @@ void Module::Interface::GetProgramList(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    u32 media_count = static_cast<u32>(am->am_title_list[media_type].size());
-    u32 copied = std::min(media_count, count);
+    u32 media_count{static_cast<u32>(am->am_title_list[media_type].size())};
+    u32 copied{std::min(media_count, count)};
 
     title_ids_output.Write(am->am_title_list[media_type].data(), 0, copied * sizeof(u64));
 
@@ -669,14 +669,14 @@ void Module::Interface::GetProgramList(Kernel::HLERequestContext& ctx) {
 ResultCode GetTitleInfoFromList(const std::vector<u64>& title_id_list,
                                 Service::FS::MediaType media_type,
                                 Kernel::MappedBuffer& title_info_out) {
-    std::size_t write_offset = 0;
-    for (u32 i = 0; i < title_id_list.size(); i++) {
-        std::string tmd_path = GetTitleMetadataPath(media_type, title_id_list[i]);
+    std::size_t write_offset{};
+    for (u32 i{}; i < title_id_list.size(); i++) {
+        std::string tmd_path{GetTitleMetadataPath(media_type, title_id_list[i])};
 
         TitleInfo title_info = {};
         title_info.tid = title_id_list[i];
 
-        FileSys::TitleMetadata tmd;
+        FileSys::TitleMetadata tmd{};
         if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
             // TODO(shinyquagsire23): This is the total size of all files this process owns,
             // including savefiles and other content. This comes close but is off.
@@ -705,7 +705,7 @@ void Module::Interface::GetProgramInfos(Kernel::HLERequestContext& ctx) {
     std::vector<u64> title_id_list(title_count);
     title_id_list_buffer.Read(title_id_list.data(), 0, title_count * sizeof(u64));
 
-    ResultCode result = GetTitleInfoFromList(title_id_list, media_type, title_info_out);
+    ResultCode result{GetTitleInfoFromList(title_id_list, media_type, title_info_out)};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     rb.Push(result);
@@ -718,8 +718,8 @@ void Module::Interface::DeleteUserProgram(Kernel::HLERequestContext& ctx) {
     auto media_type{rp.PopEnum<FS::MediaType>()};
     u64 title_id{rp.Pop<u64>()};
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
-    u16 category = static_cast<u16>((title_id >> 32) & 0xFFFF);
-    u8 variation = static_cast<u8>(title_id & 0xFF);
+    u16 category{static_cast<u16>((title_id >> 32) & 0xFFFF)};
+    u8 variation{static_cast<u8>(title_id & 0xFF)};
     if (category & CATEGORY_SYSTEM || category & CATEGORY_DLP || variation & VARIATION_SYSTEM) {
         LOG_ERROR(Service_AM, "Trying to uninstall system app");
         rb.Push(ResultCode(ErrCodes::TryingToUninstallSystemApp, ErrorModule::AM,
@@ -727,14 +727,14 @@ void Module::Interface::DeleteUserProgram(Kernel::HLERequestContext& ctx) {
         return;
     }
     LOG_INFO(Service_AM, "Deleting title 0x{:016x}", title_id);
-    std::string path = GetTitlePath(media_type, title_id);
+    std::string path{GetTitlePath(media_type, title_id)};
     if (!FileUtil::Exists(path)) {
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::AM, ErrorSummary::InvalidState,
                            ErrorLevel::Permanent));
         LOG_ERROR(Service_AM, "Title not found");
         return;
     }
-    bool success = FileUtil::DeleteDirRecursively(path);
+    bool success{FileUtil::DeleteDirRecursively(path)};
     am->ScanForAllTitles();
     rb.Push(RESULT_SUCCESS);
     if (!success)
@@ -745,7 +745,7 @@ void Module::Interface::GetProductCode(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0005, 3, 0};
     FS::MediaType media_type{rp.PopEnum<FS::MediaType>()};
     u64 title_id{rp.Pop<u64>()};
-    std::string path = GetTitleContentPath(media_type, title_id);
+    std::string path{GetTitleContentPath(media_type, title_id)};
 
     if (!FileUtil::Exists(path)) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -778,11 +778,11 @@ void Module::Interface::GetDLCTitleInfos(Kernel::HLERequestContext& ctx) {
     std::vector<u64> title_id_list(title_count);
     title_id_list_buffer.Read(title_id_list.data(), 0, title_count * sizeof(u64));
 
-    ResultCode result = RESULT_SUCCESS;
+    ResultCode result{RESULT_SUCCESS};
 
     // Validate that DLC TIDs were passed in
-    for (u32 i = 0; i < title_count; i++) {
-        u32 tid_high = static_cast<u32>(title_id_list[i] >> 32);
+    for (u32 i{}; i < title_count; i++) {
+        u32 tid_high{static_cast<u32>(title_id_list[i] >> 32)};
         if (tid_high != TID_HIGH_DLC) {
             result = ResultCode(ErrCodes::InvalidTIDInList, ErrorModule::AM,
                                 ErrorSummary::InvalidArgument, ErrorLevel::Usage);
@@ -811,10 +811,10 @@ void Module::Interface::GetPatchTitleInfos(Kernel::HLERequestContext& ctx) {
     std::vector<u64> title_id_list(title_count);
     title_id_list_buffer.Read(title_id_list.data(), 0, title_count * sizeof(u64));
 
-    ResultCode result = RESULT_SUCCESS;
+    ResultCode result{RESULT_SUCCESS};
 
     // Validate that update TIDs were passed in
-    for (u32 i = 0; i < title_count; i++) {
+    for (u32 i{}; i < title_count; i++) {
         u32 tid_high = static_cast<u32>(title_id_list[i] >> 32);
         if (tid_high != TID_HIGH_UPDATE) {
             result = ResultCode(ErrCodes::InvalidTIDInList, ErrorModule::AM,
@@ -840,8 +840,8 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
     u32 start_index{rp.Pop<u32>()};
     auto& ticket_info_out{rp.PopMappedBuffer()};
 
-    std::size_t write_offset = 0;
-    for (u32 i = 0; i < ticket_count; i++) {
+    std::size_t write_offset{};
+    for (u32 i{}; i < ticket_count; i++) {
         TicketInfo ticket_info = {};
         ticket_info.title_id = title_id;
         ticket_info.version = 0; // TODO
@@ -957,8 +957,8 @@ void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestConte
     u16 content_index{rp.Pop<u16>()};
 
     // TODO(shinyquagsire23): Read tickets for this instead?
-    bool has_rights =
-        FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index));
+    bool has_rights{
+        FileUtil::Exists(GetTitleContentPath(Service::FS::MediaType::SDMC, tid, content_index))};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS); // No error
@@ -969,7 +969,7 @@ void Module::Interface::CheckContentRightsIgnorePlatform(Kernel::HLERequestConte
 
 void Module::Interface::BeginImportProgram(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0402, 1, 0}; // 0x04020040
-    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type{static_cast<Service::FS::MediaType>(rp.Pop<u8>())};
 
     if (am->cia_installing) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -981,8 +981,7 @@ void Module::Interface::BeginImportProgram(Kernel::HLERequestContext& ctx) {
     // Create our CIAFile handle for the app to write to, and while the app writes
     // Citra will store contents out to sdmc/nand
     const FileSys::Path cia_path = {};
-    auto file =
-        std::make_shared<Service::FS::File>(std::make_unique<CIAFile>(media_type), cia_path);
+    auto file{std::make_shared<Service::FS::File>(std::make_unique<CIAFile>(media_type), cia_path)};
 
     am->cia_installing = true;
 
@@ -1010,18 +1009,19 @@ ResultVal<std::shared_ptr<Service::FS::File>> GetFileFromSession(
     // cast to File. For AM on 3DS, invalid handles actually hang the system.
 
     if (file_session->parent == nullptr) {
-        LOG_WARNING(Service_AM, "Invalid file handle!");
-        return Kernel::ERR_INVALID_HANDLE;
+        // Invalid handle. Emulate the hang
+        for (;;)
+            ;
     }
 
-    Kernel::SharedPtr<Kernel::ServerSession> server = file_session->parent->server;
+    Kernel::SharedPtr<Kernel::ServerSession> server{file_session->parent->server};
     if (server == nullptr) {
         LOG_WARNING(Service_AM, "File handle ServerSession disconnected!");
         return Kernel::ERR_SESSION_CLOSED_BY_REMOTE;
     }
 
     if (server->hle_handler != nullptr) {
-        auto file = std::dynamic_pointer_cast<Service::FS::File>(server->hle_handler);
+        auto file{std::dynamic_pointer_cast<Service::FS::File>(server->hle_handler)};
 
         // TODO(shinyquagsire23): This requires RTTI, use service calls directly instead?
         if (file != nullptr)
@@ -1042,15 +1042,15 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
     auto cia{rp.PopObject<Kernel::ClientSession>()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1058,7 +1058,7 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    FileSys::TitleMetadata tmd = container.GetTitleMetadata();
+    FileSys::TitleMetadata tmd{container.GetTitleMetadata()};
     TitleInfo title_info = {};
     container.Print();
 
@@ -1080,7 +1080,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
     auto cia{rp.PopObject<Kernel::ClientSession>()};
     auto& output_buffer{rp.PopMappedBuffer()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(file_res.Code());
@@ -1088,10 +1088,10 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
         return;
     }
 
-    std::size_t output_buffer_size = std::min(output_buffer.GetSize(), sizeof(Loader::SMDH));
+    std::size_t output_buffer_size{std::min(output_buffer.GetSize(), sizeof(Loader::SMDH))};
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1102,8 +1102,8 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
     std::vector<u8> temp(output_buffer_size);
 
     //  Read from the Meta offset + 0x400 for the 0x36C0-large SMDH
-    auto read_result = file->backend->Read(
-        container.GetMetadataOffset() + FileSys::CIA_METADATA_SIZE, temp.size(), temp.data());
+    auto read_result{file->backend->Read(container.GetMetadataOffset() + FileSys::CIA_METADATA_SIZE,
+                                         temp.size(), temp.data())};
     if (read_result.Failed() || *read_result != temp.size()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1123,15 +1123,15 @@ void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx)
     IPC::RequestParser rp{ctx, 0x040A, 0, 2}; // 0x040A0002
     auto cia{rp.PopObject<Kernel::ClientSession>()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1151,15 +1151,15 @@ void Module::Interface::GetTransferSizeFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040B, 0, 2}; // 0x040B0002
     auto cia{rp.PopObject<Kernel::ClientSession>()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1176,14 +1176,14 @@ void Module::Interface::GetCoreVersionFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040C, 0, 2}; // 0x040C0002
     auto cia{rp.PopObject<Kernel::ClientSession>()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
 
-    auto file = file_res.Unwrap();
+    auto file{file_res.Unwrap()};
     FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -1199,18 +1199,18 @@ void Module::Interface::GetCoreVersionFromCia(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x040D, 1, 2}; // 0x040D0042
-    auto media_type = static_cast<Service::FS::MediaType>(rp.Pop<u8>());
+    auto media_type{static_cast<Service::FS::MediaType>(rp.Pop<u8>())};
     auto cia{rp.PopObject<Kernel::ClientSession>()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1250,17 +1250,16 @@ void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0413, 0, 2}; // 0x04130002
     auto cia{rp.PopObject<Kernel::ClientSession>()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(file_res.Code());
         return;
     }
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
-
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
                            ErrorSummary::InvalidArgument, ErrorLevel::Permanent));
@@ -1279,9 +1278,8 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     auto cia{rp.PopObject<Kernel::ClientSession>()};
     auto& output_buffer{rp.PopMappedBuffer()};
 
-    auto file_res = GetFileFromSession(cia);
+    auto file_res{GetFileFromSession(cia)};
     if (!file_res.Succeeded()) {
-
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(file_res.Code());
         rb.PushMappedBuffer(output_buffer);
@@ -1290,8 +1288,8 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     // Don't write beyond the actual static buffer size.
     output_size = std::min(static_cast<u32>(output_buffer.GetSize()), output_size);
 
-    auto file = file_res.Unwrap();
-    FileSys::CIAContainer container;
+    auto file{file_res.Unwrap()};
+    FileSys::CIAContainer container{};
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1302,7 +1300,7 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
 
     //  Read from the Meta offset for the specified size
     std::vector<u8> temp(output_size);
-    auto read_result = file->backend->Read(container.GetMetadataOffset(), output_size, temp.data());
+    auto read_result{file->backend->Read(container.GetMetadataOffset(), output_size, temp.data())};
     if (read_result.Failed() || *read_result != output_size) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
