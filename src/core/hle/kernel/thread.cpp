@@ -39,8 +39,7 @@ void Thread::Acquire(Thread* thread) {
 }
 
 // TODO(yuriks): This can be removed if Thread objects are explicitly pooled in the future,
-// allowing
-//               us to simply use a pool index or similar.
+// allowing us to simply use a pool index or similar.
 static Kernel::HandleTable wakeup_callback_handle_table;
 
 // Lists all thread ids that aren't deleted/etc.
@@ -95,23 +94,23 @@ void Thread::Stop() {
     ReleaseThreadMutexes(this);
 
     // Mark the TLS slot in the thread's page as free.
-    u32 tls_page = (tls_address - Memory::TLS_AREA_VADDR) / Memory::PAGE_SIZE;
-    u32 tls_slot =
-        ((tls_address - Memory::TLS_AREA_VADDR) % Memory::PAGE_SIZE) / Memory::TLS_ENTRY_SIZE;
+    u32 tls_page{(tls_address - Memory::TLS_AREA_VADDR) / Memory::PAGE_SIZE};
+    u32 tls_slot{((tls_address - Memory::TLS_AREA_VADDR) % Memory::PAGE_SIZE) /
+                 Memory::TLS_ENTRY_SIZE};
     Kernel::g_current_process->tls_slots[tls_page].reset(tls_slot);
 }
 
 /// Boost low priority threads (temporarily) that have been starved
 static void PriorityBoostStarvedThreads() {
-    u64 current_ticks = CoreTiming::GetTicks();
+    u64 current_ticks{CoreTiming::GetTicks()};
 
     for (auto& thread : thread_list) {
-        const u64 boost_timeout = 2000000; // Boost threads that have been ready for > this long
+        const u64 boost_timeout{2000000}; // Boost threads that have been ready for > this long
 
-        u64 delta = current_ticks - thread->last_running_ticks;
+        u64 delta{current_ticks - thread->last_running_ticks};
 
         if (thread->status == THREADSTATUS_READY && delta > boost_timeout) {
-            const s32 priority = std::max(ready_queue.get_first()->current_priority - 1, 0u);
+            const u32 priority{std::max(ready_queue.get_first()->current_priority - 1, 40u)};
             thread->BoostPriority(priority);
         }
     }
@@ -122,7 +121,7 @@ static void PriorityBoostStarvedThreads() {
  * @param new_thread The thread to switch to
  */
 static void SwitchContext(Thread* new_thread) {
-    Thread* previous_thread = GetCurrentThread();
+    Thread* previous_thread{GetCurrentThread()};
 
     // Save context for previous thread
     if (previous_thread) {
@@ -145,7 +144,7 @@ static void SwitchContext(Thread* new_thread) {
         // Cancel any outstanding wakeup events for this thread
         CoreTiming::UnscheduleEvent(ThreadWakeupEventType, new_thread->callback_handle);
 
-        auto previous_process = Kernel::g_current_process;
+        auto previous_process{Kernel::g_current_process};
 
         current_thread = new_thread;
 
@@ -174,8 +173,8 @@ static void SwitchContext(Thread* new_thread) {
  * @return A pointer to the next ready thread
  */
 static Thread* PopNextReadyThread() {
-    Thread* next;
-    Thread* thread = GetCurrentThread();
+    Thread* next{};
+    Thread* thread{GetCurrentThread()};
 
     if (thread && thread->status == THREADSTATUS_RUNNING) {
         // We have to do better than the current thread.
@@ -193,12 +192,12 @@ static Thread* PopNextReadyThread() {
 }
 
 void WaitCurrentThread_Sleep() {
-    Thread* thread = GetCurrentThread();
+    Thread* thread{GetCurrentThread()};
     thread->status = THREADSTATUS_WAIT_SLEEP;
 }
 
 void ExitCurrentThread() {
-    Thread* thread = GetCurrentThread();
+    Thread* thread{GetCurrentThread()};
     thread->Stop();
     thread_list.erase(std::remove(thread_list.begin(), thread_list.end(), thread),
                       thread_list.end());
@@ -210,7 +209,7 @@ void ExitCurrentThread() {
  * @param cycles_late The number of CPU cycles that have passed since the desired wakeup time
  */
 static void ThreadWakeupCallback(u64 thread_handle, s64 cycles_late) {
-    SharedPtr<Thread> thread = wakeup_callback_handle_table.Get<Thread>((Handle)thread_handle);
+    SharedPtr<Thread> thread{wakeup_callback_handle_table.Get<Thread>((Handle)thread_handle)};
     if (thread == nullptr) {
         LOG_CRITICAL(Kernel, "Callback fired for invalid thread {:08X}", thread_handle);
         return;
@@ -280,26 +279,6 @@ void Thread::ResumeFromWait() {
 }
 
 /**
- * Prints the thread queue for debugging purposes
- */
-static void DebugThreadQueue() {
-    Thread* thread = GetCurrentThread();
-    if (!thread) {
-        LOG_DEBUG(Kernel, "Current: NO CURRENT THREAD");
-    } else {
-        LOG_DEBUG(Kernel, "0x{:02X} {} (current)", thread->current_priority,
-                  GetCurrentThread()->GetObjectId());
-    }
-
-    for (auto& t : thread_list) {
-        u32 priority = ready_queue.contains(t.get());
-        if (priority != -1) {
-            LOG_DEBUG(Kernel, "0x{:02X} {}", priority, t->GetObjectId());
-        }
-    }
-}
-
-/**
  * Finds a free location for the TLS section of a thread.
  * @param tls_slots The TLS page array of the thread's owner process.
  * Returns a tuple of (page, slot, alloc_needed) where:
@@ -311,7 +290,7 @@ static std::tuple<std::size_t, std::size_t, bool> GetFreeThreadLocalSlot(
     const std::vector<std::bitset<8>>& tls_slots) {
     // Iterate over all the allocated pages, and try to find one where not all slots are used.
     for (std::size_t page{}; page < tls_slots.size(); ++page) {
-        const auto& page_tls_slots = tls_slots[page];
+        const auto& page_tls_slots{tls_slots[page]};
         if (!page_tls_slots.all()) {
             // We found a page with at least one free slot, find which slot it is
             for (std::size_t slot{}; slot < page_tls_slots.size(); ++slot) {
@@ -383,15 +362,15 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
     thread->owner_process = owner_process;
 
     // Find the next available TLS index, and mark it as used
-    auto& tls_slots = owner_process->tls_slots;
+    auto& tls_slots{owner_process->tls_slots};
 
-    auto [available_page, available_slot, needs_allocation] = GetFreeThreadLocalSlot(tls_slots);
+    auto [available_page, available_slot, needs_allocation]{GetFreeThreadLocalSlot(tls_slots)};
 
     if (needs_allocation) {
         // There are no already-allocated pages with free slots, lets allocate a new one.
         // TLS pages are allocated from the BASE region in the linear heap.
-        MemoryRegionInfo* memory_region = GetMemoryRegion(MemoryRegion::BASE);
-        auto& linheap_memory = memory_region->linear_heap_memory;
+        MemoryRegionInfo* memory_region{GetMemoryRegion(MemoryRegion::BASE)};
+        auto& linheap_memory{memory_region->linear_heap_memory};
 
         if (linheap_memory->size() + Memory::PAGE_SIZE > memory_region->size) {
             LOG_ERROR(Kernel_SVC,
@@ -399,7 +378,7 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
             return ERR_OUT_OF_MEMORY;
         }
 
-        size_t offset = linheap_memory->size();
+        size_t offset{linheap_memory->size()};
 
         // Allocate some memory from the end of the linear heap for this region.
         linheap_memory->insert(linheap_memory->end(), Memory::PAGE_SIZE, 0);
@@ -410,7 +389,7 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
         available_page = tls_slots.size() - 1;
         available_slot = 0; // Use the first slot in the new page
 
-        auto& vm_manager = owner_process->vm_manager;
+        auto& vm_manager{owner_process->vm_manager};
         vm_manager.RefreshMemoryBlockMappings(linheap_memory.get());
 
         // Map the page to the current process' address space.
@@ -447,7 +426,7 @@ void Thread::SetPriority(u32 priority) {
 }
 
 void Thread::UpdatePriority() {
-    u32 best_priority = nominal_priority;
+    u32 best_priority{nominal_priority};
     for (auto& mutex : held_mutexes) {
         if (mutex->priority < best_priority)
             best_priority = mutex->priority;
@@ -466,11 +445,10 @@ void Thread::BoostPriority(u32 priority) {
 
 SharedPtr<Thread> SetupMainThread(u32 entry_point, u32 priority, SharedPtr<Process> owner_process) {
     // Initialize new "main" thread
-    auto thread_res =
-        Thread::Create("main", entry_point, priority, 0, owner_process->ideal_processor,
-                       Memory::HEAP_VADDR_END, owner_process);
+    auto thread_res{Thread::Create("main", entry_point, priority, 0, owner_process->ideal_processor,
+                                   Memory::HEAP_VADDR_END, owner_process)};
 
-    SharedPtr<Thread> thread = std::move(thread_res).Unwrap();
+    SharedPtr<Thread> thread{std::move(thread_res).Unwrap()};
 
     thread->context->SetFpscr(FPSCR_DEFAULT_NAN | FPSCR_FLUSH_TO_ZERO | FPSCR_ROUND_TOZERO |
                               FPSCR_IXC); // 0x03C00010
@@ -487,8 +465,8 @@ void Reschedule() {
     if (Settings::values.priority_boost)
         PriorityBoostStarvedThreads();
 
-    Thread* cur = GetCurrentThread();
-    Thread* next = PopNextReadyThread();
+    Thread* cur{GetCurrentThread()};
+    Thread* next{PopNextReadyThread()};
 
     if (cur && next) {
         LOG_TRACE(Kernel, "context switch {} -> {}", cur->GetObjectId(), next->GetObjectId());
@@ -511,13 +489,13 @@ void Thread::SetWaitSynchronizationOutput(s32 output) {
 
 s32 Thread::GetWaitObjectIndex(WaitObject* object) const {
     ASSERT_MSG(!wait_objects.empty(), "Thread is not waiting for anything");
-    auto match = std::find(wait_objects.rbegin(), wait_objects.rend(), object);
+    auto match{std::find(wait_objects.rbegin(), wait_objects.rend(), object)};
     return static_cast<s32>(std::distance(match, wait_objects.rend()) - 1);
 }
 
 VAddr Thread::GetCommandBufferAddress() const {
     // Offset from the start of TLS at which the IPC command buffer begins.
-    static constexpr int CommandHeaderOffset = 0x80;
+    static constexpr int CommandHeaderOffset{0x80};
     return GetTLSAddress() + CommandHeaderOffset;
 }
 
