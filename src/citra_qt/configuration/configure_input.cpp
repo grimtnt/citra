@@ -129,10 +129,10 @@ ConfigureInput::ConfigureInput(QWidget* parent)
 
     for (int button_id{}; button_id < Settings::NativeButton::NumButtons; button_id++) {
         if (button_map[button_id])
-            connect(button_map[button_id], &QPushButton::released, [&]() {
+            connect(button_map[button_id], &QPushButton::released, [=]() {
                 handleClick(
                     button_map[button_id],
-                    [&](const Common::ParamPackage& params) { buttons_param[button_id] = params; },
+                    [=](const Common::ParamPackage& params) { buttons_param[button_id] = params; },
                     InputCommon::Polling::DeviceType::Button);
             });
     }
@@ -141,9 +141,9 @@ ConfigureInput::ConfigureInput(QWidget* parent)
         for (int sub_button_id{}; sub_button_id < ANALOG_SUB_BUTTONS_NUM; sub_button_id++) {
             if (analog_map_buttons[analog_id][sub_button_id] != nullptr) {
                 connect(analog_map_buttons[analog_id][sub_button_id], &QPushButton::released,
-                        [&]() {
+                        [=]() {
                             handleClick(analog_map_buttons[analog_id][sub_button_id],
-                                        [&](const Common::ParamPackage& params) {
+                                        [=](const Common::ParamPackage& params) {
                                             SetAnalogButton(params, analogs_param[analog_id],
                                                             analog_sub_buttons[sub_button_id]);
                                         },
