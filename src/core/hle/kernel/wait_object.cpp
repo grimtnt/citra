@@ -18,13 +18,13 @@
 namespace Kernel {
 
 void WaitObject::AddWaitingThread(SharedPtr<Thread> thread) {
-    auto itr = std::find(waiting_threads.begin(), waiting_threads.end(), thread);
+    auto itr{std::find(waiting_threads.begin(), waiting_threads.end(), thread)};
     if (itr == waiting_threads.end())
         waiting_threads.push_back(std::move(thread));
 }
 
 void WaitObject::RemoveWaitingThread(Thread* thread) {
-    auto itr = std::find(waiting_threads.begin(), waiting_threads.end(), thread);
+    auto itr{std::find(waiting_threads.begin(), waiting_threads.end(), thread)};
     // If a thread passed multiple handles to the same object,
     // the kernel might attempt to remove the thread from the object's
     // waiting threads list multiple times.
@@ -34,7 +34,7 @@ void WaitObject::RemoveWaitingThread(Thread* thread) {
 
 SharedPtr<Thread> WaitObject::GetHighestPriorityReadyThread() {
     Thread* candidate{};
-    u32 candidate_priority = THREADPRIO_LOWEST + 1;
+    u32 candidate_priority{THREADPRIO_LOWEST + 1};
 
     for (const auto& thread : waiting_threads) {
         // The list of waiting threads must not contain threads that are not waiting to be awakened.
@@ -51,7 +51,7 @@ SharedPtr<Thread> WaitObject::GetHighestPriorityReadyThread() {
 
         // A thread is ready to run if it's either in THREADSTATUS_WAIT_SYNCH_ANY or
         // in THREADSTATUS_WAIT_SYNCH_ALL and the rest of the objects it is waiting on are ready.
-        bool ready_to_run = true;
+        bool ready_to_run{true};
         if (thread->status == THREADSTATUS_WAIT_SYNCH_ALL) {
             ready_to_run = std::none_of(thread->wait_objects.begin(), thread->wait_objects.end(),
                                         [&thread](const SharedPtr<WaitObject>& object) {
@@ -69,7 +69,7 @@ SharedPtr<Thread> WaitObject::GetHighestPriorityReadyThread() {
 }
 
 void WaitObject::WakeupAllWaitingThreads() {
-    while (auto thread = GetHighestPriorityReadyThread()) {
+    while (auto thread{GetHighestPriorityReadyThread()}) {
         if (!thread->IsSleepingOnWaitAll()) {
             Acquire(thread.get());
         } else {

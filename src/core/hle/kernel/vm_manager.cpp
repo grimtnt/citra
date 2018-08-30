@@ -14,7 +14,7 @@
 namespace Kernel {
 
 static const char* GetMemoryStateName(MemoryState state) {
-    static const char* names[] = {
+    static const char* names[]{
         "Free",   "Reserved",   "IO",      "Static", "Code",      "Private",
         "Shared", "Continuous", "Aliased", "Alias",  "AliasCode", "Locked",
     };
@@ -53,7 +53,7 @@ void VMManager::Reset() {
     vma_map.clear();
 
     // Initialize the map with a single free region covering the entire managed space.
-    VirtualMemoryArea initial_vma;
+    VirtualMemoryArea initial_vma{};
     initial_vma.size = MAX_ADDRESS;
     vma_map.emplace(initial_vma.base, initial_vma);
 
@@ -80,7 +80,7 @@ ResultVal<VMManager::VMAHandle> VMManager::MapMemoryBlock(VAddr target,
 
     // This is the appropriately sized VMA that will turn into our allocation.
     CASCADE_RESULT(VMAIter vma_handle, CarveVMA(target, size));
-    VirtualMemoryArea& final_vma = vma_handle->second;
+    VirtualMemoryArea& final_vma{vma_handle->second};
     ASSERT(final_vma.size == size);
 
     final_vma.type = VMAType::AllocatedMemoryBlock;
@@ -98,15 +98,15 @@ ResultVal<VAddr> VMManager::MapMemoryBlockToBase(VAddr base, u32 region_size,
                                                  size_t offset, u32 size, MemoryState state) {
 
     // Find the first Free VMA.
-    VMAHandle vma_handle = std::find_if(vma_map.begin(), vma_map.end(), [&](const auto& vma) {
+    VMAHandle vma_handle{std::find_if(vma_map.begin(), vma_map.end(), [&](const auto& vma) {
         if (vma.second.type != VMAType::Free)
             return false;
 
         VAddr vma_end = vma.second.base + vma.second.size;
         return vma_end > base && vma_end >= base + size;
-    });
+    })};
 
-    VAddr target = std::max(base, vma_handle->second.base);
+    VAddr target{std::max(base, vma_handle->second.base)};
 
     // Do not try to allocate the block if there are no available addresses within the desired
     // region.
@@ -115,7 +115,7 @@ ResultVal<VAddr> VMManager::MapMemoryBlockToBase(VAddr base, u32 region_size,
                           ErrorSummary::OutOfResource, ErrorLevel::Permanent);
     }
 
-    auto result = MapMemoryBlock(target, block, offset, size, state);
+    auto result{MapMemoryBlock(target, block, offset, size, state)};
 
     if (result.Failed())
         return result.Code();
@@ -129,7 +129,7 @@ ResultVal<VMManager::VMAHandle> VMManager::MapBackingMemory(VAddr target, u8* me
 
     // This is the appropriately sized VMA that will turn into our allocation.
     CASCADE_RESULT(VMAIter vma_handle, CarveVMA(target, size));
-    VirtualMemoryArea& final_vma = vma_handle->second;
+    VirtualMemoryArea& final_vma{vma_handle->second};
     ASSERT(final_vma.size == size);
 
     final_vma.type = VMAType::BackingMemory;
@@ -146,7 +146,7 @@ ResultVal<VMManager::VMAHandle> VMManager::MapMMIO(VAddr target, PAddr paddr, u3
                                                    Memory::MMIORegionPointer mmio_handler) {
     // This is the appropriately sized VMA that will turn into our allocation.
     CASCADE_RESULT(VMAIter vma_handle, CarveVMA(target, size));
-    VirtualMemoryArea& final_vma = vma_handle->second;
+    VirtualMemoryArea& final_vma{vma_handle->second};
     ASSERT(final_vma.size == size);
 
     final_vma.type = VMAType::MMIO;
@@ -162,19 +162,19 @@ ResultVal<VMManager::VMAHandle> VMManager::MapMMIO(VAddr target, PAddr paddr, u3
 ResultCode VMManager::ChangeMemoryState(VAddr target, u32 size, MemoryState expected_state,
                                         VMAPermission expected_perms, MemoryState new_state,
                                         VMAPermission new_perms) {
-    VAddr target_end = target + size;
-    VMAIter begin_vma = StripIterConstness(FindVMA(target));
-    VMAIter i_end = vma_map.lower_bound(target_end);
+    VAddr target_end{target + size};
+    VMAIter begin_vma{StripIterConstness(FindVMA(target))};
+    VMAIter i_end{vma_map.lower_bound(target_end)};
 
     if (begin_vma == vma_map.end())
         return ERR_INVALID_ADDRESS;
 
     for (auto i = begin_vma; i != i_end; ++i) {
-        auto& vma = i->second;
+        auto& vma{i->second};
         if (vma.meminfo_state != expected_state) {
             return ERR_INVALID_ADDRESS_STATE;
         }
-        u32 perms = static_cast<u32>(expected_perms);
+        u32 perms{static_cast<u32>(expected_perms)};
         if ((static_cast<u32>(vma.permissions) & perms) != perms) {
             return ERR_INVALID_ADDRESS_STATE;
         }
@@ -193,7 +193,7 @@ ResultCode VMManager::ChangeMemoryState(VAddr target, u32 size, MemoryState expe
 }
 
 VMManager::VMAIter VMManager::Unmap(VMAIter vma_handle) {
-    VirtualMemoryArea& vma = vma_handle->second;
+    VirtualMemoryArea& vma{vma_handle->second};
     vma.type = VMAType::Free;
     vma.permissions = VMAPermission::None;
     vma.meminfo_state = MemoryState::Free;
@@ -210,9 +210,9 @@ VMManager::VMAIter VMManager::Unmap(VMAIter vma_handle) {
 
 ResultCode VMManager::UnmapRange(VAddr target, u32 size) {
     CASCADE_RESULT(VMAIter vma, CarveVMARange(target, size));
-    const VAddr target_end = target + size;
+    const VAddr target_end{target + size};
 
-    const VMAIter end = vma_map.end();
+    const VMAIter end{vma_map.end()};
     // The comparison against the end of the range must be done using addresses since VMAs can be
     // merged during this process, causing invalidation of the iterators.
     while (vma != end && vma->second.base < target_end) {
@@ -224,9 +224,9 @@ ResultCode VMManager::UnmapRange(VAddr target, u32 size) {
 }
 
 VMManager::VMAHandle VMManager::Reprotect(VMAHandle vma_handle, VMAPermission new_perms) {
-    VMAIter iter = StripIterConstness(vma_handle);
+    VMAIter iter{StripIterConstness(vma_handle)};
 
-    VirtualMemoryArea& vma = iter->second;
+    VirtualMemoryArea& vma{iter->second};
     vma.permissions = new_perms;
     UpdatePageTableForVMA(vma);
 
@@ -235,9 +235,9 @@ VMManager::VMAHandle VMManager::Reprotect(VMAHandle vma_handle, VMAPermission ne
 
 ResultCode VMManager::ReprotectRange(VAddr target, u32 size, VMAPermission new_perms) {
     CASCADE_RESULT(VMAIter vma, CarveVMARange(target, size));
-    const VAddr target_end = target + size;
+    const VAddr target_end{target + size};
 
-    const VMAIter end = vma_map.end();
+    const VMAIter end{vma_map.end()};
     // The comparison against the end of the range must be done using addresses since VMAs can be
     // merged during this process, causing invalidation of the iterators.
     while (vma != end && vma->second.base < target_end) {
@@ -251,7 +251,7 @@ void VMManager::RefreshMemoryBlockMappings(const std::vector<u8>* block) {
     // If this ever proves to have a noticeable performance impact, allow users of the function to
     // specify a specific range of addresses to limit the scan to.
     for (const auto& p : vma_map) {
-        const VirtualMemoryArea& vma = p.second;
+        const VirtualMemoryArea& vma{p.second};
         if (block == vma.backing_block.get()) {
             UpdatePageTableForVMA(vma);
         }
@@ -260,7 +260,7 @@ void VMManager::RefreshMemoryBlockMappings(const std::vector<u8>* block) {
 
 void VMManager::LogLayout(Log::Level log_level) const {
     for (const auto& p : vma_map) {
-        const VirtualMemoryArea& vma = p.second;
+        const VirtualMemoryArea& vma{p.second};
         LOG_GENERIC(Kernel, log_level, "{:08X} - {:08X} size: {:08X} {}{}{} {}", vma.base,
                     vma.base + vma.size, vma.size,
                     (u8)vma.permissions & (u8)VMAPermission::Read ? 'R' : '-',
@@ -280,20 +280,20 @@ ResultVal<VMManager::VMAIter> VMManager::CarveVMA(VAddr base, u32 size) {
     ASSERT_MSG((size & Memory::PAGE_MASK) == 0, "non-page aligned size: {:#10X}", size);
     ASSERT_MSG((base & Memory::PAGE_MASK) == 0, "non-page aligned base: {:#010X}", base);
 
-    VMAIter vma_handle = StripIterConstness(FindVMA(base));
+    VMAIter vma_handle{StripIterConstness(FindVMA(base))};
     if (vma_handle == vma_map.end()) {
         // Target address is outside the range managed by the kernel
         return ERR_INVALID_ADDRESS;
     }
 
-    const VirtualMemoryArea& vma = vma_handle->second;
+    const VirtualMemoryArea& vma{vma_handle->second};
     if (vma.type != VMAType::Free) {
         // Region is already allocated
         return ERR_INVALID_ADDRESS_STATE;
     }
 
-    const VAddr start_in_vma = base - vma.base;
-    const VAddr end_in_vma = start_in_vma + size;
+    const VAddr start_in_vma{base - vma.base};
+    const VAddr end_in_vma{start_in_vma + size};
 
     if (end_in_vma > vma.size) {
         // Requested allocation doesn't fit inside VMA
@@ -316,13 +316,13 @@ ResultVal<VMManager::VMAIter> VMManager::CarveVMARange(VAddr target, u32 size) {
     ASSERT_MSG((size & Memory::PAGE_MASK) == 0, "non-page aligned size: {:#10X}", size);
     ASSERT_MSG((target & Memory::PAGE_MASK) == 0, "non-page aligned base: {:#010X}", target);
 
-    const VAddr target_end = target + size;
+    const VAddr target_end{target + size};
     ASSERT(target_end >= target);
     ASSERT(target_end <= MAX_ADDRESS);
     ASSERT(size > 0);
 
-    VMAIter begin_vma = StripIterConstness(FindVMA(target));
-    const VMAIter i_end = vma_map.lower_bound(target_end);
+    VMAIter begin_vma{StripIterConstness(FindVMA(target))};
+    const VMAIter i_end{vma_map.lower_bound(target_end)};
     if (std::any_of(begin_vma, i_end,
                     [](const auto& entry) { return entry.second.type == VMAType::Free; })) {
         return ERR_INVALID_ADDRESS_STATE;
@@ -332,7 +332,7 @@ ResultVal<VMManager::VMAIter> VMManager::CarveVMARange(VAddr target, u32 size) {
         begin_vma = SplitVMA(begin_vma, target - begin_vma->second.base);
     }
 
-    VMAIter end_vma = StripIterConstness(FindVMA(target_end));
+    VMAIter end_vma{StripIterConstness(FindVMA(target_end))};
     if (end_vma != vma_map.end() && target_end != end_vma->second.base) {
         end_vma = SplitVMA(end_vma, target_end - end_vma->second.base);
     }
@@ -341,8 +341,8 @@ ResultVal<VMManager::VMAIter> VMManager::CarveVMARange(VAddr target, u32 size) {
 }
 
 VMManager::VMAIter VMManager::SplitVMA(VMAIter vma_handle, u32 offset_in_vma) {
-    VirtualMemoryArea& old_vma = vma_handle->second;
-    VirtualMemoryArea new_vma = old_vma; // Make a copy of the VMA
+    VirtualMemoryArea& old_vma{vma_handle->second};
+    VirtualMemoryArea new_vma{old_vma}; // Make a copy of the VMA
 
     // For now, don't allow no-op VMA splits (trying to split at a boundary) because it's probably
     // a bug. This restriction might be removed later.
@@ -373,14 +373,14 @@ VMManager::VMAIter VMManager::SplitVMA(VMAIter vma_handle, u32 offset_in_vma) {
 }
 
 VMManager::VMAIter VMManager::MergeAdjacent(VMAIter iter) {
-    const VMAIter next_vma = std::next(iter);
+    const VMAIter next_vma{std::next(iter)};
     if (next_vma != vma_map.end() && iter->second.CanBeMergedWith(next_vma->second)) {
         iter->second.size += next_vma->second.size;
         vma_map.erase(next_vma);
     }
 
     if (iter != vma_map.begin()) {
-        VMAIter prev_vma = std::prev(iter);
+        VMAIter prev_vma{std::prev(iter)};
         if (prev_vma->second.CanBeMergedWith(iter->second)) {
             prev_vma->second.size += iter->second.size;
             vma_map.erase(iter);
