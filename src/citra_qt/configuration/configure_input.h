@@ -33,7 +33,6 @@ public:
 
     /// Save all button configurations to settings file
     void applyConfiguration();
-    void retranslateUi();
 
 private:
     std::unique_ptr<Ui::ConfigureInput> ui;
@@ -73,6 +72,9 @@ private:
     void loadConfiguration();
     /// Restore all buttons to their default values.
     void restoreDefaults();
+    /// Clear all input configuration
+    void ClearAll();
+
     /// Update UI to reflect current configuration.
     void updateButtonLabels();
 

@@ -14,7 +14,7 @@
 #include "input_common/motion_emu.h"
 #include "network/network.h"
 
-constexpr const char WINDOW_TITLE_FORMAT[] = "Citra %s| %s-%s";
+constexpr const char WINDOW_TITLE_FORMAT[]{"Citra %s| %s-%s"};
 
 EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window) {}
 
@@ -85,6 +85,7 @@ GRenderWindow::GRenderWindow(QWidget* parent, EmuThread* emu_thread)
     setWindowTitle(QString::fromStdString(window_title));
 
     InputCommon::Init();
+    InputCommon::StartJoystickEventHandler();
 }
 
 GRenderWindow::~GRenderWindow() {

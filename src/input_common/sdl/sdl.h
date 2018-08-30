@@ -11,21 +11,31 @@
 union SDL_Event;
 namespace Common {
 class ParamPackage;
-}
-namespace InputCommon {
-namespace Polling {
+} // namespace Common
+namespace InputCommon::Polling {
 class DevicePoller;
 enum class DeviceType;
-} // namespace Polling
-} // namespace InputCommon
+} // namespace InputCommon::Polling
 
 namespace InputCommon::SDL {
 
 /// Initializes and registers SDL device factories
 void Init();
 
-/// Unresisters SDL device factories and shut them down.
+/// Unregisters SDL device factories and shut them down.
 void Shutdown();
+
+/// Call after SDL_INIT and before the event poll loop to open all connected joysticks
+void InitSDLJoysticks();
+
+/// Needs to be called before SDL_QuitSubSystem.
+void CloseSDLJoysticks();
+
+/// Handle SDL_Events for joysticks from SDL_PollEvent
+void HandleGameControllerEvent(const SDL_Event& event);
+
+/// A Loop that calls HandleGameControllerEvent until Shutdown is called
+void PollLoop();
 
 /// Creates a ParamPackage from an SDL_Event that can directly be used to create a ButtonDevice
 Common::ParamPackage SDLEventToButtonParamPackage(const SDL_Event& event);

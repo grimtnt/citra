@@ -17,6 +17,8 @@ namespace InputCommon {
 /// Initializes and registers all built-in input device factories.
 void Init();
 
+void StartJoystickEventHandler();
+
 /// Deregisters all built-in input device factories and shuts them down.
 void Shutdown();
 
