@@ -32,9 +32,9 @@ class EmuWindow {
 public:
     /// Data structure to store emuwindow configuration
     struct WindowConfig {
-        bool fullscreen;
-        int res_width;
-        int res_height;
+        bool fullscreen{};
+        int res_width{};
+        int res_height{};
         std::pair<unsigned, unsigned> min_client_area_size;
     };
 
