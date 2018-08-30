@@ -341,7 +341,7 @@ struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface
 
     void InvalidateAllWatcher() {
         for (const auto& watcher : watchers) {
-            if (auto locked = watcher.lock()) {
+            if (auto locked{watcher.lock()}) {
                 locked->valid = false;
             }
         }

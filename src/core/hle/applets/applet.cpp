@@ -110,7 +110,7 @@ bool Applet::IsRunning() const {
 }
 
 void Applet::SendParameter(const Service::APT::MessageParameter& parameter) {
-    if (auto locked = manager.lock()) {
+    if (auto locked{manager.lock()}) {
         locked->CancelAndSendParameter(parameter);
     } else {
         LOG_ERROR(Applet, "called after destructing applet manager");

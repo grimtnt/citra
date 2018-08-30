@@ -28,7 +28,7 @@ static const std::vector<u8> ptm_shared_extdata_id = {0, 0, 0, 0, 0x0B, 0, 0, 0x
 static std::weak_ptr<Module> current_ptm;
 
 std::shared_ptr<Module> GetCurrentModule() {
-    auto ptm = current_ptm.lock();
+    auto ptm{current_ptm.lock()};
     ASSERT_MSG(ptm, "No PTM module running!");
     return ptm;
 }

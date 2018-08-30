@@ -58,21 +58,20 @@ CheatEngine::CheatEngine() {
 }
 
 std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
-    std::string file_path = GetFilePath();
-
-    std::string contents;
+    std::string file_path{GetFilePath()};
+    std::string contents{};
     FileUtil::ReadFileToString(true, file_path.c_str(), contents);
-    std::vector<std::string> lines;
+    std::vector<std::string> lines{};
     Common::SplitString(contents, '\n', lines);
 
-    std::string code_type =
-        "Gateway"; // If more cheat types added, need to specify which type in parsing.
-    std::vector<CheatLine> cheat_lines;
-    std::vector<std::shared_ptr<CheatBase>> cheats;
-    std::string name;
-    bool enabled = false;
+    std::string code_type{
+        "Gateway"}; // If more cheat types added, need to specify which type in parsing.
+    std::vector<CheatLine> cheat_lines{};
+    std::vector<std::shared_ptr<CheatBase>> cheats{};
+    std::string name{};
+    bool enabled{};
     for (size_t i{}; i < lines.size(); i++) {
-        std::string current_line = std::string(lines[i].c_str());
+        std::string current_line{lines[i]};
         current_line = Common::Trim(current_line);
         if (!current_line.empty()) {
             if (current_line.compare(0, 2, "+[") == 0) { // Enabled code
@@ -134,14 +133,14 @@ void CheatEngine::Run() {
 void GatewayCheat::Execute() {
     if (!enabled)
         return;
-    u32 addr{0};
-    u32 reg{0};
-    u32 offset{0};
-    u32 val{0};
-    int if_flag{0};
-    u32 loop_count{0};
-    size_t loopbackline{0};
-    bool loop_flag{false};
+    u32 addr{};
+    u32 reg{};
+    u32 offset{};
+    u32 val{};
+    int if_flag{};
+    u32 loop_count{};
+    size_t loopbackline{};
+    bool loop_flag{};
     for (size_t i{}; i < cheat_lines.size(); i++) {
         CheatLine line{cheat_lines[i]};
         if (line.type == CheatType::Null)

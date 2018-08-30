@@ -116,7 +116,7 @@ static const std::vector<u8> cfg_system_savedata_id = {
 static std::weak_ptr<Module> current_cfg;
 
 std::shared_ptr<Module> GetCurrentModule() {
-    auto cfg = current_cfg.lock();
+    auto cfg{current_cfg.lock()};
     ASSERT_MSG(cfg, "No CFG module running!");
     return cfg;
 }

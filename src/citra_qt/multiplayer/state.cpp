@@ -16,7 +16,7 @@
 MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_list_model,
                                    QAction* leave_room)
     : QWidget(parent), game_list_model(game_list_model), leave_room(leave_room), close_timer(this) {
-    if (auto member = Network::GetRoomMember().lock()) {
+    if (auto member{Network::GetRoomMember().lock()}) {
         // register the network structs to use in slots and signals
         state_callback_handle = member->BindOnStateChanged(
             [this](const Network::RoomMember::State& state) { emit NetworkStateChanged(state); });
@@ -37,7 +37,7 @@ MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_lis
 
 MultiplayerState::~MultiplayerState() {
     if (state_callback_handle) {
-        if (auto member = Network::GetRoomMember().lock()) {
+        if (auto member{Network::GetRoomMember().lock()}) {
             member->Unbind(state_callback_handle);
         }
     }
@@ -103,9 +103,9 @@ void MultiplayerState::OnCreateRoom() {
 }
 
 bool MultiplayerState::OnCloseRoom() {
-    if (auto room = Network::GetRoom().lock()) {
+    if (auto room{Network::GetRoom().lock()}) {
         // if you are in a room, leave it
-        if (auto member = Network::GetRoomMember().lock()) {
+        if (auto member{Network::GetRoomMember().lock()}) {
             member->Leave();
             LOG_DEBUG(Frontend, "Left the room (as a client)");
         }

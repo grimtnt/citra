@@ -39,7 +39,7 @@ IpConnectWindow::IpConnectWindow(QWidget* parent)
 IpConnectWindow::~IpConnectWindow() = default;
 
 void IpConnectWindow::Connect() {
-    if (const auto member = Network::GetRoomMember().lock()) {
+    if (const auto member{Network::GetRoomMember().lock()}) {
         // Prevent the user from trying to join a room while they are already joining.
         if (member->GetState() == Network::RoomMember::State::Joining) {
             return;
@@ -62,12 +62,12 @@ void IpConnectWindow::Connect() {
     Settings::Apply();
 
     // attempt to connect in a different thread
-    QFuture<void> f = QtConcurrent::run([&] {
-        if (auto room_member = Network::GetRoomMember().lock()) {
+    QFuture<void> f{QtConcurrent::run([&] {
+        if (auto room_member{Network::GetRoomMember().lock()}) {
             auto port = UISettings::values.port.toUInt();
             room_member->Join(ui->ip->text().toStdString().c_str(), port, Network::NoPreferredMac);
         }
-    });
+    })};
     watcher->setFuture(f);
     // and disable widgets and display a connecting while we wait
     BeginConnecting();
@@ -86,7 +86,7 @@ void IpConnectWindow::EndConnecting() {
 void IpConnectWindow::OnConnection() {
     EndConnecting();
 
-    if (auto room_member = Network::GetRoomMember().lock()) {
+    if (auto room_member{Network::GetRoomMember().lock()}) {
         if (room_member->GetState() == Network::RoomMember::State::Joined) {
             close();
         }

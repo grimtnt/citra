@@ -38,7 +38,7 @@ public:
     }
 
     void Tilt(int x, int y) {
-        auto mouse_move = Math::MakeVec(x, y) - mouse_origin;
+        auto mouse_move{Math::MakeVec(x, y) - mouse_origin};
         if (is_tilting) {
             std::lock_guard<std::mutex> guard(tilt_mutex);
             if (mouse_move.x == 0 && mouse_move.y == 0) {
@@ -72,9 +72,9 @@ private:
     std::mutex tilt_mutex;
     Math::Vec2<float> tilt_direction;
     float tilt_angle{};
-    float tilt_clamp = 90;
+    float tilt_clamp{90};
 
-    bool is_tilting = false;
+    bool is_tilting{};
 
     Common::Event shutdown_event;
 
@@ -86,9 +86,9 @@ private:
     std::thread motion_emu_thread;
 
     void MotionEmuThread() {
-        auto update_time = std::chrono::steady_clock::now();
-        Math::Quaternion<float> q = MakeQuaternion(Math::Vec3<float>(), 0);
-        Math::Quaternion<float> old_q;
+        auto update_time{std::chrono::steady_clock::now()};
+        Math::Quaternion<float> q{MakeQuaternion(Math::Vec3<float>(), 0)};
+        Math::Quaternion<float> old_q{};
 
         while (!shutdown_event.WaitUntil(update_time)) {
             update_time += update_duration;
@@ -102,13 +102,13 @@ private:
                                    tilt_angle);
             }
 
-            auto inv_q = q.Inverse();
+            auto inv_q{q.Inverse()};
 
             // Set the gravity vector in world space
-            auto gravity = Math::MakeVec(0.0f, -1.0f, 0.0f);
+            auto gravity{Math::MakeVec(0.0f, -1.0f, 0.0f)};
 
             // Find the angular rate vector in world space
-            auto angular_rate = ((q - old_q) * inv_q).xyz * 2;
+            auto angular_rate{((q - old_q) * inv_q).xyz * 2};
             angular_rate *= 1000 / update_millisecond / MathUtil::PI * 180;
 
             // Transform the two vectors from world space to 3DS space
@@ -141,11 +141,11 @@ public:
 };
 
 std::unique_ptr<Input::MotionDevice> MotionEmu::Create(const Common::ParamPackage& params) {
-    int update_period = params.Get("update_period", 100);
-    float sensitivity = params.Get("sensitivity", 0.01f);
-    float tilt_clamp = params.Get("tilt_clamp", 90.0f);
-    auto device_wrapper =
-        std::make_unique<MotionEmuDeviceWrapper>(update_period, sensitivity, tilt_clamp);
+    int update_period{params.Get("update_period", 100)};
+    float sensitivity{params.Get("sensitivity", 0.01f)};
+    float tilt_clamp{params.Get("tilt_clamp", 90.0f)};
+    auto device_wrapper{
+        std::make_unique<MotionEmuDeviceWrapper>(update_period, sensitivity, tilt_clamp)};
     // Previously created device is disconnected here. Having two motion devices for 3DS is not
     // expected.
     current_device = device_wrapper->device;
@@ -153,19 +153,19 @@ std::unique_ptr<Input::MotionDevice> MotionEmu::Create(const Common::ParamPackag
 }
 
 void MotionEmu::BeginTilt(int x, int y) {
-    if (auto ptr = current_device.lock()) {
+    if (auto ptr{current_device.lock()}) {
         ptr->BeginTilt(x, y);
     }
 }
 
 void MotionEmu::Tilt(int x, int y) {
-    if (auto ptr = current_device.lock()) {
+    if (auto ptr{current_device.lock()}) {
         ptr->Tilt(x, y);
     }
 }
 
 void MotionEmu::EndTilt() {
-    if (auto ptr = current_device.lock()) {
+    if (auto ptr{current_device.lock()}) {
         ptr->EndTilt();
     }
 }

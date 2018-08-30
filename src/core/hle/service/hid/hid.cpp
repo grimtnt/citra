@@ -444,36 +444,36 @@ void Module::SetCircleState(s16 x, s16 y) {
 }
 
 void ReloadInputDevices() {
-    if (auto hid = current_module.lock())
+    if (auto hid{current_module.lock()})
         hid->ReloadInputDevices();
 }
 
 void SetPadState(u32 raw) {
-    if (auto hid = current_module.lock()) {
+    if (auto hid{current_module.lock()}) {
         hid->SetPadState(raw);
     }
 }
 
 void SetTouchState(s16 x, s16 y, bool valid) {
-    if (auto hid = current_module.lock()) {
+    if (auto hid{current_module.lock()}) {
         hid->SetTouchState(x, y, valid);
     }
 }
 
 void SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw) {
-    if (auto hid = current_module.lock()) {
+    if (auto hid{current_module.lock()}) {
         hid->SetMotionState(x, y, z, roll, pitch, yaw);
     }
 }
 
 void SetCircleState(s16 x, s16 y) {
-    if (auto hid = current_module.lock()) {
+    if (auto hid{current_module.lock()}) {
         hid->SetCircleState(x, y);
     }
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto hid = std::make_shared<Module>();
+    auto hid{std::make_shared<Module>()};
     std::make_shared<User>(hid)->InstallAsService(service_manager);
     std::make_shared<Spvr>(hid)->InstallAsService(service_manager);
     current_module = hid;

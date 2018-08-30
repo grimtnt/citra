@@ -1050,7 +1050,7 @@ void Module::LoadCameraImplementation(CameraConfig& camera, int camera_id) {
 }
 
 void ReloadCameraDevices() {
-    if (auto cam = current_cam.lock())
+    if (auto cam{current_cam.lock()})
         cam->ReloadCameraDevices();
 }
 

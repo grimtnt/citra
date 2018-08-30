@@ -245,7 +245,7 @@ void DspHle::Impl::AudioPipeWriteStructAddresses() {
         WriteU16(DspPipe::Audio, addr);
     }
     // Signal that we have data on this pipe.
-    if (auto service = dsp_dsp.lock()) {
+    if (auto service{dsp_dsp.lock()}) {
         service->SignalInterrupt(InterruptType::Pipe, DspPipe::Audio);
     }
 }
@@ -323,7 +323,7 @@ bool DspHle::Impl::Tick() {
 void DspHle::Impl::AudioTickCallback(s64 cycles_late) {
     if (Tick()) {
         // TODO(merry): Signal all the other interrupts as appropriate.
-        if (auto service = dsp_dsp.lock()) {
+        if (auto service{dsp_dsp.lock()}) {
             service->SignalInterrupt(InterruptType::Pipe, DspPipe::Audio);
             // HACK(merry): Added to prevent regressions. Will remove soon.
             service->SignalInterrupt(InterruptType::Pipe, DspPipe::Binary);

@@ -52,14 +52,14 @@ void HostRoomWindow::Host() {
         NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
         return;
     }
-    auto parent = static_cast<MultiplayerState*>(parentWidget());
-    bool stop_in_checked = ui->stop_in_checkbox->isChecked();
+    auto parent{static_cast<MultiplayerState*>(parentWidget())};
+    bool stop_in_checked{ui->stop_in_checkbox->isChecked()};
     if (stop_in_checked) {
         parent->SetCloseMs(std::chrono::duration_cast<std::chrono::milliseconds>(
                                std::chrono::minutes(ui->minutes_spinbox->value()))
                                .count());
     }
-    if (auto member = Network::GetRoomMember().lock()) {
+    if (auto member{Network::GetRoomMember().lock()}) {
         if (member->GetState() == Network::RoomMember::State::Joining) {
             return;
         } else if (member->GetState() == Network::RoomMember::State::Joined) {
@@ -70,9 +70,10 @@ void HostRoomWindow::Host() {
         }
         ui->host->setDisabled(true);
 
-        auto port = ui->port->isModified() ? ui->port->text().toInt() : Network::DefaultRoomPort;
-        if (auto room = Network::GetRoom().lock()) {
-            bool created = room->Create(port);
+        auto port{static_cast<u16>(ui->port->isModified() ? ui->port->text().toInt()
+                                                          : Network::DefaultRoomPort)};
+        if (auto room{Network::GetRoom().lock()}) {
+            bool created{room->Create(port)};
             if (!created) {
                 NetworkMessage::ShowError(NetworkMessage::COULD_NOT_CREATE_ROOM);
                 LOG_ERROR(Network, "Could not create room!");
