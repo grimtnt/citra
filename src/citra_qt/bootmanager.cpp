@@ -132,9 +132,9 @@ void GRenderWindow::PollEvents() {}
 void GRenderWindow::OnFramebufferSizeChanged() {
     // Screen changes potentially incur a change in screen DPI, hence we should update the
     // framebuffer size
-    qreal pixel_ratio = windowPixelRatio();
-    unsigned width = child->QPaintDevice::width() * pixel_ratio;
-    unsigned height = child->QPaintDevice::height() * pixel_ratio;
+    qreal pixel_ratio{windowPixelRatio()};
+    unsigned width{static_cast<unsigned>(child->QPaintDevice::width() * pixel_ratio)};
+    unsigned height{static_cast<unsigned>(child->QPaintDevice::height() * pixel_ratio)};
     UpdateCurrentFramebufferLayout(width, height);
 }
 
@@ -181,9 +181,9 @@ void GRenderWindow::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void GRenderWindow::mousePressEvent(QMouseEvent* event) {
-    auto pos = event->pos();
+    auto pos{event->pos()};
     if (event->button() == Qt::LeftButton) {
-        qreal pixel_ratio = windowPixelRatio();
+        qreal pixel_ratio{windowPixelRatio()};
         this->TouchPressed(static_cast<unsigned>(pos.x() * pixel_ratio),
                            static_cast<unsigned>(pos.y() * pixel_ratio));
     } else if (event->button() == Qt::RightButton) {
@@ -192,8 +192,8 @@ void GRenderWindow::mousePressEvent(QMouseEvent* event) {
 }
 
 void GRenderWindow::mouseMoveEvent(QMouseEvent* event) {
-    auto pos = event->pos();
-    qreal pixel_ratio = windowPixelRatio();
+    auto pos{event->pos()};
+    qreal pixel_ratio{windowPixelRatio()};
     this->TouchMoved(std::max(static_cast<unsigned>(pos.x() * pixel_ratio), 0u),
                      std::max(static_cast<unsigned>(pos.y() * pixel_ratio), 0u));
     InputCommon::GetMotionEmu()->Tilt(pos.x(), pos.y());
@@ -235,7 +235,7 @@ void GRenderWindow::InitRenderTarget() {
     fmt.setOption(QGL::NoDeprecatedFunctions);
 
     child = new GGLWidgetInternal(fmt, this);
-    QBoxLayout* layout = new QHBoxLayout(this);
+    QBoxLayout* layout{new QHBoxLayout(this)};
 
     resize(Core::kScreenTopWidth, Core::kScreenTopHeight + Core::kScreenBottomHeight);
     layout->addWidget(child);

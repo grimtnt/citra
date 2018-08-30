@@ -64,7 +64,7 @@ void IpConnectWindow::Connect() {
     // attempt to connect in a different thread
     QFuture<void> f{QtConcurrent::run([&] {
         if (auto room_member{Network::GetRoomMember().lock()}) {
-            auto port = UISettings::values.port.toUInt();
+            auto port{UISettings::values.port.toUInt()};
             room_member->Join(ui->ip->text().toStdString().c_str(), port, Network::NoPreferredMac);
         }
     })};

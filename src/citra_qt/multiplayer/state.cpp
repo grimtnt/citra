@@ -5,7 +5,6 @@
 #include <QAction>
 #include <QIcon>
 #include <QMessageBox>
-#include <QStandardItemModel>
 #include "citra_qt/game_list.h"
 #include "citra_qt/multiplayer/host_room.h"
 #include "citra_qt/multiplayer/ip_connect.h"
@@ -13,9 +12,8 @@
 #include "citra_qt/multiplayer/state.h"
 #include "common/logging/log.h"
 
-MultiplayerState::MultiplayerState(QWidget* parent, QStandardItemModel* game_list_model,
-                                   QAction* leave_room)
-    : QWidget(parent), game_list_model(game_list_model), leave_room(leave_room), close_timer(this) {
+MultiplayerState::MultiplayerState(QWidget* parent, QAction* leave_room)
+    : QWidget{parent}, leave_room{leave_room}, close_timer{this} {
     if (auto member{Network::GetRoomMember().lock()}) {
         // register the network structs to use in slots and signals
         state_callback_handle = member->BindOnStateChanged(
@@ -60,7 +58,7 @@ void MultiplayerState::UpdateThemedIcons() {
 
 void MultiplayerState::OnNetworkStateChanged(const Network::RoomMember::State& state) {
     LOG_DEBUG(Frontend, "Network State: {}", Network::GetStateStr(state));
-    bool is_connected = false;
+    bool is_connected{};
     switch (state) {
     case Network::RoomMember::State::LostConnection:
         NetworkMessage::ShowError(NetworkMessage::LOST_CONNECTION);
@@ -116,8 +114,8 @@ bool MultiplayerState::OnCloseRoom() {
         }
         room->Destroy();
         LOG_DEBUG(Frontend, "Closed the room (as a server)");
+        close_timer.stop();
     }
-    close_timer.stop();
     return true;
 }
 

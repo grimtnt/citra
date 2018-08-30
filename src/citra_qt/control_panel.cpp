@@ -80,8 +80,8 @@ ControlPanel::~ControlPanel() {}
 
 void ControlPanel::On3DEnabledChanged() {
     Settings::values.sp_enable_3d = ui->shared_page_enable_3d->isChecked();
-    Core::System::GetInstance().GetSharedPageHandler()->Set3DLed(Settings::values.sp_enable_3d ? 1
-                                                                                               : 0);
+    Core::System::GetInstance().GetSharedPageHandler()->Set3DLed(
+        static_cast<u8>(Settings::values.sp_enable_3d));
 }
 
 void ControlPanel::OnAdapterConnectedChanged() {

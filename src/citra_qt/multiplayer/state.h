@@ -9,7 +9,6 @@
 #include <QWidget>
 #include "network/network.h"
 
-class QStandardItemModel;
 class HostRoomWindow;
 class IpConnectWindow;
 class ClickableLabel;
@@ -18,7 +17,7 @@ class MultiplayerState : public QWidget {
     Q_OBJECT;
 
 public:
-    explicit MultiplayerState(QWidget* parent, QStandardItemModel* game_list, QAction* leave_room);
+    explicit MultiplayerState(QWidget* parent, QAction* leave_room);
     ~MultiplayerState();
 
     /**
@@ -52,7 +51,6 @@ private:
     HostRoomWindow* host_room{};
     IpConnectWindow* ip_connect{};
     QLabel* status_icon{};
-    QStandardItemModel* game_list_model{};
     QTimer close_timer;
     QAction* leave_room;
     Network::RoomMember::State current_state = Network::RoomMember::State::Uninitialized;

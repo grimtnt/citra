@@ -4,32 +4,20 @@
 
 #pragma once
 
-#include <utility>
+#include <QString>
 
 namespace NetworkMessage {
 
-class ConnectionError {
-
-public:
-    explicit ConnectionError(std::string str) : err(std::move(str)) {}
-    const std::string& GetString() const {
-        return err;
-    }
-
-private:
-    std::string err;
-};
-
-extern const ConnectionError IP_ADDRESS_NOT_VALID;
-extern const ConnectionError PORT_NOT_VALID;
-extern const ConnectionError UNABLE_TO_CONNECT;
-extern const ConnectionError COULD_NOT_CREATE_ROOM;
-extern const ConnectionError LOST_CONNECTION;
-extern const ConnectionError MAC_COLLISION;
+extern const QString IP_ADDRESS_NOT_VALID;
+extern const QString PORT_NOT_VALID;
+extern const QString UNABLE_TO_CONNECT;
+extern const QString COULD_NOT_CREATE_ROOM;
+extern const QString LOST_CONNECTION;
+extern const QString MAC_COLLISION;
 
 /**
  *  Shows a standard QMessageBox with a error message
  */
-void ShowError(const ConnectionError& e);
+void ShowError(const QString& e);
 
 } // namespace NetworkMessage

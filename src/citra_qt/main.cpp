@@ -62,19 +62,19 @@ __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
 #endif
 
 #ifdef ENABLE_DISCORD_RPC
-static void HandleDiscordDisconnected(int errorCode, const char* message) {
-    LOG_ERROR(Frontend, "Disconnected, error: {} ({})", message, errorCode);
+static void HandleDiscordDisconnected(int error_code, const char* message) {
+    LOG_ERROR(Frontend, "Discord RPC disconnected ({} {})", error_code, message);
 }
 
-static void HandleDiscordError(int errorCode, const char* message) {
-    LOG_ERROR(Frontend, "Error: {} ({})", message, errorCode);
+static void HandleDiscordError(int error_code, const char* message) {
+    LOG_ERROR(Frontend, "Discord RPC error ({} {})", error_code, message);
 }
 #endif
 
 const int GMainWindow::max_recent_files_item;
 
 GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
-    Log::Filter log_filter;
+    Log::Filter log_filter{};
     log_filter.ParseFilterString(Settings::values.log_filter);
     Log::SetGlobalFilter(log_filter);
     FileUtil::CreateFullPath(FileUtil::GetUserPath(D_LOGS_IDX));
@@ -110,7 +110,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
 
     game_list->PopulateAsync(UISettings::values.game_dirs);
 
-    QStringList args = QApplication::arguments();
+    QStringList args{QApplication::arguments()};
     if (args.length() >= 2) {
         BootGame(args[1]);
     }
@@ -134,7 +134,7 @@ void GMainWindow::InitializeWidgets() {
     ui.horizontalLayout->addWidget(game_list_placeholder);
     game_list_placeholder->setVisible(false);
 
-    multiplayer_state = new MultiplayerState(this, game_list->GetModel(), ui.action_Leave_Room);
+    multiplayer_state = new MultiplayerState(this, ui.action_Leave_Room);
     multiplayer_state->setVisible(false);
 
     // Create status bar
@@ -928,10 +928,10 @@ void GMainWindow::OnCIAInstallFinished() {
 }
 
 void GMainWindow::OnMenuRecentFile() {
-    QAction* action = qobject_cast<QAction*>(sender());
+    QAction* action{qobject_cast<QAction*>(sender())};
     assert(action);
 
-    const QString filename = action->data().toString();
+    const QString filename{action->data().toString()};
     if (QFileInfo::exists(filename)) {
         BootGame(filename);
     } else {

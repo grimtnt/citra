@@ -9,7 +9,7 @@
 
 class Validation {
 public:
-    Validation() : ip(ip_regex), port(0, 65535) {}
+    Validation() : ip{ip_regex}, port{0, 65535} {}
 
     ~Validation() = default;
 

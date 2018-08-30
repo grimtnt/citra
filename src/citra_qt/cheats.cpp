@@ -109,7 +109,7 @@ void CheatDialog::LoadCheats() {
 }
 
 void CheatDialog::OnSave() {
-    bool error{false};
+    bool error{};
     QString error_message{"The following cheats are empty:\n\n%1"};
     QStringList empty_cheat_names{};
     for (auto& cheat : cheats) {
@@ -169,14 +169,14 @@ void CheatDialog::OnLinesChanged() {
 void CheatDialog::OnCheckChanged(int state) {
     QCheckBox* checkbox{qobject_cast<QCheckBox*>(sender())};
     int row{static_cast<int>(checkbox->property("row").toInt())};
-    cheats[row]->SetEnabled(state);
+    cheats[row]->SetEnabled(static_cast<bool>(state));
 }
 
 void CheatDialog::OnDelete() {
     QItemSelectionModel* selectionModel{ui->tableCheats->selectionModel()};
     QModelIndexList selected{selectionModel->selectedRows()};
     std::vector<int> rows{};
-    for (int i = selected.count() - 1; i >= 0; i--) {
+    for (int i{selected.count() - 1}; i >= 0; i--) {
         QModelIndex index{selected.at(i)};
         int row{index.row()};
         cheats.erase(cheats.begin() + row);
@@ -190,7 +190,7 @@ void CheatDialog::OnDelete() {
 }
 
 void CheatDialog::OnAddCheat() {
-    NewCheatDialog dialog;
+    NewCheatDialog dialog{this};
     dialog.exec();
 
     auto result{dialog.GetReturnValue()};
