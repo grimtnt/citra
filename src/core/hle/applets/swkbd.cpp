@@ -278,7 +278,7 @@ void SoftwareKeyboard::Update() {
         }
         std::string option{};
         error = ValidationError::ButtonOutOfRange;
-        auto ValidateButtonString = [&]() -> bool {
+        auto ValidateButtonString{[&]() -> bool {
             bool valid{};
             try {
                 u32 num{static_cast<u32>(std::stoul(option))};
@@ -294,7 +294,7 @@ void SoftwareKeyboard::Update() {
                 std::cout << "Input number is not valid." << std::endl;
             }
             return valid;
-        };
+        }};
         do {
             std::cout << "\nPlease type the number of the button you will press: \n"
                       << option_text << std::endl;

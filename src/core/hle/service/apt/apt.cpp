@@ -881,7 +881,7 @@ Module::Module() {
 Module::~Module() {}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto apt = std::make_shared<Module>();
+    auto apt{std::make_shared<Module>()};
     std::make_shared<APT_U>(apt)->InstallAsService(service_manager);
     std::make_shared<APT_S>(apt)->InstallAsService(service_manager);
     std::make_shared<APT_A>(apt)->InstallAsService(service_manager);

@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include "common/thread.h"
 #include "common/threadsafe_queue.h"
 #include "core/rpc/server.h"
 
@@ -34,7 +33,7 @@ private:
 
     Server server;
     Common::SPSCQueue<std::unique_ptr<Packet>> request_queue;
-    bool running = false;
+    bool running{};
     std::thread request_handler_thread;
     std::mutex request_queue_mutex;
     std::condition_variable request_queue_cv;

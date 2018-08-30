@@ -37,7 +37,7 @@ class GMainWindow : public QMainWindow {
     Q_OBJECT
 
     /// Max number of recently loaded items to keep track of
-    static const int max_recent_files_item = 10;
+    static const int max_recent_files_item{10};
 
 public:
     void filterBarSetChecked(bool state);
@@ -175,15 +175,15 @@ private:
     QLabel* emu_speed_label{};
     QLabel* game_fps_label{};
     QLabel* emu_frametime_label{};
-    QTimer status_bar_update_timer;
 
+    QTimer status_bar_update_timer;
     QTimer movie_play_timer;
 
     MultiplayerState* multiplayer_state{};
     std::unique_ptr<Config> config;
 
     // Whether emulation is currently running in Citra.
-    bool emulation_running = false;
+    bool emulation_running{};
     std::unique_ptr<EmuThread> emu_thread;
     // The title of the game currently running
     QString game_title;
@@ -191,11 +191,11 @@ private:
     QString game_path;
 
     // Movie
-    bool movie_record_on_start = false;
+    bool movie_record_on_start{};
     QString movie_record_path;
 
     // Variables used to sleep the application when a Qt applet is open.
-    bool applet_open = false;
+    bool applet_open{};
     std::mutex applet_mutex;
     std::condition_variable applet_cv;
 

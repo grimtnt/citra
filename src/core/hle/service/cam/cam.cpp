@@ -1055,7 +1055,7 @@ void ReloadCameraDevices() {
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto cam = std::make_shared<Module>();
+    auto cam{std::make_shared<Module>()};
     current_cam = cam;
 
     std::make_shared<CAM_U>(cam)->InstallAsService(service_manager);

@@ -924,7 +924,7 @@ Module::Module() {
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto boss = std::make_shared<Module>();
+    auto boss{std::make_shared<Module>()};
     std::make_shared<BOSS_P>(boss)->InstallAsService(service_manager);
     std::make_shared<BOSS_U>(boss)->InstallAsService(service_manager);
 }

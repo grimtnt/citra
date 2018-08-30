@@ -74,7 +74,7 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
 #ifndef _WIN32
     LOG_WARNING(Service_MCU, "OS not supported");
 #endif
-    auto mcu = std::make_shared<Module>();
+    auto mcu{std::make_shared<Module>()};
     std::make_shared<CAM>(mcu)->InstallAsService(service_manager);
     std::make_shared<CDC>(mcu)->InstallAsService(service_manager);
     std::make_shared<GPU>(mcu)->InstallAsService(service_manager);

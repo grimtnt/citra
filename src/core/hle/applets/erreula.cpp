@@ -5,6 +5,7 @@
 #include "common/string_util.h"
 #include "core/core.h"
 #include "core/hle/applets/erreula.h"
+#include "core/hle/service/cfg/cfg.h"
 
 namespace HLE::Applets {
 
@@ -54,9 +55,7 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 }
 
 void ErrEula::Update() {
-    auto cb{Core::System::GetInstance().GetQtCallbacks().erreula};
-
-    if (cb) {
+    if (auto cb{Core::System::GetInstance().GetQtCallbacks().erreula}) {
         cb(config);
         Finalize();
         return;
@@ -78,6 +77,7 @@ void ErrEula::Update() {
     case ErrEulaErrorType::EulaDrawOnly:
     case ErrEulaErrorType::EulaFirstBoot: {
         LOG_INFO(Applet_ErrEula, "EULA accepted");
+        Service::CFG::GetCurrentModule()->AcceptEULA();
         break;
     }
     }

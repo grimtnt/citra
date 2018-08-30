@@ -42,12 +42,6 @@ class Module final {
 public:
     Module();
 
-    /**
-     * Sets the play coins in the gamecoin.dat file.
-     * @param play_coins the play coins to set.
-     */
-    void SetPlayCoins(u16 play_coins);
-
     class Interface : public ServiceFramework<Interface> {
     public:
         Interface(std::shared_ptr<Module> ptm, const char* name, u32 max_session);
@@ -153,11 +147,15 @@ public:
     };
 
 private:
-    bool shell_open = true;
-    bool pedometer_is_counting = false;
+    bool shell_open{true};
+    bool pedometer_is_counting{};
 };
 
-std::shared_ptr<Module> GetCurrentModule();
+/**
+ * Sets the play coins in the gamecoin.dat file.
+ * @param play_coins the play coins to set.
+ */
+void SetPlayCoins(u16 play_coins);
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 

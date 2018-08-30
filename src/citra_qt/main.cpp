@@ -14,6 +14,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtGui>
 #include <QtWidgets>
+#include "core/hle/service/cfg/cfg.h"
 #ifdef ENABLE_DISCORD_RPC
 #include <discord_rpc.h>
 #endif
@@ -256,7 +257,7 @@ void GMainWindow::InitializeHotkeys() {
         Settings::values.use_frame_limit = !Settings::values.use_frame_limit;
         UpdateStatusBar();
     });
-    constexpr u16 SPEED_LIMIT_STEP = 5;
+    constexpr u16 SPEED_LIMIT_STEP{5};
     connect(GetHotkey("Main Window", "Increase Speed Limit", this), &QShortcut::activated, this,
             [&] {
                 if (Settings::values.frame_limit < 9999 - SPEED_LIMIT_STEP) {
@@ -275,12 +276,12 @@ void GMainWindow::InitializeHotkeys() {
 
 void GMainWindow::SetDefaultUIGeometry() {
     // geometry: 55% of the window contents are in the upper screen half, 45% in the lower half
-    const QRect screenRect = QApplication::desktop()->screenGeometry(this);
+    const QRect screenRect{QApplication::desktop()->screenGeometry(this)};
 
-    const int w = screenRect.width() * 2 / 3;
-    const int h = screenRect.height() / 2;
-    const int x = (screenRect.x() + screenRect.width()) / 2 - w / 2;
-    const int y = (screenRect.y() + screenRect.height()) / 2 - h * 55 / 100;
+    const int w{screenRect.width() * 2 / 3};
+    const int h{screenRect.height() / 2};
+    const int x{(screenRect.x() + screenRect.width()) / 2 - w / 2};
+    const int y{(screenRect.y() + screenRect.height()) / 2 - h * 55 / 100};
 
     setGeometry(x, y, w, h);
 }
@@ -408,18 +409,18 @@ void GMainWindow::ConnectMenuEvents() {
 }
 
 void GMainWindow::OnDisplayTitleBars(bool show) {
-    QList<QDockWidget*> widgets = findChildren<QDockWidget*>();
+    QList<QDockWidget*> widgets{findChildren<QDockWidget*>()};
 
     if (show) {
         for (QDockWidget* widget : widgets) {
-            QWidget* old = widget->titleBarWidget();
+            QWidget* old{widget->titleBarWidget()};
             widget->setTitleBarWidget(nullptr);
             if (old != nullptr)
                 delete old;
         }
     } else {
         for (QDockWidget* widget : widgets) {
-            QWidget* old = widget->titleBarWidget();
+            QWidget* old{widget->titleBarWidget()};
             widget->setTitleBarWidget(new QWidget());
             if (old != nullptr)
                 delete old;
@@ -616,7 +617,7 @@ void GMainWindow::BootGame(const QString& filename) {
 }
 
 void GMainWindow::ShutdownGame() {
-    const bool was_recording = Core::Movie::GetInstance().IsRecordingInput();
+    const bool was_recording{Core::Movie::GetInstance().IsRecordingInput()};
     Core::Movie::GetInstance().Shutdown();
     if (was_recording) {
         QMessageBox::information(this, "Movie Saved", "The movie is successfully saved.");
@@ -701,7 +702,7 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     }
     case HLE::Applets::ErrEulaErrorType::LocalizedErrorText:
     case HLE::Applets::ErrEulaErrorType::ErrorText: {
-        std::string error = Common::UTF16ToUTF8(config.error_text);
+        std::string error{Common::UTF16ToUTF8(config.error_text)};
         QMessageBox::critical(
             this, "ErrEula",
             QString("Error Code: %1\n\n%2")
@@ -713,7 +714,9 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::Eula:
     case HLE::Applets::ErrEulaErrorType::EulaDrawOnly:
     case HLE::Applets::ErrEulaErrorType::EulaFirstBoot: {
-        QMessageBox::information(this, "ErrEula", "EULA accepted");
+        QMessageBox::StandardButton button{QMessageBox::question(this, "ErrEula", "Accept EULA?")};
+        if (button == QMessageBox::StandardButton::Yes)
+            Service::CFG::GetCurrentModule()->AcceptEULA();
         break;
     }
     }
@@ -1126,7 +1129,7 @@ void GMainWindow::OnSetPlayCoins() {
         QInputDialog::getInt(this, "Set Play Coins", "Play Coins:", 0, 0, 300, 1, &ok,
                              Qt::WindowSystemMenuHint | Qt::WindowTitleHint))};
     if (ok)
-        Service::PTM::GetCurrentModule()->SetPlayCoins(play_coins);
+        Service::PTM::SetPlayCoins(play_coins);
 }
 
 void GMainWindow::OnToggleFilterBar() {

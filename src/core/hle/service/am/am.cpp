@@ -1321,7 +1321,7 @@ Module::Module() {
 Module::~Module() = default;
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto am = std::make_shared<Module>();
+    auto am{std::make_shared<Module>()};
     std::make_shared<AM_APP>(am)->InstallAsService(service_manager);
     std::make_shared<AM_NET>(am)->InstallAsService(service_manager);
     std::make_shared<AM_SYS>(am)->InstallAsService(service_manager);

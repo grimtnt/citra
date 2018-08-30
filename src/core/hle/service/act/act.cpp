@@ -112,7 +112,7 @@ Module::Interface::Interface(std::shared_ptr<Module> act, const char* name, u32 
     : ServiceFramework(name, max_session), act(std::move(act)) {}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto act = std::make_shared<Module>();
+    auto act{std::make_shared<Module>()};
     std::make_shared<ACT_A>(act)->InstallAsService(service_manager);
     std::make_shared<ACT_U>(act)->InstallAsService(service_manager);
 }

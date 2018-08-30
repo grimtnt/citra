@@ -9,7 +9,6 @@
 #include <mutex>
 #include <QGLWidget>
 #include <QThread>
-#include "common/thread.h"
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
 
@@ -62,12 +61,12 @@ public:
     };
 
 private:
-    bool running = false;
+    bool running{};
     std::atomic<bool> stop_run{false};
     std::mutex running_mutex;
     std::condition_variable running_cv;
 
-    GRenderWindow* render_window;
+    GRenderWindow* render_window{};
 
 signals:
     void ErrorThrown(Core::System::ResultStatus, const std::string&);
@@ -123,11 +122,11 @@ private:
     void OnMinimalClientAreaChangeRequest(
         const std::pair<unsigned, unsigned>& minimal_size) override;
 
-    GGLWidgetInternal* child;
+    GGLWidgetInternal* child{};
 
     QByteArray geometry;
 
-    EmuThread* emu_thread;
+    EmuThread* emu_thread{};
 
 protected:
     void showEvent(QShowEvent* event) override;

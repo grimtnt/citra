@@ -19,7 +19,7 @@ class RequestHelperBase {
 protected:
     Kernel::HLERequestContext* context;
     u32* cmdbuf;
-    ptrdiff_t index = 1;
+    ptrdiff_t index{1};
     Header header;
 
 public:
@@ -364,7 +364,7 @@ void RequestParser::Pop(First& first_value, Other&... other_values) {
 
 template <unsigned int N>
 std::array<u32, N> RequestParser::PopHLEHandles() {
-    u32 handle_descriptor = Pop<u32>();
+    u32 handle_descriptor{Pop<u32>()};
     ASSERT_MSG(IsHandleDescriptor(handle_descriptor),
                "Tried to pop handle(s) but the descriptor is not a handle descriptor");
     ASSERT_MSG(N == HandleNumberFromDesc(handle_descriptor),
@@ -378,7 +378,7 @@ std::array<u32, N> RequestParser::PopHLEHandles() {
 }
 
 inline Kernel::SharedPtr<Kernel::Object> RequestParser::PopGenericObject() {
-    auto [handle] = PopHLEHandles<1>();
+    auto [handle]{PopHLEHandles<1>()};
     return context->GetIncomingHandle(handle);
 }
 
@@ -389,7 +389,7 @@ Kernel::SharedPtr<T> RequestParser::PopObject() {
 
 template <unsigned int N>
 inline std::array<Kernel::SharedPtr<Kernel::Object>, N> RequestParser::PopGenericObjects() {
-    std::array<u32, N> handles = PopHLEHandles<N>();
+    std::array<u32, N> handles{PopHLEHandles<N>()};
     std::array<Kernel::SharedPtr<Kernel::Object>, N> pointers;
     for (int i{}; i < N; ++i) {
         pointers[i] = context->GetIncomingHandle(handles[i]);
@@ -418,7 +418,7 @@ inline u32 RequestParser::PopPID() {
 }
 
 inline const std::vector<u8>& RequestParser::PopStaticBuffer() {
-    const u32 sbuffer_descriptor = Pop<u32>();
+    const u32 sbuffer_descriptor{Pop<u32>()};
     // Pop the address from the incoming request buffer
     Pop<VAddr>();
 
@@ -427,7 +427,7 @@ inline const std::vector<u8>& RequestParser::PopStaticBuffer() {
 }
 
 inline Kernel::MappedBuffer& RequestParser::PopMappedBuffer() {
-    u32 mapped_buffer_descriptor = Pop<u32>();
+    u32 mapped_buffer_descriptor{Pop<u32>()};
     ASSERT_MSG(GetDescriptorType(mapped_buffer_descriptor) == MappedBuffer,
                "Tried to pop mapped buffer but the descriptor is not a mapped buffer descriptor");
     return context->GetMappedBuffer(Pop<u32>());

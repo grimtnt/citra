@@ -13,7 +13,6 @@
 #include <vector>
 #include "common/assert.h"
 #include "common/logging/log.h"
-#include "common/thread.h"
 #include "common/threadsafe_queue.h"
 
 namespace CoreTiming {

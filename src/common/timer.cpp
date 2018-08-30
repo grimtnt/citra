@@ -79,21 +79,20 @@ std::string Timer::GetTimeElapsedFormatted() const {
 
     // The number of milliseconds since the start.
     // Use a different value if the timer is stopped.
-    std::chrono::milliseconds Milliseconds;
+    std::chrono::milliseconds Milliseconds{};
     if (m_Running)
         Milliseconds = GetTimeMs() - m_StartTime;
     else
         Milliseconds = m_LastTime - m_StartTime;
     // Seconds
-    std::chrono::seconds Seconds = std::chrono::duration_cast<std::chrono::seconds>(Milliseconds);
+    std::chrono::seconds Seconds{std::chrono::duration_cast<std::chrono::seconds>(Milliseconds)};
     // Minutes
-    std::chrono::minutes Minutes = std::chrono::duration_cast<std::chrono::minutes>(Milliseconds);
+    std::chrono::minutes Minutes{std::chrono::duration_cast<std::chrono::minutes>(Milliseconds)};
     // Hours
-    std::chrono::hours Hours = std::chrono::duration_cast<std::chrono::hours>(Milliseconds);
+    std::chrono::hours Hours{std::chrono::duration_cast<std::chrono::hours>(Milliseconds)};
 
-    std::string TmpStr =
-        StringFromFormat("%02d:%02d:%02d:%03d", Hours.count(), Minutes.count() % 60,
-                         Seconds.count() % 60, Milliseconds.count() % 1000);
+    std::string TmpStr{StringFromFormat("%02d:%02d:%02d:%03d", Hours.count(), Minutes.count() % 60,
+                                        Seconds.count() % 60, Milliseconds.count() % 1000)};
     return TmpStr;
 }
 
@@ -103,8 +102,8 @@ std::chrono::seconds Timer::GetTimeSinceJan1970() {
 }
 
 std::chrono::seconds Timer::GetLocalTimeSinceJan1970() {
-    time_t sysTime, tzDiff, tzDST;
-    struct tm* gmTime;
+    time_t sysTime{}, tzDiff{}, tzDST{};
+    struct tm* gmTime{};
 
     time(&sysTime);
 
@@ -125,8 +124,8 @@ std::chrono::seconds Timer::GetLocalTimeSinceJan1970() {
 // Return the current time formatted as Minutes:Seconds:Milliseconds
 // in the form 00:00:000.
 std::string Timer::GetTimeFormatted() {
-    time_t sysTime;
-    struct tm* gmTime;
+    time_t sysTime{};
+    struct tm* gmTime{};
     char tmp[13];
 
     time(&sysTime);
@@ -142,8 +141,8 @@ std::string Timer::GetTimeFormatted() {
 // ----------------
 double Timer::GetDoubleTime() {
     // Get continuous timestamp
-    u64 TmpSeconds = static_cast<u64>(Common::Timer::GetTimeSinceJan1970().count());
-    double ms = static_cast<u64>(GetTimeMs().count()) % 1000;
+    u64 TmpSeconds{static_cast<u64>(Common::Timer::GetTimeSinceJan1970().count())};
+    double ms{static_cast<u64>(GetTimeMs().count()) % 1000};
 
     // Remove a few years. We only really want enough seconds to make
     // sure that we are detecting actual actions, perhaps 60 seconds is
@@ -152,7 +151,7 @@ double Timer::GetDoubleTime() {
     TmpSeconds = TmpSeconds - (38 * 365 * 24 * 60 * 60);
 
     // Make a smaller integer that fits in the double
-    u32 Seconds = static_cast<u32>(TmpSeconds);
+    u32 Seconds{static_cast<u32>(TmpSeconds)};
     double TmpTime = Seconds + ms;
 
     return TmpTime;

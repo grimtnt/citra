@@ -368,17 +368,17 @@ ResultCode Module::SetConfigInfoBlock(u32 block_id, u32 size, u32 flag, const vo
 }
 
 ResultCode Module::CreateConfigInfoBlk(u32 block_id, u16 size, u16 flags, const void* data) {
-    SaveFileConfig* config = reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data());
+    SaveFileConfig* config{reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data())};
     if (config->total_entries >= CONFIG_FILE_MAX_BLOCK_ENTRIES)
         return ResultCode(-1); // TODO(Subv): Find the right error code
 
     // Insert the block header with offset 0 for now
     config->block_entries[config->total_entries] = {block_id, 0, size, flags};
     if (size > 4) {
-        u32 offset = config->data_entries_offset;
+        u32 offset{config->data_entries_offset};
         // Perform a search to locate the next offset for the new data
         // use the offset and size of the previous block to determine the new position
-        for (int i = config->total_entries - 1; i >= 0; --i) {
+        for (int i{config->total_entries - 1}; i >= 0; --i) {
             // Ignore the blocks that don't have a separate data offset
             if (config->block_entries[i].size > 4) {
                 offset = config->block_entries[i].offset_or_data + config->block_entries[i].size;
@@ -409,19 +409,23 @@ ResultCode Module::UpdateConfigNANDSavegame() {
     mode.write_flag.Assign(1);
     mode.create_flag.Assign(1);
 
-    FileSys::Path path("/config");
+    FileSys::Path path{"/config"};
 
-    auto config_result = Service::FS::OpenFileFromArchive(cfg_system_save_data_archive, path, mode);
+    auto config_result{Service::FS::OpenFileFromArchive(cfg_system_save_data_archive, path, mode)};
     ASSERT_MSG(config_result.Succeeded(), "could not open file");
 
-    auto config = std::move(config_result).Unwrap();
+    auto config{std::move(config_result).Unwrap()};
     config->backend->Write(0, CONFIG_SAVEFILE_SIZE, 1, cfg_config_file_buffer.data());
 
     return RESULT_SUCCESS;
 }
 
+void Module::AcceptEULA() {
+    SetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &MAX_EULA_VERSION);
+}
+
 ResultCode Module::FormatConfig() {
-    ResultCode res = DeleteConfigNANDSaveFile();
+    ResultCode res{DeleteConfigNANDSaveFile()};
     // The delete command fails if the file doesn't exist, so we have to check that too
     if (!res.IsSuccess() && res != FileSys::ERROR_FILE_NOT_FOUND) {
         return res;
@@ -429,7 +433,7 @@ ResultCode Module::FormatConfig() {
     // Delete the old data
     cfg_config_file_buffer.fill(0);
     // Create the header
-    SaveFileConfig* config = reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data());
+    SaveFileConfig* config{reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data())};
     // This value is hardcoded, taken from 3dbrew, verified by hardware, it's always the same value
     config->data_entries_offset = 0x455C;
 
@@ -451,8 +455,8 @@ ResultCode Module::FormatConfig() {
     if (!res.IsSuccess())
         return res;
 
-    u32 random_number;
-    u64 console_id;
+    u32 random_number{};
+    u64 console_id{};
     GenerateConsoleUniqueId(random_number, console_id);
 
     u64_le console_id_le = console_id;
@@ -488,7 +492,7 @@ ResultCode Module::FormatConfig() {
         return res;
 
     u16_le country_name_buffer[16][0x40] = {};
-    std::u16string region_name = Common::UTF8ToUTF16("Gensokyo");
+    std::u16string region_name{Common::UTF8ToUTF16("Gensokyo")};
     for (size_t i{}; i < 16; ++i) {
         std::copy(region_name.cbegin(), region_name.cend(), country_name_buffer[i]);
     }
@@ -541,9 +545,9 @@ ResultCode Module::FormatConfig() {
 
 ResultCode Module::LoadConfigNANDSaveFile() {
     // Open the SystemSaveData archive 0x00010017
-    FileSys::Path archive_path(cfg_system_savedata_id);
-    auto archive_result =
-        Service::FS::OpenArchive(Service::FS::ArchiveIdCode::SystemSaveData, archive_path);
+    FileSys::Path archive_path{cfg_system_savedata_id};
+    auto archive_result{
+        Service::FS::OpenArchive(Service::FS::ArchiveIdCode::SystemSaveData, archive_path)};
 
     // If the archive didn't exist, create the files inside
     if (archive_result.Code() == FileSys::ERR_NOT_FORMATTED) {
@@ -560,22 +564,20 @@ ResultCode Module::LoadConfigNANDSaveFile() {
 
     cfg_system_save_data_archive = *archive_result;
 
-    FileSys::Path config_path("/config");
+    FileSys::Path config_path{"/config"};
     FileSys::Mode open_mode = {};
     open_mode.read_flag.Assign(1);
 
-    auto config_result = Service::FS::OpenFileFromArchive(*archive_result, config_path, open_mode);
+    auto config_result{Service::FS::OpenFileFromArchive(*archive_result, config_path, open_mode)};
 
     // Read the file if it already exists
     if (config_result.Succeeded()) {
-        auto config = std::move(config_result).Unwrap();
+        auto config{std::move(config_result).Unwrap()};
         config->backend->Read(0, CONFIG_SAVEFILE_SIZE, cfg_config_file_buffer.data());
-        u32 eula_version;
+        u32 eula_version{};
         GetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &eula_version);
-        if (eula_version == 0) {
-            eula_version = MAX_EULA_VERSION;
-            SetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &eula_version);
-        }
+        if (eula_version == 0)
+            SetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &MAX_EULA_VERSION);
         return RESULT_SUCCESS;
     }
 
@@ -608,7 +610,7 @@ static SystemLanguage AdjustLanguageInfoBlock(u32 region, SystemLanguage languag
         // TWN
         {LANGUAGE_TW},
     }};
-    const auto& available = region_languages[region];
+    const auto& available{region_languages[region]};
     if (std::find(available.begin(), available.end(), language) == available.end()) {
         return available[0];
     }
@@ -620,9 +622,9 @@ void Module::SetPreferredRegionCode(u32 region_code) {
     LOG_INFO(Service_CFG, "Preferred region code set to {}", preferred_region_code);
 
     if (Settings::values.region_value == Settings::REGION_VALUE_AUTO_SELECT) {
-        const SystemLanguage current_language = GetSystemLanguage();
-        const SystemLanguage adjusted_language =
-            AdjustLanguageInfoBlock(region_code, current_language);
+        const SystemLanguage current_language{GetSystemLanguage()};
+        const SystemLanguage adjusted_language{
+            AdjustLanguageInfoBlock(region_code, current_language)};
         if (current_language != adjusted_language) {
             LOG_WARNING(Service_CFG, "System language {} does not fit the region. Adjusted to {}",
                         static_cast<int>(current_language), static_cast<int>(adjusted_language));
@@ -644,8 +646,8 @@ std::u16string Module::GetUsername() {
 
     // the username string in the block isn't null-terminated,
     // so we need to find the end manually.
-    std::u16string username(block.username, ARRAY_SIZE(block.username));
-    const size_t pos = username.find(u'\0');
+    std::u16string username{block.username, ARRAY_SIZE(block.username)};
+    const size_t pos{username.find(u'\0')};
     if (pos != std::u16string::npos)
         username.erase(pos);
     return username;
@@ -731,7 +733,7 @@ u64 Module::GetConsoleUniqueId() {
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
-    auto cfg = std::make_shared<Module>();
+    auto cfg{std::make_shared<Module>()};
     std::make_shared<CFG_I>(cfg)->InstallAsService(service_manager);
     std::make_shared<CFG_S>(cfg)->InstallAsService(service_manager);
     std::make_shared<CFG_U>(cfg)->InstallAsService(service_manager);
