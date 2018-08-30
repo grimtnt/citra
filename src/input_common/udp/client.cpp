@@ -59,23 +59,23 @@ public:
 
 private:
     void HandleReceive(const boost::system::error_code& error, std::size_t bytes_transferred) {
-        if (auto type = Response::Validate(receive_buffer.data(), bytes_transferred)) {
+        if (auto type{Response::Validate(receive_buffer.data(), bytes_transferred)}) {
             switch (*type) {
             case Type::Version: {
-                Response::Version version;
+                Response::Version version{};
                 std::memcpy(&version, &receive_buffer[sizeof(Header)], sizeof(Response::Version));
                 callback.version(std::move(version));
                 break;
             }
             case Type::PortInfo: {
-                Response::PortInfo port_info;
+                Response::PortInfo port_info{};
                 std::memcpy(&port_info, &receive_buffer[sizeof(Header)],
                             sizeof(Response::PortInfo));
                 callback.port_info(std::move(port_info));
                 break;
             }
             case Type::PadData: {
-                Response::PadData pad_data;
+                Response::PadData pad_data{};
                 std::memcpy(&pad_data, &receive_buffer[sizeof(Header)], sizeof(Response::PadData));
                 callback.pad_data(std::move(pad_data));
                 break;
@@ -88,15 +88,15 @@ private:
     void HandleSend(const boost::system::error_code& error) {
         // Send a request for getting port info for the pad
         Request::PortInfo port_info{1, {pad_index, 0, 0, 0}};
-        auto port_message = Request::Create(port_info, client_id);
+        auto port_message{Request::Create(port_info, client_id)};
         std::memcpy(&send_buffer1, &port_message, PORT_INFO_SIZE);
-        size_t len = socket.send_to(boost::asio::buffer(send_buffer1), send_endpoint);
+        size_t len{socket.send_to(boost::asio::buffer(send_buffer1), send_endpoint)};
 
         // Send a request for getting pad data for the pad
         Request::PadData pad_data{Request::PadData::Flags::Id, pad_index, EMPTY_MAC_ADDRESS};
-        auto pad_message = Request::Create(pad_data, client_id);
+        auto pad_message{Request::Create(pad_data, client_id)};
         std::memcpy(send_buffer2.data(), &pad_message, PAD_DATA_SIZE);
-        size_t len2 = socket.send_to(boost::asio::buffer(send_buffer2), send_endpoint);
+        size_t len2{socket.send_to(boost::asio::buffer(send_buffer2), send_endpoint)};
         StartSend(timer.expiry());
     }
 
@@ -105,11 +105,11 @@ private:
     boost::asio::basic_waitable_timer<clock> timer;
     udp::socket socket;
 
-    u32 client_id;
-    u8 pad_index;
+    u32 client_id{};
+    u8 pad_index{};
 
-    static constexpr size_t PORT_INFO_SIZE = sizeof(Message<Request::PortInfo>);
-    static constexpr size_t PAD_DATA_SIZE = sizeof(Message<Request::PadData>);
+    static constexpr size_t PORT_INFO_SIZE{sizeof(Message<Request::PortInfo>)};
+    static constexpr size_t PAD_DATA_SIZE{sizeof(Message<Request::PadData>)};
     std::array<u8, PORT_INFO_SIZE> send_buffer1;
     std::array<u8, PAD_DATA_SIZE> send_buffer2;
     udp::endpoint send_endpoint;
@@ -162,8 +162,8 @@ void Client::OnPadData(Response::PadData data) {
     // Due to differences between the 3ds and cemuhookudp motion directions, we need to invert
     // accel.x and accel.z and also invert pitch and yaw. See
     // https://github.com/citra-emu/citra/pull/4049 for more details on gyro/accel
-    Math::Vec3f accel = Math::MakeVec<float>(-data.accel.x, data.accel.y, -data.accel.z);
-    Math::Vec3f gyro = Math::MakeVec<float>(-data.gyro.pitch, -data.gyro.yaw, data.gyro.roll);
+    Math::Vec3f accel{Math::MakeVec<float>(-data.accel.x, data.accel.y, -data.accel.z)};
+    Math::Vec3f gyro{Math::MakeVec<float>(-data.gyro.pitch, -data.gyro.yaw, data.gyro.roll)};
     {
         std::lock_guard<std::mutex> guard(status->update_mutex);
 
@@ -171,16 +171,16 @@ void Client::OnPadData(Response::PadData data) {
 
         // TODO: add a setting for "click" touch. Click touch refers to a device that differentiates
         // between a simple "tap" and a hard press that causes the touch screen to click.
-        bool is_active = data.touch_1.is_active != 0;
+        bool is_active{data.touch_1.is_active != 0};
 
         float x{};
         float y{};
 
         if (is_active && status->touch_calibration) {
-            u16 min_x = status->touch_calibration->min_x;
-            u16 max_x = status->touch_calibration->max_x;
-            u16 min_y = status->touch_calibration->min_y;
-            u16 max_y = status->touch_calibration->max_y;
+            u16 min_x{status->touch_calibration->min_x};
+            u16 max_x{status->touch_calibration->max_x};
+            u16 min_y{status->touch_calibration->min_y};
+            u16 max_y{status->touch_calibration->max_y};
 
             x = (std::clamp(static_cast<u16>(data.touch_1.x), min_x, max_x) - min_x) /
                 static_cast<float>(max_x - min_x);
@@ -204,13 +204,13 @@ void Client::StartCommunication(const std::string& host, u16 port, u8 pad_index,
 void TestCommunication(const std::string& host, u16 port, u8 pad_index, u32 client_id,
                        std::function<void()> success_callback,
                        std::function<void()> failure_callback) {
-    std::thread([&] {
-        Common::Event success_event;
+    std::thread([=] {
+        Common::Event success_event{};
         SocketCallback callback{[](Response::Version version) {}, [](Response::PortInfo info) {},
                                 [&](Response::PadData data) { success_event.Set(); }};
         Socket socket{host, port, pad_index, client_id, callback};
         std::thread worker_thread{SocketLoop, &socket};
-        bool result = success_event.WaitFor(std::chrono::seconds(8));
+        bool result{success_event.WaitFor(std::chrono::seconds(8))};
         socket.Stop();
         worker_thread.join();
         if (result)
@@ -226,11 +226,11 @@ CalibrationConfigurationJob::CalibrationConfigurationJob(
     std::function<void(Status)> status_callback,
     std::function<void(u16, u16, u16, u16)> data_callback) {
 
-    std::thread([&] {
-        constexpr u16 CALIBRATION_THRESHOLD = 100;
+    std::thread([=] {
+        constexpr u16 CALIBRATION_THRESHOLD{100};
 
         u16 min_x{UINT16_MAX}, min_y{UINT16_MAX};
-        u16 max_x, max_y;
+        u16 max_x{}, max_y{};
 
         Status current_status{Status::Initialized};
         SocketCallback callback{[](Response::Version version) {}, [](Response::PortInfo info) {},
