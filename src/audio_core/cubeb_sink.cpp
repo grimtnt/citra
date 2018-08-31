@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <mutex>
 #include <vector>
 #include <cubeb/cubeb.h>
 #include "audio_core/audio_types.h"
@@ -17,6 +18,7 @@ struct CubebSink::Impl {
     cubeb* ctx{};
     cubeb_stream* stream{};
 
+    std::mutex queue_mutex;
     std::vector<s16> queue;
 
     static long DataCallback(cubeb_stream* stream, void* user_data, const void* input_buffer,
@@ -97,6 +99,8 @@ void CubebSink::EnqueueSamples(const s16* samples, size_t sample_count) {
     if (!impl->ctx)
         return;
 
+    std::lock_guard lock{impl->queue_mutex};
+
     impl->queue.reserve(impl->queue.size() + sample_count * 2);
     std::copy(samples, samples + sample_count * 2, std::back_inserter(impl->queue));
 }
@@ -105,18 +109,21 @@ size_t CubebSink::SamplesInQueue() const {
     if (!impl->ctx)
         return 0;
 
+    std::lock_guard lock{impl->queue_mutex};
     return impl->queue.size() / 2;
 }
 
 long CubebSink::Impl::DataCallback(cubeb_stream* stream, void* user_data, const void* input_buffer,
                                    void* output_buffer, long num_frames) {
-    Impl* impl = static_cast<Impl*>(user_data);
-    u8* buffer = reinterpret_cast<u8*>(output_buffer);
+    Impl* impl{static_cast<Impl*>(user_data});
+    u8* buffer{reinterpret_cast<u8*>(output_buffer)};
 
     if (!impl)
         return 0;
 
-    size_t frames_to_write = std::min(impl->queue.size() / 2, static_cast<size_t>(num_frames));
+    std::lock_guard lock{impl->queue_mutex};
+
+    size_t frames_to_write{std::min(impl->queue.size() / 2, static_cast<size_t>(num_frames))};
 
     memcpy(buffer, impl->queue.data(), frames_to_write * sizeof(s16) * 2);
     impl->queue.erase(impl->queue.begin(), impl->queue.begin() + frames_to_write * 2);
