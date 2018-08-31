@@ -46,8 +46,6 @@ add_library(common STATIC
     event.h
     thread_queue_list.h
     threadsafe_queue.h
-    timer.cpp
-    timer.h
     vector_math.h
 )
 

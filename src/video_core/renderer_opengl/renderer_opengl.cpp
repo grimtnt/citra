@@ -106,8 +106,8 @@ void RendererOpenGL::SwapBuffers() {
         const auto& framebuffer{GPU::g_regs.framebuffer_config[fb_id]};
 
         // Main LCD (0): 0x1ED02204, Sub LCD (1): 0x1ED02A04
-        u32 lcd_color_addr{(fb_id == 0) ? LCD_REG_INDEX(color_fill_top)
-                                        : LCD_REG_INDEX(color_fill_bottom)};
+        u32 lcd_color_addr{static_cast<u32>((fb_id == 0) ? LCD_REG_INDEX(color_fill_top)
+                                                         : LCD_REG_INDEX(color_fill_bottom))};
         lcd_color_addr = HW::VADDR_LCD + 4 * lcd_color_addr;
         LCD::Regs::ColorFill color_fill = {0};
         LCD::Read(color_fill.raw, lcd_color_addr);
@@ -136,7 +136,39 @@ void RendererOpenGL::SwapBuffers() {
         }
     }
 
-    DrawScreens();
+    if (VideoCore::g_renderer_screenshot_requested) {
+        // Draw this frame to the screenshot framebuffer
+        screenshot_framebuffer.Create();
+        GLuint old_read_fb = state.draw.read_framebuffer;
+        GLuint old_draw_fb = state.draw.draw_framebuffer;
+        state.draw.read_framebuffer = state.draw.draw_framebuffer = screenshot_framebuffer.handle;
+        state.Apply();
+
+        Layout::FramebufferLayout layout{VideoCore::g_screenshot_framebuffer_layout};
+
+        GLuint renderbuffer;
+        glGenRenderbuffers(1, &renderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB8, layout.width, layout.height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+                                  renderbuffer);
+
+        DrawScreens(layout);
+
+        glReadPixels(0, 0, layout.width, layout.height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+                     VideoCore::g_screenshot_bits);
+
+        screenshot_framebuffer.Release();
+        state.draw.read_framebuffer = old_read_fb;
+        state.draw.draw_framebuffer = old_draw_fb;
+        state.Apply();
+        glDeleteRenderbuffers(1, &renderbuffer);
+
+        VideoCore::g_screenshot_complete_callback();
+        VideoCore::g_renderer_screenshot_requested = false;
+    }
+
+    DrawScreens(render_window.GetFramebufferLayout());
 
     Core::System::GetInstance().perf_stats.EndSystemFrame();
 
@@ -374,19 +406,22 @@ void RendererOpenGL::DrawSingleScreenRotated(const ScreenInfo& screen_info, floa
 /**
  * Draws the emulated screens to the emulator window.
  */
-void RendererOpenGL::DrawScreens() {
-    auto layout{render_window.GetFramebufferLayout()};
+void RendererOpenGL::DrawScreens(const Layout::FramebufferLayout& layout) {
+    if (VideoCore::g_renderer_bg_color_update_requested.exchange(false)) {
+        // Update background color before drawing
+        glClearColor(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue,
+                     0.0f);
+    }
+
     const auto& top_screen{layout.top_screen};
     const auto& bottom_screen{layout.bottom_screen};
 
     glViewport(0, 0, layout.width, layout.height);
-    glClearColor(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue,
-                 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Set projection matrix
-    std::array<GLfloat, 3 * 2> ortho_matrix =
-        MakeOrthographicMatrix((float)layout.width, (float)layout.height);
+    std::array<GLfloat, 6> ortho_matrix{
+        MakeOrthographicMatrix((float)layout.width, (float)layout.height)};
     glUniformMatrix3x2fv(uniform_modelview_matrix, 1, GL_FALSE, ortho_matrix.data());
 
     // Bind texture in Texture Unit 0

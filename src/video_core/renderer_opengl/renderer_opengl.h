@@ -15,6 +15,10 @@
 
 class EmuWindow;
 
+namespace Layout {
+class FramebufferLayout;
+}
+
 /// Structure used for storing information about the textures for each 3DS screen
 struct TextureInfo {
     OGLTexture resource;
@@ -47,7 +51,7 @@ private:
     void InitOpenGLObjects();
     void ConfigureFramebufferTexture(TextureInfo& texture,
                                      const GPU::Regs::FramebufferConfig& framebuffer);
-    void DrawScreens();
+    void DrawScreens(const Layout::FramebufferLayout& layout);
     void DrawSingleScreenRotated(const ScreenInfo& screen_info, float x, float y, float w, float h);
 
     // Loads framebuffer from emulated memory into the display information structure
@@ -62,6 +66,7 @@ private:
     OGLVertexArray vertex_array;
     OGLBuffer vertex_buffer;
     OGLProgram shader;
+    OGLFramebuffer screenshot_framebuffer;
 
     /// Display information for top and bottom screens respectively
     std::array<ScreenInfo, 3> screen_infos;

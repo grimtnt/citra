@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <QGLWidget>
+#include <QImage>
 #include <QThread>
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
@@ -107,6 +108,8 @@ public:
 
     void InitRenderTarget();
 
+    void CaptureScreenshot(u16 res_scale, const QString& screenshot_path);
+
 public slots:
     void moveContext(); // overridden
 
@@ -127,6 +130,9 @@ private:
     QByteArray geometry;
 
     EmuThread* emu_thread{};
+
+    /// Temporary storage of the screenshot taken
+    QImage screenshot_image;
 
 protected:
     void showEvent(QShowEvent* event) override;

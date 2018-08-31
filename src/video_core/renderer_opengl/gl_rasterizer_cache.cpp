@@ -75,12 +75,6 @@ constexpr auto RangeFromInterval(Map& map, const Interval& interval) {
     return boost::make_iterator_range(map.equal_range(interval));
 }
 
-static u16 GetResolutionScaleFactor() {
-    return !Settings::values.resolution_factor
-               ? VideoCore::g_renderer->GetRenderWindow().GetFramebufferLayout().GetScalingRatio()
-               : Settings::values.resolution_factor;
-}
-
 template <bool morton_to_gl, PixelFormat format>
 static void MortonCopyTile(u32 stride, u8* tile_buffer, u8* gl_buffer) {
     constexpr u32 bytes_per_pixel{SurfaceParams::GetFormatBpp(format) / 8};
@@ -1337,9 +1331,9 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
     const auto& config{regs.framebuffer.framebuffer};
 
     // update resolution_scale_factor and reset cache if changed
-    static u16 resolution_scale_factor{GetResolutionScaleFactor()};
-    if (resolution_scale_factor != GetResolutionScaleFactor()) {
-        resolution_scale_factor = GetResolutionScaleFactor();
+    static u16 resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
+    if (resolution_scale_factor != VideoCore::GetResolutionScaleFactor()) {
+        resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
         FlushAll();
         while (!surface_cache.empty())
             UnregisterSurface(*surface_cache.begin()->second.begin());

@@ -10,6 +10,7 @@
 #include <QMetaType>
 #include <QString>
 #include <QStringList>
+#include "common/common_types.h"
 
 namespace UISettings {
 
@@ -50,9 +51,8 @@ struct Values {
 
     bool confirm_before_closing;
 
-    QString roms_path;
-    QString game_dir_deprecated;
-    bool game_dir_deprecated_deepscan;
+    u16 screenshot_resolution_factor;
+
     QList<UISettings::GameDir> game_dirs;
     QStringList recent_files;
 

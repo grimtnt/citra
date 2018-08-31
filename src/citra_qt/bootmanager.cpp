@@ -13,6 +13,7 @@
 #include "input_common/main.h"
 #include "input_common/motion_emu.h"
 #include "network/network.h"
+#include "video_core/video_core.h"
 
 constexpr const char WINDOW_TITLE_FORMAT[]{"Citra %s| %s-%s"};
 
@@ -248,6 +249,19 @@ void GRenderWindow::InitRenderTarget() {
     NotifyClientAreaSizeChanged(std::pair<unsigned, unsigned>(child->width(), child->height()));
 
     BackupGeometry();
+}
+
+void GRenderWindow::CaptureScreenshot(u16 res_scale, const QString& screenshot_path) {
+    if (!res_scale)
+        res_scale = VideoCore::GetResolutionScaleFactor();
+    const Layout::FramebufferLayout layout{Layout::FrameLayoutFromResolutionScale(res_scale)};
+    screenshot_image = QImage(QSize(layout.width, layout.height), QImage::Format_RGB32);
+    VideoCore::RequestScreenshot(screenshot_image.bits(),
+                                 [=] {
+                                     LOG_INFO(Frontend, "The screenshot is saved.");
+                                     screenshot_image.mirrored(false, true).save(screenshot_path);
+                                 },
+                                 layout);
 }
 
 void GRenderWindow::OnMinimalClientAreaChangeRequest(

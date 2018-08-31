@@ -58,7 +58,7 @@ Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #ifdef _WIN32
 extern "C" {
 // tells Nvidia drivers to use the dedicated GPU by default on laptops with switchable graphics
-__declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+__declspec(dllexport) unsigned long NvOptimusEnablement{0x00000001};
 }
 #endif
 
@@ -219,6 +219,7 @@ void GMainWindow::InitializeHotkeys() {
                    Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Decrease Speed Limit", QKeySequence("-"),
                    Qt::ApplicationShortcut);
+    RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence(tr("CTRL+S")));
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), &QShortcut::activated, this,
@@ -272,6 +273,11 @@ void GMainWindow::InitializeHotkeys() {
                     UpdateStatusBar();
                 }
             });
+    connect(GetHotkey("Main Window", "Capture Screenshot", this), &QShortcut::activated, this, [&] {
+        if (emu_thread->IsRunning()) {
+            OnCaptureScreenshot();
+        }
+    });
 }
 
 void GMainWindow::SetDefaultUIGeometry() {
@@ -395,6 +401,8 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Play_Movie, &QAction::triggered, this, &GMainWindow::OnPlayMovie);
     connect(ui.action_Stop_Recording_Playback, &QAction::triggered, this,
             &GMainWindow::OnStopRecordingPlayback);
+    connect(ui.action_Capture_Screenshot, &QAction::triggered, this,
+            &GMainWindow::OnCaptureScreenshot);
 
     // Multiplayer
     connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
@@ -647,6 +655,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Cheats->setEnabled(false);
     ui.action_Dump_RAM->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
+    ui.action_Capture_Screenshot->setEnabled(false);
     render_window->hide();
     if (game_list->isEmpty())
         game_list_placeholder->show();
@@ -853,25 +862,21 @@ void GMainWindow::OnGameListShowList(bool show) {
 }
 
 void GMainWindow::OnMenuLoadFile() {
-    QString extensions;
+    QString extensions{};
     for (const auto& piece : game_list->supported_file_extensions)
         extensions += "*." + piece + " ";
 
-    QString file_filter{QString("3DS Executable (%1);;All Files (*.*)").arg(extensions)};
+    QString file_filter{QString("3DS Executable (%1);All Files (*.*)").arg(extensions)};
 
-    QString filename{
-        QFileDialog::getOpenFileName(this, "Load File", UISettings::values.roms_path, file_filter)};
+    QString filename{QFileDialog::getOpenFileName(this, "Load File", ".", file_filter)};
     if (!filename.isEmpty()) {
-        UISettings::values.roms_path = QFileInfo(filename).path();
-
         BootGame(filename);
     }
 }
 
 void GMainWindow::OnMenuInstallCIA() {
-    QStringList filepaths{
-        QFileDialog::getOpenFileNames(this, "Install CIA", UISettings::values.roms_path,
-                                      "CTR Importable Archive (*.CIA*);;All Files (*.*)")};
+    QStringList filepaths{QFileDialog::getOpenFileNames(
+        this, "Install CIA", ".", "CTR Importable Archive (*.cia);All Files (*.*)")};
     if (filepaths.isEmpty())
         return;
 
@@ -969,6 +974,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Cheats->setEnabled(true);
     ui.action_Dump_RAM->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
+    ui.action_Capture_Screenshot->setEnabled(true);
 }
 
 void GMainWindow::OnPauseGame() {
@@ -1246,6 +1252,16 @@ void GMainWindow::OnStopRecordingPlayback() {
     ui.action_Record_Movie->setEnabled(true);
     ui.action_Play_Movie->setEnabled(true);
     ui.action_Stop_Recording_Playback->setEnabled(false);
+}
+
+void GMainWindow::OnCaptureScreenshot() {
+    OnPauseGame();
+    const QString path{
+        QFileDialog::getSaveFileName(this, "Capture Screenshot", ".", "PNG Image (*.png)")};
+    OnStartGame();
+    if (path.isEmpty())
+        return;
+    render_window->CaptureScreenshot(UISettings::values.screenshot_resolution_factor, path);
 }
 
 void GMainWindow::UpdateStatusBar() {

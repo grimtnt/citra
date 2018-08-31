@@ -222,22 +222,17 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Paths");
-    UISettings::values.roms_path = qt_config->value("romsPath").toString();
-    UISettings::values.game_dir_deprecated = qt_config->value("gameListRootDir", ".").toString();
-    UISettings::values.game_dir_deprecated_deepscan =
-        qt_config->value("gameListDeepScan", false).toBool();
-    int size = qt_config->beginReadArray("gamedirs");
+    int size{qt_config->beginReadArray("gamedirs")};
     for (int i{}; i < size; ++i) {
         qt_config->setArrayIndex(i);
-        UISettings::GameDir game_dir;
+        UISettings::GameDir game_dir{};
         game_dir.path = qt_config->value("path").toString();
         game_dir.deep_scan = qt_config->value("deep_scan", false).toBool();
         game_dir.expanded = qt_config->value("expanded", true).toBool();
         UISettings::values.game_dirs.append(game_dir);
     }
     qt_config->endArray();
-    // create NAND and SD card directories if empty, these are not removable through the UI, also
-    // carries over old game list settings if present
+    // create NAND and SD card directories if empty, these are not removable through the UI
     if (UISettings::values.game_dirs.isEmpty()) {
         UISettings::GameDir game_dir;
         game_dir.path = "INSTALLED";
@@ -245,11 +240,6 @@ void Config::ReadValues() {
         UISettings::values.game_dirs.append(game_dir);
         game_dir.path = "SYSTEM";
         UISettings::values.game_dirs.append(game_dir);
-        if (UISettings::values.game_dir_deprecated != ".") {
-            game_dir.path = UISettings::values.game_dir_deprecated;
-            game_dir.deep_scan = UISettings::values.game_dir_deprecated_deepscan;
-            UISettings::values.game_dirs.append(game_dir);
-        }
     }
     UISettings::values.recent_files = qt_config->value("recentFiles").toStringList();
     qt_config->endGroup();
@@ -411,6 +401,8 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("UI");
     qt_config->setValue("theme", UISettings::values.theme);
+    qt_config->setValue("screenshot_resolution_factor",
+                        UISettings::values.screenshot_resolution_factor);
 
     qt_config->beginGroup("UILayout");
     qt_config->setValue("geometry", UISettings::values.geometry);
@@ -420,7 +412,6 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Paths");
-    qt_config->setValue("romsPath", UISettings::values.roms_path);
     qt_config->beginWriteArray("gamedirs");
     for (int i{}; i < UISettings::values.game_dirs.size(); ++i) {
         qt_config->setArrayIndex(i);

@@ -127,6 +127,8 @@
     <addaction name="action_Record_Movie"/>
     <addaction name="action_Play_Movie"/>
     <addaction name="action_Stop_Recording_Playback"/>
+    <addaction name="separator"/>
+    <addaction name="action_Capture_Screenshot"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Emulation"/>
@@ -354,9 +356,12 @@
     <string>Stop Recording / Playback</string>
    </property>
   </action>
-  <action name="action_Cheat_Search">
+  <action name="action_Capture_Screenshot">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
-    <string>Cheat Search...</string>
+    <string>Capture Screenshot</string>
    </property>
   </action>
   <action name="action_Restart">
@@ -373,14 +378,6 @@
    </property>
    <property name="text">
     <string>Set Play Coins</string>
-   </property>
-  </action>
-  <action name="action_Boost_FPS">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Boost FPS</string>
    </property>
   </action>
  </widget>
