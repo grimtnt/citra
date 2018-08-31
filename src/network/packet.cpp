@@ -67,7 +67,7 @@ Packet::operator bool() const {
 }
 
 Packet& Packet::operator>>(bool& out_data) {
-    u8 value;
+    u8 value{};
     if (*this >> value) {
         out_data = (value != 0);
     }
@@ -85,42 +85,42 @@ Packet& Packet::operator>>(u8& out_data) {
 }
 
 Packet& Packet::operator>>(s16& out_data) {
-    s16 value;
+    s16 value{};
     Read(&value, sizeof(value));
     out_data = ntohs(value);
     return *this;
 }
 
 Packet& Packet::operator>>(u16& out_data) {
-    u16 value;
+    u16 value{};
     Read(&value, sizeof(value));
     out_data = ntohs(value);
     return *this;
 }
 
 Packet& Packet::operator>>(s32& out_data) {
-    s32 value;
+    s32 value{};
     Read(&value, sizeof(value));
     out_data = ntohl(value);
     return *this;
 }
 
 Packet& Packet::operator>>(u32& out_data) {
-    u32 value;
+    u32 value{};
     Read(&value, sizeof(value));
     out_data = ntohl(value);
     return *this;
 }
 
 Packet& Packet::operator>>(s64& out_data) {
-    s64 value;
+    s64 value{};
     Read(&value, sizeof(value));
     out_data = ntohll(value);
     return *this;
 }
 
 Packet& Packet::operator>>(u64& out_data) {
-    u64 value;
+    u64 value{};
     Read(&value, sizeof(value));
     out_data = ntohll(value);
     return *this;
@@ -186,37 +186,37 @@ Packet& Packet::operator<<(u8 in_data) {
 }
 
 Packet& Packet::operator<<(s16 in_data) {
-    s16 to_write = htons(in_data);
+    s16 to_write{htons(in_data)};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(u16 in_data) {
-    u16 to_write = htons(in_data);
+    u16 to_write{htons(in_data)};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(s32 in_data) {
-    s32 to_write = htonl(in_data);
+    s32 to_write{htonl(in_data)};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(u32 in_data) {
-    u32 to_write = htonl(in_data);
+    u32 to_write{htonl(in_data)};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(s64 in_data) {
-    s64 to_write = htonll(in_data);
+    s64 to_write{static_cast<s64>(htonll(in_data))};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(u64 in_data) {
-    u64 to_write = htonll(in_data);
+    u64 to_write{htonll(in_data)};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
