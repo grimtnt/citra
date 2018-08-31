@@ -636,7 +636,7 @@ private:
                 if (instr.opcode.Value() == OpCode::Id::JMPC) {
                     condition = EvaluateCondition(instr.flow_control);
                 } else {
-                    bool invert_test{instr.flow_control.num_instructions & 1};
+                    bool invert_test{static_cast<bool>(instr.flow_control.num_instructions & 1)};
                     condition = (invert_test ? "!" : "") +
                                 GetUniformBool(instr.flow_control.bool_uniform_id);
                 }
