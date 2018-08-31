@@ -186,7 +186,7 @@ Packet& Packet::operator<<(u8 in_data) {
 }
 
 Packet& Packet::operator<<(s16 in_data) {
-    s16 to_write{htons(in_data)};
+    s16 to_write{static_cast<s16>(htons(in_data))};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
@@ -198,7 +198,7 @@ Packet& Packet::operator<<(u16 in_data) {
 }
 
 Packet& Packet::operator<<(s32 in_data) {
-    s32 to_write{htonl(in_data)};
+    s32 to_write{static_cast<s32>(htonl(in_data))};
     Append(&to_write, sizeof(to_write));
     return *this;
 }
