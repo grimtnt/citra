@@ -27,7 +27,7 @@ u64 ntohll(u64 x) {
 
 void Packet::Append(const void* in_data, std::size_t size_in_bytes) {
     if (in_data && (size_in_bytes > 0)) {
-        std::size_t start = data.size();
+        std::size_t start{data.size()};
         data.resize(start + size_in_bytes);
         std::memcpy(&data[start], in_data, size_in_bytes);
     }
@@ -138,7 +138,7 @@ Packet& Packet::operator>>(double& out_data) {
 
 Packet& Packet::operator>>(char* out_data) {
     // First extract string length
-    u32 length{};* this >> length;
+    u32 length{};
     *this >> length;
 
     if ((length > 0) && CheckSize(length)) {
@@ -186,38 +186,38 @@ Packet& Packet::operator<<(u8 in_data) {
 }
 
 Packet& Packet::operator<<(s16 in_data) {
-    s16 toWrite = htons(in_data);
-    Append(&toWrite, sizeof(toWrite));
+    s16 to_write = htons(in_data);
+    Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(u16 in_data) {
-    u16 toWrite = htons(in_data);
-    Append(&toWrite, sizeof(toWrite));
+    u16 to_write = htons(in_data);
+    Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(s32 in_data) {
-    s32 toWrite = htonl(in_data);
-    Append(&toWrite, sizeof(toWrite));
+    s32 to_write = htonl(in_data);
+    Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(u32 in_data) {
-    u32 toWrite = htonl(in_data);
-    Append(&toWrite, sizeof(toWrite));
+    u32 to_write = htonl(in_data);
+    Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(s64 in_data) {
-    s64 toWrite = htonll(in_data);
-    Append(&toWrite, sizeof(toWrite));
+    s64 to_write = htonll(in_data);
+    Append(&to_write, sizeof(to_write));
     return *this;
 }
 
 Packet& Packet::operator<<(u64 in_data) {
-    u64 toWrite = htonll(in_data);
-    Append(&toWrite, sizeof(toWrite));
+    u64 to_write = htonll(in_data);
+    Append(&to_write, sizeof(to_write));
     return *this;
 }
 
