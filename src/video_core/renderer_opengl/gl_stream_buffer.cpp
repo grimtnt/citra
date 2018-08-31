@@ -15,7 +15,7 @@ OGLStreamBuffer::OGLStreamBuffer(GLenum target, GLsizeiptr size, bool array_buff
     gl_buffer.Create();
     glBindBuffer(gl_target, gl_buffer.handle);
 
-    GLsizeiptr allocate_size = size;
+    GLsizeiptr allocate_size{size};
     if (array_buffer_for_amd) {
         // On AMD GPU there is a strange crash in indexed drawing. The crash happens when the buffer
         // read position is near the end and is an out-of-bound access to the vertex buffer. This is
@@ -63,7 +63,7 @@ std::tuple<u8*, GLintptr, bool> OGLStreamBuffer::Map(GLsizeiptr size, GLintptr a
         buffer_pos = Common::AlignUp<size_t>(buffer_pos, alignment);
     }
 
-    bool invalidate = false;
+    bool invalidate{};
     if (buffer_pos + size > buffer_size) {
         buffer_pos = 0;
         invalidate = true;
@@ -74,9 +74,9 @@ std::tuple<u8*, GLintptr, bool> OGLStreamBuffer::Map(GLsizeiptr size, GLintptr a
     }
 
     if (invalidate | !persistent) {
-        GLbitfield flags = GL_MAP_WRITE_BIT | (persistent ? GL_MAP_PERSISTENT_BIT : 0) |
-                           (coherent ? GL_MAP_COHERENT_BIT : GL_MAP_FLUSH_EXPLICIT_BIT) |
-                           (invalidate ? GL_MAP_INVALIDATE_BUFFER_BIT : GL_MAP_UNSYNCHRONIZED_BIT);
+        GLbitfield flags{GL_MAP_WRITE_BIT | (persistent ? GL_MAP_PERSISTENT_BIT : 0) |
+                         (coherent ? GL_MAP_COHERENT_BIT : GL_MAP_FLUSH_EXPLICIT_BIT) |
+                         (invalidate ? GL_MAP_INVALIDATE_BUFFER_BIT : GL_MAP_UNSYNCHRONIZED_BIT)};
         mapped_ptr = static_cast<u8*>(
             glMapBufferRange(gl_target, buffer_pos, buffer_size - buffer_pos, flags));
         mapped_offset = buffer_pos;

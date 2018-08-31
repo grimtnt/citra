@@ -11,7 +11,7 @@
 namespace GLShader {
 
 GLuint LoadShader(const char* source, GLenum type) {
-    const char* debug_type;
+    const char* debug_type{};
     switch (type) {
     case GL_VERTEX_SHADER:
         debug_type = "vertex";
@@ -26,13 +26,13 @@ GLuint LoadShader(const char* source, GLenum type) {
         UNREACHABLE();
     }
 
-    GLuint shader_id = glCreateShader(type);
+    GLuint shader_id{glCreateShader(type)};
     glShaderSource(shader_id, 1, &source, nullptr);
     LOG_DEBUG(Render_OpenGL, "Compiling {} shader...", debug_type);
     glCompileShader(shader_id);
 
-    GLint result = GL_FALSE;
-    GLint info_log_length;
+    GLint result{GL_FALSE};
+    GLint info_log_length{};
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &result);
     glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &info_log_length);
 
@@ -54,7 +54,7 @@ GLuint LoadProgram(bool separable_program, const std::vector<GLuint>& shaders) {
     // Link the program
     LOG_DEBUG(Render_OpenGL, "Linking program...");
 
-    GLuint program_id = glCreateProgram();
+    GLuint program_id{glCreateProgram()};
 
     for (GLuint shader : shaders) {
         if (shader != 0) {
@@ -69,8 +69,8 @@ GLuint LoadProgram(bool separable_program, const std::vector<GLuint>& shaders) {
     glLinkProgram(program_id);
 
     // Check the program
-    GLint result = GL_FALSE;
-    GLint info_log_length;
+    GLint result{GL_FALSE};
+    GLint info_log_length{};
     glGetProgramiv(program_id, GL_LINK_STATUS, &result);
     glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &info_log_length);
 

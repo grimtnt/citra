@@ -241,24 +241,25 @@ struct VertexArrayInfo {
 };
 
 RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_indexed) {
-    const auto& regs = Pica::g_state.regs;
-    const auto& vertex_attributes = regs.pipeline.vertex_attributes;
+    const auto& regs{Pica::g_state.regs};
+    const auto& vertex_attributes{regs.pipeline.vertex_attributes};
 
-    u32 vertex_min;
-    u32 vertex_max;
+    u32 vertex_min{};
+    u32 vertex_max{};
     if (is_indexed) {
-        const auto& index_info = regs.pipeline.index_array;
-        PAddr address = vertex_attributes.GetPhysicalBaseAddress() + index_info.offset;
-        const u8* index_address_8 = Memory::GetPhysicalPointer(address);
-        const u16* index_address_16 = reinterpret_cast<const u16*>(index_address_8);
-        bool index_u16 = index_info.format != 0;
+        const auto& index_info{regs.pipeline.index_array};
+        PAddr address{vertex_attributes.GetPhysicalBaseAddress() + index_info.offset};
+        const u8* index_address_8{Memory::GetPhysicalPointer(address)};
+        const u16* index_address_16{reinterpret_cast<const u16*>(index_address_8)};
+        bool index_u16{index_info.format != 0};
 
         vertex_min = 0xFFFF;
         vertex_max = 0;
-        std::size_t size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
+        std::size_t size{regs.pipeline.num_vertices * (index_u16 ? 2 : 1)};
         res_cache.FlushRegion(address, size, nullptr);
         for (u32 index{}; index < regs.pipeline.num_vertices; ++index) {
-            u32 vertex = index_u16 ? index_address_16[index] : index_address_8[index];
+            u32 vertex{
+                static_cast<u32>(index_u16 ? index_address_16[index] : index_address_8[index])};
             vertex_min = std::min(vertex_min, vertex);
             vertex_max = std::max(vertex_max, vertex);
         }
@@ -267,7 +268,7 @@ RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_i
         vertex_max = regs.pipeline.vertex_offset + regs.pipeline.num_vertices - 1;
     }
 
-    u32 vertex_num = vertex_max - vertex_min + 1;
+    u32 vertex_num{vertex_max - vertex_min + 1};
     u32 vs_input_size{};
     for (auto& loader : vertex_attributes.attribute_loaders) {
         if (loader.component_count != 0) {
@@ -280,9 +281,9 @@ RasterizerOpenGL::VertexArrayInfo RasterizerOpenGL::AnalyzeVertexArray(bool is_i
 
 void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
                                         GLuint vs_input_index_min, GLuint vs_input_index_max) {
-    const auto& regs = Pica::g_state.regs;
-    const auto& vertex_attributes = regs.pipeline.vertex_attributes;
-    PAddr base_address = vertex_attributes.GetPhysicalBaseAddress();
+    const auto& regs{Pica::g_state.regs};
+    const auto& vertex_attributes{regs.pipeline.vertex_attributes};
+    PAddr base_address{vertex_attributes.GetPhysicalBaseAddress()};
 
     state.draw.vertex_array = hw_vao.handle;
     state.draw.vertex_buffer = vertex_buffer.GetHandle();
@@ -303,11 +304,13 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
                     offset = Common::AlignUp(
                         offset, vertex_attributes.GetElementSizeInBytes(attribute_index));
 
-                    u32 input_reg = regs.vs.GetRegisterForAttribute(attribute_index);
-                    GLint size = vertex_attributes.GetNumElements(attribute_index);
-                    GLenum type = vs_attrib_types[static_cast<u32>(
-                        vertex_attributes.GetFormat(attribute_index))];
-                    GLsizei stride = loader.byte_count;
+                    u32 input_reg{
+                        static_cast<u32>(regs.vs.GetRegisterForAttribute(attribute_index))};
+                    GLint size{
+                        static_cast<GLint>(vertex_attributes.GetNumElements(attribute_index))};
+                    GLenum type{vs_attrib_types[static_cast<u32>(
+                        vertex_attributes.GetFormat(attribute_index))]};
+                    GLsizei stride{static_cast<GLsizei>(loader.byte_count)};
                     glVertexAttribPointer(input_reg, size, type, GL_FALSE, stride,
                                           reinterpret_cast<GLvoid*>(buffer_offset + offset));
                     enable_attributes[input_reg] = true;
@@ -322,11 +325,11 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
             }
         }
 
-        PAddr data_addr =
-            base_address + loader.data_offset + (vs_input_index_min * loader.byte_count);
+        PAddr data_addr{base_address + loader.data_offset +
+                        (vs_input_index_min * loader.byte_count)};
 
-        u32 vertex_num = vs_input_index_max - vs_input_index_min + 1;
-        u32 data_size = loader.byte_count * vertex_num;
+        u32 vertex_num{vs_input_index_max - vs_input_index_min + 1};
+        u32 data_size{loader.byte_count * vertex_num};
 
         res_cache.FlushRegion(data_addr, data_size, nullptr);
         std::memcpy(array_ptr, Memory::GetPhysicalPointer(data_addr), data_size);
@@ -346,9 +349,9 @@ void RasterizerOpenGL::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset,
         }
 
         if (vertex_attributes.IsDefaultAttribute(i)) {
-            u32 reg = regs.vs.GetRegisterForAttribute(i);
+            u32 reg{regs.vs.GetRegisterForAttribute(i)};
             if (!enable_attributes[reg]) {
-                const auto& attr = Pica::g_state.input_default_attributes.attr[i];
+                const auto& attr{Pica::g_state.input_default_attributes.attr[i]};
                 glVertexAttrib4f(reg, attr.x.ToFloat32(), attr.y.ToFloat32(), attr.z.ToFloat32(),
                                  attr.w.ToFloat32());
             }
@@ -362,7 +365,7 @@ bool RasterizerOpenGL::SetupVertexShader() {
 }
 
 bool RasterizerOpenGL::SetupGeometryShader() {
-    const auto& regs = Pica::g_state.regs;
+    const auto& regs{Pica::g_state.regs};
     if (regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::No) {
         GLShader::PicaFixedGSConfig gs_config(regs);
         shader_program_manager->UseFixedGeometryShader(gs_config);
@@ -374,7 +377,7 @@ bool RasterizerOpenGL::SetupGeometryShader() {
 }
 
 bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
-    const auto& regs = Pica::g_state.regs;
+    const auto& regs{Pica::g_state.regs};
     if (regs.pipeline.use_gs != Pica::PipelineRegs::UseGS::No) {
         if (regs.pipeline.gs_config.mode != Pica::PipelineRegs::GSMode::Point) {
             return false;
@@ -394,7 +397,7 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
 }
 
 static GLenum GetCurrentPrimitiveMode(bool use_gs) {
-    const auto& regs = Pica::g_state.regs;
+    const auto& regs{Pica::g_state.regs};
     if (use_gs) {
         switch ((regs.gs.max_input_attribute_index + 1) /
                 (regs.pipeline.vs_outmap_total_minus_1_a + 1)) {
@@ -427,10 +430,10 @@ static GLenum GetCurrentPrimitiveMode(bool use_gs) {
 }
 
 bool RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs) {
-    const auto& regs = Pica::g_state.regs;
-    GLenum primitive_mode = GetCurrentPrimitiveMode(use_gs);
+    const auto& regs{Pica::g_state.regs};
+    GLenum primitive_mode{GetCurrentPrimitiveMode(use_gs)};
 
-    auto [vs_input_index_min, vs_input_index_max, vs_input_size] = AnalyzeVertexArray(is_indexed);
+    auto [vs_input_index_min, vs_input_index_max, vs_input_size]{AnalyzeVertexArray(is_indexed)};
 
     if (vs_input_size > VERTEX_BUFFER_SIZE) {
         LOG_WARNING(Render_OpenGL, "Too large vertex input size {}", vs_input_size);
@@ -440,8 +443,8 @@ bool RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs)
     state.draw.vertex_buffer = vertex_buffer.GetHandle();
     state.Apply();
 
-    u8* buffer_ptr;
-    GLintptr buffer_offset;
+    u8* buffer_ptr{};
+    GLintptr buffer_offset{};
     std::tie(buffer_ptr, buffer_offset, std::ignore) = vertex_buffer.Map(vs_input_size, 4);
     SetupVertexArray(buffer_ptr, buffer_offset, vs_input_index_min, vs_input_index_max);
     vertex_buffer.Unmap(vs_input_size);
@@ -450,17 +453,17 @@ bool RasterizerOpenGL::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs)
     state.Apply();
 
     if (is_indexed) {
-        bool index_u16 = regs.pipeline.index_array.format != 0;
-        std::size_t index_buffer_size = regs.pipeline.num_vertices * (index_u16 ? 2 : 1);
+        bool index_u16{regs.pipeline.index_array.format != 0};
+        std::size_t index_buffer_size{regs.pipeline.num_vertices * (index_u16 ? 2 : 1)};
 
         if (index_buffer_size > INDEX_BUFFER_SIZE) {
             LOG_WARNING(Render_OpenGL, "Too large index input size {}", index_buffer_size);
             return false;
         }
 
-        const u8* index_data =
+        const u8* index_data{
             Memory::GetPhysicalPointer(regs.pipeline.vertex_attributes.GetPhysicalBaseAddress() +
-                                       regs.pipeline.index_array.offset);
+                                       regs.pipeline.index_array.offset)};
         std::tie(buffer_ptr, buffer_offset, std::ignore) = index_buffer.Map(index_buffer_size, 4);
         std::memcpy(buffer_ptr, index_data, index_buffer_size);
         index_buffer.Unmap(index_buffer_size);
@@ -482,29 +485,29 @@ void RasterizerOpenGL::DrawTriangles() {
 }
 
 bool RasterizerOpenGL::Draw(bool accelerate, bool is_indexed) {
-    const auto& regs = Pica::g_state.regs;
+    const auto& regs{Pica::g_state.regs};
 
-    bool shadow_rendering = regs.framebuffer.output_merger.fragment_operation_mode ==
-                            Pica::FramebufferRegs::FragmentOperationMode::Shadow;
+    bool shadow_rendering{regs.framebuffer.output_merger.fragment_operation_mode ==
+                          Pica::FramebufferRegs::FragmentOperationMode::Shadow};
 
-    const bool has_stencil =
-        regs.framebuffer.framebuffer.depth_format == Pica::FramebufferRegs::DepthFormat::D24S8;
+    const bool has_stencil{regs.framebuffer.framebuffer.depth_format ==
+                           Pica::FramebufferRegs::DepthFormat::D24S8};
 
-    const bool write_color_fb = shadow_rendering || state.color_mask.red_enabled == GL_TRUE ||
-                                state.color_mask.green_enabled == GL_TRUE ||
-                                state.color_mask.blue_enabled == GL_TRUE ||
-                                state.color_mask.alpha_enabled == GL_TRUE;
+    const bool write_color_fb{shadow_rendering || state.color_mask.red_enabled == GL_TRUE ||
+                              state.color_mask.green_enabled == GL_TRUE ||
+                              state.color_mask.blue_enabled == GL_TRUE ||
+                              state.color_mask.alpha_enabled == GL_TRUE};
 
-    const bool write_depth_fb =
+    const bool write_depth_fb{
         (state.depth.test_enabled && state.depth.write_mask == GL_TRUE) ||
-        (has_stencil && state.stencil.test_enabled && state.stencil.write_mask != 0);
+        (has_stencil && state.stencil.test_enabled && state.stencil.write_mask != 0)};
 
-    const bool using_color_fb =
-        regs.framebuffer.framebuffer.GetColorBufferPhysicalAddress() != 0 && write_color_fb;
-    const bool using_depth_fb =
+    const bool using_color_fb{regs.framebuffer.framebuffer.GetColorBufferPhysicalAddress() != 0 &&
+                              write_color_fb};
+    const bool using_depth_fb{
         !shadow_rendering && regs.framebuffer.framebuffer.GetDepthBufferPhysicalAddress() != 0 &&
         (write_depth_fb || regs.framebuffer.output_merger.depth_test_enable != 0 ||
-         (has_stencil && state.stencil.test_enabled));
+         (has_stencil && state.stencil.test_enabled))};
 
     MathUtil::Rectangle<s32> viewport_rect_unscaled{
         // These registers hold half-width and half-height, so must be multiplied by 2

@@ -22,7 +22,7 @@
 #include "video_core/renderer_opengl/renderer_opengl.h"
 #include "video_core/video_core.h"
 
-static const char vertex_shader[] = R"(
+constexpr char vertex_shader[]{R"(
 #version 150 core
 
 in vec2 vert_position;
@@ -43,9 +43,9 @@ void main() {
     gl_Position = vec4(mat2(modelview_matrix) * vert_position + modelview_matrix[2], 0.0, 1.0);
     frag_tex_coord = vert_tex_coord;
 }
-)";
+)"};
 
-static const char fragment_shader[] = R"(
+constexpr char fragment_shader[]{R"(
 #version 150 core
 
 in vec2 frag_tex_coord;
@@ -56,7 +56,7 @@ uniform sampler2D color_texture;
 void main() {
     color = texture(color_texture, frag_tex_coord);
 }
-)";
+)"};
 
 /**
  * Vertex structure that the drawn screen rectangles are composed of.
@@ -98,16 +98,16 @@ RendererOpenGL::~RendererOpenGL() = default;
 /// Swap buffers (render frame)
 void RendererOpenGL::SwapBuffers() {
     // Maintain the rasterizer's state as a priority
-    OpenGLState prev_state = OpenGLState::GetCurState();
+    OpenGLState prev_state{OpenGLState::GetCurState()};
     state.Apply();
 
     for (int i : {0, 1, 2}) {
-        int fb_id = i == 2 ? 1 : 0;
-        const auto& framebuffer = GPU::g_regs.framebuffer_config[fb_id];
+        int fb_id{i == 2 ? 1 : 0};
+        const auto& framebuffer{GPU::g_regs.framebuffer_config[fb_id]};
 
         // Main LCD (0): 0x1ED02204, Sub LCD (1): 0x1ED02A04
-        u32 lcd_color_addr =
-            (fb_id == 0) ? LCD_REG_INDEX(color_fill_top) : LCD_REG_INDEX(color_fill_bottom);
+        u32 lcd_color_addr{(fb_id == 0) ? LCD_REG_INDEX(color_fill_top)
+                                        : LCD_REG_INDEX(color_fill_bottom)};
         lcd_color_addr = HW::VADDR_LCD + 4 * lcd_color_addr;
         LCD::Regs::ColorFill color_fill = {0};
         LCD::Read(color_fill.raw, lcd_color_addr);
@@ -160,17 +160,17 @@ void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& fram
     if (framebuffer.address_right1 == 0 || framebuffer.address_right2 == 0)
         right_eye = false;
 
-    const PAddr framebuffer_addr =
+    const PAddr framebuffer_addr{
         framebuffer.active_fb == 0
             ? (!right_eye ? framebuffer.address_left1 : framebuffer.address_right1)
-            : (!right_eye ? framebuffer.address_left2 : framebuffer.address_right2);
+            : (!right_eye ? framebuffer.address_left2 : framebuffer.address_right2)};
 
     LOG_TRACE(Render_OpenGL, "0x{:08x} bytes from 0x{:08x}({:x}{}), fmt {}",
               framebuffer.stride * framebuffer.height, framebuffer_addr, (int)framebuffer.width,
               (int)framebuffer.height, (int)framebuffer.format);
 
-    int bpp = GPU::Regs::BytesPerPixel(framebuffer.color_format);
-    size_t pixel_stride = framebuffer.stride / bpp;
+    int bpp{GPU::Regs::BytesPerPixel(framebuffer.color_format)};
+    size_t pixel_stride{framebuffer.stride / bpp};
 
     // OpenGL only supports specifying a stride in units of pixels, not bytes, unfortunately
     ASSERT(pixel_stride * bpp == framebuffer.stride);
@@ -187,7 +187,7 @@ void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& fram
 
         Memory::RasterizerFlushRegion(framebuffer_addr, framebuffer.stride * framebuffer.height);
 
-        const u8* framebuffer_data = Memory::GetPhysicalPointer(framebuffer_addr);
+        const u8* framebuffer_data{Memory::GetPhysicalPointer(framebuffer_addr)};
 
         state.texture_units[0].texture_2d = screen_info.texture.resource.handle;
         state.Apply();
@@ -289,8 +289,8 @@ void RendererOpenGL::InitOpenGLObjects() {
 
 void RendererOpenGL::ConfigureFramebufferTexture(TextureInfo& texture,
                                                  const GPU::Regs::FramebufferConfig& framebuffer) {
-    GPU::Regs::PixelFormat format = framebuffer.color_format;
-    GLint internal_format;
+    GPU::Regs::PixelFormat format{framebuffer.color_format};
+    GLint internal_format{};
 
     texture.format = format;
     texture.width = framebuffer.width;
@@ -375,9 +375,9 @@ void RendererOpenGL::DrawSingleScreenRotated(const ScreenInfo& screen_info, floa
  * Draws the emulated screens to the emulator window.
  */
 void RendererOpenGL::DrawScreens() {
-    auto layout = render_window.GetFramebufferLayout();
-    const auto& top_screen = layout.top_screen;
-    const auto& bottom_screen = layout.bottom_screen;
+    auto layout{render_window.GetFramebufferLayout()};
+    const auto& top_screen{layout.top_screen};
+    const auto& bottom_screen{layout.bottom_screen};
 
     glViewport(0, 0, layout.width, layout.height);
     glClearColor(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue,
@@ -461,10 +461,10 @@ static const char* GetType(GLenum type) {
 
 static void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum severity,
                                   GLsizei length, const GLchar* message, const void* user_param) {
-    Log::Level level;
+    Log::Level level{};
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
-        level = Log::Level::Error;
+        level = Log::Level::Critical;
         break;
     case GL_DEBUG_SEVERITY_MEDIUM:
         level = Log::Level::Warning;
