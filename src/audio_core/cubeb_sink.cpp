@@ -51,11 +51,11 @@ CubebSink::CubebSink(std::string target_device_name) : impl(std::make_unique<Imp
         if (cubeb_enumerate_devices(impl->ctx, CUBEB_DEVICE_TYPE_OUTPUT, &collection) != CUBEB_OK) {
             LOG_WARNING(Audio_Sink, "Audio output device enumeration not supported");
         } else {
-            const auto collection_end = collection.device + collection.count;
-            const auto device = std::find_if(collection.device, collection_end,
-                                             [&](const cubeb_device_info& device) {
-                                                 return target_device_name == device.friendly_name;
-                                             });
+            const auto collection_end{collection.device + collection.count};
+            const auto device{std::find_if(collection.device, collection_end,
+                                           [&](const cubeb_device_info& device) {
+                                               return target_device_name == device.friendly_name;
+                                           })};
             if (device != collection_end) {
                 output_device = device->devid;
             }
@@ -115,7 +115,7 @@ size_t CubebSink::SamplesInQueue() const {
 
 long CubebSink::Impl::DataCallback(cubeb_stream* stream, void* user_data, const void* input_buffer,
                                    void* output_buffer, long num_frames) {
-    Impl* impl{static_cast<Impl*>(user_data});
+    Impl* impl{static_cast<Impl*>(user_data)};
     u8* buffer{reinterpret_cast<u8*>(output_buffer)};
 
     if (!impl)
@@ -153,7 +153,7 @@ std::vector<std::string> ListCubebSinkDevices() {
         LOG_WARNING(Audio_Sink, "Audio output device enumeration not supported");
     } else {
         for (size_t i{}; i < collection.count; i++) {
-            const cubeb_device_info& device = collection.device[i];
+            const cubeb_device_info& device{collection.device[i]};
             if (device.friendly_name) {
                 device_list.emplace_back(device.friendly_name);
             }
