@@ -17,7 +17,7 @@ class EmuWindow;
 
 namespace Layout {
 class FramebufferLayout;
-}
+} // namespace Layout
 
 /// Structure used for storing information about the textures for each 3DS screen
 struct TextureInfo {

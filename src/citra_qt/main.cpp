@@ -625,14 +625,7 @@ void GMainWindow::BootGame(const QString& filename) {
 }
 
 void GMainWindow::ShutdownGame() {
-    const bool was_recording{Core::Movie::GetInstance().IsRecordingInput()};
-    Core::Movie::GetInstance().Shutdown();
-    if (was_recording) {
-        QMessageBox::information(this, "Movie Saved", "The movie is successfully saved.");
-        ui.action_Record_Movie->setEnabled(true);
-        ui.action_Play_Movie->setEnabled(true);
-        ui.action_Stop_Recording_Playback->setEnabled(false);
-    }
+    OnStopRecordingPlayback();
     emu_thread->RequestStop();
 
     emit EmulationStopping();
