@@ -54,21 +54,20 @@ static QString ButtonToText(const Common::ParamPackage& param) {
     } else if (param.Get("engine", "") == "keyboard") {
         return getKeyName(param.Get("code", 0));
     } else if (param.Get("engine", "") == "sdl") {
-        QString text{QString("%1").arg(QString::fromStdString(param.Get("name", "")))};
         if (param.Has("hat")) {
-            text += QString(" Hat %1 %2")
-                        .arg(QString::fromStdString(param.Get("hat", "")),
-                             QString::fromStdString(param.Get("direction", "")));
+            return QString("Hat %1 %2")
+                .arg(QString::fromStdString(param.Get("hat", "")),
+                     QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("axis")) {
-            text += QString(" Axis %1%2")
-                        .arg(QString::fromStdString(param.Get("axis", "")),
-                             QString::fromStdString(param.Get("direction", "")));
+            return QString("Axis %1% 2")
+                .arg(QString::fromStdString(param.Get("axis", "")),
+                     QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("button")) {
-            text += QString(" Button %1").arg(QString::fromStdString(param.Get("button", "")));
+            return QString("Button %1").arg(QString::fromStdString(param.Get("button", "")));
         }
-        return text;
+        return QString();
     } else {
         return "[unknown]";
     }
@@ -84,21 +83,20 @@ static QString AnalogToText(const Common::ParamPackage& param, const std::string
             return "[unused]";
         }
 
-        QString text{QString("%1").arg(QString::fromStdString(param.Get("name", "")))};
         if (dir == "left" || dir == "right") {
-            text += QString(" Axis %1").arg(QString::fromStdString(param.Get("axis_x", "")));
+            return QString("Axis %1").arg(QString::fromStdString(param.Get("axis_x", "")));
         } else if (dir == "up" || dir == "down") {
-            text += QString(" Axis %1").arg(QString::fromStdString(param.Get("axis_y", "")));
+            return QString("Axis %1").arg(QString::fromStdString(param.Get("axis_y", "")));
         }
-        return text;
+        return QString();
     } else {
         return "[unknown]";
     }
 };
 
 ConfigureInput::ConfigureInput(QWidget* parent)
-    : QWidget(parent), ui(std::make_unique<Ui::ConfigureInput>()),
-      timeout_timer(std::make_unique<QTimer>()), poll_timer(std::make_unique<QTimer>()) {
+    : QWidget{parent}, ui{std::make_unique<Ui::ConfigureInput>()},
+      timeout_timer{std::make_unique<QTimer>()}, poll_timer{std::make_unique<QTimer>()} {
 
     ui->setupUi(this);
     setFocusPolicy(Qt::ClickFocus);

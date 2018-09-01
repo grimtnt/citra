@@ -11,7 +11,7 @@
 union SDL_Event;
 namespace Common {
 class ParamPackage;
-} // namespace Common
+}
 namespace InputCommon::Polling {
 class DevicePoller;
 enum class DeviceType;
@@ -22,11 +22,8 @@ namespace InputCommon::SDL {
 /// Initializes and registers SDL device factories
 void Init();
 
-/// Unregisters SDL device factories and shut them down.
+/// Unresisters SDL device factories and shut them down.
 void Shutdown();
-
-/// Call after SDL_INIT and before the event poll loop to open all connected joysticks
-void InitSDLJoysticks();
 
 /// Needs to be called before SDL_QuitSubSystem.
 void CloseSDLJoysticks();

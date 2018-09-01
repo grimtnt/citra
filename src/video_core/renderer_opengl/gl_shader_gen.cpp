@@ -29,7 +29,7 @@ using VSOutputAttributes = RasterizerRegs::VSOutputAttributes;
 
 namespace GLShader {
 
-static const std::string UniformBlockDef{R"(
+static const std::string UniformBlockDef = R"(
 #define NUM_TEV_STAGES 6
 #define NUM_LIGHTS 8
 #define NUM_LIGHTING_SAMPLERS 24
@@ -62,6 +62,7 @@ layout (std140) uniform shader_data {
     int proctex_alpha_map_offset;
     int proctex_lut_offset;
     int proctex_diff_lut_offset;
+    float proctex_bias;
     ivec4 lighting_lut_offset[NUM_LIGHTING_SAMPLERS / 4];
     vec3 fog_color;
     vec2 proctex_noise_f;
@@ -73,17 +74,17 @@ layout (std140) uniform shader_data {
     vec4 tev_combiner_buffer_color;
     vec4 clip_coef;
 };
-)"};
+)";
 
 static std::string GetVertexInterfaceDeclaration(bool is_output, bool separable_shader) {
-    std::string out{};
+    std::string out;
 
-    auto append_variable{[&](const char* var, int location) {
+    auto append_variable = [&](const char* var, int location) {
         if (separable_shader) {
             out += "layout (location=" + std::to_string(location) + ") ";
         }
         out += std::string(is_output ? "out " : "in ") + var + ";\n";
-    }};
+    };
 
     append_variable("vec4 primary_color", ATTRIBUTE_COLOR);
     append_variable("vec2 texcoord0", ATTRIBUTE_TEXCOORD0);
@@ -226,7 +227,12 @@ PicaFSConfig PicaFSConfig::BuildFromRegs(const Pica::Regs& regs) {
         state.proctex.u_shift = regs.texturing.proctex.u_shift;
         state.proctex.v_shift = regs.texturing.proctex.v_shift;
         state.proctex.lut_width = regs.texturing.proctex_lut.width;
-        state.proctex.lut_offset = regs.texturing.proctex_lut_offset;
+        state.proctex.lut_offset0 = regs.texturing.proctex_lut_offset.level0;
+        state.proctex.lut_offset1 = regs.texturing.proctex_lut_offset.level1;
+        state.proctex.lut_offset2 = regs.texturing.proctex_lut_offset.level2;
+        state.proctex.lut_offset3 = regs.texturing.proctex_lut_offset.level3;
+        state.proctex.lod_min = regs.texturing.proctex_lut.lod_min;
+        state.proctex.lod_max = regs.texturing.proctex_lut.lod_max;
         state.proctex.lut_filter = regs.texturing.proctex_lut.filter;
     }
 
@@ -615,10 +621,10 @@ static void AppendAlphaTestCondition(std::string& out, FramebufferRegs::CompareF
 
 /// Writes the code to emulate the specified TEV stage
 static void WriteTevStage(std::string& out, const PicaFSConfig& config, unsigned index) {
-    const auto stage =
-        static_cast<const TexturingRegs::TevStageConfig>(config.state.tev_stages[index]);
+    const auto stage{
+        static_cast<const TexturingRegs::TevStageConfig>(config.state.tev_stages[index])};
     if (!IsPassThroughTevStage(stage)) {
-        std::string index_name = std::to_string(index);
+        std::string index_name{std::to_string(index)};
 
         out += "vec3 color_results_" + index_name + "[3] = vec3[3](";
         AppendColorModifier(out, config, stage.color_modifier1, stage.color_source1, index_name);
@@ -673,7 +679,7 @@ static void WriteTevStage(std::string& out, const PicaFSConfig& config, unsigned
 
 /// Writes the code to emulate fragment lighting
 static void WriteLighting(std::string& out, const PicaFSConfig& config) {
-    const auto& lighting = config.state.lighting;
+    const auto& lighting{config.state.lighting};
 
     // Define lighting globals
     out += "vec4 diffuse_sum = vec4(0.0, 0.0, 0.0, 1.0);\n"
@@ -687,9 +693,9 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
            "float geo_factor = 1.0;\n";
 
     // Compute fragment normals and tangents
-    auto Perturbation = [&]() {
+    auto Perturbation{[&]() {
         return "2.0 * (" + SampleTexture(config, lighting.bump_selector) + ").rgb - 1.0";
-    };
+    }};
     if (lighting.bump_mode == LightingRegs::LightingBumpMode::NormalMap) {
         // Bump mapping is enabled using a normal map
         out += "vec3 surface_normal = " + Perturbation() + ";\n";
@@ -737,8 +743,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
     }
 
     // Samples the specified lookup table for specular lighting
-    auto GetLutValue = [&lighting](LightingRegs::LightingSampler sampler, unsigned light_num,
-                                   LightingRegs::LightingLutInput input, bool abs) {
+    auto GetLutValue{[&lighting](LightingRegs::LightingSampler sampler, unsigned light_num,
+                                 LightingRegs::LightingLutInput input, bool abs) {
         std::string index{};
         switch (input) {
         case LightingRegs::LightingLutInput::NH:
@@ -784,7 +790,7 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             break;
         }
 
-        std::string sampler_string = std::to_string(static_cast<unsigned>(sampler));
+        std::string sampler_string{std::to_string(static_cast<unsigned>(sampler))};
 
         if (abs) {
             // LUT index is in the range of (0.0, 1.0)
@@ -795,12 +801,12 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             // LUT index is in the range of (-1.0, 1.0)
             return "LookupLightingLUTSigned(" + sampler_string + ", " + index + ")";
         }
-    };
+    }};
 
     // Write the code to emulate each enabled light
     for (unsigned light_index{}; light_index < lighting.src_num; ++light_index) {
-        const auto& light_config = lighting.light[light_index];
-        std::string light_src = "light_src[" + std::to_string(light_config.num) + "]";
+        const auto& light_config{lighting.light[light_index]};
+        std::string light_src{"light_src[" + std::to_string(light_config.num) + "]"};
 
         // Compute light vector (directional or positional)
         if (light_config.directional)
@@ -827,19 +833,19 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (light_config.spot_atten_enable &&
             LightingRegs::IsLightingSamplerSupported(
                 lighting.config, LightingRegs::LightingSampler::SpotlightAttenuation)) {
-            std::string value =
+            std::string value{
                 GetLutValue(LightingRegs::SpotlightAttenuationSampler(light_config.num),
-                            light_config.num, lighting.lut_sp.type, lighting.lut_sp.abs_input);
+                            light_config.num, lighting.lut_sp.type, lighting.lut_sp.abs_input)};
             spot_atten = "(" + std::to_string(lighting.lut_sp.scale) + " * " + value + ")";
         }
 
         // If enabled, compute distance attenuation value
-        std::string dist_atten = "1.0";
+        std::string dist_atten{"1.0"};
         if (light_config.dist_atten_enable) {
             std::string index = "clamp(" + light_src + ".dist_atten_scale * length(-view - " +
                                 light_src + ".position) + " + light_src +
                                 ".dist_atten_bias, 0.0, 1.0)";
-            auto sampler = LightingRegs::DistanceAttenuationSampler(light_config.num);
+            auto sampler{LightingRegs::DistanceAttenuationSampler(light_config.num)};
             dist_atten = "LookupLightingLUTUnsigned(" +
                          std::to_string(static_cast<unsigned>(sampler)) + "," + index + ")";
         }
@@ -851,17 +857,17 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         }
 
         // Specular 0 component
-        std::string d0_lut_value = "1.0";
+        std::string d0_lut_value{"1.0"};
         if (lighting.lut_d0.enable &&
             LightingRegs::IsLightingSamplerSupported(
                 lighting.config, LightingRegs::LightingSampler::Distribution0)) {
             // Lookup specular "distribution 0" LUT value
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::Distribution0, light_config.num,
-                            lighting.lut_d0.type, lighting.lut_d0.abs_input);
+            std::string value{GetLutValue(LightingRegs::LightingSampler::Distribution0,
+                                          light_config.num, lighting.lut_d0.type,
+                                          lighting.lut_d0.abs_input)};
             d0_lut_value = "(" + std::to_string(lighting.lut_d0.scale) + " * " + value + ")";
         }
-        std::string specular_0 = "(" + d0_lut_value + " * " + light_src + ".specular_0)";
+        std::string specular_0{"(" + d0_lut_value + " * " + light_src + ".specular_0)"};
         if (light_config.geometric_factor_0) {
             specular_0 = "(" + specular_0 + " * geo_factor)";
         }
@@ -870,9 +876,9 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (lighting.lut_rr.enable &&
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::ReflectRed)) {
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::ReflectRed, light_config.num,
-                            lighting.lut_rr.type, lighting.lut_rr.abs_input);
+            std::string value{GetLutValue(LightingRegs::LightingSampler::ReflectRed,
+                                          light_config.num, lighting.lut_rr.type,
+                                          lighting.lut_rr.abs_input)};
             value = "(" + std::to_string(lighting.lut_rr.scale) + " * " + value + ")";
             out += "refl_value.r = " + value + ";\n";
         } else {
@@ -883,9 +889,9 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (lighting.lut_rg.enable &&
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::ReflectGreen)) {
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::ReflectGreen, light_config.num,
-                            lighting.lut_rg.type, lighting.lut_rg.abs_input);
+            std::string value{GetLutValue(LightingRegs::LightingSampler::ReflectGreen,
+                                          light_config.num, lighting.lut_rg.type,
+                                          lighting.lut_rg.abs_input)};
             value = "(" + std::to_string(lighting.lut_rg.scale) + " * " + value + ")";
             out += "refl_value.g = " + value + ";\n";
         } else {
@@ -896,9 +902,9 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         if (lighting.lut_rb.enable &&
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::ReflectBlue)) {
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::ReflectBlue, light_config.num,
-                            lighting.lut_rb.type, lighting.lut_rb.abs_input);
+            std::string value{GetLutValue(LightingRegs::LightingSampler::ReflectBlue,
+                                          light_config.num, lighting.lut_rb.type,
+                                          lighting.lut_rb.abs_input)};
             value = "(" + std::to_string(lighting.lut_rb.scale) + " * " + value + ")";
             out += "refl_value.b = " + value + ";\n";
         } else {
@@ -906,18 +912,18 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
         }
 
         // Specular 1 component
-        std::string d1_lut_value = "1.0";
+        std::string d1_lut_value{"1.0"};
         if (lighting.lut_d1.enable &&
             LightingRegs::IsLightingSamplerSupported(
                 lighting.config, LightingRegs::LightingSampler::Distribution1)) {
             // Lookup specular "distribution 1" LUT value
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::Distribution1, light_config.num,
-                            lighting.lut_d1.type, lighting.lut_d1.abs_input);
+            std::string value{GetLutValue(LightingRegs::LightingSampler::Distribution1,
+                                          light_config.num, lighting.lut_d1.type,
+                                          lighting.lut_d1.abs_input)};
             d1_lut_value = "(" + std::to_string(lighting.lut_d1.scale) + " * " + value + ")";
         }
-        std::string specular_1 =
-            "(" + d1_lut_value + " * refl_value * " + light_src + ".specular_1)";
+        std::string specular_1{"(" + d1_lut_value + " * refl_value * " + light_src +
+                               ".specular_1)"};
         if (light_config.geometric_factor_1) {
             specular_1 = "(" + specular_1 + " * geo_factor)";
         }
@@ -928,9 +934,8 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             LightingRegs::IsLightingSamplerSupported(lighting.config,
                                                      LightingRegs::LightingSampler::Fresnel)) {
             // Lookup fresnel LUT value
-            std::string value =
-                GetLutValue(LightingRegs::LightingSampler::Fresnel, light_config.num,
-                            lighting.lut_fr.type, lighting.lut_fr.abs_input);
+            std::string value{GetLutValue(LightingRegs::LightingSampler::Fresnel, light_config.num,
+                                          lighting.lut_fr.type, lighting.lut_fr.abs_input)};
             value = "(" + std::to_string(lighting.lut_fr.scale) + " * " + value + ")";
 
             // Enabled for diffuse lighting alpha component
@@ -944,10 +949,10 @@ static void WriteLighting(std::string& out, const PicaFSConfig& config) {
             }
         }
 
-        bool shadow_primary_enable = lighting.shadow_primary && light_config.shadow_enable;
-        bool shadow_secondary_enable = lighting.shadow_secondary && light_config.shadow_enable;
-        std::string shadow_primary = shadow_primary_enable ? " * shadow.rgb" : "";
-        std::string shadow_secondary = shadow_secondary_enable ? " * shadow.rgb" : "";
+        bool shadow_primary_enable{lighting.shadow_primary && light_config.shadow_enable};
+        bool shadow_secondary_enable{lighting.shadow_secondary && light_config.shadow_enable};
+        std::string shadow_primary{shadow_primary_enable ? " * shadow.rgb" : ""};
+        std::string shadow_secondary{shadow_secondary_enable ? " * shadow.rgb" : ""};
 
         // Compute primary fragment color (diffuse lighting) function
         out += "diffuse_sum.rgb += ((" + light_src + ".diffuse * dot_product) + " + light_src +
@@ -982,7 +987,7 @@ using ProcTexFilter = TexturingRegs::ProcTexFilter;
 
 void AppendProcTexShiftOffset(std::string& out, const std::string& v, ProcTexShift mode,
                               ProcTexClamp clamp_mode) {
-    std::string offset = (clamp_mode == ProcTexClamp::MirroredRepeat) ? "1.0" : "0.5";
+    std::string offset{(clamp_mode == ProcTexClamp::MirroredRepeat) ? "1.0" : "0.5"};
     switch (mode) {
     case ProcTexShift::None:
         out += "0";
@@ -1028,7 +1033,7 @@ void AppendProcTexClamp(std::string& out, const std::string& var, ProcTexClamp m
 
 void AppendProcTexCombineAndMap(std::string& out, ProcTexCombiner combiner,
                                 const std::string& offset) {
-    std::string combined;
+    std::string combined{};
     switch (combiner) {
     case ProcTexCombiner::U:
         combined = "u";
@@ -1086,6 +1091,7 @@ float ProcTexLookupLUT(int offset, float coord) {
 
     // Noise utility
     if (config.state.proctex.noise_enable) {
+        // See swrasterizer/proctex.cpp for more information about these functions
         out += R"(
 int ProcTexNoiseRand1D(int v) {
     const int table[] = int[](0,4,10,8,4,9,7,12,5,15,13,14,11,15,2,11);
@@ -1123,6 +1129,41 @@ float ProcTexNoiseCoef(vec2 x) {
         )";
     }
 
+    out += "vec4 SampleProcTexColor(float lut_coord, int level) {\n";
+    out += "int lut_width = " + std::to_string(config.state.proctex.lut_width) + " >> level;\n";
+    std::string offset0{std::to_string(config.state.proctex.lut_offset0)};
+    std::string offset1{std::to_string(config.state.proctex.lut_offset1)};
+    std::string offset2{std::to_string(config.state.proctex.lut_offset2)};
+    std::string offset3{std::to_string(config.state.proctex.lut_offset3)};
+    // Offsets for level 4-7 seem to be hardcoded
+    out += "int lut_offsets[8] = int[](" + offset0 + ", " + offset1 + ", " + offset2 + ", " +
+           offset3 + ", 0xF0, 0xF8, 0xFC, 0xFE);\n";
+    out += "int lut_offset = lut_offsets[level];\n";
+    // For the color lut, coord=0.0 is lut[offset] and coord=1.0 is lut[offset+width-1]
+    out += "lut_coord *= lut_width - 1;\n";
+
+    switch (config.state.proctex.lut_filter) {
+    case ProcTexFilter::Linear:
+    case ProcTexFilter::LinearMipmapLinear:
+    case ProcTexFilter::LinearMipmapNearest:
+        out += "int lut_index_i = int(lut_coord) + lut_offset;\n";
+        out += "float lut_index_f = fract(lut_coord);\n";
+        out += "return texelFetch(texture_buffer_lut_rgba, lut_index_i + "
+               "proctex_lut_offset) + "
+               "lut_index_f * "
+               "texelFetch(texture_buffer_lut_rgba, lut_index_i + proctex_diff_lut_offset);\n";
+        break;
+    case ProcTexFilter::Nearest:
+    case ProcTexFilter::NearestMipmapLinear:
+    case ProcTexFilter::NearestMipmapNearest:
+        out += "lut_coord += lut_offset;\n";
+        out += "return texelFetch(texture_buffer_lut_rgba, int(round(lut_coord)) + "
+               "proctex_lut_offset);\n";
+        break;
+    }
+
+    out += "}\n";
+
     out += "vec4 ProcTex() {\n";
     if (config.state.proctex.coord < 3) {
         out += "vec2 uv = abs(texcoord" + std::to_string(config.state.proctex.coord) + ");\n";
@@ -1131,6 +1172,18 @@ float ProcTexNoiseCoef(vec2 x) {
         out += "vec2 uv = abs(texcoord0);\n";
     }
 
+    // This LOD formula is the same as the LOD upper limit defined in OpenGL.
+    // f(x, y) <= m_u + m_v + m_w
+    // (See OpenGL 4.6 spec, 8.14.1 - Scale Factor and Level-of-Detail)
+    // Note: this is different from the one normal 2D textures use.
+    out += "vec2 duv = max(abs(dFdx(uv)), abs(dFdy(uv)));\n";
+    // unlike normal texture, the bias is inside the log2
+    out += "float lod = log2(abs(" + std::to_string(config.state.proctex.lut_width) +
+           " * proctex_bias) * (duv.x + duv.y));\n";
+    out += "if (proctex_bias == 0.0) lod = 0.0;\n";
+    out += "lod = clamp(lod, " +
+           std::to_string(std::max<float>(0.0f, config.state.proctex.lod_min)) + ", " +
+           std::to_string(std::min<float>(7.0f, config.state.proctex.lod_max)) + ");\n";
     // Get shift offset before noise generation
     out += "float u_shift = ";
     AppendProcTexShiftOffset(out, "uv.y", config.state.proctex.u_shift,
@@ -1161,28 +1214,21 @@ float ProcTexNoiseCoef(vec2 x) {
                                "proctex_color_map_offset");
     out += ";\n";
 
-    // Look up color
-    // For the color lut, coord=0.0 is lut[offset] and coord=1.0 is lut[offset+width-1]
-    out += "lut_coord *= " + std::to_string(config.state.proctex.lut_width - 1) + ";\n";
-    // TODO(wwylele): implement mipmap
     switch (config.state.proctex.lut_filter) {
     case ProcTexFilter::Linear:
-    case ProcTexFilter::LinearMipmapLinear:
-    case ProcTexFilter::LinearMipmapNearest:
-        out += "int lut_index_i = int(lut_coord) + " +
-               std::to_string(config.state.proctex.lut_offset) + ";\n";
-        out += "float lut_index_f = fract(lut_coord);\n";
-        out += "vec4 final_color = texelFetch(texture_buffer_lut_rgba, lut_index_i + "
-               "proctex_lut_offset) + "
-               "lut_index_f * "
-               "texelFetch(texture_buffer_lut_rgba, lut_index_i + proctex_diff_lut_offset);\n";
-        break;
     case ProcTexFilter::Nearest:
-    case ProcTexFilter::NearestMipmapLinear:
+        out += "vec4 final_color = SampleProcTexColor(lut_coord, 0);\n";
+        break;
     case ProcTexFilter::NearestMipmapNearest:
-        out += "lut_coord += " + std::to_string(config.state.proctex.lut_offset) + ";\n";
-        out += "vec4 final_color = texelFetch(texture_buffer_lut_rgba, int(round(lut_coord)) + "
-               "proctex_lut_offset);\n";
+    case ProcTexFilter::LinearMipmapNearest:
+        out += "vec4 final_color = SampleProcTexColor(lut_coord, int(round(lod)));\n";
+        break;
+    case ProcTexFilter::NearestMipmapLinear:
+    case ProcTexFilter::LinearMipmapLinear:
+        out += "int lod_i = int(lod);\n";
+        out += "float lod_f = fract(lod);\n";
+        out += "vec4 final_color = mix(SampleProcTexColor(lut_coord, lod_i), "
+               "SampleProcTexColor(lut_coord, lod_i + 1), lod_f);\n";
         break;
     }
 
@@ -1202,12 +1248,12 @@ float ProcTexNoiseCoef(vec2 x) {
 std::string GenerateFragmentShader(const PicaFSConfig& config, bool separable_shader) {
     const auto& state = config.state;
 
-    std::string out = R"(
+    std::string out{R"(
 #version 330 core
 #extension GL_ARB_shader_image_load_store : enable
 #extension GL_ARB_shader_image_size : enable
 #define ALLOW_SHADOW (defined(GL_ARB_shader_image_load_store) && defined(GL_ARB_shader_image_size))
-)";
+)"};
 
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n";
@@ -1542,7 +1588,7 @@ do {
 }
 
 std::string GenerateTrivialVertexShader(bool separable_shader) {
-    std::string out = "#version 330 core\n";
+    std::string out{"#version 330 core\n"};
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
@@ -1588,7 +1634,7 @@ void main() {
 boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetup& setup,
                                                   const PicaVSConfig& config,
                                                   bool separable_shader) {
-    std::string out = "#version 330 core\n";
+    std::string out{"#version 330 core\n"};
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
@@ -1596,28 +1642,28 @@ boost::optional<std::string> GenerateVertexShader(const Pica::Shader::ShaderSetu
     out += Pica::Shader::Decompiler::GetCommonDeclarations();
 
     std::array<bool, 16> used_regs{};
-    auto get_input_reg = [&](u32 reg) -> std::string {
+    auto get_input_reg{[&](u32 reg) -> std::string {
         ASSERT(reg < 16);
         used_regs[reg] = true;
         return "vs_in_reg" + std::to_string(reg);
-    };
+    }};
 
-    auto get_output_reg = [&](u32 reg) -> std::string {
+    auto get_output_reg{[&](u32 reg) -> std::string {
         ASSERT(reg < 16);
         if (config.state.output_map[reg] < config.state.num_outputs) {
             return "vs_out_attr" + std::to_string(config.state.output_map[reg]);
         }
         return "";
-    };
+    }};
 
-    auto program_source_opt = Pica::Shader::Decompiler::DecompileProgram(
+    auto program_source_opt{Pica::Shader::Decompiler::DecompileProgram(
         setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
-        get_output_reg, config.state.sanitize_mul, false);
+        get_output_reg, config.state.sanitize_mul, false)};
 
     if (!program_source_opt)
         return boost::none;
 
-    std::string& program_source = program_source_opt.get();
+    std::string& program_source{program_source_opt.get()};
 
     out += R"(
 #define uniforms vs_uniforms
@@ -1653,7 +1699,7 @@ layout (std140) uniform vs_config {
 }
 
 static std::string GetGSCommonSource(const PicaGSConfigCommonRaw& config, bool separable_shader) {
-    std::string out = GetVertexInterfaceDeclaration(true, separable_shader);
+    std::string out{GetVertexInterfaceDeclaration(true, separable_shader)};
     out += UniformBlockDef;
     out += Pica::Shader::Decompiler::GetCommonDeclarations();
 
@@ -1674,15 +1720,15 @@ struct Vertex {
     out += "    vec4 attributes[" + std::to_string(config.gs_output_attributes) + "];\n";
     out += "};\n\n";
 
-    auto semantic = [&config](VSOutputAttributes::Semantic slot_semantic) -> std::string {
-        u32 slot = static_cast<u32>(slot_semantic);
-        u32 attrib = config.semantic_maps[slot].attribute_index;
-        u32 comp = config.semantic_maps[slot].component_index;
+    auto semantic{[&config](VSOutputAttributes::Semantic slot_semantic) -> std::string {
+        u32 slot{static_cast<u32>(slot_semantic)};
+        u32 attrib{config.semantic_maps[slot].attribute_index};
+        u32 comp{config.semantic_maps[slot].component_index};
         if (attrib < config.gs_output_attributes) {
             return "vtx.attributes[" + std::to_string(attrib) + "]." + "xyzw"[comp];
         }
         return "0.0";
-    };
+    }};
 
     out += "vec4 GetVertexQuaternion(Vertex vtx) {\n";
     out += "    return vec4(" + semantic(VSOutputAttributes::QUATERNION_X) + ", " +
@@ -1741,7 +1787,7 @@ void EmitPrim(Vertex vtx0, Vertex vtx1, Vertex vtx2) {
 };
 
 std::string GenerateFixedGeometryShader(const PicaFixedGSConfig& config, bool separable_shader) {
-    std::string out = "#version 330 core\n";
+    std::string out{"#version 330 core\n"};
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n\n";
     }
@@ -1776,7 +1822,7 @@ void main() {
 boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSetup& setup,
                                                     const PicaGSConfig& config,
                                                     bool separable_shader) {
-    std::string out = "#version 330 core\n";
+    std::string out{"#version 330 core\n"};
     if (separable_shader) {
         out += "#extension GL_ARB_separate_shader_objects : enable\n";
     }
@@ -1807,7 +1853,7 @@ boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSe
 
     out += GetGSCommonSource(config.state, separable_shader);
 
-    auto get_input_reg = [&](u32 reg) -> std::string {
+    auto get_input_reg{[&](u32 reg) -> std::string {
         ASSERT(reg < 16);
         u32 attr = config.state.input_map[reg];
         if (attr < config.state.num_inputs) {
@@ -1815,24 +1861,24 @@ boost::optional<std::string> GenerateGeometryShader(const Pica::Shader::ShaderSe
                    std::to_string(attr / config.state.attributes_per_vertex) + "]";
         }
         return "vec4(0.0, 0.0, 0.0, 1.0)";
-    };
+    }};
 
-    auto get_output_reg = [&](u32 reg) -> std::string {
+    auto get_output_reg{[&](u32 reg) -> std::string {
         ASSERT(reg < 16);
         if (config.state.output_map[reg] < config.state.num_outputs) {
             return "output_buffer.attributes[" + std::to_string(config.state.output_map[reg]) + "]";
         }
         return "";
-    };
+    }};
 
-    auto program_source_opt = Pica::Shader::Decompiler::DecompileProgram(
+    auto program_source_opt{Pica::Shader::Decompiler::DecompileProgram(
         setup.program_code, setup.swizzle_data, config.state.main_offset, get_input_reg,
-        get_output_reg, config.state.sanitize_mul, true);
+        get_output_reg, config.state.sanitize_mul, true)};
 
     if (!program_source_opt)
         return boost::none;
 
-    std::string& program_source = program_source_opt.get();
+    std::string& program_source{program_source_opt.get()};
 
     out += R"(
 Vertex output_buffer;
