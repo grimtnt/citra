@@ -75,6 +75,11 @@ public:
     void SendCloseMessage();
 
     /**
+     * Sends the list of members to every connected client in the room.
+     */
+    void BroadcastMemberList();
+
+    /**
      * Generates a free MAC address to assign to a new client.
      * The first 3 bytes are the NintendoOUI 0x00, 0x1F, 0x32
      */
@@ -156,6 +161,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         members.push_back(std::move(member));
     }
 
+    BroadcastMemberList();
     SendJoinSuccess(event->peer, preferred_mac);
 }
 
@@ -201,6 +207,24 @@ void Room::RoomImpl::SendCloseMessage() {
     for (auto& member : members) {
         enet_peer_disconnect(member.peer, 0);
     }
+}
+
+void Room::RoomImpl::BroadcastMemberList() {
+    Packet packet;
+    packet << static_cast<u8>(IdMemberList);
+    packet << static_cast<u32>(members.size());
+
+    {
+        std::lock_guard<std::mutex> lock(member_mutex);
+        for (const auto& member : members) {
+            packet << member.mac_address;
+        }
+    }
+
+    ENetPacket* enet_packet =
+        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
+    enet_host_broadcast(server, 0, enet_packet);
+    enet_host_flush(server);
 }
 
 MacAddress Room::RoomImpl::GenerateMacAddress() {
@@ -274,6 +298,7 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     }
 
     enet_peer_disconnect(client, 0);
+    BroadcastMemberList();
 }
 
 // Room
@@ -299,8 +324,8 @@ Room::State Room::GetState() const {
     return room_impl->state;
 }
 
-std::vector<Room::Member> Room::GetRoomMemberList() const {
-    std::vector<Room::Member> member_list;
+std::vector<MacAddress> Room::GetRoomMemberList() const {
+    std::vector<MacAddress> member_list;
     std::lock_guard<std::mutex> lock(room_impl->member_mutex);
     for (const auto& member_impl : room_impl->members) {
         member_list.push_back(member_impl.mac_address);

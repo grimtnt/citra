@@ -18,11 +18,11 @@ constexpr u32 ConnectionTimeoutMs = 5000;
 
 class RoomMember::RoomMemberImpl {
 public:
-    ENetHost* client{};         ///< ENet network interface.
+    ENetHost* client{}; ///< ENet network interface.
     ENetPeer* server{}; ///< The server peer the client is connected to
 
     /// Information about the clients connected to the same room as us.
-    MemberList member_information;
+    MemberList member_list;
     /// Port of the room we're connected to.
     u16 port;
 
@@ -50,6 +50,7 @@ public:
 
     private:
         CallbackSet<WifiPacket> callback_set_wifi_packet;
+        CallbackSet<MemberList> callback_set_member_list;
         CallbackSet<State> callback_set_state;
     };
     Callbacks callbacks; ///< All CallbackSets to all events
@@ -67,9 +68,7 @@ public:
     /**
      * Sends a request to the server, asking for permission to join a room with the specified
      * nickname and preferred mac.
-     * @params nickname The desired nickname.
-     * @params preferred_mac The preferred MAC address to use in the room, the NoPreferredMac tells
-     * @params password The password for the room
+     * @params preferred_mac The preferred MAC address to use in the room, the NoPreferredMac tellsm
      * the server to assign one for us.
      */
     void SendJoinRequest(const MacAddress& preferred_mac = NoPreferredMac);
@@ -81,10 +80,16 @@ public:
     void HandleJoinPacket(const ENetEvent* event);
 
     /**
-     * Extracts a WifiPacket from a received ENet packet.
-     * @param event The  ENet event that was received.
+     * Extracts a member list from a received ENet packet.
+     * @param event The ENet event that was received.
      */
-    void HandleWifiPackets(const ENetEvent* event);
+    void HandleMemberListPacket(const ENetEvent* event);
+
+    /**
+     * Extracts a WifiPacket from a received ENet packet.
+     * @param event The ENet event that was received.
+     */
+    void HandleWifiPacket(const ENetEvent* event);
 
     /**
      * Disconnects the RoomMember from the Room
@@ -120,11 +125,16 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
             case ENET_EVENT_TYPE_RECEIVE:
                 switch (event.packet->data[0]) {
                 case IdWifiPacket:
-                    HandleWifiPackets(&event);
+                    HandleWifiPacket(&event);
                     break;
                 case IdJoinSuccess:
+                    // The join request was successful, we are now in the room.
+                    // If we joined successfully, there must be at least one client in the room: us.
+                    ASSERT_MSG(member_list.size() > 0, "We have not yet received member list.");
                     HandleJoinPacket(&event); // Get the MAC Address for the client
-                    SetState(State::Joined);
+                    break;
+                case IdMemberList:
+                    HandleMemberListPacket(&event);
                     break;
                 case IdMacCollision:
                     SetState(State::MacCollision);
@@ -170,6 +180,23 @@ void RoomMember::RoomMemberImpl::SendJoinRequest(const MacAddress& preferred_mac
     Send(std::move(packet));
 }
 
+void RoomMember::RoomMemberImpl::HandleMemberListPacket(const ENetEvent* event) {
+    Packet packet;
+    packet.Append(event->packet->data, event->packet->dataLength);
+
+    // Ignore the first byte, which is the message id.
+    packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
+
+    u32 num_members;
+    packet >> num_members;
+    member_list.resize(num_members);
+
+    for (auto& member : member_list) {
+        packet >> member;
+    }
+    Invoke(member_list);
+}
+
 void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
     Packet packet;
     packet.Append(event->packet->data, event->packet->dataLength);
@@ -182,7 +209,7 @@ void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
     SetState(State::Joined);
 }
 
-void RoomMember::RoomMemberImpl::HandleWifiPackets(const ENetEvent* event) {
+void RoomMember::RoomMemberImpl::HandleWifiPacket(const ENetEvent* event) {
     WifiPacket wifi_packet{};
     Packet packet;
     packet.Append(event->packet->data, event->packet->dataLength);
@@ -234,6 +261,12 @@ RoomMember::RoomMemberImpl::CallbackSet<WifiPacket>& RoomMember::RoomMemberImpl:
 }
 
 template <>
+RoomMember::RoomMemberImpl::CallbackSet<RoomMember::MemberList>&
+RoomMember::RoomMemberImpl::Callbacks::Get() {
+    return callback_set_member_list;
+}
+
+template <>
 RoomMember::RoomMemberImpl::CallbackSet<RoomMember::State>&
 RoomMember::RoomMemberImpl::Callbacks::Get() {
     return callback_set_state;
@@ -272,7 +305,7 @@ RoomMember::State RoomMember::GetState() const {
 }
 
 const RoomMember::MemberList& RoomMember::GetMemberInformation() const {
-    return room_member_impl->member_information;
+    return room_member_impl->member_list;
 }
 
 const MacAddress& RoomMember::GetMacAddress() const {

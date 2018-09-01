@@ -12,9 +12,9 @@
 
 namespace Network {
 
-constexpr u16 DefaultRoomPort = 24872;
+constexpr u16 DefaultRoomPort{24872};
 
-constexpr size_t NumChannels = 1; // Number of channels used for the connection
+constexpr size_t NumChannels{1}; // Number of channels used for the connection
 
 using MacAddress = std::array<u8, 6>;
 /// A special MAC address that tells the room we're joining to assign us a MAC address
@@ -28,6 +28,7 @@ constexpr MacAddress BroadcastMac = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 enum RoomMessageTypes : u8 {
     IdJoinRequest = 1,
     IdJoinSuccess,
+    IdMemberList,
     IdWifiPacket,
     IdMacCollision,
     IdCloseRoom
@@ -41,8 +42,6 @@ public:
         Closed, ///< The room is not opened and can not accept connections.
     };
 
-    using Member = MacAddress;
-
     Room();
     ~Room();
 
@@ -52,9 +51,9 @@ public:
     State GetState() const;
 
     /**
-     * Gets a list of the mbmers connected to the room.
+     * Gets a list of the members connected to the room.
      */
-    std::vector<Member> GetRoomMemberList() const;
+    std::vector<MacAddress> GetRoomMemberList() const;
 
     /**
      * Creates the socket for this room. Will bind to default address if
