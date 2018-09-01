@@ -15,7 +15,6 @@ namespace Settings {
 Values values = {};
 
 void Apply() {
-    VideoCore::g_hw_renderer_enabled = values.use_hw_renderer;
     VideoCore::g_shader_jit_enabled = values.use_shader_jit;
     VideoCore::g_hw_shader_enabled = values.use_hw_shader;
     VideoCore::g_hw_shader_accurate_gs = values.shaders_accurate_gs;
@@ -44,7 +43,6 @@ void LogSettings() {
     LOG_INFO(Config, "Citra Configuration:");
     LogSetting("Core_UseCpuJit", Settings::values.use_cpu_jit);
     LogSetting("Core_KeyboardMode", static_cast<int>(Settings::values.keyboard_mode));
-    LogSetting("Renderer_UseHwRenderer", Settings::values.use_hw_renderer);
     LogSetting("Renderer_UseHwShader", Settings::values.use_hw_shader);
     LogSetting("Renderer_ShadersAccurateGs", Settings::values.shaders_accurate_gs);
     LogSetting("Renderer_ShadersAccurateMul", Settings::values.shaders_accurate_mul);

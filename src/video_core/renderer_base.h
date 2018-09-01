@@ -5,7 +5,6 @@
 #pragma once
 
 #include <memory>
-#include "common/common_types.h"
 #include "core/core.h"
 #include "video_core/rasterizer_interface.h"
 
@@ -13,10 +12,8 @@ class EmuWindow;
 
 class RendererBase : NonCopyable {
 public:
-    /// Used to reference a framebuffer
-    enum kFramebuffer { kFramebuffer_VirtualXFB = 0, kFramebuffer_EFB, kFramebuffer_Texture };
-
-    explicit RendererBase(EmuWindow& window);
+    explicit RendererBase(EmuWindow& window,
+                          std::unique_ptr<VideoCore::RasterizerInterface> rasterizer);
     virtual ~RendererBase();
 
     /// Swap buffers (render frame)
@@ -36,12 +33,7 @@ public:
         return render_window;
     }
 
-    void RefreshRasterizerSetting();
-
 protected:
     EmuWindow& render_window; ///< Reference to the render window handle.
     std::unique_ptr<VideoCore::RasterizerInterface> rasterizer;
-
-private:
-    bool opengl_rasterizer_active = false;
 };

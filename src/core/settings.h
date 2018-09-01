@@ -134,7 +134,6 @@ struct Values {
     bool enable_new_mode;
 
     // Renderer
-    bool use_hw_renderer;
     bool use_hw_shader;
     bool shaders_accurate_gs;
     bool shaders_accurate_mul;

@@ -201,7 +201,6 @@ void FileBackend::Write(const Entry& entry) {
     SUB(HW, AES)                                                                                   \
     CLS(Frontend)                                                                                  \
     CLS(Render)                                                                                    \
-    SUB(Render, Software)                                                                          \
     SUB(Render, OpenGL)                                                                            \
     CLS(Audio)                                                                                     \
     SUB(Audio, DSP)                                                                                \

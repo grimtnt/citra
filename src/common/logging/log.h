@@ -90,7 +90,6 @@ enum class Class : u8 {
     HW_AES,             ///< AES engine emulation
     Frontend,           ///< Emulator UI
     Render,             ///< Emulator video output and hardware acceleration
-    Render_Software,    ///< Software renderer backend
     Render_OpenGL,      ///< OpenGL backend
     Audio,              ///< Audio emulation
     Audio_DSP,          ///< The HLE implementation of the DSP

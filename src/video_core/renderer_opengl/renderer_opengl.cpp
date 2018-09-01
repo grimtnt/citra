@@ -19,6 +19,7 @@
 #include "core/memory.h"
 #include "core/settings.h"
 #include "video_core/rasterizer_interface.h"
+#include "video_core/renderer_opengl/gl_rasterizer.h"
 #include "video_core/renderer_opengl/renderer_opengl.h"
 #include "video_core/video_core.h"
 
@@ -92,7 +93,9 @@ static std::array<GLfloat, 3 * 2> MakeOrthographicMatrix(const float width, cons
     return matrix;
 }
 
-RendererOpenGL::RendererOpenGL(EmuWindow& window) : RendererBase{window} {}
+RendererOpenGL::RendererOpenGL(EmuWindow& window)
+    : RendererBase{window, std::make_unique<RasterizerOpenGL>(window)} {}
+
 RendererOpenGL::~RendererOpenGL() = default;
 
 /// Swap buffers (render frame)
@@ -180,7 +183,6 @@ void RendererOpenGL::SwapBuffers() {
     Core::System::GetInstance().perf_stats.BeginSystemFrame();
 
     prev_state.Apply();
-    RefreshRasterizerSetting();
 }
 
 /**
@@ -539,8 +541,6 @@ Core::System::ResultStatus RendererOpenGL::Init() {
     }
 
     InitOpenGLObjects();
-
-    RefreshRasterizerSetting();
 
     return Core::System::ResultStatus::Success;
 }

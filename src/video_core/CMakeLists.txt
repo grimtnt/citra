@@ -43,20 +43,6 @@ add_library(video_core STATIC
     shader/shader.h
     shader/shader_interpreter.cpp
     shader/shader_interpreter.h
-    swrasterizer/clipper.cpp
-    swrasterizer/clipper.h
-    swrasterizer/framebuffer.cpp
-    swrasterizer/framebuffer.h
-    swrasterizer/lighting.cpp
-    swrasterizer/lighting.h
-    swrasterizer/proctex.cpp
-    swrasterizer/proctex.h
-    swrasterizer/rasterizer.cpp
-    swrasterizer/rasterizer.h
-    swrasterizer/swrasterizer.cpp
-    swrasterizer/swrasterizer.h
-    swrasterizer/texturing.cpp
-    swrasterizer/texturing.h
     texture/etc1.cpp
     texture/etc1.h
     texture/texture_decode.cpp

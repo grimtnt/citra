@@ -153,9 +153,6 @@ private:
     /// Sync the procedural texture noise configuration to match the PICA register
     void SyncProcTexNoise();
 
-    /// Sync the procedural texture bias configuration to match the PICA register
-    void SyncProcTexBias();
-
     /// Syncs the alpha test states to match the PICA register
     void SyncAlphaTest();
 
