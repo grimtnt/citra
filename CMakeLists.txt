@@ -82,6 +82,9 @@ if (NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx2")
+
     if (MINGW)
         add_definitions(-DMINGW_HAS_SECURE_API)
 

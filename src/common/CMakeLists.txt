@@ -12,6 +12,8 @@ endif()
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/scm_rev.cpp.in" "${CMAKE_CURRENT_SOURCE_DIR}/scm_rev.cpp" @ONLY)
 
 add_library(common STATIC
+    x64/xbyak_abi.h
+    x64/xbyak_util.h
     alignment.h
     assert.h
     bit_field.h
@@ -47,14 +49,6 @@ add_library(common STATIC
     thread_queue_list.h
     threadsafe_queue.h
     vector_math.h
-)
-
-target_sources(common
-    PRIVATE
-        x64/cpu_detect.cpp
-        x64/cpu_detect.h
-        x64/xbyak_abi.h
-        x64/xbyak_util.h
 )
 
 create_target_directory_groups(common)
