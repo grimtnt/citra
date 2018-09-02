@@ -47,8 +47,7 @@ public:
 
     /**
      * Parses and answers a room join request from a client.
-     * Validates the uniqueness of the username and assigns the MAC address
-     * that the client will use for the remainder of the connection.
+     * Assigns the MAC address that the client will use for the remainder of the connection.
      */
     void HandleJoinRequest(const ENetEvent* event);
 

@@ -76,7 +76,7 @@ public:
     /**
      * Returns information about the members in the room we're currently connected to.
      */
-    const MemberList& GetMemberInformation() const;
+    const MemberList& GetMemberList() const;
 
     /**
      * Returns the MAC address of the RoomMember.
@@ -89,8 +89,7 @@ public:
     bool IsConnected() const;
 
     /**
-     * Attempts to join a room at the specified address and port, using the specified nickname.
-     * This may fail if the username is already taken.
+     * Attempts to join a room at the specified address and port.
      */
     void Join(const char* server_addr = "127.0.0.1", const u16 server_port = DefaultRoomPort,
               const MacAddress& preferred_mac = NoPreferredMac);

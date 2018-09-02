@@ -67,8 +67,8 @@ public:
 
     /**
      * Sends a request to the server, asking for permission to join a room with the specified
-     * nickname and preferred mac.
-     * @params preferred_mac The preferred MAC address to use in the room, the NoPreferredMac tellsm
+     * preferred mac.
+     * @params preferred_mac The preferred MAC address to use in the room, the NoPreferredMac tells
      * the server to assign one for us.
      */
     void SendJoinRequest(const MacAddress& preferred_mac = NoPreferredMac);
@@ -304,7 +304,7 @@ RoomMember::State RoomMember::GetState() const {
     return room_member_impl->state;
 }
 
-const RoomMember::MemberList& RoomMember::GetMemberInformation() const {
+const RoomMember::MemberList& RoomMember::GetMemberList() const {
     return room_member_impl->member_list;
 }
 
