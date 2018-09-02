@@ -8,7 +8,6 @@
 #include "common/assert.h"
 #include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/arm/dynarmic/arm_dynarmic_cp15.h"
-#include "core/arm/dyncom/arm_dyncom_interpreter.h"
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/kernel/svc.h"
@@ -137,22 +136,7 @@ public:
     }
 
     void InterpreterFallback(VAddr pc, size_t num_instructions) override {
-        parent.interpreter_state->Reg = parent.jit->Regs();
-        parent.interpreter_state->Cpsr = parent.jit->Cpsr();
-        parent.interpreter_state->Reg[15] = pc;
-        parent.interpreter_state->ExtReg = parent.jit->ExtRegs();
-        parent.interpreter_state->VFP[VFP_FPSCR] = parent.jit->Fpscr();
-        parent.interpreter_state->NumInstrsToExecute = num_instructions;
-
-        InterpreterMainLoop(parent.interpreter_state.get());
-
-        bool is_thumb = (parent.interpreter_state->Cpsr & (1 << 5)) != 0;
-        parent.interpreter_state->Reg[15] &= (is_thumb ? 0xFFFFFFFE : 0xFFFFFFFC);
-
-        parent.jit->Regs() = parent.interpreter_state->Reg;
-        parent.jit->SetCpsr(parent.interpreter_state->Cpsr);
-        parent.jit->ExtRegs() = parent.interpreter_state->ExtReg;
-        parent.jit->SetFpscr(parent.interpreter_state->VFP[VFP_FPSCR]);
+        ASSERT_MSG(false, "Interpreter fallback @ {} ({})", static_cast<u32>(pc), num_instructions);
     }
 
     void CallSVC(std::uint32_t swi) override {
@@ -174,7 +158,7 @@ public:
 
     ARM_Dynarmic& parent;
     u64 custom_ticks{};
-    bool use_custom_ticks = false;
+    bool use_custom_ticks{};
 };
 
 ARM_Dynarmic::ARM_Dynarmic(PrivilegeMode initial_mode)

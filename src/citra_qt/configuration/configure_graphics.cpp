@@ -57,7 +57,6 @@ void ConfigureGraphics::setConfiguration() {
     ui->toggle_hw_shader->setChecked(Settings::values.use_hw_shader);
     ui->toggle_accurate_gs->setChecked(Settings::values.shaders_accurate_gs);
     ui->toggle_accurate_mul->setChecked(Settings::values.shaders_accurate_mul);
-    ui->toggle_shader_jit->setChecked(Settings::values.use_shader_jit);
     ui->resolution_factor_combobox->setCurrentIndex(Settings::values.resolution_factor);
     ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
     ui->frame_limit->setValue(Settings::values.frame_limit);
@@ -74,7 +73,6 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.use_hw_shader = ui->toggle_hw_shader->isChecked();
     Settings::values.shaders_accurate_gs = ui->toggle_accurate_gs->isChecked();
     Settings::values.shaders_accurate_mul = ui->toggle_accurate_mul->isChecked();
-    Settings::values.use_shader_jit = ui->toggle_shader_jit->isChecked();
     Settings::values.resolution_factor =
         static_cast<u16>(ui->resolution_factor_combobox->currentIndex());
     Settings::values.use_frame_limit = ui->toggle_frame_limit->isChecked();

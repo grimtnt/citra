@@ -41,8 +41,10 @@ add_library(video_core STATIC
     renderer_opengl/renderer_opengl.h
     shader/shader.cpp
     shader/shader.h
-    shader/shader_interpreter.cpp
-    shader/shader_interpreter.h
+    shader/shader_jit_x64.cpp
+    shader/shader_jit_x64_compiler.cpp
+    shader/shader_jit_x64.h
+    shader/shader_jit_x64_compiler.h
     texture/etc1.cpp
     texture/etc1.h
     texture/texture_decode.cpp
@@ -54,22 +56,7 @@ add_library(video_core STATIC
     video_core.h
 )
 
-if(ARCHITECTURE_x86_64)
-    target_sources(video_core
-        PRIVATE
-            shader/shader_jit_x64.cpp
-            shader/shader_jit_x64_compiler.cpp
-
-            shader/shader_jit_x64.h
-            shader/shader_jit_x64_compiler.h
-    )
-endif()
-
 create_target_directory_groups(video_core)
 
-target_link_libraries(video_core PUBLIC common core)
+target_link_libraries(video_core PUBLIC common core xbyak)
 target_link_libraries(video_core PRIVATE glad nihstro-headers)
-
-if (ARCHITECTURE_x86_64)
-    target_link_libraries(video_core PUBLIC xbyak)
-endif()

@@ -46,7 +46,6 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
     setConfiguration();
 
-    ui->toggle_cpu_jit->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_new_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->button_sd_card_root->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->button_sd_card_root_empty->setEnabled(!Core::System::GetInstance().IsPoweredOn());
@@ -57,7 +56,6 @@ ConfigureGeneral::~ConfigureGeneral() {}
 void ConfigureGeneral::setConfiguration() {
     ui->toggle_check_exit->setChecked(UISettings::values.confirm_before_closing);
     ui->toggle_new_mode->setChecked(Settings::values.enable_new_mode);
-    ui->toggle_cpu_jit->setChecked(Settings::values.use_cpu_jit);
     ui->sd_card_root->setText(QString::fromStdString(Settings::values.sd_card_root));
 
     // The first item is "auto-select" with actual value -1, so plus one here will do the trick
@@ -79,7 +77,6 @@ void ConfigureGeneral::applyConfiguration() {
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     Settings::values.sd_card_root = ui->sd_card_root->text().toStdString();
     Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
-    Settings::values.use_cpu_jit = ui->toggle_cpu_jit->isChecked();
     UISettings::values.show_console = ui->toggle_console->isChecked();
     Settings::values.log_filter = ui->log_filter_edit->text().toStdString();
     Util::ToggleConsole();

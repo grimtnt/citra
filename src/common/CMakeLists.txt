@@ -49,20 +49,15 @@ add_library(common STATIC
     vector_math.h
 )
 
-if(ARCHITECTURE_x86_64)
-    target_sources(common
-        PRIVATE
-            x64/cpu_detect.cpp
-
-            x64/cpu_detect.h
-            x64/xbyak_abi.h
-            x64/xbyak_util.h
-    )
-endif()
+target_sources(common
+    PRIVATE
+        x64/cpu_detect.cpp
+        x64/cpu_detect.h
+        x64/xbyak_abi.h
+        x64/xbyak_util.h
+)
 
 create_target_directory_groups(common)
 
 target_link_libraries(common PUBLIC Boost::boost fmt)
-if (ARCHITECTURE_x86_64)
-    target_link_libraries(common PRIVATE xbyak)
-endif()
+target_link_libraries(common PRIVATE xbyak)

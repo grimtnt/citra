@@ -6,9 +6,6 @@
 
 #include <string>
 
-#if !defined(ARCHITECTURE_x86_64)
-#include <cstdlib> // for exit
-#endif
 #include "common/common_types.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -32,11 +29,7 @@
 
 #ifndef _MSC_VER
 
-#ifdef ARCHITECTURE_x86_64
 #define Crash() __asm__ __volatile__("int $3")
-#else
-#define Crash() exit(1)
-#endif
 
 #else // _MSC_VER
 

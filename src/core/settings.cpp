@@ -15,7 +15,6 @@ namespace Settings {
 Values values = {};
 
 void Apply() {
-    VideoCore::g_shader_jit_enabled = values.use_shader_jit;
     VideoCore::g_hw_shader_enabled = values.use_hw_shader;
     VideoCore::g_hw_shader_accurate_gs = values.shaders_accurate_gs;
     VideoCore::g_hw_shader_accurate_mul = values.shaders_accurate_mul;
@@ -41,12 +40,10 @@ void LogSetting(const std::string& name, const T& value) {
 
 void LogSettings() {
     LOG_INFO(Config, "Citra Configuration:");
-    LogSetting("Core_UseCpuJit", Settings::values.use_cpu_jit);
     LogSetting("Core_KeyboardMode", static_cast<int>(Settings::values.keyboard_mode));
     LogSetting("Renderer_UseHwShader", Settings::values.use_hw_shader);
     LogSetting("Renderer_ShadersAccurateGs", Settings::values.shaders_accurate_gs);
     LogSetting("Renderer_ShadersAccurateMul", Settings::values.shaders_accurate_mul);
-    LogSetting("Renderer_UseShaderJit", Settings::values.use_shader_jit);
     LogSetting("Renderer_UseResolutionFactor", Settings::values.resolution_factor);
     LogSetting("Renderer_UseFrameLimit", Settings::values.use_frame_limit);
     LogSetting("Renderer_FrameLimit", Settings::values.frame_limit);

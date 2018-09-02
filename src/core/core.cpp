@@ -8,10 +8,7 @@
 #include "audio_core/hle/hle.h"
 #include "common/logging/log.h"
 #include "core/arm/arm_interface.h"
-#ifdef ARCHITECTURE_x86_64
 #include "core/arm/dynarmic/arm_dynarmic.h"
-#endif
-#include "core/arm/dyncom/arm_dyncom.h"
 #include "core/cheat_core.h"
 #include "core/core.h"
 #include "core/core_timing.h"
@@ -140,16 +137,7 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
 
     CoreTiming::Init();
 
-    if (Settings::values.use_cpu_jit) {
-#ifdef ARCHITECTURE_x86_64
-        cpu_core = std::make_unique<ARM_Dynarmic>(USER32MODE);
-#else
-        cpu_core = std::make_unique<ARM_DynCom>(USER32MODE);
-        LOG_WARNING(Core, "CPU JIT requested, but Dynarmic not available");
-#endif
-    } else {
-        cpu_core = std::make_unique<ARM_DynCom>(USER32MODE);
-    }
+    cpu_core = std::make_unique<ARM_Dynarmic>(USER32MODE);
 
     qt_callbacks = std::make_unique<QtCallbacks>();
 

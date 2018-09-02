@@ -98,7 +98,6 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
-    Settings::values.use_cpu_jit = qt_config->value("use_cpu_jit", true).toBool();
     Settings::values.keyboard_mode =
         static_cast<Settings::KeyboardMode>(qt_config->value("keyboard_mode", 1).toInt());
     qt_config->endGroup();
@@ -122,7 +121,6 @@ void Config::ReadValues() {
     Settings::values.shaders_accurate_gs = qt_config->value("shaders_accurate_gs", true).toBool();
     Settings::values.shaders_accurate_mul =
         qt_config->value("shaders_accurate_mul", false).toBool();
-    Settings::values.use_shader_jit = qt_config->value("use_shader_jit", true).toBool();
     Settings::values.resolution_factor =
         static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
     Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
@@ -309,7 +307,6 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
-    qt_config->setValue("use_cpu_jit", Settings::values.use_cpu_jit);
     qt_config->setValue("keyboard_mode", static_cast<int>(Settings::values.keyboard_mode));
     qt_config->endGroup();
 
@@ -323,7 +320,6 @@ void Config::SaveValues() {
     qt_config->setValue("use_hw_shader", Settings::values.use_hw_shader);
     qt_config->setValue("shaders_accurate_gs", Settings::values.shaders_accurate_gs);
     qt_config->setValue("shaders_accurate_mul", Settings::values.shaders_accurate_mul);
-    qt_config->setValue("use_shader_jit", Settings::values.use_shader_jit);
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
     qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);

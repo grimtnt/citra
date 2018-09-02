@@ -117,13 +117,12 @@ struct Values {
     u8 udp_pad_index;
 
     // Core
-    bool use_cpu_jit;
     KeyboardMode keyboard_mode;
 
     // LLE
     std::unordered_map<std::string, bool> lle_modules;
 
-    // Data Storage
+    // Data Storages
     bool use_virtual_sd;
     std::string sd_card_root;
 
@@ -137,7 +136,6 @@ struct Values {
     bool use_hw_shader;
     bool shaders_accurate_gs;
     bool shaders_accurate_mul;
-    bool use_shader_jit;
     u16 resolution_factor;
     bool use_frame_limit;
     u16 frame_limit;

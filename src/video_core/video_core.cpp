@@ -17,7 +17,6 @@ namespace VideoCore {
 
 std::unique_ptr<RendererBase> g_renderer; ///< Renderer plugin
 
-std::atomic<bool> g_shader_jit_enabled;
 std::atomic<bool> g_hw_shader_enabled;
 std::atomic<bool> g_hw_shader_accurate_gs;
 std::atomic<bool> g_hw_shader_accurate_mul;

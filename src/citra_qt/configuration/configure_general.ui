@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>338</width>
-    <height>470</height>
+    <height>441</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,13 +45,6 @@
             </property>
             <property name="text">
              <string>Show Console</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="toggle_cpu_jit">
-            <property name="text">
-             <string>Enable CPU JIT</string>
             </property>
            </widget>
           </item>
