@@ -6,16 +6,14 @@
 
 #include <memory>
 #include <dynarmic/A32/coprocessor.h>
-#include "common/common_types.h"
+#include "core/cpu/common.h"
 
-struct ARMul_State;
-
-class DynarmicCP15 final : public Dynarmic::A32::Coprocessor {
+class CPUCP15 final : public Dynarmic::A32::Coprocessor {
 public:
     using CoprocReg = Dynarmic::A32::CoprocReg;
 
-    explicit DynarmicCP15(const std::shared_ptr<ARMul_State>&);
-    ~DynarmicCP15() override;
+    explicit CPUCP15(const std::shared_ptr<State>&);
+    ~CPUCP15() override;
 
     boost::optional<Callback> CompileInternalOperation(bool two, unsigned opc1, CoprocReg CRd,
                                                        CoprocReg CRn, CoprocReg CRm,
@@ -32,5 +30,5 @@ public:
                                                 boost::optional<u8> option) override;
 
 private:
-    std::shared_ptr<ARMul_State> interpreter_state;
+    const std::shared_ptr<State>& state;
 };

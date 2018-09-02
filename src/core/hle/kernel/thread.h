@@ -10,7 +10,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include "common/common_types.h"
-#include "core/arm/arm_interface.h"
+#include "core/cpu/cpu.h"
 #include "core/hle/kernel/object.h"
 #include "core/hle/kernel/wait_object.h"
 #include "core/hle/result.h"
@@ -182,7 +182,7 @@ public:
         return status == THREADSTATUS_WAIT_SYNCH_ALL;
     }
 
-    std::unique_ptr<ARM_Interface::ThreadContext> context;
+    std::unique_ptr<ThreadContext> context;
 
     u32 thread_id;
 

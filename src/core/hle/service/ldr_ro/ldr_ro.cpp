@@ -5,12 +5,13 @@
 #include "common/alignment.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
-#include "core/arm/arm_interface.h"
 #include "core/core.h"
+#include "core/cpu/cpu.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/service/ldr_ro/cro_helper.h"
 #include "core/hle/service/ldr_ro/ldr_ro.h"
+
 
 namespace Service::LDR {
 
@@ -368,7 +369,7 @@ void RO::LoadCRO(Kernel::HLERequestContext& ctx, bool link_on_load_bug_fix) {
         }
     }
 
-    Core::CPU().InvalidateCacheRange(cro_address, cro_size);
+    Core::GetCPU().InvalidateCacheRange(cro_address, cro_size);
 
     LOG_INFO(Service_LDR, "CRO {} loaded at 0x{:08X}, fixed_end=0x{:08X}", cro.ModuleName(),
              cro_address, cro_address + fix_size);
@@ -446,7 +447,7 @@ void RO::UnloadCRO(Kernel::HLERequestContext& ctx) {
         slot->memory_synchronizer.RemoveMemoryBlock(cro_address, cro_buffer_ptr);
     }
 
-    Core::CPU().InvalidateCacheRange(cro_address, fixed_size);
+    Core::GetCPU().InvalidateCacheRange(cro_address, fixed_size);
 
     rb.Push(result);
 }

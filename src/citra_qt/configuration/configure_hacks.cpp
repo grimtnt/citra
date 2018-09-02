@@ -38,5 +38,5 @@ void ConfigureHacks::applyConfiguration() {
     Settings::values.ticks = static_cast<u64>(ui->spinbox_ticks->value());
     Settings::values.use_bos = ui->toggle_bos->isChecked();
     if (Core::System::GetInstance().IsPoweredOn())
-        Core::CPU().SyncSettings();
+        Core::GetCPU().SyncSettings();
 }

@@ -1,6 +1,6 @@
 #include "common/logging/log.h"
-#include "core/arm/arm_interface.h"
 #include "core/core.h"
+#include "core/cpu/cpu.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/memory.h"
 #include "core/rpc/packet.h"
@@ -43,7 +43,7 @@ void RPCServer::HandleWriteMemory(Packet& packet, u32 address, const u8* data, u
         // Note: Memory write occurs asynchronously from the state of the emulator
         Memory::WriteBlock(address, data, data_size);
         // If the memory happens to be executable code, make sure the changes become visible
-        Core::CPU().InvalidateCacheRange(address, data_size);
+        Core::GetCPU().InvalidateCacheRange(address, data_size);
     }
     packet.SetPacketDataSize(0);
     packet.SendReply();

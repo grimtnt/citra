@@ -5,8 +5,8 @@
 #include "common/alignment.h"
 #include "common/logging/log.h"
 #include "common/scope_exit.h"
-#include "core/arm/arm_interface.h"
 #include "core/core.h"
+#include "core/cpu/cpu.h"
 #include "core/hle/service/ldr_ro/cro_helper.h"
 
 namespace Service::LDR {
@@ -71,11 +71,11 @@ ResultCode CROHelper::ApplyRelocation(VAddr target_address, RelocationType reloc
     case RelocationType::AbsoluteAddress:
     case RelocationType::AbsoluteAddress2:
         Memory::Write32(target_address, symbol_address + addend);
-        Core::CPU().InvalidateCacheRange(target_address, sizeof(u32));
+        Core::GetCPU().InvalidateCacheRange(target_address, sizeof(u32));
         break;
     case RelocationType::RelativeAddress:
         Memory::Write32(target_address, symbol_address + addend - target_future_address);
-        Core::CPU().InvalidateCacheRange(target_address, sizeof(u32));
+        Core::GetCPU().InvalidateCacheRange(target_address, sizeof(u32));
         break;
     case RelocationType::ThumbBranch:
     case RelocationType::ArmBranch:
@@ -98,7 +98,7 @@ ResultCode CROHelper::ClearRelocation(VAddr target_address, RelocationType reloc
     case RelocationType::AbsoluteAddress2:
     case RelocationType::RelativeAddress:
         Memory::Write32(target_address, 0);
-        Core::CPU().InvalidateCacheRange(target_address, sizeof(u32));
+        Core::GetCPU().InvalidateCacheRange(target_address, sizeof(u32));
         break;
     case RelocationType::ThumbBranch:
     case RelocationType::ArmBranch:

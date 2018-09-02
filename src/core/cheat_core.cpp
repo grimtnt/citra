@@ -171,19 +171,19 @@ void GatewayCheat::Execute() {
         case CheatType::Write32: { // 0XXXXXXX YYYYYYYY   word[XXXXXXX+offset] = YYYYYYYY
             addr = line.address + offset;
             Memory::Write32(addr, val);
-            Core::CPU().InvalidateCacheRange(addr, sizeof(u32));
+            Core::GetCPU().InvalidateCacheRange(addr, sizeof(u32));
             break;
         }
         case CheatType::Write16: { // 1XXXXXXX 0000YYYY   half[XXXXXXX+offset] = YYYY
             addr = line.address + offset;
             Memory::Write16(addr, static_cast<u16>(val));
-            Core::CPU().InvalidateCacheRange(addr, sizeof(u16));
+            Core::GetCPU().InvalidateCacheRange(addr, sizeof(u16));
             break;
         }
         case CheatType::Write8: { // 2XXXXXXX 000000YY   byte[XXXXXXX+offset] = YY
             addr = line.address + offset;
             Memory::Write8(addr, static_cast<u8>(val));
-            Core::CPU().InvalidateCacheRange(addr, sizeof(u8));
+            Core::GetCPU().InvalidateCacheRange(addr, sizeof(u8));
             break;
         }
         case CheatType::GreaterThan32: { // 3XXXXXXX YYYYYYYY   IF YYYYYYYY > word[XXXXXXX]

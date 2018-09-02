@@ -18,7 +18,7 @@
 #include "core/perf_stats.h"
 
 class EmuWindow;
-class ARM_Interface;
+class CPU;
 
 namespace AudioCore {
 class DspInterface;
@@ -128,7 +128,7 @@ public:
      * Gets a reference to the emulated CPU.
      * @returns A reference to the emulated CPU.
      */
-    ARM_Interface& CPU() {
+    CPU& GetCPU() {
         return *cpu_core;
     }
 
@@ -198,7 +198,7 @@ private:
     std::unique_ptr<QtCallbacks> qt_callbacks;
 
     /// ARM11 CPU core
-    std::unique_ptr<ARM_Interface> cpu_core;
+    std::unique_ptr<CPU> cpu_core;
 
     /// DSP core
     std::unique_ptr<AudioCore::DspInterface> dsp_core;
@@ -229,8 +229,8 @@ private:
     std::atomic<bool> shutdown_requested;
 };
 
-inline ARM_Interface& CPU() {
-    return System::GetInstance().CPU();
+inline CPU& GetCPU() {
+    return System::GetInstance().GetCPU();
 }
 
 inline AudioCore::DspInterface& DSP() {

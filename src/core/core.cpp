@@ -7,11 +7,10 @@
 #include "audio_core/dsp_interface.h"
 #include "audio_core/hle/hle.h"
 #include "common/logging/log.h"
-#include "core/arm/arm_interface.h"
-#include "core/arm/dynarmic/arm_dynarmic.h"
 #include "core/cheat_core.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/cpu/cpu.h"
 #include "core/hle/kernel/client_port.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/process.h"
@@ -137,7 +136,7 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
 
     CoreTiming::Init();
 
-    cpu_core = std::make_unique<ARM_Dynarmic>(USER32MODE);
+    cpu_core = std::make_unique<CPU>();
 
     qt_callbacks = std::make_unique<QtCallbacks>();
 

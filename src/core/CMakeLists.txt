@@ -1,22 +1,10 @@
 add_library(core STATIC
     3ds.h
-    arm/arm_interface.h
-    arm/skyeye_common/arm_regformat.h
-    arm/skyeye_common/armstate.cpp
-    arm/skyeye_common/armstate.h
-    arm/skyeye_common/armsupp.cpp
-    arm/skyeye_common/armsupp.h
-    arm/skyeye_common/vfp/asm_vfp.h
-    arm/skyeye_common/vfp/vfp.cpp
-    arm/skyeye_common/vfp/vfp.h
-    arm/skyeye_common/vfp/vfp_helper.h
-    arm/skyeye_common/vfp/vfpdouble.cpp
-    arm/skyeye_common/vfp/vfpinstr.cpp
-    arm/skyeye_common/vfp/vfpsingle.cpp
-    arm/dynarmic/arm_dynarmic.cpp
-    arm/dynarmic/arm_dynarmic.h
-    arm/dynarmic/arm_dynarmic_cp15.cpp
-    arm/dynarmic/arm_dynarmic_cp15.h
+    cpu/common.h
+    cpu/cpu.cpp
+    cpu/cpu.h
+    cpu/cpu_cp15.cpp
+    cpu/cpu_cp15.h
     cheat_core.cpp
     cheat_core.h
     core.cpp
@@ -441,5 +429,6 @@ get_directory_property(OPENSSL_LIBS
 add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
 
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core ${OPENSSL_LIBS} httplib lurlparser)
-target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt open_source_archives dynarmic)
+target_link_libraries(core PUBLIC Boost::boost PRIVATE cryptopp fmt open_source_archives)
 target_link_libraries(core PUBLIC libzmq-headers cppzmq-headers libzmq)
+target_link_libraries(core PUBLIC dynarmic)

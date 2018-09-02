@@ -9,8 +9,8 @@
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "common/swap.h"
-#include "core/arm/arm_interface.h"
 #include "core/core.h"
+#include "core/cpu/cpu.h"
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/process.h"
 #include "core/hle/lock.h"
@@ -29,7 +29,7 @@ static PageTable* current_page_table{};
 void SetCurrentPageTable(PageTable* page_table) {
     current_page_table = page_table;
     if (Core::System::GetInstance().IsPoweredOn()) {
-        Core::CPU().PageTableChanged();
+        Core::GetCPU().PageTableChanged();
     }
 }
 
