@@ -59,42 +59,42 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x000400000F700E00, Compatibility::Okay},      // Super Mario World™
 
     // EUR
-    {0x00040000001A4900, Compatibility::Great},   // Ever Oasis™
-    {0x000400000F70CD00, Compatibility::Great},   // Fire Emblem Warriors
-    {0x000400000014F200, Compatibility::Great},   // Animal Crossing™: Happy Home Designer
-    {0x000400000017EB00, Compatibility::Great},   // Hyrule Warriors™ Legends
-    {0x0004000000076500, Compatibility::Okay},    // Luigi’s Mansion™ 2
-    {0x00040000001BC600, Compatibility::Okay},    // Monster Hunter Stories™
-    {0x0004000000198F00, Compatibility::Great},   // Animal Crossing™: New Leaf - Welcome amiibo
-    {0x00040000001A0500, Compatibility::Great},   // Super Mario Maker™ for Nintendo 3DS
-    {0x0004000000086400, Compatibility::Great},   // Animal Crossing™: New Leaf
-    {0x0004000000030C00, Compatibility::Okay},    // Golden Retriever & New Friends
-    {0x0004000000033600, Compatibility::Perfect}, // The Legend of Zelda™: Ocarina of Time 3D
-    {0x00040000001A4200, Compatibility::Great},   // Poochy & Yoshi's™ Woolly World
-    {0x0004000000053F00, Compatibility::Great},   // Super Mario 3D Land™
-    {0x000400000008C400, Compatibility::Great},   // Tomodachi Life™
-    {0x0004000000177000, Compatibility::Great},   // The Legend of Zelda™: Tri Force Heroes
-    {0x000400000007AF00, Compatibility::Perfect}, // New Super Mario Bros.™ 2
-    {0x0004000000137F00, Compatibility::Perfect}, // New SUPER MARIO BROS. 2: Special Edition
-    {0x00040000001B4F00, Compatibility::Great},   // Miitopia™
-    {0x00040000000A9200, Compatibility::Perfect}, // PICROSS e
-    {0x00040000000CBC00, Compatibility::Perfect}, // PICROSS e2
-    {0x0004000000102900, Compatibility::Perfect}, // PICROSS e3
-    {0x0004000000128400, Compatibility::Perfect}, // PICROSS e4
-    {0x000400000014D200, Compatibility::Perfect}, // PICROSS e5
-    {0x000400000016E800, Compatibility::Perfect}, // PICROSS e6
-    {0x00040000001AD600, Compatibility::Perfect}, // PICROSS e7
-    {0x00040000001CE000, Compatibility::Perfect}, // PICROSS e8
-    {0x0004000000130600, Compatibility::Bad},     // Photos with Mario™
-    {0x0004000000030700, Compatibility::Great},   // Mario Kart™ 7
-    {0x0004000000143D00, Compatibility::Perfect}, // 2048
-    {0x0004000000187E00, Compatibility::Perfect}, // Picross 3D™: Round 2
-    {0x00040000000EE000, Compatibility::Great},   // Super Smash Bros.™ for Nintendo 3DS
-    {0x0004000000125600, Compatibility::Perfect}, // The Legend of Zelda™: Majora's Mask 3D
-    {0x000400000010C000, Compatibility::Great},   // Kirby™: Triple Deluxe
-    {0x00040000001B2900, Compatibility::Great},   // YO-KAI WATCH™ 2: Psychic Specters
-    {0x00040000001CB200, Compatibility::Great},   // Captain Toad™: Treasure Tracker
-    {0x0004000000116700, Compatibility::Great},   // Cut the Rope: Triple Treat
+    {0x00040000001A4900, Compatibility::Great},    // Ever Oasis™
+    {0x000400000F70CD00, Compatibility::Great},    // Fire Emblem Warriors
+    {0x000400000014F200, Compatibility::Great},    // Animal Crossing™: Happy Home Designer
+    {0x000400000017EB00, Compatibility::Great},    // Hyrule Warriors™ Legends
+    {0x0004000000076500, Compatibility::WontBoot}, // Luigi’s Mansion™ 2
+    {0x00040000001BC600, Compatibility::Okay},     // Monster Hunter Stories™
+    {0x0004000000198F00, Compatibility::Great},    // Animal Crossing™: New Leaf - Welcome amiibo
+    {0x00040000001A0500, Compatibility::Great},    // Super Mario Maker™ for Nintendo 3DS
+    {0x0004000000086400, Compatibility::Great},    // Animal Crossing™: New Leaf
+    {0x0004000000030C00, Compatibility::Okay},     // Golden Retriever & New Friends
+    {0x0004000000033600, Compatibility::Perfect},  // The Legend of Zelda™: Ocarina of Time 3D
+    {0x00040000001A4200, Compatibility::Great},    // Poochy & Yoshi's™ Woolly World
+    {0x0004000000053F00, Compatibility::Great},    // Super Mario 3D Land™
+    {0x000400000008C400, Compatibility::Great},    // Tomodachi Life™
+    {0x0004000000177000, Compatibility::Great},    // The Legend of Zelda™: Tri Force Heroes
+    {0x000400000007AF00, Compatibility::Perfect},  // New Super Mario Bros.™ 2
+    {0x0004000000137F00, Compatibility::Perfect},  // New SUPER MARIO BROS. 2: Special Edition
+    {0x00040000001B4F00, Compatibility::Great},    // Miitopia™
+    {0x00040000000A9200, Compatibility::Perfect},  // PICROSS e
+    {0x00040000000CBC00, Compatibility::Perfect},  // PICROSS e2
+    {0x0004000000102900, Compatibility::Perfect},  // PICROSS e3
+    {0x0004000000128400, Compatibility::Perfect},  // PICROSS e4
+    {0x000400000014D200, Compatibility::Perfect},  // PICROSS e5
+    {0x000400000016E800, Compatibility::Perfect},  // PICROSS e6
+    {0x00040000001AD600, Compatibility::Perfect},  // PICROSS e7
+    {0x00040000001CE000, Compatibility::Perfect},  // PICROSS e8
+    {0x0004000000130600, Compatibility::Bad},      // Photos with Mario™
+    {0x0004000000030700, Compatibility::Great},    // Mario Kart™ 7
+    {0x0004000000143D00, Compatibility::Perfect},  // 2048
+    {0x0004000000187E00, Compatibility::Perfect},  // Picross 3D™: Round 2
+    {0x00040000000EE000, Compatibility::Great},    // Super Smash Bros.™ for Nintendo 3DS
+    {0x0004000000125600, Compatibility::Perfect},  // The Legend of Zelda™: Majora's Mask 3D
+    {0x000400000010C000, Compatibility::Great},    // Kirby™: Triple Deluxe
+    {0x00040000001B2900, Compatibility::Great},    // YO-KAI WATCH™ 2: Psychic Specters
+    {0x00040000001CB200, Compatibility::Great},    // Captain Toad™: Treasure Tracker
+    {0x0004000000116700, Compatibility::Great},    // Cut the Rope: Triple Treat
 
     // EUR (System)
     {0x0004001000022A00, Compatibility::IntroMenu}, // ???
