@@ -101,9 +101,8 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
 
     // TODO(yuriks): Permission checks go here
 
-    auto get_handle = [name, this, wait_until_available](Kernel::SharedPtr<Kernel::Thread> thread,
-                                                         Kernel::HLERequestContext& ctx,
-                                                         ThreadWakeupReason reason) {
+    auto get_handle = [name, this](Kernel::SharedPtr<Kernel::Thread> thread,
+                                   Kernel::HLERequestContext& ctx, ThreadWakeupReason reason) {
         LOG_ERROR(Service_SRV, "called service={} wakeup", name);
         auto client_port = service_manager->GetServicePort(name);
 
@@ -114,14 +113,14 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
             IPC::ResponseBuilder rb(ctx, 0x5, 1, 2);
             rb.Push(session.Code());
             rb.PushMoveObjects(std::move(session).Unwrap());
-        } else if (session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED && wait_until_available) {
+        } else if (session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED) {
             LOG_WARNING(Service_SRV, "called service={} -> ERR_MAX_CONNECTIONS_REACHED", name);
             std::mutex mutex;
             std::unique_lock<std::mutex> lock(mutex);
             std::condition_variable cv;
             cv.wait(lock, [&]() -> bool {
                 session = client_port.Unwrap()->Connect();
-                return session.Code() != Kernel::ERR_MAX_CONNECTIONS_REACHED;
+                return session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED;
             });
             IPC::ResponseBuilder rb(ctx, 0x5, 1, 2);
             rb.Push(session.Code());
@@ -135,8 +134,8 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
 
     auto client_port = service_manager->GetServicePort(name);
     if (client_port.Failed()) {
-        if (wait_until_available) {
-            LOG_ERROR(Service_SRV, "called service={} delayed", name);
+        if (wait_until_available && client_port.Code() == ERR_SERVICE_NOT_REGISTERED) {
+            LOG_INFO(Service_SRV, "called service={} delayed", name);
             Kernel::SharedPtr<Kernel::Event> get_service_handle_event =
                 ctx.SleepClientThread(Kernel::GetCurrentThread(), "GetServiceHandle",
                                       std::chrono::nanoseconds(-1), get_handle);
@@ -164,7 +163,7 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
         std::condition_variable cv;
         cv.wait(lock, [&]() -> bool {
             session = client_port.Unwrap()->Connect();
-            return session.Code() != Kernel::ERR_MAX_CONNECTIONS_REACHED;
+            return session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED;
         });
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(session.Code());
@@ -251,9 +250,10 @@ void SRV::RegisterService(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    if (get_service_handle_delayed_map.find(name) != get_service_handle_delayed_map.end()) {
-        get_service_handle_delayed_map.at(name)->Signal();
-        get_service_handle_delayed_map.erase(name);
+    auto it = get_service_handle_delayed_map.find(name);
+    if (it != get_service_handle_delayed_map.end()) {
+        it->second->Signal();
+        get_service_handle_delayed_map.erase(it);
     }
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
