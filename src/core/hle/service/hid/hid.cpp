@@ -24,12 +24,12 @@ namespace Service::HID {
 static std::weak_ptr<Module> current_module;
 
 // Updating period for each HID device. These empirical values are measured from a 11.2 3DS.
-constexpr u64 pad_update_ticks = BASE_CLOCK_RATE_ARM11 / 234;
-constexpr u64 accelerometer_update_ticks = BASE_CLOCK_RATE_ARM11 / 104;
-constexpr u64 gyroscope_update_ticks = BASE_CLOCK_RATE_ARM11 / 101;
+constexpr u64 pad_update_ticks{BASE_CLOCK_RATE_ARM11 / 234};
+constexpr u64 accelerometer_update_ticks{BASE_CLOCK_RATE_ARM11 / 104};
+constexpr u64 gyroscope_update_ticks{BASE_CLOCK_RATE_ARM11 / 101};
 
-constexpr float accelerometer_coef = 512.0f; // measured from hw test result
-constexpr float gyroscope_coef = 14.375f; // got from hwtest GetGyroscopeLowRawToDpsCoefficient call
+constexpr float accelerometer_coef{512.0f}; // measured from hw test result
+constexpr float gyroscope_coef{14.375f}; // got from hwtest GetGyroscopeLowRawToDpsCoefficient call
 static PadState inputs_this_frame;
 
 DirectionState GetStickDirectionState(s16 circle_pad_x, s16 circle_pad_y) {
@@ -74,7 +74,7 @@ void Module::LoadInputDevices() {
 }
 
 void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
-    SharedMem* mem = reinterpret_cast<SharedMem*>(shared_mem->GetPointer());
+    SharedMem* mem{reinterpret_cast<SharedMem*>(shared_mem->GetPointer())};
 
     if (is_device_reload_pending.exchange(false))
         LoadInputDevices();
@@ -159,7 +159,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
         touch_entry.valid.Assign(override_touch_valid ? 1 : 0);
     } else {
         float x, y;
-        bool pressed = false;
+        bool pressed;
         std::tie(x, y, pressed) = touch_device->GetStatus();
         touch_entry.x = static_cast<u16>(x * Core::kScreenBottomWidth);
         touch_entry.y = static_cast<u16>(y * Core::kScreenBottomHeight);
@@ -187,12 +187,12 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
 }
 
 void Module::UpdateAccelerometerCallback(u64 userdata, s64 cycles_late) {
-    SharedMem* mem = reinterpret_cast<SharedMem*>(shared_mem->GetPointer());
+    SharedMem* mem{reinterpret_cast<SharedMem*>(shared_mem->GetPointer())};
 
     mem->accelerometer.index = next_accelerometer_index;
     next_accelerometer_index = (next_accelerometer_index + 1) % mem->accelerometer.entries.size();
-    AccelerometerDataEntry& accelerometer_entry =
-        mem->accelerometer.entries[mem->accelerometer.index];
+    AccelerometerDataEntry& accelerometer_entry{
+        mem->accelerometer.entries[mem->accelerometer.index]};
     if (override_motion_x != 0 && override_motion_y != 0 && override_motion_z != 0) {
         accelerometer_entry.x = override_motion_x;
         accelerometer_entry.y = override_motion_y;
@@ -238,12 +238,12 @@ const PadState& GetInputsThisFrame() {
 }
 
 void Module::UpdateGyroscopeCallback(u64 userdata, s64 cycles_late) {
-    SharedMem* mem = reinterpret_cast<SharedMem*>(shared_mem->GetPointer());
+    SharedMem* mem{reinterpret_cast<SharedMem*>(shared_mem->GetPointer())};
 
     mem->gyroscope.index = next_gyroscope_index;
     next_gyroscope_index = (next_gyroscope_index + 1) % mem->gyroscope.entries.size();
 
-    GyroscopeDataEntry& gyroscope_entry = mem->gyroscope.entries[mem->gyroscope.index];
+    GyroscopeDataEntry& gyroscope_entry{mem->gyroscope.entries[mem->gyroscope.index]};
 
     if (override_motion_roll != 0 && override_motion_pitch != 0 && override_motion_yaw != 0) {
         gyroscope_entry.x = override_motion_roll;
@@ -252,7 +252,7 @@ void Module::UpdateGyroscopeCallback(u64 userdata, s64 cycles_late) {
     } else {
         Math::Vec3<float> gyro;
         std::tie(std::ignore, gyro) = motion_device->GetStatus();
-        double stretch = Core::System::GetInstance().perf_stats.GetLastFrameTimeScale();
+        double stretch{Core::System::GetInstance().perf_stats.GetLastFrameTimeScale()};
         gyro *= gyroscope_coef * static_cast<float>(stretch);
         gyroscope_entry.x = static_cast<s16>(gyro.x);
         gyroscope_entry.y = static_cast<s16>(gyro.y);
@@ -364,7 +364,7 @@ void Module::Interface::GetGyroscopeLowCalibrateParam(Kernel::HLERequestContext&
     IPC::ResponseBuilder rb{rp.MakeBuilder(6, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    const s16 param_unit = 6700; // an approximate value taken from hw
+    const s16 param_unit{6700}; // an approximate value taken from hw
     GyroscopeCalibrateParam param = {
         {0, param_unit, -param_unit},
         {0, param_unit, -param_unit},

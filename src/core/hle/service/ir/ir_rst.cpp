@@ -48,7 +48,7 @@ void IR_RST::UnloadInputDevices() {
 }
 
 void IR_RST::UpdateCallback(u64 userdata, s64 cycles_late) {
-    SharedMem* mem = reinterpret_cast<SharedMem*>(shared_memory->GetPointer());
+    SharedMem* mem{reinterpret_cast<SharedMem*>(shared_memory->GetPointer())};
 
     if (is_device_reload_pending.exchange(false))
         LoadInputDevices();
@@ -61,13 +61,13 @@ void IR_RST::UpdateCallback(u64 userdata, s64 cycles_late) {
     float c_stick_x_f, c_stick_y_f;
     std::tie(c_stick_x_f, c_stick_y_f) = c_stick->GetStatus();
     constexpr int MAX_CSTICK_RADIUS = 0x9C; // Max value for a c-stick radius
-    s16 c_stick_x = static_cast<s16>(c_stick_x_f * MAX_CSTICK_RADIUS);
-    s16 c_stick_y = static_cast<s16>(c_stick_y_f * MAX_CSTICK_RADIUS);
+    s16 c_stick_x{static_cast<s16>(c_stick_x_f * MAX_CSTICK_RADIUS)};
+    s16 c_stick_y{static_cast<s16>(c_stick_y_f * MAX_CSTICK_RADIUS)};
 
     Core::Movie::GetInstance().HandleIrRst(state, c_stick_x, c_stick_y);
 
     if (!raw_c_stick) {
-        const HID::DirectionState direction = HID::GetStickDirectionState(c_stick_x, c_stick_y);
+        const HID::DirectionState direction{HID::GetStickDirectionState(c_stick_x, c_stick_y)};
         state.c_stick_up.Assign(direction.up);
         state.c_stick_down.Assign(direction.down);
         state.c_stick_left.Assign(direction.left);
@@ -76,7 +76,7 @@ void IR_RST::UpdateCallback(u64 userdata, s64 cycles_late) {
 
     // TODO (wwylele): implement raw C-stick data for raw_c_stick = true
 
-    const u32 last_entry_index = mem->index;
+    const u32 last_entry_index{mem->index};
     mem->index = next_pad_index;
     next_pad_index = (next_pad_index + 1) % mem->entries.size();
 
@@ -84,10 +84,10 @@ void IR_RST::UpdateCallback(u64 userdata, s64 cycles_late) {
     PadState old_state{mem->entries[last_entry_index].current_state};
 
     // Compute bitmask with 1s for bits different from the old state
-    PadState changed = {state.hex ^ old_state.hex};
+    PadState changed{state.hex ^ old_state.hex};
 
     // Get the current Pad entry
-    PadDataEntry& pad_entry = mem->entries[mem->index];
+    PadDataEntry& pad_entry{mem->entries[mem->index]};
 
     // Update entry properties
     pad_entry.current_state.hex = state.hex;

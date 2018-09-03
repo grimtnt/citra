@@ -231,10 +231,10 @@ void ExtraHID::SendHIDStatus() {
     if (is_device_reload_pending.exchange(false))
         LoadInputDevices();
 
-    constexpr int C_STICK_CENTER = 0x800;
+    constexpr int C_STICK_CENTER{0x800};
     // TODO(wwylele): this value is not accurately measured. We currently assume that the axis can
     // take values in the whole range of a 12-bit integer.
-    constexpr int C_STICK_RADIUS = 0x7FF;
+    constexpr int C_STICK_RADIUS{0x7FF};
 
     float x, y;
     std::tie(x, y) = c_stick->GetStatus();
