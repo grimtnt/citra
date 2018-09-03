@@ -129,6 +129,7 @@ public:
     SDL_Joystick* GetSDLJoystick() const {
         return sdl_joystick.get();
     }
+
     void SetSDLJoystick(SDL_Joystick* joystick,
                         decltype(&SDL_JoystickClose) deleter = &SDL_JoystickClose) {
         sdl_joystick =
@@ -417,6 +418,7 @@ public:
             } else {
                 direction = 0;
             }
+            // This is necessary so accessing GetHat with hat won't crash
             joystick->SetHat(hat, SDL_HAT_CENTERED);
             return std::make_unique<SDLDirectionButton>(joystick, hat, direction);
         }
@@ -434,11 +436,13 @@ public:
                 trigger_if_greater = true;
                 LOG_ERROR(Input, "Unknown direction {}", direction_name);
             }
+            // This is necessary so accessing GetAxis with axis won't crash
             joystick->SetAxis(axis, 0);
             return std::make_unique<SDLAxisButton>(joystick, axis, threshold, trigger_if_greater);
         }
 
         const int button{params.Get("button", 0)};
+        // This is necessary so accessing GetButton with button won't crash
         joystick->SetButton(button, false);
         return std::make_unique<SDLButton>(joystick, button);
     }
@@ -463,6 +467,7 @@ public:
 
         auto joystick{GetSDLJoystickByGUID(guid, port)};
 
+        // This is necessary so accessing GetAxis with axis_x and axis_y won't crash
         joystick->SetAxis(axis_x, 0);
         joystick->SetAxis(axis_y, 0);
         return std::make_unique<SDLAnalog>(joystick, axis_x, axis_y);
