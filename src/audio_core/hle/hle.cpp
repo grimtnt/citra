@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <unordered_set>
 #include "audio_core/audio_types.h"
 #include "audio_core/hle/common.h"
 #include "audio_core/hle/hle.h"
@@ -14,6 +15,7 @@
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/settings.h"
 
 using InterruptType = Service::DSP::DSP_DSP::InterruptType;
 using Service::DSP::DSP_DSP;
@@ -21,6 +23,12 @@ using Service::DSP::DSP_DSP;
 namespace AudioCore {
 
 static constexpr u64 audio_frame_ticks{1310252ull}; ///< Units: ARM11 cycles
+
+static const std::unordered_set<u64> titles_output_allowed_shell_closed = {
+    // Nintendo 3DS Sound
+    0x0004001000020500, 0x0004001000021500, 0x0004001000022500,
+    0x0004001000026500, 0x0004001000027500, 0x0004001000028500,
+};
 
 struct DspHle::Impl final {
 public:
@@ -48,6 +56,7 @@ private:
 
     StereoFrame16 GenerateCurrentFrame();
     bool Tick();
+    bool IsOutputAllowed();
     void AudioTickCallback(s64 cycles_late);
 
     DspState dsp_state{DspState::Off};
@@ -310,7 +319,7 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
 }
 
 bool DspHle::Impl::Tick() {
-    if (!Core::System::GetInstance().IsShellOpen())
+    if (!IsOutputAllowed())
         return false;
     StereoFrame16 current_frame = {};
 
@@ -321,6 +330,16 @@ bool DspHle::Impl::Tick() {
     parent.OutputFrame(current_frame);
 
     return true;
+}
+
+bool DspHle::Impl::IsOutputAllowed() {
+    if (Core::System::GetInstance().IsShellOpen()) {
+        return true;
+    } else {
+        return titles_output_allowed_shell_closed.count(
+                   Kernel::g_current_process->codeset->program_id) == 1 &&
+               Settings::values.headphones_connected;
+    }
 }
 
 void DspHle::Impl::AudioTickCallback(s64 cycles_late) {
