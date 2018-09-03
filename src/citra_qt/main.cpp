@@ -220,6 +220,7 @@ void GMainWindow::InitializeHotkeys() {
     RegisterHotkey("Main Window", "Decrease Speed Limit", QKeySequence("-"),
                    Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence(tr("CTRL+S")));
+    RegisterHotkey("Main Window", "Toggle Shell Open", QKeySequence(tr("F2")));
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), &QShortcut::activated, this,
@@ -276,6 +277,12 @@ void GMainWindow::InitializeHotkeys() {
     connect(GetHotkey("Main Window", "Capture Screenshot", this), &QShortcut::activated, this, [&] {
         if (emu_thread->IsRunning()) {
             OnCaptureScreenshot();
+        }
+    });
+    connect(GetHotkey("Main Window", "Toggle Shell Open", this), &QShortcut::activated, this, [&] {
+        auto& system{Core::System::GetInstance()};
+        if (system.IsPoweredOn()) {
+            system.SetShellOpen(!system.IsShellOpen());
         }
     });
 }

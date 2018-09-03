@@ -19,6 +19,7 @@
 #include "common/math_util.h"
 #include "common/param_package.h"
 #include "common/threadsafe_queue.h"
+#include "core/core.h"
 #include "input_common/main.h"
 #include "input_common/sdl/sdl.h"
 
@@ -63,6 +64,8 @@ public:
     }
 
     bool GetButton(int button) {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return false;
         std::lock_guard<std::mutex> lock(mutex);
         return state.buttons[button];
     }
@@ -73,11 +76,15 @@ public:
     }
 
     float GetAxis(int axis) {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return 0.0f;
         std::lock_guard<std::mutex> lock(mutex);
         return state.axes[axis] / 32767.0f;
     }
 
     std::tuple<float, float> GetAnalog(int axis_x, int axis_y) {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return std::make_tuple(0.0f, 0.0f);
         float x{GetAxis(axis_x)};
         float y{GetAxis(axis_y)};
         y = -y; // 3DS uses an y-axis inverse from SDL
@@ -100,6 +107,8 @@ public:
     }
 
     bool GetHatDirection(int hat, Uint8 direction) {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return false;
         std::lock_guard<std::mutex> lock(mutex);
         return (state.hats[hat] & direction) != 0;
     }

@@ -430,6 +430,8 @@ void RendererOpenGL::DrawScreens(const Layout::FramebufferLayout& layout) {
     glActiveTexture(GL_TEXTURE0);
     glUniform1i(uniform_color_texture, 0);
 
+    if (!Core::System::GetInstance().IsShellOpen())
+        return;
     if (layout.top_screen_enabled) {
         if (!Settings::values.toggle_3d) {
             DrawSingleScreenRotated(screen_infos[0], (float)top_screen.left, (float)top_screen.top,

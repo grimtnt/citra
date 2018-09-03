@@ -4,6 +4,7 @@
 
 #include "common/logging/log.h"
 #include "common/param_package.h"
+#include "core/core.h"
 #include "core/frontend/input.h"
 #include "core/settings.h"
 #include "input_common/udp/client.h"
@@ -15,6 +16,8 @@ class UDPTouchDevice final : public Input::TouchDevice {
 public:
     explicit UDPTouchDevice(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
     std::tuple<float, float, bool> GetStatus() const {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return std::make_tuple(0.0f, 0.0f, false);
         std::lock_guard<std::mutex> guard(status->update_mutex);
         return status->touch_status;
     }
@@ -27,6 +30,8 @@ class UDPMotionDevice final : public Input::MotionDevice {
 public:
     explicit UDPMotionDevice(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
     std::tuple<Math::Vec3<float>, Math::Vec3<float>> GetStatus() const {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return std::make_tuple(Math::Vec3<float>(), Math::Vec3<float>());
         std::lock_guard<std::mutex> guard(status->update_mutex);
         return status->motion_status;
     }

@@ -178,6 +178,14 @@ public:
         return shared_page_handler;
     }
 
+    bool IsShellOpen() const {
+        return shell_open.load(std::memory_order_relaxed);
+    }
+
+    void SetShellOpen(bool value) {
+        shell_open.store(value, std::memory_order_relaxed);
+    }
+
 private:
     /**
      * Initialize the emulated system.
@@ -227,6 +235,7 @@ private:
 
     std::atomic<bool> jump_requested;
     std::atomic<bool> shutdown_requested;
+    std::atomic<bool> shell_open;
 };
 
 inline CPU& GetCPU() {

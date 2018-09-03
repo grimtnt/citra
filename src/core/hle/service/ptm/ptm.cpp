@@ -4,6 +4,7 @@
 
 #include <cinttypes>
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/file_sys/errors.h"
 #include "core/file_sys/file_backend.h"
 #include "core/hle/kernel/svc.h"
@@ -38,7 +39,7 @@ void Module::Interface::GetShellState(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push(ptm->shell_open);
+    rb.Push(Core::System::GetInstance().IsShellOpen());
 }
 
 void Module::Interface::GetBatteryLevel(Kernel::HLERequestContext& ctx) {

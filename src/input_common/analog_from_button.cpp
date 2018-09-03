@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include "core/core.h"
 #include "input_common/analog_from_button.h"
 
 namespace InputCommon {
@@ -17,6 +18,8 @@ public:
           modifier_scale(modifier_scale_) {}
 
     std::tuple<float, float> GetStatus() const override {
+        if (!Core::System::GetInstance().IsShellOpen())
+            return std::make_tuple(0.0f, 0.0f);
         constexpr float SQRT_HALF{0.707106781f};
         int x{}, y{};
 

@@ -147,7 +147,6 @@ public:
     };
 
 private:
-    bool shell_open{true};
     bool pedometer_is_counting{};
 };
 

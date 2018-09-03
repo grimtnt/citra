@@ -12,6 +12,7 @@
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/core_timing.h"
 
 using InterruptType = Service::DSP::DSP_DSP::InterruptType;
@@ -309,6 +310,8 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
 }
 
 bool DspHle::Impl::Tick() {
+    if (!Core::System::GetInstance().IsShellOpen())
+        return false;
     StereoFrame16 current_frame = {};
 
     // TODO: Check dsp::DSP semaphore (which indicates emulated application has finished writing to

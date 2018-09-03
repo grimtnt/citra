@@ -148,6 +148,10 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     service_manager = std::make_shared<Service::SM::ServiceManager>();
     shared_page_handler = std::make_shared<SharedPage::Handler>();
 
+    jump_requested = false;
+    shutdown_requested = false;
+    shell_open = true;
+
     HW::Init();
     Kernel::Init(system_mode);
     Service::Init(service_manager);
