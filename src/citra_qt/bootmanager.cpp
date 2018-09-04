@@ -12,6 +12,7 @@
 #include "input_common/keyboard.h"
 #include "input_common/main.h"
 #include "input_common/motion_emu.h"
+#include "network/network.h"
 #include "video_core/video_core.h"
 
 constexpr const char WINDOW_TITLE_FORMAT[]{"Citra %s| %s-%s"};

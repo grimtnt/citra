@@ -8,6 +8,7 @@
 #include "common/file_util.h"
 #include "input_common/main.h"
 #include "input_common/udp/client.h"
+#include "network/network.h"
 
 Config::Config() {
     // TODO: Don't hardcode the path; let the frontend decide where to put the config files.
@@ -267,6 +268,13 @@ void Config::ReadValues() {
     UISettings::values.confirm_before_closing = qt_config->value("confirmClose", true).toBool();
     UISettings::values.show_console = qt_config->value("showConsole", false).toBool();
 
+    qt_config->beginGroup("Multiplayer");
+    UISettings::values.ip = qt_config->value("ip", "").toString();
+    UISettings::values.port = qt_config->value("port", Network::DefaultRoomPort).toString();
+    UISettings::values.port_host =
+        qt_config->value("port_host", Network::DefaultRoomPort).toString();
+    qt_config->endGroup();
+
     qt_config->endGroup();
 }
 
@@ -424,6 +432,12 @@ void Config::SaveValues() {
     qt_config->setValue("showStatusBar", UISettings::values.show_status_bar);
     qt_config->setValue("confirmClose", UISettings::values.confirm_before_closing);
     qt_config->setValue("showConsole", UISettings::values.show_console);
+
+    qt_config->beginGroup("Multiplayer");
+    qt_config->setValue("ip", UISettings::values.ip);
+    qt_config->setValue("port", UISettings::values.port);
+    qt_config->setValue("port_host", UISettings::values.port_host);
+    qt_config->endGroup();
 
     qt_config->endGroup();
 }

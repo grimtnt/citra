@@ -206,6 +206,7 @@ void FileBackend::Write(const Entry& entry) {
     SUB(Audio, DSP)                                                                                \
     SUB(Audio, Sink)                                                                               \
     CLS(Input)                                                                                     \
+    CLS(Network)                                                                                   \
     CLS(Movie)                                                                                     \
     CLS(Loader)                                                                                    \
     CLS(RPC_Server)

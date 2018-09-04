@@ -23,6 +23,7 @@
 #include "core/loader/ncch.h"
 #include "core/loader/smdh.h"
 #include "core/memory.h"
+#include "network/network.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Loader namespace

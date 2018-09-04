@@ -28,6 +28,7 @@ enum class GameListOpenTarget;
 class GameListPlaceholder;
 class GImageInfo;
 class GRenderWindow;
+class MultiplayerState;
 template <typename>
 class QFutureWatcher;
 class QProgressBar;
@@ -179,6 +180,7 @@ private:
     QTimer status_bar_update_timer;
     QTimer movie_play_timer;
 
+    MultiplayerState* multiplayer_state{};
     std::unique_ptr<Config> config;
 
     // Whether emulation is currently running in Citra.

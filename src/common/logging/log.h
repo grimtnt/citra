@@ -96,6 +96,7 @@ enum class Class : u8 {
     Audio_Sink,         ///< Emulator audio output backend
     Loader,             ///< ROM loader
     Input,              ///< Input emulation
+    Network,            ///< Network emulation
     Movie,              ///< Movie (Input Recording) Playback
     RPC_Server,         ///< RPC server
     Count               ///< Total number of logging classes

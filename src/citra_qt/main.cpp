@@ -29,6 +29,7 @@
 #include "citra_qt/game_list.h"
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
+#include "citra_qt/multiplayer/state.h"
 #include "citra_qt/swkbd.h"
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/util/console.h"
@@ -94,6 +95,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     default_theme_paths = QIcon::themeSearchPaths();
     UpdateUITheme();
 
+    Network::Init();
+
     InitializeWidgets();
     InitializeRecentFileMenuActions();
     InitializeHotkeys();
@@ -118,6 +121,7 @@ GMainWindow::~GMainWindow() {
     // will get automatically deleted otherwise
     if (render_window->parent() == nullptr)
         delete render_window;
+    Network::Shutdown();
 }
 
 void GMainWindow::InitializeWidgets() {
@@ -130,6 +134,9 @@ void GMainWindow::InitializeWidgets() {
     game_list_placeholder = new GameListPlaceholder(this);
     ui.horizontalLayout->addWidget(game_list_placeholder);
     game_list_placeholder->setVisible(false);
+
+    multiplayer_state = new MultiplayerState(this, ui.action_Leave_Room);
+    multiplayer_state->setVisible(false);
 
     // Create status bar
     message_label = new QLabel();
@@ -162,6 +169,7 @@ void GMainWindow::InitializeWidgets() {
         label->setContentsMargins(4, 0, 4, 0);
         statusBar()->addPermanentWidget(label, 0);
     }
+    statusBar()->addPermanentWidget(multiplayer_state->GetStatusIcon(), 0);
     statusBar()->setVisible(true);
 
     // Removes an ugly inner border from the status bar widgets under Linux
@@ -336,6 +344,8 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(this, &GMainWindow::UpdateProgress, this, &GMainWindow::OnUpdateProgress);
     connect(this, &GMainWindow::CIAInstallReport, this, &GMainWindow::OnCIAInstallReport);
     connect(this, &GMainWindow::CIAInstallFinished, this, &GMainWindow::OnCIAInstallFinished);
+    connect(this, &GMainWindow::UpdateThemedIcons, multiplayer_state,
+            &MultiplayerState::UpdateThemedIcons);
 }
 
 void GMainWindow::ConnectMenuEvents() {
@@ -400,6 +410,14 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnStopRecordingPlayback);
     connect(ui.action_Capture_Screenshot, &QAction::triggered, this,
             &GMainWindow::OnCaptureScreenshot);
+
+    // Multiplayer
+    connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnCreateRoom);
+    connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnCloseRoom);
+    connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnIpConnectToRoom);
 
     // Help
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
@@ -1372,6 +1390,7 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
         ShutdownGame();
 
     render_window->close();
+    multiplayer_state->Close();
     QWidget::closeEvent(event);
 }
 
