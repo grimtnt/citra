@@ -15,11 +15,9 @@
 #include "core/hle/result.h"
 #include "core/hle/service/service.h"
 
-namespace Service {
-namespace FS {
+namespace Service::FS {
 enum class MediaType : u32;
-} // namespace FS
-} // namespace Service
+} // namespace Service::FS
 
 namespace Service::AM {
 
@@ -508,7 +506,7 @@ private:
      */
     void ScanForAllTitles();
 
-    bool cia_installing = false;
+    bool cia_installing{};
     std::array<std::vector<u64_le>, 3> am_title_list;
 };
 

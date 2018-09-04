@@ -34,12 +34,12 @@
 
 namespace Service::AM {
 
-constexpr u16 PLATFORM_CTR = 0x0004;
-constexpr u16 CATEGORY_SYSTEM = 0x0010;
-constexpr u16 CATEGORY_DLP = 0x0001;
-constexpr u8 VARIATION_SYSTEM = 0x02;
-constexpr u32 TID_HIGH_UPDATE = 0x0004000E;
-constexpr u32 TID_HIGH_DLC = 0x0004008C;
+constexpr u16 PLATFORM_CTR{0x0004};
+constexpr u16 CATEGORY_SYSTEM{0x0010};
+constexpr u16 CATEGORY_DLP{0x0001};
+constexpr u8 VARIATION_SYSTEM{0x02};
+constexpr u32 TID_HIGH_UPDATE{0x0004000E};
+constexpr u32 TID_HIGH_DLC{0x0004008C};
 
 struct TitleInfo {
     u64_le tid;
@@ -55,14 +55,16 @@ class CIAFile::DecryptionState {
 public:
     std::vector<CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption> content;
 };
+
 CIAFile::CIAFile(Service::FS::MediaType media_type)
-    : media_type(media_type), decryption_state(std::make_unique<DecryptionState>()) {}
+    : media_type{media_type}, decryption_state{std::make_unique<DecryptionState>()} {}
+
 CIAFile::~CIAFile() {
     Close();
 }
 
-constexpr u8 OWNERSHIP_DOWNLOADED = 0x01;
-constexpr u8 OWNERSHIP_OWNED = 0x02;
+constexpr u8 OWNERSHIP_DOWNLOADED{0x01};
+constexpr u8 OWNERSHIP_OWNED{0x02};
 
 struct ContentInfo {
     u16_le index;
@@ -125,13 +127,13 @@ ResultCode CIAFile::WriteTitleMetadata() {
                       &app_folder, nullptr, nullptr);
     FileUtil::CreateFullPath(app_folder);
 
-    auto content_count = container.GetTitleMetadata().GetContentCount();
+    auto content_count{container.GetTitleMetadata().GetContentCount()};
     content_written.resize(content_count);
-    auto title_key = container.GetTicket().GetTitleKey();
+    auto title_key{container.GetTicket().GetTitleKey()};
     if (title_key) {
         decryption_state->content.resize(content_count);
         for (std::size_t i = 0; i < content_count; ++i) {
-            auto ctr = tmd.GetContentCTRByIndex(i);
+            auto ctr{tmd.GetContentCTRByIndex(i)};
             decryption_state->content[i].SetKeyWithIV(title_key->data(), title_key->size(),
                                                       ctr.data());
         }
@@ -139,7 +141,7 @@ ResultCode CIAFile::WriteTitleMetadata() {
 
     install_state = CIAInstallState::TMDLoaded;
 
-    return MakeResult<size_t>(length);
+    return RESULT_SUCCESS;
 }
 
 ResultVal<size_t> CIAFile::WriteContentData(u64 offset, size_t length, const u8* buffer) {
@@ -331,7 +333,7 @@ InstallStatus InstallCIA(const std::string& path,
         Service::AM::CIAFile installFile{
             Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID())};
 
-        bool title_key_available = container.GetTicket().GetTitleKey().is_initialized();
+        bool title_key_available{container.GetTicket().GetTitleKey().is_initialized()};
 
         for (size_t i{}; i < container.GetTitleMetadata().GetContentCount(); i++) {
             if ((container.GetTitleMetadata().GetContentTypeByIndex(static_cast<u16>(i)) &
