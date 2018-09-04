@@ -24,26 +24,26 @@ struct KeySlot {
     boost::optional<AESKey> y;
     boost::optional<AESKey> normal;
 
-    void SetKeyX(const AESKey& key) {
+    void SetKeyX(boost::optional<AESKey> key) {
         x = key;
-        if (y && generator_constant) {
-            GenerateNormalKey();
-        }
+        GenerateNormalKey();
     }
 
-    void SetKeyY(const AESKey& key) {
+    void SetKeyY(boost::optional<AESKey> key) {
         y = key;
-        if (x && generator_constant) {
-            GenerateNormalKey();
-        }
+        GenerateNormalKey();
     }
 
-    void SetNormalKey(const AESKey& key) {
+    void SetNormalKey(boost::optional<AESKey> key) {
         normal = key;
     }
 
     void GenerateNormalKey() {
-        normal = Lrot128(Add128(Xor128(Lrot128(*x, 2), *y), *generator_constant), 87);
+        if (x && y && generator_constant) {
+            normal = Lrot128(Add128(Xor128(Lrot128(*x, 2), *y), *generator_constant), 87);
+        } else {
+            normal = boost::none;
+        }
     }
 
     void Clear() {
@@ -54,6 +54,7 @@ struct KeySlot {
 };
 
 std::array<KeySlot, KeySlotID::MaxKeySlotID> key_slots;
+std::array<boost::optional<AESKey>, 6> common_key_y_slots;
 
 AESKey HexToKey(const std::string& hex) {
     if (hex.size() < 32) {
@@ -98,6 +99,16 @@ void LoadPresetKeys() {
 
         if (name == "generator") {
             generator_constant = key;
+            continue;
+        }
+
+        std::size_t common_key_index;
+        if (std::sscanf(name.c_str(), "common%zd", &common_key_index) == 1) {
+            if (common_key_index >= common_key_y_slots.size()) {
+                LOG_ERROR(HW_AES, "Invalid common key index {}", common_key_index);
+            } else {
+                common_key_y_slots[common_key_index] = key;
+            }
             continue;
         }
 
@@ -162,6 +173,10 @@ bool IsNormalKeyAvailable(size_t slot_id) {
 
 AESKey GetNormalKey(size_t slot_id) {
     return key_slots.at(slot_id).normal.value_or(AESKey{});
+}
+
+void SelectCommonKeyIndex(u8 index) {
+    key_slots[KeySlotID::TicketCommonKey].SetKeyY(common_key_y_slots.at(index));
 }
 
 } // namespace HW::AES

@@ -23,6 +23,9 @@ enum KeySlotID : size_t {
     // AES keyslot used for APT:Wrap/Unwrap functions
     APTWrap = 0x31,
 
+    // AES keyslot used for decrypting ticket title key
+    TicketCommonKey = 0x3D,
+
     MaxKeySlotID = 0x40,
 };
 
@@ -39,5 +42,7 @@ void SetNormalKey(size_t slot_id, const AESKey& key);
 
 bool IsNormalKeyAvailable(size_t slot_id);
 AESKey GetNormalKey(size_t slot_id);
+
+void SelectCommonKeyIndex(u8 index);
 
 } // namespace HW::AES
