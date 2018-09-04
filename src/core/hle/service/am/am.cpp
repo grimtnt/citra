@@ -6,6 +6,8 @@
 #include <cinttypes>
 #include <cstddef>
 #include <cstring>
+#include <cryptopp/aes.h>
+#include <cryptopp/modes.h>
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -49,6 +51,16 @@ struct TitleInfo {
 
 static_assert(sizeof(TitleInfo) == 0x18, "Title info structure size is wrong");
 
+class CIAFile::DecryptionState {
+public:
+    std::vector<CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption> content;
+};
+CIAFile::CIAFile(Service::FS::MediaType media_type)
+    : media_type(media_type), decryption_state(std::make_unique<DecryptionState>()) {}
+CIAFile::~CIAFile() {
+    Close();
+}
+
 constexpr u8 OWNERSHIP_DOWNLOADED = 0x01;
 constexpr u8 OWNERSHIP_OWNED = 0x02;
 
@@ -78,7 +90,13 @@ ResultVal<size_t> CIAFile::Read(u64 offset, size_t length, u8* buffer) const {
     return MakeResult<size_t>(length);
 }
 
-ResultVal<size_t> CIAFile::WriteTitleMetadata(u64 offset, size_t length, const u8* buffer) {
+ResultCode CIAFile::WriteTicket() {
+    container.LoadTicket(data, container.GetTicketOffset());
+    install_state = CIAInstallState::TicketLoaded;
+    return RESULT_SUCCESS;
+}
+
+ResultCode CIAFile::WriteTitleMetadata() {
     container.LoadTitleMetadata(data, container.GetTitleMetadataOffset());
     FileSys::TitleMetadata tmd = container.GetTitleMetadata();
     tmd.Print();
@@ -107,7 +125,18 @@ ResultVal<size_t> CIAFile::WriteTitleMetadata(u64 offset, size_t length, const u
                       &app_folder, nullptr, nullptr);
     FileUtil::CreateFullPath(app_folder);
 
-    content_written.resize(container.GetTitleMetadata().GetContentCount());
+    auto content_count = container.GetTitleMetadata().GetContentCount();
+    content_written.resize(content_count);
+    auto title_key = container.GetTicket().GetTitleKey();
+    if (title_key) {
+        decryption_state->content.resize(content_count);
+        for (std::size_t i = 0; i < content_count; ++i) {
+            auto ctr = tmd.GetContentCTRByIndex(i);
+            decryption_state->content[i].SetKeyWithIV(title_key->data(), title_key->size(),
+                                                      ctr.data());
+        }
+    }
+
     install_state = CIAInstallState::TMDLoaded;
 
     return MakeResult<size_t>(length);
@@ -142,7 +171,13 @@ ResultVal<size_t> CIAFile::WriteContentData(u64 offset, size_t length, const u8*
             if (!file.IsOpen())
                 return FileSys::ERROR_INSUFFICIENT_SPACE;
 
-            file.WriteBytes(buffer + (range_min - offset), available_to_write);
+            std::vector<u8> temp(buffer + (range_min - offset),
+                                 buffer + (range_min - offset) + available_to_write);
+            if (tmd.GetContentTypeByIndex(static_cast<u16>(i)) &
+                FileSys::TMDContentTypeFlag::Encrypted) {
+                decryption_state->content[i].ProcessData(temp.data(), temp.data(), temp.size());
+            }
+            file.WriteBytes(temp.data(), temp.size());
 
             // Keep tabs on how much of this content ID has been written so new range_min
             // values can be calculated.
@@ -204,8 +239,11 @@ ResultVal<size_t> CIAFile::Write(u64 offset, size_t length, bool flush, const u8
     // The end of our TMD is at the beginning of Content data, so ensure we have that much
     // buffered before trying to parse.
     if (written >= container.GetContentOffset() && install_state != CIAInstallState::TMDLoaded) {
-        auto result{WriteTitleMetadata(offset, length, buffer)};
-        if (result.Failed())
+        auto result = WriteTicket();
+        if (result.IsError())
+            return result;
+        result = WriteTitleMetadata();
+        if (result.IsError())
             return result;
     }
 
@@ -293,9 +331,12 @@ InstallStatus InstallCIA(const std::string& path,
         Service::AM::CIAFile installFile{
             Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID())};
 
+        bool title_key_available = container.GetTicket().GetTitleKey().is_initialized();
+
         for (size_t i{}; i < container.GetTitleMetadata().GetContentCount(); i++) {
-            if (container.GetTitleMetadata().GetContentTypeByIndex(static_cast<u16>(i)) &
-                FileSys::TMDContentTypeFlag::Encrypted) {
+            if ((container.GetTitleMetadata().GetContentTypeByIndex(static_cast<u16>(i)) &
+                 FileSys::TMDContentTypeFlag::Encrypted) &&
+                !title_key_available) {
                 LOG_ERROR(Service_AM, "File {} is encrypted! Aborting...", path);
                 return InstallStatus::ErrorEncrypted;
             }
