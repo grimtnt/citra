@@ -132,7 +132,7 @@ ResultCode CIAFile::WriteTitleMetadata() {
     auto title_key{container.GetTicket().GetTitleKey()};
     if (title_key) {
         decryption_state->content.resize(content_count);
-        for (std::size_t i = 0; i < content_count; ++i) {
+        for (std::size_t i{}; i < content_count; ++i) {
             auto ctr{tmd.GetContentCTRByIndex(i)};
             decryption_state->content[i].SetKeyWithIV(title_key->data(), title_key->size(),
                                                       ctr.data());
@@ -241,7 +241,7 @@ ResultVal<size_t> CIAFile::Write(u64 offset, size_t length, bool flush, const u8
     // The end of our TMD is at the beginning of Content data, so ensure we have that much
     // buffered before trying to parse.
     if (written >= container.GetContentOffset() && install_state != CIAInstallState::TMDLoaded) {
-        auto result = WriteTicket();
+        auto result{WriteTicket()};
         if (result.IsError())
             return result;
         result = WriteTitleMetadata();
@@ -641,7 +641,7 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
         u32 end_index{
             std::min(start_index + content_count, static_cast<u32>(tmd.GetContentCount()))};
         std::size_t write_offset{};
-        for (u32 i = start_index; i < end_index; i++) {
+        for (u32 i{start_index}; i < end_index; i++) {
             std::shared_ptr<FileUtil::IOFile> romfs_file{};
             u64 romfs_offset{};
 
