@@ -14,18 +14,18 @@
 namespace FileSys {
 
 Loader::ResultStatus Ticket::Load(const std::vector<u8> file_data, std::size_t offset) {
-    std::size_t total_size = static_cast<size_t>(file_data.size() - offset);
+    std::size_t total_size{static_cast<size_t>(file_data.size() - offset)};
     if (total_size < sizeof(u32_be))
         return Loader::ResultStatus::Error;
 
     std::memcpy(&signature_type, &file_data[offset], sizeof(u32_be));
 
     // Signature lengths are variable, and the body follows the signature
-    u32 signature_size = GetSignatureSize(signature_type);
+    u32 signature_size{GetSignatureSize(signature_type)};
 
     // The ticket body start position is rounded to the nearest 0x40 after the signature
-    size_t body_start = Common::AlignUp(signature_size + sizeof(u32), 0x40);
-    size_t body_end = body_start + sizeof(Body);
+    size_t body_start{Common::AlignUp(signature_size + sizeof(u32), 0x40)};
+    size_t body_end{body_start + sizeof(Body)};
 
     if (total_size < body_end)
         return Loader::ResultStatus::Error;
@@ -46,8 +46,8 @@ boost::optional<std::array<u8, 16>> Ticket::GetTitleKey() const {
     if (!HW::AES::IsNormalKeyAvailable(HW::AES::KeySlotID::TicketCommonKey)) {
         return boost::none;
     }
-    auto key = HW::AES::GetNormalKey(HW::AES::KeySlotID::TicketCommonKey);
-    auto title_key = ticket_body.title_key;
+    auto key{HW::AES::GetNormalKey(HW::AES::KeySlotID::TicketCommonKey)};
+    auto title_key{ticket_body.title_key};
     CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption{key.data(), key.size(), ctr.data()}.ProcessData(
         title_key.data(), title_key.data(), title_key.size());
     return title_key;

@@ -15,7 +15,7 @@
 
 namespace Loader {
 enum class ResultStatus;
-}
+} // namespace Loader
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // FileSys namespace
@@ -24,11 +24,11 @@ namespace FileSys {
 
 class FileBackend;
 
-constexpr size_t CIA_CONTENT_MAX_COUNT = 0x10000;
-constexpr size_t CIA_CONTENT_BITS_SIZE = (CIA_CONTENT_MAX_COUNT / 8);
-constexpr size_t CIA_HEADER_SIZE = 0x2020;
-constexpr size_t CIA_DEPENDENCY_SIZE = 0x300;
-constexpr size_t CIA_METADATA_SIZE = 0x400;
+constexpr size_t CIA_CONTENT_MAX_COUNT{0x10000};
+constexpr size_t CIA_CONTENT_BITS_SIZE{(CIA_CONTENT_MAX_COUNT / 8)};
+constexpr size_t CIA_HEADER_SIZE{0x2020};
+constexpr size_t CIA_DEPENDENCY_SIZE{0x300};
+constexpr size_t CIA_METADATA_SIZE{0x400};
 
 /**
  * Helper which implements an interface to read and write CTR Installable Archive (CIA) files.

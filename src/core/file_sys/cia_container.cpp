@@ -16,7 +16,7 @@
 
 namespace FileSys {
 
-constexpr u32 CIA_SECTION_ALIGNMENT = 0x40;
+constexpr u32 CIA_SECTION_ALIGNMENT{0x40};
 
 Loader::ResultStatus CIAContainer::Load(const FileBackend& backend) {
     std::vector<u8> header_data(sizeof(Header));
@@ -65,7 +65,7 @@ Loader::ResultStatus CIAContainer::Load(const std::string& filepath) {
     if (file.ReadBytes(header_data.data(), sizeof(Header)) != sizeof(Header))
         return Loader::ResultStatus::Error;
 
-    Loader::ResultStatus result = LoadHeader(header_data);
+    Loader::ResultStatus result{LoadHeader(header_data)};
     if (result != Loader::ResultStatus::Success)
         return result;
 
