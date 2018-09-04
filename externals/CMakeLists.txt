@@ -8,13 +8,11 @@ include(ExternalProject)
 add_subdirectory(cryptopp)
 
 # Dynarmic
-if (ARCHITECTURE_x86_64)
-    # Dynarmic will skip defining xbyak if it's already defined, we then define it below
-    add_library(xbyak INTERFACE)
-    option(DYNARMIC_TESTS OFF)
-    set(DYNARMIC_NO_BUNDLED_FMT ON)
-    add_subdirectory(dynarmic)
-endif()
+# Dynarmic will skip defining xbyak if it's already defined, we then define it below
+add_library(xbyak INTERFACE)
+option(DYNARMIC_TESTS OFF)
+set(DYNARMIC_NO_BUNDLED_FMT ON)
+add_subdirectory(dynarmic)
 
 # libfmt
 add_subdirectory(fmt)
@@ -36,16 +34,10 @@ add_subdirectory(soundtouch)
 target_include_directories(SoundTouch INTERFACE ./soundtouch/include)
 
 # Xbyak
-if (ARCHITECTURE_x86_64)
-    # Defined before "dynarmic" above
-    # add_library(xbyak INTERFACE)
-    target_include_directories(xbyak INTERFACE ./xbyak/xbyak)
-    target_compile_definitions(xbyak INTERFACE XBYAK_NO_OP_NAMES)
-endif()
-
-# ENet
-add_subdirectory(enet)
-target_include_directories(enet INTERFACE ./enet/include)
+# Defined before "dynarmic" above
+# add_library(xbyak INTERFACE)
+target_include_directories(xbyak INTERFACE ./xbyak/xbyak)
+target_compile_definitions(xbyak INTERFACE XBYAK_NO_OP_NAMES)
 
 # Discord RPC
 add_subdirectory(discord-rpc)

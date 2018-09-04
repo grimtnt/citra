@@ -154,6 +154,9 @@ set_property(DIRECTORY APPEND PROPERTY
 math(EXPR EMU_ARCH_BITS ${CMAKE_SIZEOF_VOID_P}*8)
 add_definitions(-DEMU_ARCH_BITS=${EMU_ARCH_BITS})
 
+# Find pcap
+find_package(PCAP REQUIRED)
+
 # System imported libraries
 # ======================
 

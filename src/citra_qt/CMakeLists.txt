@@ -43,15 +43,6 @@ add_executable(citra-qt
     configuration/configure_system.h
     configuration/configure_hacks.cpp
     configuration/configure_hacks.h
-    multiplayer/ip_connect.cpp
-    multiplayer/ip_connect.h
-    multiplayer/host_room.cpp
-    multiplayer/host_room.h
-    multiplayer/message.cpp
-    multiplayer/message.h
-    multiplayer/state.cpp
-    multiplayer/state.h
-    multiplayer/validation.h
     game_list.cpp
     game_list.h
     game_list_p.h
@@ -87,8 +78,6 @@ set(UIS
     cheats.ui
     main.ui
     control_panel.ui
-    multiplayer/ip_connect.ui
-    multiplayer/host_room.ui
 )
 
 file(GLOB_RECURSE ICONS ${CMAKE_SOURCE_DIR}/dist/icons/*)
@@ -122,7 +111,7 @@ endif()
 
 create_target_directory_groups(citra-qt)
 
-target_link_libraries(citra-qt PRIVATE audio_core common core input_common network video_core)
+target_link_libraries(citra-qt PRIVATE audio_core common core input_common video_core)
 target_link_libraries(citra-qt PRIVATE Boost::boost glad nihstro-headers Qt5::OpenGL Qt5::Widgets Qt5::Multimedia)
 if (ENABLE_DISCORD_RPC)
     target_link_libraries(citra-qt PRIVATE discord-rpc)

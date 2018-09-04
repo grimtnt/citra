@@ -276,9 +276,6 @@ std::vector<u8> GenerateNintendoSecondEncryptedDataTag(const NetworkInfo& networ
 
     const size_t tag_length = sizeof(EncryptedDataTag) - sizeof(TagHeader) + payload_size;
 
-    // TODO(Subv): What does the 3DS do when a game has too much data to fit into the tag?
-    ASSERT_MSG(tag_length <= 255, "Data is too big.");
-
     EncryptedDataTag tag{};
     tag.header.tag_id = static_cast<u8>(TagId::VendorSpecific);
     tag.header.length = static_cast<u8>(tag_length);
