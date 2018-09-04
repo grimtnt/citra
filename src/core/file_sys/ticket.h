@@ -14,7 +14,7 @@
 
 namespace Loader {
 enum class ResultStatus;
-}
+} // namespace Loader
 
 namespace FileSys {
 class Ticket {

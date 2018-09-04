@@ -51,7 +51,7 @@ enum class InstallStatus : u32 {
 };
 
 // Title ID valid length
-constexpr size_t TITLE_ID_VALID_LENGTH = 16;
+constexpr size_t TITLE_ID_VALID_LENGTH{16};
 
 // Progress callback for InstallCIA, receives bytes written and total bytes
 using ProgressCallback = void(size_t, size_t);
@@ -74,13 +74,13 @@ public:
 
 private:
     // Whether it's installing an update, and what step of installation it is at
-    bool is_update = false;
-    CIAInstallState install_state = CIAInstallState::InstallStarted;
+    bool is_update{};
+    CIAInstallState install_state{CIAInstallState::InstallStarted};
 
     // How much has been written total, CIAContainer for the installing CIA, buffer of all data
     // prior to content data, how much of each content index has been written, and where the CIA
     // is being installed to
-    u64 written = 0;
+    u64 written{};
     FileSys::CIAContainer container;
     std::vector<u8> data;
     std::vector<u64> content_written;
