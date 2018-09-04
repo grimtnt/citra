@@ -31,6 +31,7 @@ add_library(core STATIC
     file_sys/archive_source_sd_savedata.h
     file_sys/archive_systemsavedata.cpp
     file_sys/archive_systemsavedata.h
+    file_sys/cia_common.h
     file_sys/cia_container.cpp
     file_sys/cia_container.h
     file_sys/directory_backend.h
@@ -49,6 +50,8 @@ add_library(core STATIC
     file_sys/romfs_reader.h
     file_sys/savedata_archive.cpp
     file_sys/savedata_archive.h
+    file_sys/ticket.cpp
+    file_sys/ticket.h
     file_sys/title_metadata.cpp
     file_sys/title_metadata.h
     frontend/camera/blank_camera.cpp
