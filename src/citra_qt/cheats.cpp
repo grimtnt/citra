@@ -449,12 +449,10 @@ void CheatDialog::OnHexCheckedChanged(bool checked) {
             }
         } else {
             if (text.length() > 0) {
-                // ui->txtSearch->setText(QString::fromStdString(std::to_string(HexToInt(text))));
                 ui->txtSearch->setText(QString::number(HexToInt(text)));
             }
 
             if (text_to.length() > 0) {
-                // ui->txtSearchTo->setText(QString::fromStdString(std::to_string(HexToInt(text_to))));
                 ui->txtSearchTo->setText(QString::number(HexToInt(text_to)));
             }
         }
