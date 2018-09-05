@@ -15,6 +15,7 @@ enum class PacketType {
     MotionState,
     CircleState,
     SetResolution,
+    SetGame,
 };
 
 struct PacketHeader {
@@ -26,7 +27,7 @@ struct PacketHeader {
 
 constexpr u32 CURRENT_VERSION = 1;
 constexpr u32 MIN_PACKET_SIZE = sizeof(PacketHeader);
-constexpr u32 MAX_PACKET_DATA_SIZE = 32;
+constexpr u32 MAX_PACKET_DATA_SIZE = 200;
 constexpr u32 MAX_PACKET_SIZE = MIN_PACKET_SIZE + MAX_PACKET_DATA_SIZE;
 constexpr u32 MAX_READ_SIZE = MAX_PACKET_DATA_SIZE;
 
@@ -74,6 +75,7 @@ private:
     void HandleMotionState(Packet& packet, s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
     void HandleCircleState(Packet& packet, s16 x, s16 y);
     void HandleSetResolution(Packet& packet, u16 resolution);
+    void HandleSetGame(Packet& packet, const std::string& path);
 
     struct PacketHeader header;
     std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;

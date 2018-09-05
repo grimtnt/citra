@@ -38,11 +38,11 @@ void LoadHotkeys() {
     // Make sure NOT to use a reference here because it would become invalid once we call
     // beginGroup()
     for (auto shortcut : UISettings::values.shortcuts) {
-        QStringList cat = shortcut.first.split("/");
+        QStringList cat{shortcut.first.split("/")};
         Q_ASSERT(cat.size() >= 2);
 
         // RegisterHotkey assigns default keybindings, so use old values as default parameters
-        Hotkey& hk = hotkey_groups[cat[0]][cat[1]];
+        Hotkey& hk{hotkey_groups[cat[0]][cat[1]]};
         if (!shortcut.second.first.isEmpty()) {
             hk.keyseq = QKeySequence::fromString(shortcut.second.first);
             hk.context = (Qt::ShortcutContext)shortcut.second.second;
@@ -73,11 +73,11 @@ GHotkeysDialog::GHotkeysDialog(QWidget* parent) : QWidget(parent) {
     ui.setupUi(this);
 
     for (auto group : hotkey_groups) {
-        QTreeWidgetItem* toplevel_item = new QTreeWidgetItem(QStringList(group.first));
+        QTreeWidgetItem* toplevel_item{new QTreeWidgetItem(QStringList(group.first))};
         for (auto hotkey : group.second) {
-            QStringList columns;
+            QStringList columns{};
             columns << hotkey.first << hotkey.second.keyseq.toString();
-            QTreeWidgetItem* item = new QTreeWidgetItem(columns);
+            QTreeWidgetItem* item{new QTreeWidgetItem(columns)};
             toplevel_item->addChild(item);
         }
         ui.treeWidget->addTopLevelItem(toplevel_item);

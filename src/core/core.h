@@ -101,6 +101,11 @@ public:
         shutdown_requested = true;
     }
 
+    void SetGame(const std::string& path) {
+        shutdown_requested = true;
+        file_path = path;
+    }
+
     /**
      * Load an executable application.
      * @param emu_window Reference to the host-system window used for video output and keyboard
@@ -109,6 +114,7 @@ public:
      * @returns ResultStatus code, indicating if the operation succeeded.
      */
     ResultStatus Load(EmuWindow& emu_window, const std::string& filepath);
+    ResultStatus Load(const std::string& filepath);
 
     /**
      * Indicates if the emulated system is powered on (all subsystems initialized and able to run an
@@ -185,6 +191,8 @@ public:
     void SetShellOpen(bool value) {
         shell_open.store(value, std::memory_order_relaxed);
     }
+
+    std::string file_path;
 
 private:
     /**

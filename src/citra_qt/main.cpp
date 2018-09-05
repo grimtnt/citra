@@ -1342,8 +1342,8 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     message_box.setWindowTitle(title);
     message_box.setText(message);
     message_box.setIcon(QMessageBox::Icon::Critical);
-    QPushButton* continue_button = message_box.addButton("Continue", QMessageBox::RejectRole);
-    QPushButton* abort_button = message_box.addButton("Abort", QMessageBox::AcceptRole);
+    QPushButton* continue_button{message_box.addButton("Continue", QMessageBox::RejectRole)};
+    QPushButton* abort_button{message_box.addButton("Abort", QMessageBox::AcceptRole)};
     if (result != Core::System::ResultStatus::ShutdownRequested)
         message_box.exec();
 
@@ -1351,6 +1351,11 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
         message_box.clickedButton() == abort_button) {
         if (emu_thread) {
             ShutdownGame();
+            auto& system{Core::System::GetInstance()};
+            if (!system.file_path.empty()) {
+                BootGame(QString::fromStdString(system.file_path));
+                system.file_path.clear();
+            }
         }
     } else {
         // Only show the message if the game is still running.
@@ -1407,7 +1412,7 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
 }
 
 static bool IsSingleFileDropEvent(QDropEvent* event) {
-    const QMimeData* mimeData = event->mimeData();
+    const QMimeData* mimeData{event->mimeData()};
     return mimeData->hasUrls() && mimeData->urls().length() == 1;
 }
 
@@ -1446,13 +1451,13 @@ void GMainWindow::filterBarSetChecked(bool state) {
 }
 
 void GMainWindow::UpdateUITheme() {
-    QStringList theme_paths(default_theme_paths);
+    QStringList theme_paths{default_theme_paths};
     if (UISettings::values.theme != UISettings::themes[0].second &&
         !UISettings::values.theme.isEmpty()) {
-        const QString theme_uri(":" + UISettings::values.theme + "/style.qss");
+        const QString theme_uri{":" + UISettings::values.theme + "/style.qss"};
         QFile f{theme_uri};
         if (f.open(QFile::ReadOnly | QFile::Text)) {
-            QTextStream ts(&f);
+            QTextStream ts{&f};
             qApp->setStyleSheet(ts.readAll());
             GMainWindow::setStyleSheet(ts.readAll());
         } else {

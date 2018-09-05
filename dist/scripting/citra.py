@@ -4,7 +4,7 @@ import random
 import binascii
 
 CURRENT_REQUEST_VERSION = 1
-MAX_REQUEST_DATA_SIZE = 32
+MAX_REQUEST_DATA_SIZE = 200
 
 REQUEST_TYPE_READ_MEMORY = 1
 REQUEST_TYPE_WRITE_MEMORY = 2
@@ -13,13 +13,15 @@ REQUEST_TYPE_TOUCH_STATE = 4
 REQUEST_TYPE_MOTION_STATE = 5
 REQUEST_TYPE_CIRCLE_STATE = 6
 REQUEST_TYPE_SET_RESOLUTION = 7
+REQUEST_TYPE_SET_GAME = 8
 
 CITRA_PORT = "45987"
 
-# https://github.com/smealum/ctrulib/blob/bd34fd59dbf0691e2dba76be65f260303d8ccec7/libctru/include/3ds/services/hid.h#L9
+# https://github.com/smealum/ctrulib/blob/master/libctru/include/3ds/types.h#L46
 def BIT(n):
     return (1 << n)
 
+# https://github.com/smealum/ctrulib/blob/master/libctru/include/3ds/services/hid.h#L9
 KEY_A = BIT(0)             # A
 KEY_B = BIT(1)             # B
 KEY_SELECT = BIT(2)        # Select
@@ -116,36 +118,44 @@ class Citra:
         return True
 
     def set_pad_state(self, pad_state):
-        request_data = struct.pack("III", 0, 4, pad_state)
+        request_data = struct.pack("III", 0, 0, pad_state)
         request, request_id = self._generate_header(REQUEST_TYPE_PAD_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_touch_state(self, x, y, valid):
-        request_data = struct.pack("IIhh?", 0, 4, x, y, valid)
+        request_data = struct.pack("IIhh?", 0, 0, x, y, valid)
         request, request_id = self._generate_header(REQUEST_TYPE_TOUCH_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_motion_state(self, x, y, z, roll, pitch, yaw):
-        request_data = struct.pack("IIhhhhhh", 0, 4, x, y, z, roll, pitch, yaw)
+        request_data = struct.pack("IIhhhhhh", 0, 0, x, y, z, roll, pitch, yaw)
         request, request_id = self._generate_header(REQUEST_TYPE_MOTION_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_circle_state(self, x, y):
-        request_data = struct.pack("IIhh", 0, 4, x, y)
+        request_data = struct.pack("IIhh", 0, 0, x, y)
         request, request_id = self._generate_header(REQUEST_TYPE_CIRCLE_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_resolution(self, resolution):
-        request_data = struct.pack("IIh", 0, 4, resolution)
+        request_data = struct.pack("IIh", 0, 0, resolution)
         request, request_id = self._generate_header(REQUEST_TYPE_SET_RESOLUTION, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_game(self, path):
+        request_data = struct.pack("II", 0, 0)
+        request_data += str.encode(path)
+        request, request_id = self._generate_header(REQUEST_TYPE_SET_GAME, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()

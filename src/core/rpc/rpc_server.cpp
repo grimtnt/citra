@@ -76,9 +76,14 @@ void RPCServer::HandleCircleState(Packet& packet, s16 x, s16 y) {
 
 void RPCServer::HandleSetResolution(Packet& packet, u16 resolution) {
     Settings::values.resolution_factor = resolution;
-    Settings::Apply();
     packet.SetPacketDataSize(0);
     packet.SendReply();
+}
+
+void RPCServer::HandleSetGame(Packet& packet, const std::string& path) {
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+    Core::System::GetInstance().SetGame(path);
 }
 
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
@@ -91,6 +96,7 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::MotionState:
         case PacketType::CircleState:
         case PacketType::SetResolution:
+        case PacketType::SetGame:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -103,7 +109,7 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
 }
 
 void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
-    bool success = false;
+    bool success{};
 
     if (ValidatePacket(request_packet->GetHeader())) {
         // Currently, all request types use the address/data_size wire format
@@ -113,82 +119,87 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         std::memcpy(&data_size, request_packet->GetPacketData().data() + sizeof(address),
                     sizeof(data_size));
         switch (request_packet->GetPacketType()) {
-        case PacketType::ReadMemory:
+        case PacketType::ReadMemory: {
             if (data_size > 0 && data_size <= MAX_READ_SIZE) {
                 HandleReadMemory(*request_packet, address, data_size);
                 success = true;
             }
             break;
-        case PacketType::WriteMemory:
+        }
+        case PacketType::WriteMemory: {
             if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
-                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
+                const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
                 HandleWriteMemory(*request_packet, address, data, data_size);
                 success = true;
             }
             break;
-        case PacketType::PadState:
-            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
-                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
-                u32 raw;
-                std::memcpy(&raw, data, sizeof(u32));
-                HandlePadState(*request_packet, raw);
-                success = true;
-            }
+        }
+        case PacketType::PadState: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            u32 raw{};
+            std::memcpy(&raw, data, sizeof(u32));
+            HandlePadState(*request_packet, raw);
+            success = true;
             break;
-        case PacketType::TouchState:
-            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
-                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
-                struct State {
-                    s16 x;
-                    s16 y;
-                    bool valid;
-                };
-                State state;
-                std::memcpy(&state, data, sizeof(State));
-                HandleTouchState(*request_packet, state.x, state.y, state.valid);
-                success = true;
-            }
+        }
+        case PacketType::TouchState: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            struct State {
+                s16 x;
+                s16 y;
+                bool valid;
+            };
+            State state{};
+            std::memcpy(&state, data, sizeof(State));
+            HandleTouchState(*request_packet, state.x, state.y, state.valid);
+            success = true;
             break;
-        case PacketType::MotionState:
-            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
-                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
-                struct State {
-                    s16 x;
-                    s16 y;
-                    s16 z;
-                    s16 roll;
-                    s16 pitch;
-                    s16 yaw;
-                };
-                State state;
-                std::memcpy(&state, data, sizeof(State));
-                HandleMotionState(*request_packet, state.x, state.y, state.z, state.roll,
-                                  state.pitch, state.yaw);
-                success = true;
-            }
+        }
+        case PacketType::MotionState: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            struct State {
+                s16 x;
+                s16 y;
+                s16 z;
+                s16 roll;
+                s16 pitch;
+                s16 yaw;
+            };
+            State state{};
+            std::memcpy(&state, data, sizeof(State));
+            HandleMotionState(*request_packet, state.x, state.y, state.z, state.roll, state.pitch,
+                              state.yaw);
+            success = true;
             break;
-        case PacketType::CircleState:
-            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
-                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
-                struct State {
-                    s16 x;
-                    s16 y;
-                };
-                State state;
-                std::memcpy(&state, data, sizeof(State));
-                HandleCircleState(*request_packet, state.x, state.y);
-                success = true;
-            }
+        }
+        case PacketType::CircleState: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            struct State {
+                s16 x;
+                s16 y;
+            };
+            State state{};
+            std::memcpy(&state, data, sizeof(State));
+            HandleCircleState(*request_packet, state.x, state.y);
+            success = true;
+        }
+        case PacketType::SetResolution: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            u16 resolution{};
+            std::memcpy(&resolution, data, sizeof(u16));
+            HandleSetResolution(*request_packet, resolution);
+            success = true;
             break;
-        case PacketType::SetResolution:
-            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
-                const u8* data = request_packet->GetPacketData().data() + (sizeof(u32) * 2);
-                u16 resolution;
-                std::memcpy(&resolution, data, sizeof(u16));
-                HandleSetResolution(*request_packet, resolution);
-                success = true;
-            }
+        }
+        case PacketType::SetGame: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            std::string path{};
+            path.resize(request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
+            std::memcpy(&path[0], data, request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
+            HandleSetGame(*request_packet, path);
+            success = true;
             break;
+        }
         default:
             break;
         }
@@ -207,7 +218,7 @@ void RPCServer::HandleRequestsLoop() {
     LOG_INFO(RPC_Server, "Request handler started.");
 
     for (;;) {
-        std::unique_lock<std::mutex> lock(request_queue_mutex);
+        std::unique_lock<std::mutex> lock{request_queue_mutex};
         request_queue_cv.wait(lock, [&] { return !running || request_queue.Pop(request_packet); });
         if (!running) {
             break;
@@ -217,14 +228,14 @@ void RPCServer::HandleRequestsLoop() {
 }
 
 void RPCServer::QueueRequest(std::unique_ptr<RPC::Packet> request) {
-    std::unique_lock<std::mutex> lock(request_queue_mutex);
+    std::unique_lock<std::mutex> lock{request_queue_mutex};
     request_queue.Push(std::move(request));
     request_queue_cv.notify_one();
 }
 
 void RPCServer::Start() {
     running = true;
-    const auto threadFunction = [this]() { HandleRequestsLoop(); };
+    const auto threadFunction{[this]() { HandleRequestsLoop(); }};
     request_handler_thread = std::thread(threadFunction);
     server.Start();
 }

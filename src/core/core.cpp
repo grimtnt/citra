@@ -112,6 +112,10 @@ System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& file
     return status;
 }
 
+System::ResultStatus System::Load(const std::string& path) {
+    return Load(*m_emu_window, path);
+}
+
 void System::PrepareReschedule() {
     cpu_core->PrepareReschedule();
     reschedule_pending = true;

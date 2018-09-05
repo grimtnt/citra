@@ -27,6 +27,7 @@ private:
     void HandleMotionState(Packet& packet, s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
     void HandleCircleState(Packet& packet, s16 x, s16 y);
     void HandleSetResolution(Packet& packet, u16 resolution);
+    void HandleSetGame(Packet& packet, const std::string&);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
     void HandleRequestsLoop();
