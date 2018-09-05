@@ -52,10 +52,9 @@ public:
     void HandleJoinRequest(const ENetEvent* event);
 
     /**
-     * Returns whether the MAC address is valid, ie. isn't already taken by someone else in the
-     * room.
+     * Returns whether the MAC address is available.
      */
-    bool IsValidMacAddress(const MacAddress& address) const;
+    bool IsMacAddressAvailable(const MacAddress& address) const;
 
     /**
      * Sends a ID_ROOM_MAC_COLLISION message telling the client that the MAC is invalid.
@@ -72,11 +71,6 @@ public:
      * Notifies the members that the room is closed,
      */
     void SendCloseMessage();
-
-    /**
-     * Sends the list of members to every connected client in the room.
-     */
-    void BroadcastMemberList();
 
     /**
      * Generates a free MAC address to assign to a new client.
@@ -132,7 +126,7 @@ void Room::RoomImpl::StartLoop() {
 }
 
 void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
-    Packet packet;
+    Packet packet{};
     packet.Append(event->packet->data, event->packet->dataLength);
     packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
 
@@ -141,7 +135,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
 
     if (preferred_mac != NoPreferredMac) {
         // Verify if the preferred mac is available
-        if (!IsValidMacAddress(preferred_mac)) {
+        if (!IsMacAddressAvailable(preferred_mac)) {
             SendMacCollision(event->peer);
             return;
         }
@@ -160,44 +154,42 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
         members.push_back(std::move(member));
     }
 
-    BroadcastMemberList();
     SendJoinSuccess(event->peer, preferred_mac);
 }
 
-bool Room::RoomImpl::IsValidMacAddress(const MacAddress& address) const {
-    // A MAC address is valid if it is not already taken by anybody else in the room.
+bool Room::RoomImpl::IsMacAddressAvailable(const MacAddress& address) const {
     std::lock_guard<std::mutex> lock(member_mutex);
     return std::all_of(members.begin(), members.end(),
                        [&address](const auto& member) { return member.mac_address != address; });
 }
 
 void Room::RoomImpl::SendMacCollision(ENetPeer* client) {
-    Packet packet;
+    Packet packet{};
     packet << static_cast<u8>(IdMacCollision);
 
-    ENetPacket* enet_packet =
-        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
+    ENetPacket* enet_packet{
+        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
     enet_host_flush(server);
 }
 
 void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MacAddress mac_address) {
-    Packet packet;
+    Packet packet{};
     packet << static_cast<u8>(IdJoinSuccess);
     packet << mac_address;
-    ENetPacket* enet_packet =
-        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
+    ENetPacket* enet_packet{
+        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
     enet_peer_send(client, 0, enet_packet);
     enet_host_flush(server);
 }
 
 void Room::RoomImpl::SendCloseMessage() {
-    Packet packet;
+    Packet packet{};
     packet << static_cast<u8>(IdCloseRoom);
     std::lock_guard<std::mutex> lock(member_mutex);
     if (!members.empty()) {
-        ENetPacket* enet_packet =
-            enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket* enet_packet{
+            enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
         for (auto& member : members) {
             enet_peer_send(member.peer, 0, enet_packet);
         }
@@ -208,38 +200,20 @@ void Room::RoomImpl::SendCloseMessage() {
     }
 }
 
-void Room::RoomImpl::BroadcastMemberList() {
-    Packet packet;
-    packet << static_cast<u8>(IdMemberList);
-    packet << static_cast<u32>(members.size());
-
-    {
-        std::lock_guard<std::mutex> lock(member_mutex);
-        for (const auto& member : members) {
-            packet << member.mac_address;
-        }
-    }
-
-    ENetPacket* enet_packet =
-        enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE);
-    enet_host_broadcast(server, 0, enet_packet);
-    enet_host_flush(server);
-}
-
 MacAddress Room::RoomImpl::GenerateMacAddress() {
-    MacAddress result_mac =
-        NintendoOUI; // The first three bytes of each MAC address will be the NintendoOUI
+    MacAddress result_mac{
+        NintendoOUI}; // The first three bytes of each MAC address will be the NintendoOUI
     std::uniform_int_distribution<> dis(0x00, 0xFF); // Random byte between 0 and 0xFF
     do {
-        for (size_t i = 3; i < result_mac.size(); ++i) {
+        for (size_t i{3}; i < result_mac.size(); ++i) {
             result_mac[i] = dis(random_gen);
         }
-    } while (!IsValidMacAddress(result_mac));
+    } while (!IsMacAddressAvailable(result_mac));
     return result_mac;
 }
 
 void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
-    Packet in_packet;
+    Packet in_packet{};
     in_packet.Append(event->packet->data, event->packet->dataLength);
     in_packet.IgnoreBytes(sizeof(u8));         // Message type
     in_packet.IgnoreBytes(sizeof(u8));         // WifiPacket Type
@@ -248,14 +222,14 @@ void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
     MacAddress destination_address;
     in_packet >> destination_address;
 
-    Packet out_packet;
+    Packet out_packet{};
     out_packet.Append(event->packet->data, event->packet->dataLength);
-    ENetPacket* enet_packet = enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
-                                                 ENET_PACKET_FLAG_RELIABLE);
+    ENetPacket* enet_packet{enet_packet_create(out_packet.GetData(), out_packet.GetDataSize(),
+                                               ENET_PACKET_FLAG_RELIABLE)};
 
     if (destination_address == BroadcastMac) { // Send the data to everyone except the sender
         std::lock_guard<std::mutex> lock(member_mutex);
-        bool sent_packet = false;
+        bool sent_packet{};
         for (const auto& member : members) {
             if (member.peer != event->peer) {
                 sent_packet = true;
@@ -268,10 +242,10 @@ void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
         }
     } else { // Send the data only to the destination client
         std::lock_guard<std::mutex> lock(member_mutex);
-        auto member = std::find_if(members.begin(), members.end(),
-                                   [destination_address](const Member& member) -> bool {
-                                       return member.mac_address == destination_address;
-                                   });
+        auto member{std::find_if(members.begin(), members.end(),
+                                 [destination_address](const Member& member) -> bool {
+                                     return member.mac_address == destination_address;
+                                 })};
         if (member != members.end()) {
             enet_peer_send(member->peer, 0, enet_packet);
         } else {
@@ -297,7 +271,6 @@ void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     }
 
     enet_peer_disconnect(client, 0);
-    BroadcastMemberList();
 }
 
 // Room
@@ -321,15 +294,6 @@ bool Room::Create(u16 port) {
 
 Room::State Room::GetState() const {
     return room_impl->state;
-}
-
-std::vector<MacAddress> Room::GetRoomMemberList() const {
-    std::vector<MacAddress> member_list;
-    std::lock_guard<std::mutex> lock(room_impl->member_mutex);
-    for (const auto& member_impl : room_impl->members) {
-        member_list.push_back(member_impl.mac_address);
-    }
-    return member_list;
 }
 
 void Room::Destroy() {

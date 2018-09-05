@@ -52,8 +52,6 @@ public:
         CouldNotConnect ///< The room is not responding to a connection attempt
     };
 
-    using MemberList = std::vector<MacAddress>;
-
     // The handle for the callback functions
     template <typename T>
     using CallbackHandle = std::shared_ptr<std::function<void(const T&)>>;
@@ -72,11 +70,6 @@ public:
      * Returns the status of our connection to the room.
      */
     State GetState() const;
-
-    /**
-     * Returns information about the members in the room we're currently connected to.
-     */
-    const MemberList& GetMemberList() const;
 
     /**
      * Returns the MAC address of the RoomMember.

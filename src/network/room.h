@@ -28,7 +28,6 @@ constexpr MacAddress BroadcastMac = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 enum RoomMessageTypes : u8 {
     IdJoinRequest = 1,
     IdJoinSuccess,
-    IdMemberList,
     IdWifiPacket,
     IdMacCollision,
     IdCloseRoom
@@ -49,11 +48,6 @@ public:
      * Gets the current state of the room.
      */
     State GetState() const;
-
-    /**
-     * Gets a list of the members connected to the room.
-     */
-    std::vector<MacAddress> GetRoomMemberList() const;
 
     /**
      * Creates the socket for this room. Will bind to default address if

@@ -21,8 +21,6 @@ public:
     ENetHost* client{}; ///< ENet network interface.
     ENetPeer* server{}; ///< The server peer the client is connected to
 
-    /// Information about the clients connected to the same room as us.
-    MemberList member_list;
     /// Port of the room we're connected to.
     u16 port;
 
@@ -50,7 +48,6 @@ public:
 
     private:
         CallbackSet<WifiPacket> callback_set_wifi_packet;
-        CallbackSet<MemberList> callback_set_member_list;
         CallbackSet<State> callback_set_state;
     };
     Callbacks callbacks; ///< All CallbackSets to all events
@@ -78,12 +75,6 @@ public:
      * @param event The ENet event that was received.
      */
     void HandleJoinPacket(const ENetEvent* event);
-
-    /**
-     * Extracts a member list from a received ENet packet.
-     * @param event The ENet event that was received.
-     */
-    void HandleMemberListPacket(const ENetEvent* event);
 
     /**
      * Extracts a WifiPacket from a received ENet packet.
@@ -128,13 +119,7 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
                     HandleWifiPacket(&event);
                     break;
                 case IdJoinSuccess:
-                    // The join request was successful, we are now in the room.
-                    // If we joined successfully, there must be at least one client in the room: us.
-                    ASSERT_MSG(member_list.size() > 0, "We have not yet received member list.");
                     HandleJoinPacket(&event); // Get the MAC Address for the client
-                    break;
-                case IdMemberList:
-                    HandleMemberListPacket(&event);
                     break;
                 case IdMacCollision:
                     SetState(State::MacCollision);
@@ -174,31 +159,14 @@ void RoomMember::RoomMemberImpl::Send(Packet&& packet) {
 }
 
 void RoomMember::RoomMemberImpl::SendJoinRequest(const MacAddress& preferred_mac) {
-    Packet packet;
+    Packet packet{};
     packet << static_cast<u8>(IdJoinRequest);
     packet << preferred_mac;
     Send(std::move(packet));
 }
 
-void RoomMember::RoomMemberImpl::HandleMemberListPacket(const ENetEvent* event) {
-    Packet packet;
-    packet.Append(event->packet->data, event->packet->dataLength);
-
-    // Ignore the first byte, which is the message id.
-    packet.IgnoreBytes(sizeof(u8)); // Ignore the message type
-
-    u32 num_members;
-    packet >> num_members;
-    member_list.resize(num_members);
-
-    for (auto& member : member_list) {
-        packet >> member;
-    }
-    Invoke(member_list);
-}
-
 void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
-    Packet packet;
+    Packet packet{};
     packet.Append(event->packet->data, event->packet->dataLength);
 
     // Ignore the first byte, which is the message id.
@@ -211,7 +179,7 @@ void RoomMember::RoomMemberImpl::HandleJoinPacket(const ENetEvent* event) {
 
 void RoomMember::RoomMemberImpl::HandleWifiPacket(const ENetEvent* event) {
     WifiPacket wifi_packet{};
-    Packet packet;
+    Packet packet{};
     packet.Append(event->packet->data, event->packet->dataLength);
 
     // Ignore the first byte, which is the message id.
@@ -261,12 +229,6 @@ RoomMember::RoomMemberImpl::CallbackSet<WifiPacket>& RoomMember::RoomMemberImpl:
 }
 
 template <>
-RoomMember::RoomMemberImpl::CallbackSet<RoomMember::MemberList>&
-RoomMember::RoomMemberImpl::Callbacks::Get() {
-    return callback_set_member_list;
-}
-
-template <>
 RoomMember::RoomMemberImpl::CallbackSet<RoomMember::State>&
 RoomMember::RoomMemberImpl::Callbacks::Get() {
     return callback_set_state;
@@ -302,10 +264,6 @@ RoomMember::~RoomMember() {
 
 RoomMember::State RoomMember::GetState() const {
     return room_member_impl->state;
-}
-
-const RoomMember::MemberList& RoomMember::GetMemberList() const {
-    return room_member_impl->member_list;
 }
 
 const MacAddress& RoomMember::GetMacAddress() const {
@@ -357,7 +315,7 @@ bool RoomMember::IsConnected() const {
 }
 
 void RoomMember::SendWifiPacket(const WifiPacket& wifi_packet) {
-    Packet packet;
+    Packet packet{};
     packet << static_cast<u8>(IdWifiPacket);
     packet << static_cast<u8>(wifi_packet.type);
     packet << wifi_packet.channel;
