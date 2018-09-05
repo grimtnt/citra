@@ -113,8 +113,8 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     SetupUIStrings();
 
 #ifdef _MSC_VER
-    int cpuinfo[4];
-    __cpuid(cpuinfo, 1);
+    int cpu_id[4];
+    __cpuid(cpu_id, 1);
     if (!((cpu_id[2] >> 19) & 1)) {
         QMessageBox::critical(this, "Citra", "Your CPU does not support SSE4.1");
         closeEvent(nullptr);
