@@ -257,8 +257,8 @@ void GRenderWindow::CaptureScreenshot(u16 res_scale, const QString& screenshot_p
     screenshot_image = QImage(QSize(layout.width, layout.height), QImage::Format_RGB32);
     VideoCore::RequestScreenshot(screenshot_image.bits(),
                                  [=] {
-                                     LOG_INFO(Frontend, "The screenshot is saved.");
                                      screenshot_image.mirrored(false, true).save(screenshot_path);
+                                     LOG_INFO(Frontend, "The screenshot is saved.");
                                  },
                                  layout);
 }
