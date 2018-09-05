@@ -2,6 +2,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
 #include <clocale>
 #include <memory>
 #include <thread>
@@ -108,6 +111,15 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     ConnectWidgetEvents();
 
     SetupUIStrings();
+
+#ifdef _MSC_VER
+    int cpuinfo[4];
+    __cpuid(cpuinfo, 1);
+    if (!((cpu_id[2] >> 19) & 1)) {
+        QMessageBox::critical(this, "Citra", "Your CPU does not support SSE4.1");
+        closeEvent(nullptr);
+    }
+#endif
 
     game_list->PopulateAsync(UISettings::values.game_dirs);
 
