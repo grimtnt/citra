@@ -30,7 +30,7 @@ std::string StringFromFormat(const char* format, ...);
 // Cheap!
 bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list args);
 
-template <size_t Count>
+template <std::size_t Count>
 inline void CharArrayFromFormat(char (&out)[Count], const char* format, ...) {
     va_list args;
     va_start(args, format);
@@ -39,7 +39,7 @@ inline void CharArrayFromFormat(char (&out)[Count], const char* format, ...) {
 }
 
 // Good
-std::string ArrayToString(const u8* data, size_t size, int line_len = 20, bool spaces = true);
+std::string ArrayToString(const u8* data, std::size_t size, int line_len = 20, bool spaces = true);
 
 std::string StripSpaces(const std::string& s);
 std::string StripQuotes(const std::string& s);
@@ -136,7 +136,7 @@ bool ComparePartialString(InIt begin, InIt end, const char* other) {
  * Creates a std::string from a fixed-size NUL-terminated char buffer. If the buffer isn't
  * NUL-terminated then the string ends at max_len characters.
  */
-std::string StringFromFixedZeroTerminatedBuffer(const char* buffer, size_t max_len);
+std::string StringFromFixedZeroTerminatedBuffer(const char* buffer, std::size_t max_len);
 
 /**
  * Attempts to trim an arbitrary prefix from `path`, leaving only the part starting at `root`. It's

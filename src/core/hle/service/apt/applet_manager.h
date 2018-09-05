@@ -144,7 +144,7 @@ private:
     /// Parameter data to be returned in the next call to Glance/ReceiveParameter.
     boost::optional<MessageParameter> next_parameter;
 
-    static constexpr size_t NumAppletSlot = 4;
+    static constexpr std::size_t NumAppletSlot = 4;
 
     enum class AppletSlot : u8 {
         Application,

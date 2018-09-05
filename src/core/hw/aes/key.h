@@ -10,7 +10,7 @@
 
 namespace HW::AES {
 
-enum KeySlotID : size_t {
+enum KeySlotID : std::size_t {
     // AES keyslots used to decrypt NCCH
     NCCHSecure1 = 0x2C,
     NCCHSecure2 = 0x25,
@@ -29,19 +29,19 @@ enum KeySlotID : size_t {
     MaxKeySlotID = 0x40,
 };
 
-constexpr size_t AES_BLOCK_SIZE = 16;
+constexpr std::size_t AES_BLOCK_SIZE = 16;
 
 using AESKey = std::array<u8, AES_BLOCK_SIZE>;
 
 void InitKeys();
 
 void SetGeneratorConstant(const AESKey& key);
-void SetKeyX(size_t slot_id, const AESKey& key);
-void SetKeyY(size_t slot_id, const AESKey& key);
-void SetNormalKey(size_t slot_id, const AESKey& key);
+void SetKeyX(std::size_t slot_id, const AESKey& key);
+void SetKeyY(std::size_t slot_id, const AESKey& key);
+void SetNormalKey(std::size_t slot_id, const AESKey& key);
 
-bool IsNormalKeyAvailable(size_t slot_id);
-AESKey GetNormalKey(size_t slot_id);
+bool IsNormalKeyAvailable(std::size_t slot_id);
+AESKey GetNormalKey(std::size_t slot_id);
 
 void SelectCommonKeyIndex(u8 index);
 

@@ -86,14 +86,14 @@ public:
 #pragma pack(pop)
 
     Loader::ResultStatus Load(const std::string& file_path);
-    Loader::ResultStatus Load(const std::vector<u8> file_data, size_t offset = 0);
+    Loader::ResultStatus Load(const std::vector<u8> file_data, std::size_t offset = 0);
     Loader::ResultStatus Save(const std::string& file_path);
 
     u64 GetTitleID() const;
     u32 GetTitleType() const;
     u16 GetTitleVersion() const;
     u64 GetSystemVersion() const;
-    size_t GetContentCount() const;
+    std::size_t GetContentCount() const;
     u32 GetBootContentID() const;
     u32 GetManualContentID() const;
     u32 GetDLPContentID() const;
@@ -116,7 +116,7 @@ private:
     u32_be signature_type;
     std::vector<u8> tmd_signature;
     std::vector<ContentChunk> tmd_chunks;
-    std::unordered_map<u16, size_t> content_index_to_index;
+    std::unordered_map<u16, std::size_t> content_index_to_index;
 };
 
 } // namespace FileSys

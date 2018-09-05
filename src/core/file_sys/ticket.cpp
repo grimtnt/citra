@@ -14,7 +14,7 @@
 namespace FileSys {
 
 Loader::ResultStatus Ticket::Load(const std::vector<u8> file_data, std::size_t offset) {
-    std::size_t total_size{static_cast<size_t>(file_data.size() - offset)};
+    std::size_t total_size{static_cast<std::size_t>(file_data.size() - offset)};
     if (total_size < sizeof(u32_be))
         return Loader::ResultStatus::Error;
 
@@ -24,8 +24,8 @@ Loader::ResultStatus Ticket::Load(const std::vector<u8> file_data, std::size_t o
     u32 signature_size{GetSignatureSize(signature_type)};
 
     // The ticket body start position is rounded to the nearest 0x40 after the signature
-    size_t body_start{Common::AlignUp(signature_size + sizeof(u32), 0x40)};
-    size_t body_end{body_start + sizeof(Body)};
+    std::size_t body_start{Common::AlignUp(signature_size + sizeof(u32), 0x40)};
+    std::size_t body_end{body_start + sizeof(Body)};
 
     if (total_size < body_end)
         return Loader::ResultStatus::Error;

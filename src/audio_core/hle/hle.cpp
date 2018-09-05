@@ -38,7 +38,7 @@ public:
     DspState GetDspState() const;
 
     std::vector<u8> PipeRead(DspPipe pipe_number, u32 length);
-    size_t GetPipeReadableSize(DspPipe pipe_number) const;
+    std::size_t GetPipeReadableSize(DspPipe pipe_number) const;
     void PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer);
 
     std::array<u8, Memory::DSP_RAM_SIZE>& GetDspMemory();
@@ -50,7 +50,7 @@ private:
     void WriteU16(DspPipe pipe_number, u16 value);
     void AudioPipeWriteStructAddresses();
 
-    size_t CurrentRegionIndex() const;
+    std::size_t CurrentRegionIndex() const;
     HLE::SharedMemory& ReadRegion();
     HLE::SharedMemory& WriteRegion();
 
@@ -97,7 +97,7 @@ DspState DspHle::Impl::GetDspState() const {
 }
 
 std::vector<u8> DspHle::Impl::PipeRead(DspPipe pipe_number, u32 length) {
-    const size_t pipe_index = static_cast<size_t>(pipe_number);
+    const std::size_t pipe_index = static_cast<std::size_t>(pipe_number);
 
     if (pipe_index >= num_dsp_pipe) {
         LOG_ERROR(Audio_DSP, "pipe_number = {} invalid", pipe_index);
@@ -128,7 +128,7 @@ std::vector<u8> DspHle::Impl::PipeRead(DspPipe pipe_number, u32 length) {
 }
 
 size_t DspHle::Impl::GetPipeReadableSize(DspPipe pipe_number) const {
-    const size_t pipe_index{static_cast<size_t>(pipe_number)};
+    const std::size_t pipe_index{static_cast<std::size_t>(pipe_number)};
 
     if (pipe_index >= num_dsp_pipe) {
         LOG_ERROR(Audio_DSP, "pipe_number = {} invalid", pipe_index);
@@ -194,10 +194,10 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
     }
     case DspPipe::Binary:
         std::copy(buffer.begin(), buffer.end(),
-                  std::back_inserter(pipe_data[static_cast<size_t>(DspPipe::Binary)]));
+                  std::back_inserter(pipe_data[static_cast<std::size_t>(DspPipe::Binary)]));
         return;
     default:
-        LOG_CRITICAL(Audio_DSP, "pipe_number = {} unimplemented", static_cast<size_t>(pipe_number));
+        LOG_CRITICAL(Audio_DSP, "pipe_number = {} unimplemented", static_cast<std::size_t>(pipe_number));
         UNIMPLEMENTED();
         return;
     }
@@ -219,7 +219,7 @@ void DspHle::Impl::ResetPipes() {
 }
 
 void DspHle::Impl::WriteU16(DspPipe pipe_number, u16 value) {
-    const size_t pipe_index = static_cast<size_t>(pipe_number);
+    const std::size_t pipe_index = static_cast<std::size_t>(pipe_number);
 
     std::vector<u8>& data{pipe_data.at(pipe_index)};
     // Little endian
@@ -294,10 +294,10 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
     std::array<QuadFrame32, 3> intermediate_mixes = {};
 
     // Generate intermediate mixes
-    for (size_t i{}; i < HLE::num_sources; i++) {
+    for (std::size_t i{}; i < HLE::num_sources; i++) {
         write.source_statuses.status[i] =
             sources[i].Tick(read.source_configurations.config[i], read.adpcm_coefficients.coeff[i]);
-        for (size_t mix{}; mix < 3; mix++) {
+        for (std::size_t mix{}; mix < 3; mix++) {
             sources[i].MixInto(intermediate_mixes[mix], mix);
         }
     }
@@ -309,8 +309,8 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
     StereoFrame16 output_frame{mixers.GetOutput()};
 
     // Write current output frame to the shared memory region
-    for (size_t samplei{}; samplei < output_frame.size(); samplei++) {
-        for (size_t channeli{}; channeli < output_frame[0].size(); channeli++) {
+    for (std::size_t samplei{}; samplei < output_frame.size(); samplei++) {
+        for (std::size_t channeli{}; channeli < output_frame[0].size(); channeli++) {
             write.final_samples.pcm16[samplei][channeli] = s16_le(output_frame[samplei][channeli]);
         }
     }

@@ -14,7 +14,7 @@ namespace Network {
 
 constexpr u16 DefaultRoomPort{24872};
 
-constexpr size_t NumChannels{1}; // Number of channels used for the connection
+constexpr std::size_t NumChannels{1}; // Number of channels used for the connection
 
 using MacAddress = std::array<u8, 6>;
 /// A special MAC address that tells the room we're joining to assign us a MAC address

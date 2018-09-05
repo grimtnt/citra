@@ -9,7 +9,7 @@
 
 namespace AudioCore::HLE {
 
-constexpr size_t num_sources = 24;
+constexpr std::size_t num_sources = 24;
 
 /**
  * This performs the filter operation defined by FilterT::ProcessSample on the frame in-place.

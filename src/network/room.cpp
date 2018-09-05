@@ -204,7 +204,7 @@ MacAddress Room::RoomImpl::GenerateMacAddress() {
         NintendoOUI}; // The first three bytes of each MAC address will be the NintendoOUI
     std::uniform_int_distribution<> dis(0x00, 0xFF); // Random byte between 0 and 0xFF
     do {
-        for (size_t i{3}; i < result_mac.size(); ++i) {
+        for (std::size_t i{3}; i < result_mac.size(); ++i) {
             result_mac[i] = dis(random_gen);
         }
     } while (!IsMacAddressAvailable(result_mac));

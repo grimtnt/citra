@@ -15,7 +15,7 @@
 
 namespace Service::NWM {
 
-const size_t ApplicationDataSize = 0xC8;
+const std::size_t ApplicationDataSize = 0xC8;
 const u8 DefaultNetworkChannel = 11;
 
 // Number of milliseconds in a TU.

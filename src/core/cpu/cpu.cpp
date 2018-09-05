@@ -86,7 +86,7 @@ public:
         Memory::Write64(vaddr, value);
     }
 
-    void InterpreterFallback(VAddr pc, size_t num_instructions) override {
+    void InterpreterFallback(VAddr pc, std::size_t num_instructions) override {
         ASSERT_MSG(false, "Interpreter fallback (pc={}, num_instructions={})", static_cast<u32>(pc),
                    num_instructions);
     }
@@ -97,7 +97,7 @@ public:
 
     void ExceptionRaised(VAddr pc, Dynarmic::A32::Exception exception) override {
         ASSERT_MSG(false, "ExceptionRaised(exception = {}, pc = {:08X}, code = {:08X})",
-                   static_cast<size_t>(exception), pc, MemoryReadCode(pc));
+                   static_cast<std::size_t>(exception), pc, MemoryReadCode(pc));
     }
 
     void AddTicks(std::uint64_t ticks) override {
@@ -210,7 +210,7 @@ void CPU::PrepareReschedule() {
     }
 }
 
-void CPU::InvalidateCacheRange(u32 start_address, size_t length) {
+void CPU::InvalidateCacheRange(u32 start_address, std::size_t length) {
     jit->InvalidateCacheRange(start_address, length);
 }
 

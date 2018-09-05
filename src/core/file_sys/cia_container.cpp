@@ -22,7 +22,7 @@ Loader::ResultStatus CIAContainer::Load(const FileBackend& backend) {
     std::vector<u8> header_data(sizeof(Header));
 
     // Load the CIA Header
-    ResultVal<size_t> read_result{backend.Read(0, sizeof(Header), header_data.data())};
+    ResultVal<std::size_t> read_result{backend.Read(0, sizeof(Header), header_data.data())};
     if (read_result.Failed() || *read_result != sizeof(Header))
         return Loader::ResultStatus::Error;
 
@@ -114,7 +114,7 @@ Loader::ResultStatus CIAContainer::Load(const std::vector<u8>& file_data) {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data, size_t offset) {
+Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data, std::size_t offset) {
     if (header_data.size() - offset < sizeof(Header))
         return Loader::ResultStatus::Error;
 
@@ -123,16 +123,16 @@ Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadTicket(const std::vector<u8>& ticket_data, size_t offset) {
+Loader::ResultStatus CIAContainer::LoadTicket(const std::vector<u8>& ticket_data, std::size_t offset) {
     return cia_ticket.Load(ticket_data, offset);
 }
 
 Loader::ResultStatus CIAContainer::LoadTitleMetadata(const std::vector<u8>& tmd_data,
-                                                     size_t offset) {
+                                                     std::size_t offset) {
     return cia_tmd.Load(tmd_data, offset);
 }
 
-Loader::ResultStatus CIAContainer::LoadMetadata(const std::vector<u8>& meta_data, size_t offset) {
+Loader::ResultStatus CIAContainer::LoadMetadata(const std::vector<u8>& meta_data, std::size_t offset) {
     if (meta_data.size() - offset < sizeof(Metadata))
         return Loader::ResultStatus::Error;
 

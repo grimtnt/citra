@@ -88,7 +88,7 @@ GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
     Settings::LogSettings();
 
     // register types to use in slots and signals
-    qRegisterMetaType<size_t>("size_t");
+    qRegisterMetaType<std::size_t>("std::size_t");
     qRegisterMetaType<Service::AM::InstallStatus>("Service::AM::InstallStatus");
 
     setAcceptDrops(true);
@@ -897,7 +897,7 @@ void GMainWindow::OnMenuInstallCIA() {
 
     QtConcurrent::run([&, filepaths] {
         Service::AM::InstallStatus status;
-        const auto cia_progress = [&](size_t written, size_t total) {
+        const auto cia_progress = [&](std::size_t written, std::size_t total) {
             emit UpdateProgress(written, total);
         };
         for (const auto current_path : filepaths) {
@@ -908,7 +908,7 @@ void GMainWindow::OnMenuInstallCIA() {
     });
 }
 
-void GMainWindow::OnUpdateProgress(size_t written, size_t total) {
+void GMainWindow::OnUpdateProgress(std::size_t written, std::size_t total) {
     progress_bar->setValue(
         static_cast<int>(INT_MAX * (static_cast<double>(written) / static_cast<double>(total))));
 }

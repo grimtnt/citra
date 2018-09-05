@@ -425,7 +425,7 @@ static ResultCode WaitSynchronizationN(s32* out, VAddr handles_address, s32 hand
         thread->status = THREADSTATUS_WAIT_SYNCH_ANY;
 
         // Add the thread to each of the objects' waiting threads.
-        for (size_t i{}; i < objects.size(); ++i) {
+        for (std::size_t i{}; i < objects.size(); ++i) {
             WaitObject* object{objects[i].get()};
             object->AddWaitingThread(thread);
         }
@@ -582,7 +582,7 @@ static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_
     thread->status = THREADSTATUS_WAIT_SYNCH_ANY;
 
     // Add the thread to each of the objects' waiting threads.
-    for (size_t i{}; i < objects.size(); ++i) {
+    for (std::size_t i{}; i < objects.size(); ++i) {
         WaitObject* object{objects[i].get()};
         object->AddWaitingThread(thread);
     }

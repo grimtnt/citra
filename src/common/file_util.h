@@ -174,7 +174,7 @@ public:
     bool Close();
 
     template <typename T>
-    size_t ReadArray(T* data, size_t length) {
+    std::size_t ReadArray(T* data, std::size_t length) {
         static_assert(std::is_standard_layout<T>(),
                       "Given array does not consist of standard layout objects");
 #if (__GNUC__ >= 5) || defined(__clang__) || defined(_MSC_VER)
@@ -184,10 +184,10 @@ public:
 
         if (!IsOpen()) {
             m_good = false;
-            return std::numeric_limits<size_t>::max();
+            return std::numeric_limits<std::size_t>::max();
         }
 
-        size_t items_read = std::fread(data, sizeof(T), length, m_file);
+        std::size_t items_read = std::fread(data, sizeof(T), length, m_file);
         if (items_read != length)
             m_good = false;
 
@@ -195,7 +195,7 @@ public:
     }
 
     template <typename T>
-    size_t WriteArray(const T* data, size_t length) {
+    std::size_t WriteArray(const T* data, std::size_t length) {
         static_assert(std::is_standard_layout<T>(),
                       "Given array does not consist of standard layout objects");
 #if (__GNUC__ >= 5) || defined(__clang__) || defined(_MSC_VER)
@@ -205,31 +205,31 @@ public:
 
         if (!IsOpen()) {
             m_good = false;
-            return std::numeric_limits<size_t>::max();
+            return std::numeric_limits<std::size_t>::max();
         }
 
-        size_t items_written = std::fwrite(data, sizeof(T), length, m_file);
+        std::size_t items_written = std::fwrite(data, sizeof(T), length, m_file);
         if (items_written != length)
             m_good = false;
 
         return items_written;
     }
 
-    size_t ReadBytes(void* data, size_t length) {
+    std::size_t ReadBytes(void* data, std::size_t length) {
         return ReadArray(reinterpret_cast<char*>(data), length);
     }
 
-    size_t WriteBytes(const void* data, size_t length) {
+    std::size_t WriteBytes(const void* data, std::size_t length) {
         return WriteArray(reinterpret_cast<const char*>(data), length);
     }
 
     template <typename T>
-    size_t WriteObject(const T& object) {
+    std::size_t WriteObject(const T& object) {
         static_assert(!std::is_pointer<T>::value, "Given object is a pointer");
         return WriteArray(&object, 1);
     }
 
-    size_t WriteString(const std::string& str) {
+    std::size_t WriteString(const std::string& str) {
         return WriteArray(str.c_str(), str.length());
     }
 

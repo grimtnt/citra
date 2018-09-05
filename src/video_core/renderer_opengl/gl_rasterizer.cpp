@@ -54,7 +54,7 @@ RasterizerOpenGL::RasterizerOpenGL(EmuWindow& window)
     state.clip_distance[0] = true;
 
     // Create sampler objects
-    for (size_t i{}; i < texture_samplers.size(); ++i) {
+    for (std::size_t i{}; i < texture_samplers.size(); ++i) {
         texture_samplers[i].Create();
         state.texture_units[i].sampler = texture_samplers[i].sampler.handle;
     }
@@ -82,11 +82,11 @@ RasterizerOpenGL::RasterizerOpenGL(EmuWindow& window)
 
     glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &uniform_buffer_alignment);
     uniform_size_aligned_vs =
-        Common::AlignUp<size_t>(sizeof(VSUniformData), uniform_buffer_alignment);
+        Common::AlignUp<std::size_t>(sizeof(VSUniformData), uniform_buffer_alignment);
     uniform_size_aligned_gs =
-        Common::AlignUp<size_t>(sizeof(GSUniformData), uniform_buffer_alignment);
+        Common::AlignUp<std::size_t>(sizeof(GSUniformData), uniform_buffer_alignment);
     uniform_size_aligned_fs =
-        Common::AlignUp<size_t>(sizeof(UniformData), uniform_buffer_alignment);
+        Common::AlignUp<std::size_t>(sizeof(UniformData), uniform_buffer_alignment);
 
     // Set vertex attributes for software shader path
     state.draw.vertex_array = sw_vao.handle;
@@ -1896,7 +1896,7 @@ void RasterizerOpenGL::SyncShadowBias() {
 }
 
 void RasterizerOpenGL::SyncAndUploadLUTs() {
-    constexpr size_t max_size{sizeof(GLvec2) * 256 * Pica::LightingRegs::NumLightingSampler +
+    constexpr std::size_t max_size{sizeof(GLvec2) * 256 * Pica::LightingRegs::NumLightingSampler +
                               sizeof(GLvec2) * 128 +     // fog
                               sizeof(GLvec2) * 128 * 3 + // proctex: noise + color + alpha
                               sizeof(GLvec4) * 256 +     // proctex
@@ -1913,7 +1913,7 @@ void RasterizerOpenGL::SyncAndUploadLUTs() {
     u8* buffer;
     GLintptr offset;
     bool invalidate;
-    size_t bytes_used{};
+    std::size_t bytes_used{};
     glBindBuffer(GL_TEXTURE_BUFFER, texture_buffer.GetHandle());
     std::tie(buffer, offset, invalidate) = texture_buffer.Map(max_size, sizeof(GLvec4));
 
@@ -2060,9 +2060,9 @@ void RasterizerOpenGL::UploadUniforms(bool accelerate_draw, bool use_gs) {
     if (!sync_vs && !sync_gs && !sync_fs)
         return;
 
-    size_t uniform_size{uniform_size_aligned_vs + uniform_size_aligned_gs +
+    std::size_t uniform_size{uniform_size_aligned_vs + uniform_size_aligned_gs +
                         uniform_size_aligned_fs};
-    size_t used_bytes{};
+    std::size_t used_bytes{};
     u8* uniforms;
     GLintptr offset;
     bool invalidate;

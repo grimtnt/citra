@@ -57,7 +57,7 @@ struct MemoryRegionInfo;
 
 struct CodeSet final : public Object {
     struct Segment {
-        size_t offset{};
+        std::size_t offset{};
         VAddr addr{};
         u32 size{};
     };
@@ -159,7 +159,7 @@ public:
      * Parses a list of kernel capability descriptors (as found in the ExHeader) and applies them
      * to this process.
      */
-    void ParseKernelCaps(const u32* kernel_caps, size_t len);
+    void ParseKernelCaps(const u32* kernel_caps, std::size_t len);
 
     /**
      * Applies address space changes and launches the process main thread.

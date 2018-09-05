@@ -18,9 +18,9 @@ namespace Pica::Shader {
 void OutputVertex::ValidateSemantics(const RasterizerRegs& regs) {
     unsigned int num_attributes = regs.vs_output_total;
     ASSERT(num_attributes <= 7);
-    for (size_t attrib{}; attrib < num_attributes; ++attrib) {
+    for (std::size_t attrib{}; attrib < num_attributes; ++attrib) {
         u32 output_register_map = regs.vs_output_attributes[attrib].raw;
-        for (size_t comp{}; comp < 4; ++comp) {
+        for (std::size_t comp{}; comp < 4; ++comp) {
             u32 semantic = (output_register_map >> (8 * comp)) & 0x1F;
             ASSERT_MSG(semantic < 24 || semantic == RasterizerRegs::VSOutputAttributes::INVALID,
                        "Invalid/unknown semantic id: {}", semantic);
@@ -44,7 +44,7 @@ OutputVertex OutputVertex::FromAttributeBuffer(const RasterizerRegs& regs,
                   "Struct and array have different sizes.");
 
     unsigned int num_attributes = regs.vs_output_total & 7;
-    for (size_t attrib{}; attrib < num_attributes; ++attrib) {
+    for (std::size_t attrib{}; attrib < num_attributes; ++attrib) {
         const auto output_register_map = regs.vs_output_attributes[attrib];
         vertex_slots_overflow[output_register_map.map_x] = input.attr[attrib][0];
         vertex_slots_overflow[output_register_map.map_y] = input.attr[attrib][1];
@@ -101,7 +101,7 @@ void GSEmitter::Emit(Math::Vec4<float24> (&output_regs)[16]) {
     if (prim_emit) {
         if (winding)
             handlers->winding_setter();
-        for (size_t i{}; i < buffer.size(); ++i) {
+        for (std::size_t i{}; i < buffer.size(); ++i) {
             handlers->vertex_handler(buffer[i]);
         }
     }

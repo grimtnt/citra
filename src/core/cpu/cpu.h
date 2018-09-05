@@ -32,11 +32,11 @@ public:
         fpexc = 0;
     }
 
-    u32 GetCpuRegister(size_t index) const {
+    u32 GetCpuRegister(std::size_t index) const {
         return ctx.Regs()[index];
     }
 
-    void SetCpuRegister(size_t index, u32 value) {
+    void SetCpuRegister(std::size_t index, u32 value) {
         ctx.Regs()[index] = value;
     }
 
@@ -56,11 +56,11 @@ public:
         ctx.SetCpsr(value);
     }
 
-    u32 GetFpuRegister(size_t index) const {
+    u32 GetFpuRegister(std::size_t index) const {
         return ctx.ExtRegs()[index];
     }
 
-    void SetFpuRegister(size_t index, u32 value) {
+    void SetFpuRegister(std::size_t index, u32 value) {
         ctx.ExtRegs()[index] = value;
     }
 
@@ -114,7 +114,7 @@ public:
     void PrepareReschedule();
 
     void ClearInstructionCache();
-    void InvalidateCacheRange(u32 start_address, size_t length);
+    void InvalidateCacheRange(u32 start_address, std::size_t length);
     void PageTableChanged();
 
     void SyncSettings();

@@ -51,10 +51,10 @@ enum class InstallStatus : u32 {
 };
 
 // Title ID valid length
-constexpr size_t TITLE_ID_VALID_LENGTH{16};
+constexpr std::size_t TITLE_ID_VALID_LENGTH{16};
 
 // Progress callback for InstallCIA, receives bytes written and total bytes
-using ProgressCallback = void(size_t, size_t);
+using ProgressCallback = void(std::size_t, std::size_t);
 
 // A file handled returned for CIAs to be written into and subsequently installed.
 class CIAFile final : public FileSys::FileBackend {
@@ -62,11 +62,11 @@ public:
     explicit CIAFile(Service::FS::MediaType media_type);
     ~CIAFile();
 
-    ResultVal<size_t> Read(u64 offset, size_t length, u8* buffer) const override;
+    ResultVal<std::size_t> Read(u64 offset, std::size_t length, u8* buffer) const override;
     ResultCode WriteTicket();
     ResultCode WriteTitleMetadata();
-    ResultVal<size_t> WriteContentData(u64 offset, size_t length, const u8* buffer);
-    ResultVal<size_t> Write(u64 offset, size_t length, bool flush, const u8* buffer) override;
+    ResultVal<std::size_t> WriteContentData(u64 offset, std::size_t length, const u8* buffer);
+    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush, const u8* buffer) override;
     u64 GetSize() const override;
     bool SetSize(u64 size) const override;
     bool Close() const override;
