@@ -85,8 +85,7 @@ public:
     void HandleWifiPacket(const ENetEvent* event);
 
     /**
-     * Removes the client from the members list if it was in it and announces the change
-     * to all other clients.
+     * Removes the client from the members list if it was in it.
      */
     void HandleClientDisconnection(ENetPeer* client);
 };
