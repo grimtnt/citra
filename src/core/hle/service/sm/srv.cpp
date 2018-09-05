@@ -116,7 +116,7 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
         } else if (session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED) {
             LOG_WARNING(Service_SRV, "called service={} -> ERR_MAX_CONNECTIONS_REACHED", name);
             std::mutex mutex;
-            std::unique_lock<std::mutex> lock(mutex);
+            std::unique_lock<std::mutex> lock{mutex};
             std::condition_variable cv;
             cv.wait(lock, [&]() -> bool {
                 session = client_port.Unwrap()->Connect();
@@ -159,7 +159,7 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
     } else if (session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED && wait_until_available) {
         LOG_WARNING(Service_SRV, "called service={} -> ERR_MAX_CONNECTIONS_REACHED", name);
         std::mutex mutex;
-        std::unique_lock<std::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock{mutex};
         std::condition_variable cv;
         cv.wait(lock, [&]() -> bool {
             session = client_port.Unwrap()->Connect();

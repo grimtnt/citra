@@ -207,18 +207,18 @@ void GameList::onTextChanged(const QString& newText) {
         int result_count{};
         for (int i{}; i < folderCount; ++i) {
             folder = item_model->item(i, 0);
-            QModelIndex folder_index = folder->index();
-            int childrenCount = folder->rowCount();
+            QModelIndex folder_index{folder->index()};
+            int childrenCount{folder->rowCount()};
             for (int j{}; j < childrenCount; ++j) {
                 ++childrenTotal;
-                const QStandardItem* child = folder->child(j, 0);
-                const QString file_path =
-                    child->data(GameListItemPath::FullPathRole).toString().toLower();
-                QString file_name = file_path.mid(file_path.lastIndexOf("/") + 1);
-                const QString file_title =
-                    child->data(GameListItemPath::TitleRole).toString().toLower();
-                const QString file_programid =
-                    child->data(GameListItemPath::ProgramIdRole).toString().toLower();
+                const QStandardItem* child{folder->child(j, 0)};
+                const QString file_path{
+                    child->data(GameListItemPath::FullPathRole).toString().toLower()};
+                QString file_name{file_path.mid(file_path.lastIndexOf("/") + 1)};
+                const QString file_title{
+                    child->data(GameListItemPath::TitleRole).toString().toLower()};
+                const QString file_programid{
+                    child->data(GameListItemPath::ProgramIdRole).toString().toLower()};
 
                 // Only items which filename in combination with its title contains all words
                 // that are in the searchfield will be visible in the gamelist
@@ -240,7 +240,7 @@ void GameList::onTextChanged(const QString& newText) {
 
 void GameList::onUpdateThemedIcons() {
     for (int i{}; i < item_model->invisibleRootItem()->rowCount(); i++) {
-        QStandardItem* child = item_model->invisibleRootItem()->child(i);
+        QStandardItem* child{item_model->invisibleRootItem()->child(i)};
 
         switch (static_cast<GameListItemType>(child->type())) {
         case GameListItemType::InstalledDir:
@@ -345,18 +345,18 @@ void GameList::AddEntry(const QList<QStandardItem*>& entry_items, GameListDir* p
 void GameList::ValidateEntry(const QModelIndex& item) {
     // The click should still register in the first column no matter which column was
     // clicked
-    int row = item_model->itemFromIndex(item)->row();
-    const QStandardItem* parent(item_model->itemFromIndex(item.parent()));
+    int row{item_model->itemFromIndex(item)->row()};
+    const QStandardItem* parent{item_model->itemFromIndex(item.parent())};
     if (parent == nullptr)
         parent = item_model->invisibleRootItem();
-    const QStandardItem* child = parent->child(row, COLUMN_NAME);
+    const QStandardItem* child{parent->child(row, COLUMN_NAME)};
 
     switch (static_cast<GameListItemType>(child->type())) {
     case GameListItemType::Game: {
-        QString file_path = child->data(GameListItemPath::FullPathRole).toString();
+        QString file_path{child->data(GameListItemPath::FullPathRole).toString()};
         if (file_path.isEmpty())
             return;
-        QFileInfo file_info(file_path);
+        QFileInfo file_info{file_path};
         if (!file_info.exists() || file_info.isDir())
             return;
         // Users usually want to run a different game after closing one
@@ -372,8 +372,8 @@ void GameList::ValidateEntry(const QModelIndex& item) {
 
 bool GameList::isEmpty() {
     for (int i{}; i < item_model->invisibleRootItem()->rowCount(); i++) {
-        const QStandardItem* child = item_model->invisibleRootItem()->child(i);
-        GameListItemType type = static_cast<GameListItemType>(child->type());
+        const QStandardItem* child{item_model->invisibleRootItem()->child(i)};
+        GameListItemType type{static_cast<GameListItemType>(child->type())};
         if (!child->hasChildren() &&
             (type == GameListItemType::InstalledDir || type == GameListItemType::SystemDir)) {
             item_model->invisibleRootItem()->removeRow(child->row());
@@ -392,25 +392,25 @@ void GameList::DonePopulating(QStringList watch_list) {
     }
 
     // Clear out the old directories to watch for changes and add the new ones
-    auto watch_dirs = watcher->directories();
+    auto watch_dirs{watcher->directories()};
     if (!watch_dirs.isEmpty()) {
         watcher->removePaths(watch_dirs);
     }
     // Workaround: Add the watch paths in chunks to allow the gui to refresh
     // This prevents the UI from stalling when a large number of watch paths are added
     // Also artificially caps the watcher to a certain number of directories
-    constexpr int LIMIT_WATCH_DIRECTORIES = 5000;
-    constexpr int SLICE_SIZE = 25;
+    constexpr int LIMIT_WATCH_DIRECTORIES{5000};
+    constexpr int SLICE_SIZE{25};
     int len = std::min(watch_list.length(), LIMIT_WATCH_DIRECTORIES);
     for (int i{}; i < len; i += SLICE_SIZE) {
         watcher->addPaths(watch_list.mid(i, i + SLICE_SIZE));
         QCoreApplication::processEvents();
     }
     tree_view->setEnabled(true);
-    int folderCount = tree_view->model()->rowCount();
+    int folderCount{tree_view->model()->rowCount()};
     int childrenTotal{};
     for (int i{}; i < folderCount; ++i) {
-        int childrenCount = item_model->item(i, 0)->rowCount();
+        int childrenCount{item_model->item(i, 0)->rowCount()};
         for (int j{}; j < childrenCount; ++j) {
             ++childrenTotal;
         }
@@ -422,18 +422,18 @@ void GameList::DonePopulating(QStringList watch_list) {
 }
 
 void GameList::PopupContextMenu(const QPoint& menu_location) {
-    QModelIndex item = tree_view->indexAt(menu_location);
+    QModelIndex item{tree_view->indexAt(menu_location)};
     if (!item.isValid())
         return;
     // The click should still register in the first column no matter which column was
     // clicked
-    int row = item_model->itemFromIndex(item)->row();
-    QStandardItem* parent(item_model->itemFromIndex(item.parent()));
+    int row{item_model->itemFromIndex(item)->row()};
+    QStandardItem* parent{item_model->itemFromIndex(item.parent())};
     // invisibleRootItem() will not appear as an item's parent
     if (parent == nullptr)
         parent = item_model->invisibleRootItem();
-    QStandardItem* child = parent->child(row, COLUMN_NAME);
-    QMenu context_menu;
+    QStandardItem* child{parent->child(row, COLUMN_NAME)};
+    QMenu context_menu{};
     switch (static_cast<GameListItemType>(child->type())) {
     case GameListItemType::Game:
         AddGamePopup(context_menu, child->data(GameListItemPath::ProgramIdRole).toULongLong());
@@ -451,9 +451,9 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
 }
 
 void GameList::AddGamePopup(QMenu& context_menu, u64 program_id) {
-    QAction* open_save_location = context_menu.addAction("Open Save Data Location");
-    QAction* open_application_location = context_menu.addAction("Open Application Location");
-    QAction* open_update_location = context_menu.addAction("Open Update Data Location");
+    QAction* open_save_location{context_menu.addAction("Open Save Data Location")};
+    QAction* open_application_location{context_menu.addAction("Open Application Location")};
+    QAction* open_update_location{context_menu.addAction("Open Update Data Location")};
 
     open_save_location->setEnabled(program_id != 0);
     open_application_location->setVisible(FileUtil::Exists(
@@ -473,11 +473,11 @@ void GameList::AddGamePopup(QMenu& context_menu, u64 program_id) {
 };
 
 void GameList::AddCustomDirPopup(QMenu& context_menu, QStandardItem* child) {
-    UISettings::GameDir& game_dir =
-        *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
+    UISettings::GameDir& game_dir{
+        *child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()};
 
-    QAction* deep_scan = context_menu.addAction("Scan Subfolders");
-    QAction* delete_dir = context_menu.addAction("Remove Game Directory");
+    QAction* deep_scan{context_menu.addAction("Scan Subfolders")};
+    QAction* delete_dir{context_menu.addAction("Remove Game Directory")};
 
     deep_scan->setCheckable(true);
     deep_scan->setChecked(game_dir.deep_scan);
@@ -528,7 +528,7 @@ void GameList::AddPermDirPopup(QMenu& context_menu, QStandardItem* child) {
                                                       ->data(GameListDir::GameDirRole)
                                                       .value<UISettings::GameDir*>()));
         // move the treeview items
-        QList<QStandardItem*> item = item_model->takeRow(row);
+        QList<QStandardItem*> item{item_model->takeRow(row)};
         item_model->invisibleRootItem()->insertRow(row + 1, item);
         tree_view->setExpanded(child->index(), game_dir.expanded);
     });
@@ -548,7 +548,7 @@ void GameList::PopulateAsync(QList<UISettings::GameDir>& game_dirs) {
 
     emit ShouldCancelWorker();
 
-    GameListWorker* worker = new GameListWorker(game_dirs);
+    GameListWorker* worker{new GameListWorker(game_dirs)};
 
     connect(worker, &GameListWorker::EntryReady, this, &GameList::AddEntry, Qt::QueuedConnection);
     connect(worker, &GameListWorker::DirEntryReady, this, &GameList::AddDirEntry,
@@ -604,7 +604,7 @@ QString GameList::FindGameByProgramID(QStandardItem* current_item, u64 program_i
         return current_item->data(GameListItemPath::FullPathRole).toString();
     } else if (current_item->hasChildren()) {
         for (int child_id{}; child_id < current_item->rowCount(); child_id++) {
-            QString path = FindGameByProgramID(current_item->child(child_id, 0), program_id);
+            QString path{FindGameByProgramID(current_item->child(child_id, 0), program_id)};
             if (!path.isEmpty())
                 return path;
         }
@@ -614,10 +614,10 @@ QString GameList::FindGameByProgramID(QStandardItem* current_item, u64 program_i
 
 void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsigned int recursion,
                                              GameListDir* parent_dir) {
-    const auto callback = [this, recursion, parent_dir](u64* num_entries_out,
-                                                        const std::string& directory,
-                                                        const std::string& virtual_name) -> bool {
-        std::string physical_name = directory + DIR_SEP + virtual_name;
+    const auto callback{[this, recursion, parent_dir](u64* num_entries_out,
+                                                      const std::string& directory,
+                                                      const std::string& virtual_name) -> bool {
+        std::string physical_name{directory + DIR_SEP + virtual_name};
 
         if (stop_processing)
             return false; // Breaks the callback loop.
@@ -631,7 +631,7 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
             u64 program_id{};
             loader->ReadProgramId(program_id);
 
-            std::vector<u8> smdh = [program_id, &loader]() -> std::vector<u8> {
+            std::vector<u8> smdh{[program_id, &loader]() -> std::vector<u8> {
                 std::vector<u8> original_smdh;
                 loader->ReadIcon(original_smdh);
 
@@ -652,11 +652,11 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
                 std::vector<u8> update_smdh;
                 update_loader->ReadIcon(update_smdh);
                 return update_smdh;
-            }();
+            }()};
 
-            auto it = compatibility_database.find(program_id);
+            auto it{compatibility_database.find(program_id)};
 
-            Compatibility compatibility = Compatibility::NotTested;
+            Compatibility compatibility{Compatibility::NotTested};
             if (it != compatibility_database.end())
                 compatibility = it->second;
 
@@ -677,7 +677,7 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
         }
 
         return true;
-    };
+    }};
 
     FileUtil::ForeachDirectoryEntry(nullptr, dir_path, callback);
 }
@@ -688,31 +688,31 @@ void GameListWorker::run() {
         if (game_dir.path == "INSTALLED") {
             // Add normal titles
             {
-                QString path = QString::fromStdString(
+                QString path{QString::fromStdString(
                     (Settings::values.sd_card_root.empty()
                          ? FileUtil::GetUserPath(D_SDMC_IDX)
                          : std::string(Settings::values.sd_card_root + "/")) +
                     "Nintendo "
                     "3DS/00000000000000000000000000000000/"
-                    "00000000000000000000000000000000/title/00040000");
+                    "00000000000000000000000000000000/title/00040000")};
                 watch_list.append(path);
-                GameListDir* game_list_dir =
-                    new GameListDir(game_dir, GameListItemType::InstalledDir);
+                GameListDir* game_list_dir{
+                    new GameListDir(game_dir, GameListItemType::InstalledDir)};
                 emit DirEntryReady({game_list_dir});
                 AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
             }
             // Add demos
             {
-                QString path = QString::fromStdString(
+                QString path{QString::fromStdString(
                     (Settings::values.sd_card_root.empty()
                          ? FileUtil::GetUserPath(D_SDMC_IDX)
                          : std::string(Settings::values.sd_card_root + "/")) +
                     "Nintendo "
                     "3DS/00000000000000000000000000000000/"
-                    "00000000000000000000000000000000/title/00040002");
+                    "00000000000000000000000000000000/title/00040002")};
                 watch_list.append(path);
-                GameListDir* game_list_dir =
-                    new GameListDir(game_dir, GameListItemType::InstalledDir);
+                GameListDir* game_list_dir{
+                    new GameListDir(game_dir, GameListItemType::InstalledDir)};
                 emit DirEntryReady({game_list_dir});
                 AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
             }
@@ -720,12 +720,12 @@ void GameListWorker::run() {
             QString path = QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX)) +
                            "00000000000000000000000000000000/title/00040010";
             watch_list.append(path);
-            GameListDir* game_list_dir = new GameListDir(game_dir, GameListItemType::SystemDir);
+            GameListDir* game_list_dir{new GameListDir(game_dir, GameListItemType::SystemDir)};
             emit DirEntryReady({game_list_dir});
             AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
         } else {
             watch_list.append(game_dir.path);
-            GameListDir* game_list_dir = new GameListDir(game_dir);
+            GameListDir* game_list_dir{new GameListDir(game_dir)};
             emit DirEntryReady({game_list_dir});
             AddFstEntriesToGameList(game_dir.path.toStdString(), game_dir.deep_scan ? 256 : 0,
                                     game_list_dir);
@@ -735,12 +735,13 @@ void GameListWorker::run() {
 }
 
 void GameListWorker::Cancel() {
-    this->disconnect();
+    disconnect();
     stop_processing = true;
 }
 
-GameListPlaceholder::GameListPlaceholder(GMainWindow* parent) : QWidget{parent} {
-    this->main_window = parent;
+GameListPlaceholder::GameListPlaceholder(GMainWindow* parent)
+    : QWidget{parent}, main_window{parent} {
+    main_window = parent;
 
     connect(main_window, &GMainWindow::UpdateThemedIcons, this,
             &GameListPlaceholder::onUpdateThemedIcons);

@@ -19,7 +19,7 @@ void RegisterFactory(const std::string& name, std::unique_ptr<CameraFactory> fac
 
 std::unique_ptr<CameraInterface> CreateCamera(const std::string& name, const std::string& config,
                                               const Service::CAM::Flip& flip) {
-    auto pair = factories.find(name);
+    auto pair{factories.find(name)};
     if (pair != factories.end()) {
         return pair->second->Create(config, flip);
     }
@@ -33,7 +33,7 @@ std::unique_ptr<CameraInterface> CreateCamera(const std::string& name, const std
 std::unique_ptr<CameraInterface> CreateCameraPreview(const std::string& name,
                                                      const std::string& config, int width,
                                                      int height, const Service::CAM::Flip& flip) {
-    auto pair = factories.find(name);
+    auto pair{factories.find(name)};
     if (pair != factories.end()) {
         return pair->second->CreatePreview(config, width, height, flip);
     }

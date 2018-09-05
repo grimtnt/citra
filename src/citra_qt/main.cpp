@@ -1228,7 +1228,7 @@ void GMainWindow::OnPlayMovie() {
         if (!ValidateMovie(path))
             return;
     } else {
-        u64 program_id = Core::Movie::GetInstance().GetMovieProgramID(path.toStdString());
+        u64 program_id{Core::Movie::GetInstance().GetMovieProgramID(path.toStdString())};
         QString game_path{game_list->FindGameByProgramID(program_id)};
         if (game_path.isEmpty()) {
             QMessageBox::warning(this, "Game Not Found",
@@ -1338,7 +1338,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
         break;
     }
 
-    QMessageBox message_box;
+    QMessageBox message_box{};
     message_box.setWindowTitle(title);
     message_box.setText(message);
     message_box.setIcon(QMessageBox::Icon::Critical);
@@ -1371,9 +1371,9 @@ bool GMainWindow::ConfirmClose() {
     if (emu_thread == nullptr || !UISettings::values.confirm_before_closing)
         return true;
 
-    QMessageBox::StandardButton answer =
+    QMessageBox::StandardButton answer{
         QMessageBox::question(this, "Citra", "Are you sure you want to close Citra?",
-                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No)};
     return answer != QMessageBox::No;
 }
 
@@ -1413,8 +1413,8 @@ static bool IsSingleFileDropEvent(QDropEvent* event) {
 
 void GMainWindow::dropEvent(QDropEvent* event) {
     if (IsSingleFileDropEvent(event) && ConfirmChangeGame()) {
-        const QMimeData* mimeData = event->mimeData();
-        QString filename = mimeData->urls().at(0).toLocalFile();
+        const QMimeData* mimeData{event->mimeData()};
+        QString filename{mimeData->urls().at(0).toLocalFile()};
         BootGame(filename);
     }
 }
@@ -1433,10 +1433,10 @@ bool GMainWindow::ConfirmChangeGame() {
     if (emu_thread == nullptr)
         return true;
 
-    auto answer = QMessageBox::question(
+    auto answer{QMessageBox::question(
         this, "Citra",
         "Are you sure you want to stop the emulation? Any unsaved progress will be lost.",
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No)};
     return answer != QMessageBox::No;
 }
 
@@ -1450,7 +1450,7 @@ void GMainWindow::UpdateUITheme() {
     if (UISettings::values.theme != UISettings::themes[0].second &&
         !UISettings::values.theme.isEmpty()) {
         const QString theme_uri(":" + UISettings::values.theme + "/style.qss");
-        QFile f(theme_uri);
+        QFile f{theme_uri};
         if (f.open(QFile::ReadOnly | QFile::Text)) {
             QTextStream ts(&f);
             qApp->setStyleSheet(ts.readAll());
@@ -1507,13 +1507,13 @@ int main(int argc, char* argv[]) {
     QCoreApplication::setOrganizationName("Citra team");
     QCoreApplication::setApplicationName("Citra");
 
-    QApplication app(argc, argv);
+    QApplication app{argc, argv};
 
     // Qt changes the locale and causes issues in float conversion using std::to_string() when
     // generating shaders
     setlocale(LC_ALL, "C");
 
-    GMainWindow main_window;
+    GMainWindow main_window{};
 
     // Register CameraFactory
     Camera::RegisterFactory("image", std::make_unique<Camera::StillImageCameraFactory>());

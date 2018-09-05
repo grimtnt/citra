@@ -28,7 +28,7 @@ private:
         explicit Device(std::weak_ptr<TouchState>&& touch_state) : touch_state(touch_state) {}
         std::tuple<float, float, bool> GetStatus() const override {
             if (auto state{touch_state.lock()}) {
-                std::lock_guard<std::mutex> guard(state->mutex);
+                std::lock_guard<std::mutex> guard{state->mutex};
                 return std::make_tuple(state->touch_x, state->touch_y, state->touch_pressed);
             }
             return std::make_tuple(0.0f, 0.0f, false);

@@ -58,26 +58,26 @@ public:
     ~SDLJoystick() = default;
 
     void SetButton(int button, bool value) {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock{mutex};
         state.buttons[button] = value;
     }
 
     bool GetButton(int button) const {
         if (!Core::System::GetInstance().IsShellOpen())
             return false;
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock{mutex};
         return state.buttons.at(button);
     }
 
     void SetAxis(int axis, Sint16 value) {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock{mutex};
         state.axes[axis] = value;
     }
 
     float GetAxis(int axis) const {
         if (!Core::System::GetInstance().IsShellOpen())
             return 0.0f;
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock{mutex};
         return state.axes.at(axis) / 32767.0f;
     }
 
@@ -101,14 +101,14 @@ public:
     }
 
     void SetHat(int hat, Uint8 direction) {
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock{mutex};
         state.hats[hat] = direction;
     }
 
     bool GetHatDirection(int hat, Uint8 direction) const {
         if (!Core::System::GetInstance().IsShellOpen())
             return false;
-        std::lock_guard<std::mutex> lock(mutex);
+        std::lock_guard<std::mutex> lock{mutex};
         return (state.hats.at(hat) & direction) != 0;
     }
 
