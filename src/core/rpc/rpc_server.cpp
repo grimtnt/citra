@@ -190,6 +190,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             std::memcpy(&state, data, sizeof(State));
             HandleCircleState(*request_packet, state.x, state.y);
             success = true;
+            break;
         }
         case PacketType::SetResolution: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
