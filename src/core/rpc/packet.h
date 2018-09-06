@@ -16,6 +16,7 @@ enum class PacketType {
     CircleState,
     SetResolution,
     SetGame,
+    SetOverrideControls,
 };
 
 struct PacketHeader {
@@ -76,6 +77,7 @@ private:
     void HandleCircleState(Packet& packet, s16 x, s16 y);
     void HandleSetResolution(Packet& packet, u16 resolution);
     void HandleSetGame(Packet& packet, const std::string& path);
+    void HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion, bool circle);
 
     struct PacketHeader header;
     std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;

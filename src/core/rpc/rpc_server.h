@@ -28,6 +28,7 @@ private:
     void HandleCircleState(Packet& packet, s16 x, s16 y);
     void HandleSetResolution(Packet& packet, u16 resolution);
     void HandleSetGame(Packet& packet, const std::string&);
+    void HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion, bool circle);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
     void HandleRequestsLoop();

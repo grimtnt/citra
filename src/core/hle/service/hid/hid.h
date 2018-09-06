@@ -296,6 +296,7 @@ public:
     void SetTouchState(s16 x, s16 y, bool valid);
     void SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
     void SetCircleState(s16 x, s16 y);
+    void SetOverrideControls(bool pad, bool touch, bool motion, bool circle);
 
 private:
     void LoadInputDevices();
@@ -332,10 +333,16 @@ private:
     std::unique_ptr<Input::AnalogDevice> circle_pad;
     std::unique_ptr<Input::MotionDevice> motion_device;
     std::unique_ptr<Input::TouchDevice> touch_device;
+
+    bool use_override_pad_state{};
+    bool use_override_touch{};
+    bool use_override_motion{};
+    bool use_override_circle_pad{};
+
     u32 override_pad_state{};
     s16 override_touch_x{};
     s16 override_touch_y{};
-    bool override_touch_valid = false;
+    bool override_touch_valid{};
     s16 override_motion_x{};
     s16 override_motion_y{};
     s16 override_motion_z{};
@@ -351,17 +358,11 @@ void InstallInterfaces(SM::ServiceManager& service_manager);
 /// Reload input devices. Used when input configuration changed
 void ReloadInputDevices();
 
-/// Sets the pad state. Used by RPC for PadState requests.
 void SetPadState(u32 raw);
-
-/// Sets the touch state. Used by RPC for TouchState requests.
 void SetTouchState(s16 x, s16 y, bool valid);
-
-/// Sets the motion state. Used by RPC for MotionState requests.
 void SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw);
-
-/// Sets the circle state. Used by RPC for CircleState requests.
 void SetCircleState(s16 x, s16 y);
+void SetOverrideControls(bool pad, bool touch, bool motion, bool circle);
 
 const PadState& GetInputsThisFrame();
 } // namespace Service::HID

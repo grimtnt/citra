@@ -98,7 +98,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
 
     // Get current circle pad position and update circle pad direction
     s16 circle_pad_x{}, circle_pad_y{};
-    if (override_circle_x != 0 && override_circle_y != 0) {
+    if (use_override_circle_pad) {
         circle_pad_x = override_circle_x;
         circle_pad_y = override_circle_y;
     } else {
@@ -116,7 +116,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
     state.circle_left.Assign(direction.left);
     state.circle_right.Assign(direction.right);
 
-    if (override_pad_state != 0) {
+    if (use_override_pad_state) {
         state.hex = override_pad_state;
     }
     inputs_this_frame.hex = state.hex;
@@ -153,7 +153,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
 
     // Get the current touch entry
     TouchDataEntry& touch_entry = mem->touch.entries[mem->touch.index];
-    if (override_touch_x != 0 && override_touch_y != 0 && override_touch_valid) {
+    if (use_override_touch) {
         touch_entry.x = override_touch_x;
         touch_entry.y = override_touch_y;
         touch_entry.valid.Assign(override_touch_valid ? 1 : 0);
@@ -193,7 +193,7 @@ void Module::UpdateAccelerometerCallback(u64 userdata, s64 cycles_late) {
     next_accelerometer_index = (next_accelerometer_index + 1) % mem->accelerometer.entries.size();
     AccelerometerDataEntry& accelerometer_entry{
         mem->accelerometer.entries[mem->accelerometer.index]};
-    if (override_motion_x != 0 && override_motion_y != 0 && override_motion_z != 0) {
+    if (use_override_motion) {
         accelerometer_entry.x = override_motion_x;
         accelerometer_entry.y = override_motion_y;
         accelerometer_entry.z = override_motion_z;
@@ -245,7 +245,7 @@ void Module::UpdateGyroscopeCallback(u64 userdata, s64 cycles_late) {
 
     GyroscopeDataEntry& gyroscope_entry{mem->gyroscope.entries[mem->gyroscope.index]};
 
-    if (override_motion_roll != 0 && override_motion_pitch != 0 && override_motion_yaw != 0) {
+    if (use_override_motion) {
         gyroscope_entry.x = override_motion_roll;
         gyroscope_entry.y = override_motion_pitch;
         gyroscope_entry.z = override_motion_yaw;
@@ -443,6 +443,13 @@ void Module::SetCircleState(s16 x, s16 y) {
     override_circle_y = y;
 }
 
+void Module::SetOverrideControls(bool pad, bool touch, bool motion, bool circle) {
+    use_override_pad_state = pad;
+    use_override_touch = touch;
+    use_override_motion = motion;
+    use_override_circle_pad = circle;
+}
+
 void ReloadInputDevices() {
     if (auto hid{current_module.lock()})
         hid->ReloadInputDevices();
@@ -469,6 +476,12 @@ void SetMotionState(s16 x, s16 y, s16 z, s16 roll, s16 pitch, s16 yaw) {
 void SetCircleState(s16 x, s16 y) {
     if (auto hid{current_module.lock()}) {
         hid->SetCircleState(x, y);
+    }
+}
+
+void SetOverrideControls(bool pad, bool touch, bool motion, bool circle) {
+    if (auto hid{current_module.lock()}) {
+        hid->SetOverrideControls(pad, touch, motion, circle);
     }
 }
 

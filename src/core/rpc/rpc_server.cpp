@@ -86,6 +86,13 @@ void RPCServer::HandleSetGame(Packet& packet, const std::string& path) {
     Core::System::GetInstance().SetGame(path);
 }
 
+void RPCServer::HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion,
+                                          bool circle) {
+    Service::HID::SetOverrideControls(pad, touch, motion, circle);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
@@ -97,6 +104,7 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::CircleState:
         case PacketType::SetResolution:
         case PacketType::SetGame:
+        case PacketType::SetOverrideControls:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -197,6 +205,21 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             path.resize(request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
             std::memcpy(&path[0], data, request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
             HandleSetGame(*request_packet, path);
+            success = true;
+            break;
+        }
+        case PacketType::SetOverrideControls: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            struct State {
+                bool pad;
+                bool touch;
+                bool motion;
+                bool circle;
+            };
+            State state{};
+            std::memcpy(&state, data, sizeof(State));
+            HandleSetOverrideControls(*request_packet, state.pad, state.touch, state.motion,
+                                      state.circle);
             success = true;
             break;
         }

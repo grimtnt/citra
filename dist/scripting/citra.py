@@ -14,12 +14,14 @@ REQUEST_TYPE_MOTION_STATE = 5
 REQUEST_TYPE_CIRCLE_STATE = 6
 REQUEST_TYPE_SET_RESOLUTION = 7
 REQUEST_TYPE_SET_GAME = 8
+REQUEST_TYPE_SET_OVERRIDE_CONTROLS = 9
 
 CITRA_PORT = "45987"
 
-# https://github.com/smealum/ctrulib/blob/master/libctru/include/3ds/types.h#L46
-def BIT(n):
+
+def BIT(n):  # https://github.com/smealum/ctrulib/blob/master/libctru/include/3ds/types.h#L46
     return (1 << n)
+
 
 # https://github.com/smealum/ctrulib/blob/master/libctru/include/3ds/services/hid.h#L9
 KEY_A = BIT(0)             # A
@@ -39,6 +41,7 @@ KEY_CPAD_LEFT = BIT(29)    # Circle Pad Left
 KEY_CPAD_UP = BIT(30)      # Circle Pad Up
 KEY_CPAD_DOWN = BIT(31)    # Circle Pad Down
 
+
 class Citra:
     def __init__(self, address="127.0.0.1", port=CITRA_PORT):
         self.context = zmq.Context()
@@ -53,11 +56,12 @@ class Citra:
         return (struct.pack("IIII", CURRENT_REQUEST_VERSION, request_id, request_type, data_size), request_id)
 
     def _read_and_validate_header(self, raw_reply, expected_id, expected_type):
-        reply_version, reply_id, reply_type, reply_data_size = struct.unpack("IIII", raw_reply[:4*4])
+        reply_version, reply_id, reply_type, reply_data_size = struct.unpack(
+            "IIII", raw_reply[:4*4])
         if (CURRENT_REQUEST_VERSION == reply_version and
             expected_id == reply_id and
             expected_type == reply_type and
-            reply_data_size == len(raw_reply[4*4:])):
+                reply_data_size == len(raw_reply[4*4:])):
             return raw_reply[4*4:]
         return None
 
@@ -70,12 +74,14 @@ class Citra:
         while read_size > 0:
             temp_read_size = min(read_size, MAX_REQUEST_DATA_SIZE)
             request_data = struct.pack("II", read_address, temp_read_size)
-            request, request_id = self._generate_header(REQUEST_TYPE_READ_MEMORY, len(request_data))
+            request, request_id = self._generate_header(
+                REQUEST_TYPE_READ_MEMORY, len(request_data))
             request += request_data
             self.socket.send(request)
 
             raw_reply = self.socket.recv()
-            reply_data = self._read_and_validate_header(raw_reply, request_id, REQUEST_TYPE_READ_MEMORY)
+            reply_data = self._read_and_validate_header(
+                raw_reply, request_id, REQUEST_TYPE_READ_MEMORY)
 
             if reply_data:
                 result += reply_data
@@ -102,12 +108,14 @@ class Citra:
             temp_write_size = min(write_size, MAX_REQUEST_DATA_SIZE - 8)
             request_data = struct.pack("II", write_address, temp_write_size)
             request_data += write_contents[:temp_write_size]
-            request, request_id = self._generate_header(REQUEST_TYPE_WRITE_MEMORY, len(request_data))
+            request, request_id = self._generate_header(
+                REQUEST_TYPE_WRITE_MEMORY, len(request_data))
             request += request_data
             self.socket.send(request)
 
             raw_reply = self.socket.recv()
-            reply_data = self._read_and_validate_header(raw_reply, request_id, REQUEST_TYPE_WRITE_MEMORY)
+            reply_data = self._read_and_validate_header(
+                raw_reply, request_id, REQUEST_TYPE_WRITE_MEMORY)
 
             if None != reply_data:
                 write_address += temp_write_size
@@ -119,35 +127,40 @@ class Citra:
 
     def set_pad_state(self, pad_state):
         request_data = struct.pack("III", 0, 0, pad_state)
-        request, request_id = self._generate_header(REQUEST_TYPE_PAD_STATE, len(request_data))
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_PAD_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_touch_state(self, x, y, valid):
         request_data = struct.pack("IIhh?", 0, 0, x, y, valid)
-        request, request_id = self._generate_header(REQUEST_TYPE_TOUCH_STATE, len(request_data))
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_TOUCH_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_motion_state(self, x, y, z, roll, pitch, yaw):
         request_data = struct.pack("IIhhhhhh", 0, 0, x, y, z, roll, pitch, yaw)
-        request, request_id = self._generate_header(REQUEST_TYPE_MOTION_STATE, len(request_data))
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_MOTION_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_circle_state(self, x, y):
         request_data = struct.pack("IIhh", 0, 0, x, y)
-        request, request_id = self._generate_header(REQUEST_TYPE_CIRCLE_STATE, len(request_data))
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_CIRCLE_STATE, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
 
     def set_resolution(self, resolution):
         request_data = struct.pack("IIh", 0, 0, resolution)
-        request, request_id = self._generate_header(REQUEST_TYPE_SET_RESOLUTION, len(request_data))
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_SET_RESOLUTION, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -155,10 +168,20 @@ class Citra:
     def set_game(self, path):
         request_data = struct.pack("II", 0, 0)
         request_data += str.encode(path)
-        request, request_id = self._generate_header(REQUEST_TYPE_SET_GAME, len(request_data))
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_SET_GAME, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
+
+    def set_override_controls(self, pad, touch, motion, circle):
+        request_data = struct.pack("II????", 0, 0, pad, touch, motion, circle)
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_SET_OVERRIDE_CONTROLS, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
 
 if "__main__" == __name__:
     import doctest
