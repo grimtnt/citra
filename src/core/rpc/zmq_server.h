@@ -1,10 +1,12 @@
+// Copyright 2018 Citra Emulator Project
+// Licensed under GPLv2 or any later version
+// Refer to the license.txt file included.
+
 #pragma once
 
 #include <functional>
 #include <thread>
-
 #include "core/rpc/packet.h"
-
 #define ZMQ_STATIC
 #include <zmq.hpp>
 

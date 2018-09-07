@@ -1,5 +1,8 @@
-#include <functional>
+// Copyright 2018 Citra Emulator Project
+// Licensed under GPLv2 or any later version
+// Refer to the license.txt file included.
 
+#include <functional>
 #include "common/threadsafe_queue.h"
 #include "core/core.h"
 #include "core/rpc/rpc_server.h"
