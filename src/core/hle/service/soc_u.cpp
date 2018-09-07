@@ -174,7 +174,7 @@ static const std::unordered_map<int, int> sockopt_map = {{
 
 /// Converts a socket option from 3ds-specific to platform-specific
 static int TranslateSockOpt(int console_opt_name) {
-    auto found = sockopt_map.find(console_opt_name);
+    auto found{sockopt_map.find(console_opt_name)};
     if (found != sockopt_map.end()) {
         return found->second;
     }
@@ -242,7 +242,7 @@ struct CTRPollFD {
 
     /// Converts a platform-specific pollfd to a 3ds specific structure
     static CTRPollFD FromPlatform(pollfd const& fd) {
-        CTRPollFD result;
+        CTRPollFD result{};
         result.events.hex = Events::TranslateTo3DS(fd.events).hex;
         result.revents.hex = Events::TranslateTo3DS(fd.revents).hex;
         result.fd = static_cast<u32>(fd.fd);
@@ -251,7 +251,7 @@ struct CTRPollFD {
 
     /// Converts a 3ds specific pollfd to a platform-specific structure
     static pollfd ToPlatform(CTRPollFD const& fd) {
-        pollfd result;
+        pollfd result{};
         result.events = Events::TranslateToPlatform(fd.events);
         result.revents = Events::TranslateToPlatform(fd.revents);
         result.fd = fd.fd;
@@ -278,14 +278,14 @@ union CTRSockAddr {
 
     /// Convert a 3DS CTRSockAddr to a platform-specific sockaddr
     static sockaddr ToPlatform(CTRSockAddr const& ctr_addr) {
-        sockaddr result;
+        sockaddr result{};
         result.sa_family = ctr_addr.raw.sa_family;
         memset(result.sa_data, 0, sizeof(result.sa_data));
 
         // We can not guarantee ABI compatibility between platforms so we copy the fields manually
         switch (result.sa_family) {
         case AF_INET: {
-            sockaddr_in* result_in = reinterpret_cast<sockaddr_in*>(&result);
+            sockaddr_in* result_in{reinterpret_cast<sockaddr_in*>(&result)};
             result_in->sin_port = ctr_addr.in.sin_port;
             result_in->sin_addr.s_addr = ctr_addr.in.sin_addr;
             memset(result_in->sin_zero, 0, sizeof(result_in->sin_zero));
@@ -300,12 +300,12 @@ union CTRSockAddr {
 
     /// Convert a platform-specific sockaddr to a 3DS CTRSockAddr
     static CTRSockAddr FromPlatform(sockaddr const& addr) {
-        CTRSockAddr result;
+        CTRSockAddr result{};
         result.raw.sa_family = static_cast<u8>(addr.sa_family);
         // We can not guarantee ABI compatibility between platforms so we copy the fields manually
         switch (result.raw.sa_family) {
         case AF_INET: {
-            sockaddr_in const* addr_in = reinterpret_cast<sockaddr_in const*>(&addr);
+            sockaddr_in const* addr_in{reinterpret_cast<sockaddr_in const*>(&addr)};
             result.raw.len = sizeof(CTRSockAddrIn);
             result.in.sin_port = addr_in->sin_port;
             result.in.sin_addr = addr_in->sin_addr.s_addr;
@@ -375,7 +375,7 @@ void SOC_U::Bind(Kernel::HLERequestContext& ctx) {
     CTRSockAddr ctr_sock_addr;
     std::memcpy(&ctr_sock_addr, sock_addr_buf.data(), sizeof(CTRSockAddr));
 
-    sockaddr sock_addr = CTRSockAddr::ToPlatform(ctr_sock_addr);
+    sockaddr sock_addr{CTRSockAddr::ToPlatform(ctr_sock_addr)};
 
     s32 ret = ::bind(socket_handle, &sock_addr, std::max<u32>(sizeof(sock_addr), len));
 
@@ -404,11 +404,11 @@ void SOC_U::Fcntl(Kernel::HLERequestContext& ctx) {
     if (ctr_cmd == 3) { // F_GETFL
 #ifdef _WIN32
         posix_ret = 0;
-        auto iter = open_sockets.find(socket_handle);
+        auto iter{open_sockets.find(socket_handle)};
         if (iter != open_sockets.end() && iter->second.blocking == false)
             posix_ret |= 4; // O_NONBLOCK
 #else
-        int ret = ::fcntl(socket_handle, F_GETFL, 0);
+        int ret{::fcntl(socket_handle, F_GETFL, 0)};
         if (ret == SOCKET_ERROR_VALUE) {
             posix_ret = TranslateError(GET_ERRNO);
             return;
@@ -507,7 +507,7 @@ void SOC_U::GetHostId(Kernel::HLERequestContext& ctx) {
 
     hints.ai_family = AF_INET;
     getaddrinfo(name, nullptr, &hints, &res);
-    sockaddr_in* sock_addr = reinterpret_cast<sockaddr_in*>(res->ai_addr);
+    sockaddr_in* sock_addr{reinterpret_cast<sockaddr_in*>(res->ai_addr)};
     in_addr* addr{&sock_addr->sin_addr};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
