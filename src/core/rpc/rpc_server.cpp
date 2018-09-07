@@ -9,19 +9,19 @@
 namespace RPC {
 
 RPCServer::RPCServer() : server(*this) {
-    LOG_INFO(RPC_Server, "Starting RPC server ...");
+    LOG_INFO(RPC, "Starting RPC server ...");
 
     Start();
 
-    LOG_INFO(RPC_Server, "RPC started.");
+    LOG_INFO(RPC, "RPC started.");
 }
 
 RPCServer::~RPCServer() {
-    LOG_INFO(RPC_Server, "Stopping RPC ...");
+    LOG_INFO(RPC, "Stopping RPC ...");
 
     Stop();
 
-    LOG_INFO(RPC_Server, "RPC stopped.");
+    LOG_INFO(RPC, "RPC stopped.");
 }
 
 void RPCServer::HandleReadMemory(Packet& packet, u32 address, u32 data_size) {
@@ -239,7 +239,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
 void RPCServer::HandleRequestsLoop() {
     std::unique_ptr<RPC::Packet> request_packet{};
 
-    LOG_INFO(RPC_Server, "Request handler started.");
+    LOG_INFO(RPC, "Request handler started.");
 
     for (;;) {
         std::unique_lock<std::mutex> lock{request_queue_mutex};

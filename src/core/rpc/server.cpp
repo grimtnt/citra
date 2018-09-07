@@ -17,7 +17,7 @@ void Server::Start() {
     try {
         zmq_server = std::make_unique<ZMQServer>(callback);
     } catch (...) {
-        LOG_ERROR(RPC_Server, "Error starting ZeroMQ server");
+        LOG_ERROR(RPC, "Error starting ZeroMQ server");
     }
 }
 
@@ -26,9 +26,9 @@ void Server::Stop() {
 }
 
 void Server::NewRequestCallback(std::unique_ptr<RPC::Packet> new_request) {
-    LOG_INFO(RPC_Server, "Received request version={} id={} type={} size={}",
-             new_request->GetVersion(), new_request->GetId(),
-             static_cast<u32>(new_request->GetPacketType()), new_request->GetPacketDataSize());
+    LOG_INFO(RPC, "Received request version={} id={} type={} size={}", new_request->GetVersion(),
+             new_request->GetId(), static_cast<u32>(new_request->GetPacketType()),
+             new_request->GetPacketDataSize());
     rpc_server.QueueRequest(std::move(new_request));
 }
 

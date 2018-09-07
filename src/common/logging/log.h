@@ -98,7 +98,7 @@ enum class Class : u8 {
     Input,              ///< Input emulation
     Network,            ///< Network emulation
     Movie,              ///< Movie (Input Recording) Playback
-    RPC_Server,         ///< RPC server
+    RPC,                ///< RPC (Scripting)
     Count               ///< Total number of logging classes
 };
 

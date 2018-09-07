@@ -12,7 +12,7 @@ ZMQServer::ZMQServer(std::function<void(std::unique_ptr<Packet>)> new_request_ca
     // Use a random high port
     // TODO: Make configurable or increment port number on failure
     zmq_socket->bind("tcp://127.0.0.1:45987");
-    LOG_INFO(RPC_Server, "ZeroMQ listening on port 45987");
+    LOG_INFO(RPC, "ZeroMQ listening on port 45987");
 
     worker_thread = std::thread(&ZMQServer::WorkerLoop, this);
 }
@@ -26,7 +26,7 @@ ZMQServer::~ZMQServer() {
     zmq_context.reset();
     worker_thread.join();
 
-    LOG_INFO(RPC_Server, "ZeroMQ stopped");
+    LOG_INFO(RPC, "ZeroMQ stopped");
 }
 
 void ZMQServer::WorkerLoop() {
@@ -51,7 +51,7 @@ void ZMQServer::WorkerLoop() {
                 }
             }
         } catch (...) {
-            LOG_WARNING(RPC_Server, "Failed to receive data on ZeroMQ socket");
+            LOG_WARNING(RPC, "Failed to receive data on ZeroMQ socket");
         }
     }
 
@@ -71,7 +71,7 @@ void ZMQServer::SendReply(Packet& reply_packet) {
 
         zmq_socket->send(reply_buffer.get(), MIN_PACKET_SIZE + reply_packet.GetPacketDataSize());
 
-        LOG_INFO(RPC_Server, "Sent reply version({}) id=({}) type=({}) size=({})",
+        LOG_INFO(RPC, "Sent reply version({}) id=({}) type=({}) size=({})",
                  reply_packet.GetVersion(), reply_packet.GetId(),
                  static_cast<u32>(reply_packet.GetPacketType()), reply_packet.GetPacketDataSize());
     }
