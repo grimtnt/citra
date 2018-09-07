@@ -5,7 +5,6 @@
 #include <QWindow>
 #include "citra_qt/bootmanager.h"
 #include "common/scm_rev.h"
-#include "common/string_util.h"
 #include "core/3ds.h"
 #include "core/core.h"
 #include "core/settings.h"
@@ -14,7 +13,7 @@
 #include "input_common/motion_emu.h"
 #include "video_core/video_core.h"
 
-constexpr const char WINDOW_TITLE_FORMAT[]{"Citra %s| %s-%s"};
+constexpr const char WINDOW_TITLE_FORMAT[]{""};
 
 EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window) {}
 
@@ -78,11 +77,9 @@ private:
 };
 
 GRenderWindow::GRenderWindow(QWidget* parent, EmuThread* emu_thread)
-    : QWidget(parent), child(nullptr), emu_thread(emu_thread) {
+    : QWidget{parent}, child{nullptr}, emu_thread{emu_thread} {
 
-    std::string window_title{Common::StringFromFormat(WINDOW_TITLE_FORMAT, Common::g_build_name,
-                                                      Common::g_scm_branch, Common::g_scm_desc)};
-    setWindowTitle(QString::fromStdString(window_title));
+    setWindowTitle("Render Window");
 
     InputCommon::Init();
     InputCommon::StartJoystickEventHandler();

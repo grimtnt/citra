@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
+#include <fmt/format.h>
 #include "common/common_paths.h"
 #include "common/file_util.h"
 #include "core/cheat_core.h"
@@ -46,8 +47,7 @@ void RefreshCheats() {
 namespace CheatEngine {
 static std::string GetFilePath() {
     return FileUtil::GetUserPath(D_USER_IDX) + "cheats" + DIR_SEP +
-           Common::StringFromFormat("%016llX", Kernel::g_current_process->codeset->program_id) +
-           ".txt";
+           fmt::format("{:016X}", Kernel::g_current_process->codeset->program_id) + ".txt";
 }
 
 CheatEngine::CheatEngine() {

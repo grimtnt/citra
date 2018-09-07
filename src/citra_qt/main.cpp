@@ -21,6 +21,7 @@
 #ifdef ENABLE_DISCORD_RPC
 #include <discord_rpc.h>
 #endif
+#include <fmt/format.h>
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
 #include "citra_qt/camera/qt_multimedia_camera.h"
@@ -43,7 +44,6 @@
 #include "common/logging/text_formatter.h"
 #include "common/scm_rev.h"
 #include "common/scope_exit.h"
-#include "common/string_util.h"
 #include "core/core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
 #include "core/hle/service/fs/archive.h"
@@ -717,10 +717,10 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
 
     switch (config.error_type) {
     case HLE::Applets::ErrEulaErrorType::ErrorCode: {
-        QMessageBox::critical(this, "ErrEula",
-                              QString("Error Code: %1")
-                                  .arg(QString::fromStdString(
-                                      Common::StringFromFormat("0x%08X", config.error_code))));
+        QMessageBox::critical(
+            this, "ErrEula",
+            QString("Error Code: %1")
+                .arg(QString::fromStdString(fmt::format("0x{:08X}", config.error_code))));
         break;
     }
     case HLE::Applets::ErrEulaErrorType::LocalizedErrorText:
@@ -729,7 +729,7 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
         QMessageBox::critical(
             this, "ErrEula",
             QString("Error Code: %1\n\n%2")
-                .arg(QString::fromStdString(Common::StringFromFormat("0x%08X", config.error_code)),
+                .arg(QString::fromStdString(fmt::format("0x{:08X}", config.error_code)),
                      QString::fromStdString(error)));
         break;
     }

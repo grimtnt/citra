@@ -233,17 +233,16 @@ void SoftwareKeyboard::Update() {
                     std::cout << "Input must not be empty." << std::endl;
                     break;
                 case ValidationError::FixedLengthRequired:
-                    std::cout << Common::StringFromFormat("Input must be exactly %u characters.",
-                                                          config.max_text_length)
+                    std::cout << fmt::format("Input must be exactly {} characters.",
+                                             config.max_text_length)
                               << std::endl;
                     break;
                 case ValidationError::InputNotNumber:
                     std::cout << "All characters must be numbers." << std::endl;
                     break;
                 case ValidationError::MaxLengthExceeded:
-                    std::cout << Common::StringFromFormat(
-                                     "Input is longer than the maximum length. Max: %u",
-                                     config.max_text_length)
+                    std::cout << fmt::format("Input is longer than the maximum length. Max: {}",
+                                             config.max_text_length)
                               << std::endl;
                     break;
                 case ValidationError::PercentNotAllowed:
@@ -284,8 +283,8 @@ void SoftwareKeyboard::Update() {
                 u32 num{static_cast<u32>(std::stoul(option))};
                 valid = ValidateButton(config, static_cast<u8>(num)) == ValidationError::None;
                 if (!valid) {
-                    std::cout << Common::StringFromFormat("Please choose a number between 0 and %u",
-                                                          static_cast<u32>(config.num_buttons_m1))
+                    std::cout << fmt::format("Please choose a number between 0 and {}",
+                                             static_cast<u32>(config.num_buttons_m1))
                               << std::endl;
                 }
             } catch (const std::invalid_argument&) {

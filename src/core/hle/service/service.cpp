@@ -6,7 +6,6 @@
 #include <fmt/format.h>
 #include "common/assert.h"
 #include "common/logging/log.h"
-#include "common/string_util.h"
 #include "core/core.h"
 #include "core/hle/ipc.h"
 #include "core/hle/kernel/client_port.h"
@@ -125,19 +124,18 @@ const std::array<ServiceModuleInfo, 40> service_module_map{
 static std::string MakeFunctionString(const char* name, const char* port_name,
                                       const u32* cmd_buff) {
     // Number of params == bits 0-5 + bits 6-11
-    int num_params = (cmd_buff[0] & 0x3F) + ((cmd_buff[0] >> 6) & 0x3F);
+    int num_params{static_cast<int>((cmd_buff[0] & 0x3F) + ((cmd_buff[0] >> 6) & 0x3F))};
 
-    std::string function_string =
-        Common::StringFromFormat("function '%s': port=%s", name, port_name);
-    for (int i = 1; i <= num_params; ++i) {
-        function_string += Common::StringFromFormat(", cmd_buff[%i]=0x%X", i, cmd_buff[i]);
+    std::string function_string{fmt::format("function '{}': port={}", name, port_name)};
+    for (int i{1}; i <= num_params; ++i) {
+        function_string += fmt::format(", cmd_buff[{}]=0x{:%X}", i, cmd_buff[i]);
     }
     return function_string;
 }
 
 ServiceFrameworkBase::ServiceFrameworkBase(const char* service_name, u32 max_sessions,
                                            InvokerFn* handler_invoker)
-    : service_name(service_name), max_sessions(max_sessions), handler_invoker(handler_invoker) {}
+    : service_name{service_name}, max_sessions{max_sessions}, handler_invoker{handler_invoker} {}
 
 ServiceFrameworkBase::~ServiceFrameworkBase() = default;
 
@@ -166,10 +164,10 @@ void ServiceFrameworkBase::RegisterHandlersBase(const FunctionInfoBase* function
 
 void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const FunctionInfoBase* info) {
     IPC::Header header{cmd_buf[0]};
-    int num_params = header.normal_params_size + header.translate_params_size;
-    std::string function_name = info == nullptr ? fmt::format("{:#08x}", cmd_buf[0]) : info->name;
+    int num_params{static_cast<int>(header.normal_params_size + header.translate_params_size)};
+    std::string function_name{info == nullptr ? fmt::format("{:#08x}", cmd_buf[0]) : info->name};
 
-    fmt::memory_buffer buf;
+    fmt::memory_buffer buf{};
     fmt::format_to(buf, "function '{}': port='{}' cmd_buf={{[0]={:#x}", function_name, service_name,
                    cmd_buf[0]);
     for (int i{1}; i <= num_params; ++i) {
@@ -185,9 +183,9 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
 void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_session) {
     u32* cmd_buf = Kernel::GetCommandBuffer();
 
-    u32 header_code = cmd_buf[0];
-    auto itr = handlers.find(header_code);
-    const FunctionInfoBase* info = itr == handlers.end() ? nullptr : &itr->second;
+    u32 header_code{cmd_buf[0]};
+    auto itr{handlers.find(header_code)};
+    const FunctionInfoBase* info{itr == handlers.end() ? nullptr : &itr->second};
     if (info == nullptr || info->handler_callback == nullptr) {
         return ReportUnimplementedFunction(cmd_buf, info);
     }

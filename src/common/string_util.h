@@ -26,10 +26,6 @@ std::string ToLower(std::string str);
 /// Make a string uppercase
 std::string ToUpper(std::string str);
 
-std::string StringFromFormat(const char* format, ...);
-// Cheap!
-bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list args);
-
 template <std::size_t Count>
 inline void CharArrayFromFormat(char (&out)[Count], const char* format, ...) {
     va_list args;

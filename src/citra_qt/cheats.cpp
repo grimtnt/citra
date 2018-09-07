@@ -11,9 +11,9 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
+#include <fmt/format.h>
 #include "citra_qt/cheats.h"
 #include "common/common_types.h"
-#include "common/string_util.h"
 #include "core/core.h"
 #include "core/hle/kernel/process.h"
 #include "core/memory.h"
@@ -30,8 +30,8 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->labelTitle->setText(QString("Title ID: %1")
-                                .arg(QString::fromStdString(Common::StringFromFormat(
-                                    "%016llX", Kernel::g_current_process->codeset->program_id))));
+                                .arg(QString::fromStdString(fmt::format(
+                                    "{:016X}", Kernel::g_current_process->codeset->program_id))));
     ui->lblTo->hide();
     ui->txtSearchTo->hide();
     ui->tableFound->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -67,8 +67,8 @@ CheatDialog::~CheatDialog() {}
 void CheatDialog::UpdateTitleID() {
     CheatCore::RefreshCheats();
     ui->labelTitle->setText(QString("Title ID: %1")
-                                .arg(QString::fromStdString(Common::StringFromFormat(
-                                    "%016llX", Kernel::g_current_process->codeset->program_id))));
+                                .arg(QString::fromStdString(fmt::format(
+                                    "{:016X}", Kernel::g_current_process->codeset->program_id))));
     LoadCheats();
     ui->textLines->setEnabled(false);
     selection_changing = true;
