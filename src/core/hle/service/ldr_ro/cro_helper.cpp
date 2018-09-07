@@ -117,7 +117,7 @@ ResultCode CROHelper::ApplyRelocationBatch(VAddr batch, u32 symbol_address, bool
     if (symbol_address == 0 && !reset)
         return CROFormatError(0x10);
 
-    VAddr relocation_address = batch;
+    VAddr relocation_address{batch};
     while (true) {
         RelocationEntry relocation;
         Memory::ReadBlock(relocation_address, &relocation, sizeof(RelocationEntry));
@@ -156,7 +156,7 @@ VAddr CROHelper::FindExportNamedSymbol(const std::string& name) const {
     GetEntry(0, entry);
     ExportTreeEntry::Child next;
     next.raw = entry.left.raw;
-    u32 found_id;
+    u32 found_id{};
 
     while (true) {
         GetEntry(next.next_index, entry);
@@ -166,8 +166,8 @@ VAddr CROHelper::FindExportNamedSymbol(const std::string& name) const {
             break;
         }
 
-        u16 test_byte = entry.test_bit >> 3;
-        u16 test_bit_in_byte = entry.test_bit & 7;
+        u16 test_byte{static_cast<u16>(entry.test_bit >> 3)};
+        u16 test_bit_in_byte{static_cast<u16>(entry.test_bit & 7)};
 
         if (test_byte >= len) {
             next.raw = entry.left.raw;
@@ -183,7 +183,7 @@ VAddr CROHelper::FindExportNamedSymbol(const std::string& name) const {
     if (found_id >= export_named_symbol_num)
         return 0;
 
-    u32 export_strings_size = GetField(ExportStringsSize);
+    u32 export_strings_size{GetField(ExportStringsSize)};
     ExportNamedSymbolEntry symbol_entry;
     GetEntry(found_id, symbol_entry);
 
@@ -194,7 +194,7 @@ VAddr CROHelper::FindExportNamedSymbol(const std::string& name) const {
 }
 
 ResultCode CROHelper::RebaseHeader(u32 cro_size) {
-    ResultCode error = CROFormatError(0x11);
+    ResultCode error{CROFormatError(0x11)};
 
     // verifies magic
     if (GetField(Magic) != MAGIC_CRO0)
