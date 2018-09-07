@@ -462,7 +462,7 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
         }
     }
 
-    return fmt::format("%s%08x.app", content_path, content_id);
+    return fmt::format("{}{:08x}.app", content_path, content_id);
 }
 
 std::string GetTitlePath(Service::FS::MediaType media_type, u64 tid) {

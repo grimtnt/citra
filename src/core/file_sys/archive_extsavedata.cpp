@@ -168,8 +168,7 @@ std::string GetExtSaveDataPath(const std::string& mount_point, const Path& path)
     ExtSaveDataArchivePath path_data{};
     std::memcpy(&path_data, vec_data.data(), sizeof(path_data));
 
-    return fmt::format("{}{:08}/{:08X}/", mount_point.c_str(), path_data.save_high,
-                       path_data.save_low);
+    return fmt::format("{}{:08X}/{:08X}/", mount_point, path_data.save_high, path_data.save_low);
 }
 
 std::string GetExtDataContainerPath(const std::string& mount_point, bool shared) {
