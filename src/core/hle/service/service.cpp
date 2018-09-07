@@ -128,7 +128,7 @@ static std::string MakeFunctionString(const char* name, const char* port_name,
 
     std::string function_string{fmt::format("function '{}': port={}", name, port_name)};
     for (int i{1}; i <= num_params; ++i) {
-        function_string += fmt::format(", cmd_buff[{}]=0x{:%X}", i, cmd_buff[i]);
+        function_string += fmt::format(", cmd_buff[{}]=0x{:X}", i, cmd_buff[i]);
     }
     return function_string;
 }
