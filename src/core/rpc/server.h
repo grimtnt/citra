@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "common/threadsafe_queue.h"
 #include "core/rpc/packet.h"
 #include "core/rpc/zmq_server.h"
 

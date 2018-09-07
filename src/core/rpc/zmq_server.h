@@ -6,11 +6,12 @@
 
 #include <functional>
 #include <thread>
-#include "core/rpc/packet.h"
 #define ZMQ_STATIC
 #include <zmq.hpp>
 
 namespace RPC {
+
+class Packet;
 
 class ZMQServer {
 public:
