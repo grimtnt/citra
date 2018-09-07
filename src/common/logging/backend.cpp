@@ -38,18 +38,18 @@ public:
     const Impl& operator=(Impl const&) = delete;
 
     void PushEntry(Entry e) {
-        std::lock_guard<std::mutex> lock(message_mutex);
+        std::lock_guard<std::mutex> lock{message_mutex};
         message_queue.Push(std::move(e));
         message_cv.notify_one();
     }
 
     void AddBackend(std::unique_ptr<Backend> backend) {
-        std::lock_guard<std::mutex> lock(writing_mutex);
+        std::lock_guard<std::mutex> lock{writing_mutex};
         backends.push_back(std::move(backend));
     }
 
     void RemoveBackend(std::string_view backend_name) {
-        std::lock_guard<std::mutex> lock(writing_mutex);
+        std::lock_guard<std::mutex> lock{writing_mutex};
         const auto it =
             std::remove_if(backends.begin(), backends.end(),
                            [&backend_name](const auto& i) { return backend_name == i->GetName(); });
@@ -76,15 +76,15 @@ public:
 private:
     Impl() {
         backend_thread = std::thread([&] {
-            Entry entry;
+            Entry entry{};
             auto write_logs = [&](Entry& e) {
-                std::lock_guard<std::mutex> lock(writing_mutex);
+                std::lock_guard<std::mutex> lock{writing_mutex};
                 for (const auto& backend : backends) {
                     backend->Write(e);
                 }
             };
             while (true) {
-                std::unique_lock<std::mutex> lock(message_mutex);
+                std::unique_lock<std::mutex> lock{message_mutex};
                 message_cv.wait(lock, [&] { return !running || message_queue.Pop(entry); });
                 if (!running) {
                     break;
@@ -93,7 +93,7 @@ private:
             }
             // Drain the logging queue. Only writes out up to MAX_LOGS_TO_WRITE to prevent a case
             // where a system is repeatedly spamming logs even on close.
-            constexpr int MAX_LOGS_TO_WRITE = 100;
+            constexpr int MAX_LOGS_TO_WRITE{100};
             int logs_written{};
             while (logs_written++ < MAX_LOGS_TO_WRITE && message_queue.Pop(entry)) {
                 write_logs(entry);
@@ -132,7 +132,7 @@ FileBackend::FileBackend(const std::string& filename)
 void FileBackend::Write(const Entry& entry) {
     // prevent logs from going over the maximum size (in case its spamming and the user doesn't
     // know)
-    constexpr std::size_t MAX_BYTES_WRITTEN = 50 * 1024L * 1024L;
+    constexpr std::size_t MAX_BYTES_WRITTEN{50 * 1024L * 1024L};
     if (!file.IsOpen() || bytes_written > MAX_BYTES_WRITTEN) {
         return;
     }
@@ -250,9 +250,9 @@ Entry CreateEntry(Class log_class, Level log_level, const char* filename, unsign
     using std::chrono::duration_cast;
     using std::chrono::steady_clock;
 
-    static steady_clock::time_point time_origin = steady_clock::now();
+    static steady_clock::time_point time_origin{steady_clock::now()};
 
-    Entry entry;
+    Entry entry{};
     entry.timestamp = duration_cast<std::chrono::microseconds>(steady_clock::now() - time_origin);
     entry.log_class = log_class;
     entry.log_level = log_level;
@@ -283,13 +283,13 @@ Backend* GetBackend(std::string_view backend_name) {
 void FmtLogMessageImpl(Class log_class, Level log_level, const char* filename,
                        unsigned int line_num, const char* function, const char* format,
                        const fmt::format_args& args) {
-    auto& instance = Impl::Instance();
-    const auto& filter = instance.GetGlobalFilter();
+    auto& instance{Impl::Instance()};
+    const auto& filter{instance.GetGlobalFilter()};
     if (!filter.CheckMessage(log_class, log_level))
         return;
 
-    Entry entry =
-        CreateEntry(log_class, log_level, filename, line_num, function, fmt::vformat(format, args));
+    Entry entry{CreateEntry(log_class, log_level, filename, line_num, function,
+                            fmt::vformat(format, args))};
 
     instance.PushEntry(std::move(entry));
 }

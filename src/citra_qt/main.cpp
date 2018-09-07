@@ -626,11 +626,11 @@ void GMainWindow::BootGame(const QString& filename) {
     }
     OnStartGame();
 
-    auto& qt_callbacks = Core::System::GetInstance().GetQtCallbacks();
+    auto& qt_callbacks{Core::System::GetInstance().GetQtCallbacks()};
     qt_callbacks.erreula = [this](HLE::Applets::ErrEulaConfig& config) {
         applet_open = true;
         ErrEulaCallback(config);
-        std::unique_lock<std::mutex> lock(applet_mutex);
+        std::unique_lock<std::mutex> lock{applet_mutex};
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
@@ -638,7 +638,7 @@ void GMainWindow::BootGame(const QString& filename) {
                                 std::u16string& text) {
         applet_open = true;
         SwkbdCallback(config, text);
-        std::unique_lock<std::mutex> lock(applet_mutex);
+        std::unique_lock<std::mutex> lock{applet_mutex};
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
@@ -713,7 +713,7 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
         return;
     }
 
-    std::unique_lock<std::mutex> lock(applet_mutex);
+    std::unique_lock<std::mutex> lock{applet_mutex};
 
     switch (config.error_type) {
     case HLE::Applets::ErrEulaErrorType::ErrorCode: {
@@ -757,8 +757,8 @@ void GMainWindow::SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
         return;
     }
 
-    std::unique_lock<std::mutex> lock(applet_mutex);
-    SoftwareKeyboardDialog dialog(this, config, text);
+    std::unique_lock<std::mutex> lock{applet_mutex};
+    SoftwareKeyboardDialog dialog{this, config, text};
     dialog.exec();
 
     applet_open = false;

@@ -149,7 +149,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
     member.peer = event->peer;
 
     {
-        std::lock_guard<std::mutex> lock(member_mutex);
+        std::lock_guard<std::mutex> lock{member_mutex};
         members.push_back(std::move(member));
     }
 
@@ -157,7 +157,7 @@ void Room::RoomImpl::HandleJoinRequest(const ENetEvent* event) {
 }
 
 bool Room::RoomImpl::IsMacAddressAvailable(const MacAddress& address) const {
-    std::lock_guard<std::mutex> lock(member_mutex);
+    std::lock_guard<std::mutex> lock{member_mutex};
     return std::all_of(members.begin(), members.end(),
                        [&address](const auto& member) { return member.mac_address != address; });
 }
@@ -185,7 +185,7 @@ void Room::RoomImpl::SendJoinSuccess(ENetPeer* client, MacAddress mac_address) {
 void Room::RoomImpl::SendCloseMessage() {
     Packet packet{};
     packet << static_cast<u8>(IdCloseRoom);
-    std::lock_guard<std::mutex> lock(member_mutex);
+    std::lock_guard<std::mutex> lock{member_mutex};
     if (!members.empty()) {
         ENetPacket* enet_packet{
             enet_packet_create(packet.GetData(), packet.GetDataSize(), ENET_PACKET_FLAG_RELIABLE)};
@@ -227,7 +227,7 @@ void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
                                                ENET_PACKET_FLAG_RELIABLE)};
 
     if (destination_address == BroadcastMac) { // Send the data to everyone except the sender
-        std::lock_guard<std::mutex> lock(member_mutex);
+        std::lock_guard<std::mutex> lock{member_mutex};
         bool sent_packet{};
         for (const auto& member : members) {
             if (member.peer != event->peer) {
@@ -240,7 +240,7 @@ void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
             enet_packet_destroy(enet_packet);
         }
     } else { // Send the data only to the destination client
-        std::lock_guard<std::mutex> lock(member_mutex);
+        std::lock_guard<std::mutex> lock{member_mutex};
         auto member{std::find_if(members.begin(), members.end(),
                                  [destination_address](const Member& member) -> bool {
                                      return member.mac_address == destination_address;
@@ -262,7 +262,7 @@ void Room::RoomImpl::HandleWifiPacket(const ENetEvent* event) {
 void Room::RoomImpl::HandleClientDisconnection(ENetPeer* client) {
     // Remove the client from the members list.
     {
-        std::lock_guard<std::mutex> lock(member_mutex);
+        std::lock_guard<std::mutex> lock{member_mutex};
         members.erase(
             std::remove_if(members.begin(), members.end(),
                            [client](const Member& member) { return member.peer == client; }),
@@ -305,7 +305,7 @@ void Room::Destroy() {
     }
     room_impl->server = nullptr;
     {
-        std::lock_guard<std::mutex> lock(room_impl->member_mutex);
+        std::lock_guard<std::mutex> lock{room_impl->member_mutex};
         room_impl->members.clear();
     }
 }

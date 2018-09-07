@@ -36,7 +36,7 @@ void EmuThread::run() {
                 emit ErrorThrown(result, Core::System::GetInstance().GetStatusDetails());
             }
         } else {
-            std::unique_lock<std::mutex> lock(running_mutex);
+            std::unique_lock<std::mutex> lock{running_mutex};
             running_cv.wait(lock, [this] { return IsRunning() || stop_run; });
         }
     }

@@ -38,7 +38,7 @@ public:
      * @note This function is thread-safe
      */
     void SetRunning(bool running) {
-        std::unique_lock<std::mutex> lock(running_mutex);
+        std::unique_lock<std::mutex> lock{running_mutex};
         this->running = running;
         lock.unlock();
         running_cv.notify_all();

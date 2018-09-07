@@ -109,7 +109,7 @@ bool RoomMember::RoomMemberImpl::IsConnected() const {
 void RoomMember::RoomMemberImpl::MemberLoop() {
     // Receive packets while the connection is open
     while (IsConnected()) {
-        std::lock_guard<std::mutex> lock(network_mutex);
+        std::lock_guard<std::mutex> lock{network_mutex};
         ENetEvent event;
         if (enet_host_service(client, &event, 100) > 0) {
             switch (event.type) {
@@ -136,7 +136,7 @@ void RoomMember::RoomMemberImpl::MemberLoop() {
             }
         }
         {
-            std::lock_guard<std::mutex> lock(send_list_mutex);
+            std::lock_guard<std::mutex> lock{send_list_mutex};
             for (const auto& packet : send_list) {
                 ENetPacket* enetPacket = enet_packet_create(packet.GetData(), packet.GetDataSize(),
                                                             ENET_PACKET_FLAG_RELIABLE);
@@ -154,7 +154,7 @@ void RoomMember::RoomMemberImpl::StartLoop() {
 }
 
 void RoomMember::RoomMemberImpl::Send(Packet&& packet) {
-    std::lock_guard<std::mutex> lock(send_list_mutex);
+    std::lock_guard<std::mutex> lock{send_list_mutex};
     send_list.push_back(std::move(packet));
 }
 
@@ -236,7 +236,7 @@ RoomMember::RoomMemberImpl::Callbacks::Get() {
 
 template <typename T>
 void RoomMember::RoomMemberImpl::Invoke(const T& data) {
-    std::lock_guard<std::mutex> lock(callback_mutex);
+    std::lock_guard<std::mutex> lock{callback_mutex};
     CallbackSet<T> callback_set = callbacks.Get<T>();
     for (auto const& callback : callback_set)
         (*callback)(data);
@@ -245,7 +245,7 @@ void RoomMember::RoomMemberImpl::Invoke(const T& data) {
 template <typename T>
 RoomMember::CallbackHandle<T> RoomMember::RoomMemberImpl::Bind(
     std::function<void(const T&)> callback) {
-    std::lock_guard<std::mutex> lock(callback_mutex);
+    std::lock_guard<std::mutex> lock{callback_mutex};
     CallbackHandle<T> handle;
     handle = std::make_shared<std::function<void(const T&)>>(callback);
     callbacks.Get<T>().insert(handle);
@@ -337,7 +337,7 @@ RoomMember::CallbackHandle<WifiPacket> RoomMember::BindOnWifiPacketReceived(
 
 template <typename T>
 void RoomMember::Unbind(CallbackHandle<T> handle) {
-    std::lock_guard<std::mutex> lock(room_member_impl->callback_mutex);
+    std::lock_guard<std::mutex> lock{room_member_impl->callback_mutex};
     room_member_impl->callbacks.Get<T>().erase(handle);
 }
 

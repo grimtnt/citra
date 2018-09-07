@@ -152,7 +152,7 @@ private:
  * Get the nth joystick with the corresponding GUID
  */
 static std::shared_ptr<SDLJoystick> GetSDLJoystickByGUID(const std::string& guid, int port) {
-    std::lock_guard<std::mutex> lock(joystick_map_mutex);
+    std::lock_guard<std::mutex> lock{joystick_map_mutex};
     const auto& it{joystick_map.find(guid)};
     if (it != joystick_map.end()) {
         while (it->second.size() <= port) {
@@ -172,7 +172,7 @@ static std::shared_ptr<SDLJoystick> GetSDLJoystickByGUID(const std::string& guid
  * it to a SDLJoystick with the same guid and that port
  */
 static std::shared_ptr<SDLJoystick> GetSDLJoystickBySDLID(SDL_JoystickID sdl_id) {
-    std::lock_guard<std::mutex> lock(joystick_map_mutex);
+    std::lock_guard<std::mutex> lock{joystick_map_mutex};
     auto sdl_joystick{SDL_JoystickFromInstanceID(sdl_id)};
     const std::string guid{GetGUID(sdl_joystick)};
     auto map_it{joystick_map.find(guid)};
@@ -207,7 +207,7 @@ static std::shared_ptr<SDLJoystick> GetSDLJoystickBySDLID(SDL_JoystickID sdl_id)
 }
 
 void InitJoystick(int joystick_index) {
-    std::lock_guard<std::mutex> lock(joystick_map_mutex);
+    std::lock_guard<std::mutex> lock{joystick_map_mutex};
     SDL_Joystick* sdl_joystick{SDL_JoystickOpen(joystick_index)};
     if (!sdl_joystick) {
         LOG_ERROR(Input, "failed to open joystick {}", joystick_index);
@@ -232,7 +232,7 @@ void InitJoystick(int joystick_index) {
 }
 
 void CloseJoystick(SDL_Joystick* sdl_joystick) {
-    std::lock_guard<std::mutex> lock(joystick_map_mutex);
+    std::lock_guard<std::mutex> lock{joystick_map_mutex};
     std::string guid{GetGUID(sdl_joystick)};
     // This call to guid is save since the joystick is guaranteed to be in that map
     auto& joystick_guid_list{joystick_map[guid]};
@@ -287,7 +287,7 @@ void HandleGameControllerEvent(const SDL_Event& event) {
 }
 
 void CloseSDLJoysticks() {
-    std::lock_guard<std::mutex> lock(joystick_map_mutex);
+    std::lock_guard<std::mutex> lock{joystick_map_mutex};
     joystick_map.clear();
 }
 
