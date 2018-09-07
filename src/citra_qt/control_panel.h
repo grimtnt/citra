@@ -17,15 +17,7 @@ class ControlPanel : public QDialog {
 public:
     explicit ControlPanel(QWidget* parent = nullptr);
     ~ControlPanel();
-
-public slots:
-    void On3DEnabledChanged();
-    void OnAdapterConnectedChanged();
-    void OnBatteryChargingChanged();
-    void OnBatteryLevelChanged();
-    void OnWifiStatusChanged();
-    void OnWifiLinkLevelChanged();
-    void OnNetworkStateChanged();
+    void Update3D();
 
 private:
     std::unique_ptr<Ui::ControlPanel> ui;

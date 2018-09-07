@@ -39,6 +39,7 @@ namespace Core {
 struct QtCallbacks {
     std::function<void(HLE::Applets::ErrEulaConfig&)> erreula;
     std::function<void(HLE::Applets::SoftwareKeyboardConfig&, std::u16string&)> swkbd;
+    std::function<void()> update_3d;
 };
 
 class System {

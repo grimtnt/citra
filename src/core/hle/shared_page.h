@@ -105,9 +105,9 @@ public:
 
     void SetBatteryLevel(u8);
 
-    void Set3DLed(u8);
-
     SharedPageDef& GetSharedPage();
+
+    void Update3DSettings(bool called_by_control_panel = false);
 
 private:
     u64 GetSystemTime() const;

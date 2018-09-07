@@ -53,8 +53,9 @@ void Module::Interface::Set3DLEDState(Kernel::HLERequestContext& ctx) {
 
     u8 state{rp.Pop<u8>()};
 
-    Core::System::GetInstance().GetSharedPageHandler()->Set3DLed(state);
-    Settings::values.sp_enable_3d = static_cast<bool>(state);
+    if (state == 0)
+        Settings::values.factor_3d = 0;
+    Core::System::GetInstance().GetSharedPageHandler()->Update3DSettings();
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);

@@ -99,7 +99,9 @@ static const std::array<const char*, NumAnalogs> mapping = {{
 
 struct Values {
     // Control Panel
-    bool sp_enable_3d;
+    float volume;
+    bool headphones_connected;
+    u8 factor_3d;
     bool p_adapter_connected;
     bool p_battery_charging;
     u32 p_battery_level;
@@ -122,7 +124,7 @@ struct Values {
     // LLE
     std::unordered_map<std::string, bool> lle_modules;
 
-    // Data Storages
+    // Data Storage
     bool use_virtual_sd;
     std::string sd_card_root;
 
@@ -156,9 +158,6 @@ struct Values {
     float bg_green;
     float bg_blue;
 
-    bool toggle_3d;
-    u8 factor_3d;
-
     // Logging
     std::string log_filter;
 
@@ -166,8 +165,6 @@ struct Values {
     std::string sink_id;
     bool enable_audio_stretching;
     std::string audio_device_id;
-    float volume;
-    bool headphones_connected;
 
     // Camera
     std::array<std::string, Service::CAM::NumCameras> camera_name;

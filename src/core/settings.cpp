@@ -42,6 +42,7 @@ void LogSetting(const std::string& name, const T& value) {
 
 void LogSettings() {
     LOG_INFO(Config, "Citra Configuration:");
+    LogSetting("ControlPanel_Factor3d", Settings::values.factor_3d);
     LogSetting("Core_KeyboardMode", static_cast<int>(Settings::values.keyboard_mode));
     LogSetting("Renderer_UseHwShader", Settings::values.use_hw_shader);
     LogSetting("Renderer_ShadersAccurateGs", Settings::values.shaders_accurate_gs);
@@ -49,8 +50,6 @@ void LogSettings() {
     LogSetting("Renderer_UseResolutionFactor", Settings::values.resolution_factor);
     LogSetting("Renderer_UseFrameLimit", Settings::values.use_frame_limit);
     LogSetting("Renderer_FrameLimit", Settings::values.frame_limit);
-    LogSetting("Layout_Toggle3d", Settings::values.toggle_3d);
-    LogSetting("Layout_Factor3d", Settings::values.factor_3d);
     LogSetting("Layout_LayoutOption", static_cast<int>(Settings::values.layout_option));
     LogSetting("Layout_SwapScreen", Settings::values.swap_screen);
     LogSetting("Audio_OutputEngine", Settings::values.sink_id);

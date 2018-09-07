@@ -19,10 +19,6 @@ ConfigureAudio::ConfigureAudio(QWidget* parent)
         ui->output_sink_combo_box->addItem(sink_detail.id);
     }
 
-    connect(ui->volume_slider, &QSlider::valueChanged, [this] {
-        ui->volume_indicator->setText(QString("%1 %").arg(ui->volume_slider->sliderPosition()));
-    });
-
     setConfiguration();
 
     connect(ui->output_sink_combo_box,
@@ -57,10 +53,6 @@ void ConfigureAudio::setConfiguration() {
     }
 
     ui->audio_device_combo_box->setCurrentIndex(new_device_index);
-
-    ui->volume_slider->setValue(Settings::values.volume * ui->volume_slider->maximum());
-    ui->volume_indicator->setText(QString("%1 %").arg(ui->volume_slider->sliderPosition()));
-    ui->headphones_connected->setChecked(Settings::values.headphones_connected);
 }
 
 void ConfigureAudio::applyConfiguration() {
@@ -71,9 +63,6 @@ void ConfigureAudio::applyConfiguration() {
     Settings::values.audio_device_id =
         ui->audio_device_combo_box->itemText(ui->audio_device_combo_box->currentIndex())
             .toStdString();
-    Settings::values.volume =
-        static_cast<float>(ui->volume_slider->sliderPosition()) / ui->volume_slider->maximum();
-    Settings::values.headphones_connected = ui->headphones_connected->isChecked();
 }
 
 void ConfigureAudio::updateAudioDevices(int sink_index) {

@@ -641,6 +641,8 @@ void GMainWindow::BootGame(const QString& filename) {
         std::unique_lock<std::mutex> lock(applet_mutex);
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
+
+    qt_callbacks.update_3d = [this] { Update3D(); };
 }
 
 void GMainWindow::ShutdownGame() {
@@ -760,6 +762,16 @@ void GMainWindow::SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
     dialog.exec();
 
     applet_open = false;
+}
+
+void GMainWindow::Update3D() {
+    if (QThread::currentThread() != thread()) {
+        QMetaObject::invokeMethod(this, "Update3D", Qt::BlockingQueuedConnection);
+        return;
+    }
+
+    if (control_panel != nullptr)
+        control_panel->Update3D();
 }
 
 void GMainWindow::UpdateRecentFiles() {

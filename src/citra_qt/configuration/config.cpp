@@ -43,7 +43,10 @@ const std::array<std::array<int, 5>, Settings::NativeAnalog::NumAnalogs> Config:
 
 void Config::ReadValues() {
     qt_config->beginGroup("ControlPanel");
-    Settings::values.sp_enable_3d = qt_config->value("sp_enable_3d", false).toBool();
+    Settings::values.volume = qt_config->value("volume", 1).toFloat();
+    Settings::values.headphones_connected =
+        qt_config->value("headphones_connected", false).toBool();
+    Settings::values.factor_3d = qt_config->value("factor_3d", 0).toInt();
     Settings::values.p_adapter_connected = qt_config->value("p_adapter_connected", true).toBool();
     Settings::values.p_battery_charging = qt_config->value("p_battery_charging", true).toBool();
     Settings::values.p_battery_level =
@@ -132,8 +135,6 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Layout");
-    Settings::values.toggle_3d = qt_config->value("toggle_3d", false).toBool();
-    Settings::values.factor_3d = qt_config->value("factor_3d", 0).toInt();
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(qt_config->value("layout_option").toInt());
     Settings::values.swap_screen = qt_config->value("swap_screen", false).toBool();
@@ -154,9 +155,6 @@ void Config::ReadValues() {
         qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.audio_device_id =
         qt_config->value("output_device", "auto").toString().toStdString();
-    Settings::values.volume = qt_config->value("volume", 1).toFloat();
-    Settings::values.headphones_connected =
-        qt_config->value("headphones_connected", false).toBool();
     qt_config->endGroup();
 
     using namespace Service::CAM;
@@ -280,7 +278,9 @@ void Config::ReadValues() {
 
 void Config::SaveValues() {
     qt_config->beginGroup("ControlPanel");
-    qt_config->setValue("sp_enable_3d", Settings::values.sp_enable_3d);
+    qt_config->setValue("volume", Settings::values.volume);
+    qt_config->setValue("headphones_connected", Settings::values.headphones_connected);
+    qt_config->setValue("factor_3d", Settings::values.factor_3d);
     qt_config->setValue("p_adapter_connected", Settings::values.p_adapter_connected);
     qt_config->setValue("p_battery_charging", Settings::values.p_battery_charging);
     qt_config->setValue("p_battery_level", Settings::values.p_battery_level);
@@ -331,8 +331,6 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Layout");
-    qt_config->setValue("toggle_3d", Settings::values.toggle_3d);
-    qt_config->setValue("factor_3d", Settings::values.factor_3d);
     qt_config->setValue("layout_option", static_cast<int>(Settings::values.layout_option));
     qt_config->setValue("swap_screen", Settings::values.swap_screen);
     qt_config->setValue("custom_layout", Settings::values.custom_layout);
@@ -350,8 +348,6 @@ void Config::SaveValues() {
     qt_config->setValue("output_engine", QString::fromStdString(Settings::values.sink_id));
     qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.audio_device_id));
-    qt_config->setValue("volume", Settings::values.volume);
-    qt_config->setValue("headphones_connected", Settings::values.headphones_connected);
     qt_config->endGroup();
 
     using namespace Service::CAM;

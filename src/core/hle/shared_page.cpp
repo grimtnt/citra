@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <cstring>
+#include "core/core.h"
 #include "core/core_timing.h"
 #include "core/hle/shared_page.h"
 #include "core/settings.h"
@@ -48,7 +49,7 @@ Handler::Handler() {
     shared_page.wifi_link_level = Settings::values.n_wifi_link_level;
     shared_page.network_state = static_cast<NetworkState>(Settings::values.n_state);
 
-    shared_page.ledstate_3d = Settings::values.sp_enable_3d ? 1 : 0;
+    Update3DSettings();
 
     init_time = GetInitTime();
 
@@ -56,10 +57,6 @@ Handler::Handler() {
     update_time_event = CoreTiming::RegisterEvent(
         "SharedPage::UpdateTimeCallback", std::bind(&Handler::UpdateTimeCallback, this, _1, _2));
     CoreTiming::ScheduleEvent(0, update_time_event);
-
-    float sliderstate{Settings::values.toggle_3d ? (float_le)Settings::values.factor_3d / 100
-                                                 : 0.0f};
-    shared_page.sliderstate_3d = sliderstate;
 }
 
 /// Gets system time in 3DS format. The epoch is Jan 1900, and the unit is millisecond.
@@ -134,12 +131,19 @@ void Handler::SetBatteryLevel(u8 level) {
     shared_page.battery_state.charge_level.Assign(level);
 }
 
-void Handler::Set3DLed(u8 state) {
-    shared_page.ledstate_3d = state;
-}
-
 SharedPageDef& Handler::GetSharedPage() {
     return shared_page;
+}
+
+void Handler::Update3DSettings(bool called_by_control_panel) {
+    shared_page.ledstate_3d = Settings::values.factor_3d != 0 ? 1 : 0;
+    float sliderstate{Settings::values.factor_3d != 0 ? (float_le)Settings::values.factor_3d / 100
+                                                      : 0.0f};
+    shared_page.sliderstate_3d = sliderstate;
+    if (!called_by_control_panel) {
+        if (Core::System::GetInstance().GetQtCallbacks().update_3d)
+            Core::System::GetInstance().GetQtCallbacks().update_3d();
+    }
 }
 
 } // namespace SharedPage

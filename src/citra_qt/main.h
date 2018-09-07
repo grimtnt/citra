@@ -81,6 +81,7 @@ private:
     Q_INVOKABLE void ErrEulaCallback(HLE::Applets::ErrEulaConfig& config);
     Q_INVOKABLE void SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
                                    std::u16string& text);
+    Q_INVOKABLE void Update3D();
     void SyncMenuUISettings();
     void RestoreUIState();
 
