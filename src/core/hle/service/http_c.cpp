@@ -367,9 +367,11 @@ void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
         return;
     }
 
+    const u32 status_code{context->second.GetResponseStatusCode()};
+
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(context->second.GetResponseStatusCode());
+    rb.Push(status_code);
 
     LOG_WARNING(Service_HTTP, "called, context_id={}, status_code={}", context_id, status_code);
 }
