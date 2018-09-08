@@ -11,7 +11,7 @@
 #include <nihstro/shader_bytecode.h>
 #include "common/assert.h"
 #include "common/common_types.h"
-#include "video_core/renderer_opengl/gl_shader_decompiler.h"
+#include "video_core/renderer/shader_decompiler.h"
 
 namespace Pica::Shader::Decompiler {
 

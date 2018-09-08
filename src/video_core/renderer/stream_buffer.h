@@ -5,15 +5,14 @@
 #pragma once
 
 #include <tuple>
-#include <glad/glad.h>
 #include "common/common_types.h"
-#include "video_core/renderer_opengl/gl_resource_manager.h"
+#include "video_core/renderer/resource_manager.h"
 
-class OGLStreamBuffer : private NonCopyable {
+class StreamBuffer : private NonCopyable {
 public:
-    explicit OGLStreamBuffer(GLenum target, GLsizeiptr size, bool array_buffer_for_amd,
-                             bool prefer_coherent = false);
-    ~OGLStreamBuffer();
+    explicit StreamBuffer(GLenum target, GLsizeiptr size, bool array_buffer_for_amd,
+                          bool prefer_coherent = false);
+    ~StreamBuffer();
 
     GLuint GetHandle() const;
     GLsizeiptr GetSize() const;
@@ -31,7 +30,7 @@ public:
     void Unmap(GLsizeiptr size);
 
 private:
-    OGLBuffer gl_buffer;
+    Buffer gl_buffer;
     GLenum gl_target;
 
     bool coherent = false;
@@ -41,5 +40,5 @@ private:
     GLsizeiptr buffer_size{};
     GLintptr mapped_offset{};
     GLsizeiptr mapped_size{};
-    u8* mapped_ptr {};
+    u8* mapped_ptr{};
 };

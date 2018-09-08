@@ -57,7 +57,7 @@ FactoryListType<InputDeviceType> FactoryList<InputDeviceType>::list;
  */
 template <typename InputDeviceType>
 void RegisterFactory(const std::string& name, std::shared_ptr<Factory<InputDeviceType>> factory) {
-    auto pair = std::make_pair(name, std::move(factory));
+    auto pair{std::make_pair(name, std::move(factory))};
     if (!Impl::FactoryList<InputDeviceType>::list.insert(std::move(pair)).second) {
         LOG_ERROR(Input, "Factory {} already registered", name);
     }
@@ -82,10 +82,10 @@ void UnregisterFactory(const std::string& name) {
  */
 template <typename InputDeviceType>
 std::unique_ptr<InputDeviceType> CreateDevice(const std::string& params) {
-    const Common::ParamPackage package(params);
-    const std::string engine = package.Get("engine", "null");
-    const auto& factory_list = Impl::FactoryList<InputDeviceType>::list;
-    const auto pair = factory_list.find(engine);
+    const Common::ParamPackage package{params};
+    const std::string engine{package.Get("engine", "null")};
+    const auto& factory_list{Impl::FactoryList<InputDeviceType>::list};
+    const auto pair{factory_list.find(engine)};
     if (pair == factory_list.end()) {
         if (engine != "null") {
             LOG_ERROR(Input, "Unknown engine name: {}", engine);

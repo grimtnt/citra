@@ -14,10 +14,10 @@
 #include "video_core/regs_lighting.h"
 #include "video_core/regs_rasterizer.h"
 #include "video_core/regs_texturing.h"
-#include "video_core/renderer_opengl/gl_rasterizer.h"
-#include "video_core/renderer_opengl/gl_shader_decompiler.h"
-#include "video_core/renderer_opengl/gl_shader_gen.h"
-#include "video_core/renderer_opengl/gl_shader_util.h"
+#include "video_core/renderer/rasterizer.h"
+#include "video_core/renderer/shader_decompiler.h"
+#include "video_core/renderer/shader_gen.h"
+#include "video_core/renderer/shader_util.h"
 #include "video_core/video_core.h"
 
 using Pica::FramebufferRegs;
@@ -275,8 +275,7 @@ void PicaGSConfigCommonRaw::Init(const Pica::Regs& regs) {
             if (static_cast<std::size_t>(semantic) < 24) {
                 semantic_maps[static_cast<std::size_t>(semantic)] = {attrib, comp};
             } else if (semantic != VSOutputAttributes::INVALID) {
-                LOG_ERROR(Render_OpenGL, "Invalid/unknown semantic id: {}",
-                          static_cast<u32>(semantic));
+                LOG_ERROR(Render, "Invalid/unknown semantic id: {}", static_cast<u32>(semantic));
             }
         }
     }
@@ -344,7 +343,7 @@ static std::string SampleTexture(const PicaFSConfig& config, unsigned texture_un
         if (state.proctex.enable) {
             return "ProcTex()";
         } else {
-            LOG_DEBUG(Render_OpenGL, "Using Texture3 without enabling it");
+            LOG_DEBUG(Render, "Using Texture3 without enabling it");
             return "vec4(0.0)";
         }
     default:
@@ -391,7 +390,7 @@ static void AppendSource(std::string& out, const PicaFSConfig& config,
         break;
     default:
         out += "vec4(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown source op {}", static_cast<u32>(source));
+        LOG_CRITICAL(Render, "Unknown source op {}", static_cast<u32>(source));
         break;
     }
 }
@@ -449,7 +448,7 @@ static void AppendColorModifier(std::string& out, const PicaFSConfig& config,
         break;
     default:
         out += "vec3(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown color modifier op {}", static_cast<u32>(modifier));
+        LOG_CRITICAL(Render, "Unknown color modifier op {}", static_cast<u32>(modifier));
         break;
     }
 }
@@ -498,7 +497,7 @@ static void AppendAlphaModifier(std::string& out, const PicaFSConfig& config,
         break;
     default:
         out += "0.0";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha modifier op {}", static_cast<u32>(modifier));
+        LOG_CRITICAL(Render, "Unknown alpha modifier op {}", static_cast<u32>(modifier));
         break;
     }
 }
@@ -542,8 +541,7 @@ static void AppendColorCombiner(std::string& out, TevStageConfig::Operation oper
         break;
     default:
         out += "vec3(0.0)";
-        LOG_CRITICAL(Render_OpenGL, "Unknown color combiner operation: {}",
-                     static_cast<u32>(operation));
+        LOG_CRITICAL(Render, "Unknown color combiner operation: {}", static_cast<u32>(operation));
         break;
     }
     out += ", vec3(0.0), vec3(1.0))"; // Clamp result to 0.0, 1.0
@@ -583,8 +581,7 @@ static void AppendAlphaCombiner(std::string& out, TevStageConfig::Operation oper
         break;
     default:
         out += "0.0";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha combiner operation: {}",
-                     static_cast<u32>(operation));
+        LOG_CRITICAL(Render, "Unknown alpha combiner operation: {}", static_cast<u32>(operation));
         break;
     }
     out += ", 0.0, 1.0)";
@@ -614,7 +611,7 @@ static void AppendAlphaTestCondition(std::string& out, FramebufferRegs::CompareF
 
     default:
         out += "false";
-        LOG_CRITICAL(Render_OpenGL, "Unknown alpha test condition {}", static_cast<u32>(func));
+        LOG_CRITICAL(Render, "Unknown alpha test condition {}", static_cast<u32>(func));
         break;
     }
 }
@@ -1168,7 +1165,7 @@ float ProcTexNoiseCoef(vec2 x) {
     if (config.state.proctex.coord < 3) {
         out += "vec2 uv = abs(texcoord" + std::to_string(config.state.proctex.coord) + ");\n";
     } else {
-        LOG_CRITICAL(Render_OpenGL, "Unexpected proctex.coord >= 3");
+        LOG_CRITICAL(Render, "Unexpected proctex.coord >= 3");
         out += "vec2 uv = abs(texcoord0);\n";
     }
 
@@ -1544,7 +1541,7 @@ vec4 secondary_fragment_color = vec4(0.0);
         // Blend the fog
         out += "last_tex_env_out.rgb = mix(fog_color.rgb, last_tex_env_out.rgb, fog_factor);\n";
     } else if (state.fog_mode == TexturingRegs::FogMode::Gas) {
-        LOG_CRITICAL(Render_OpenGL, "Unimplemented gas mode");
+        LOG_CRITICAL(Render, "Unimplemented gas mode");
         out += "discard; }";
         return out;
     }

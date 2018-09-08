@@ -14,10 +14,10 @@ namespace Pica {
 
 struct PipelineRegs {
     enum class VertexAttributeFormat : u32 {
-        BYTE = 0,
-        UBYTE = 1,
-        SHORT = 2,
-        FLOAT = 3,
+        Byte = 0,
+        UnsignedByte = 1,
+        Short = 2,
+        Float = 3,
     };
 
     struct {
@@ -77,9 +77,9 @@ struct PipelineRegs {
         }
 
         u32 GetElementSizeInBytes(std::size_t n) const {
-            return (GetFormat(n) == VertexAttributeFormat::FLOAT)
+            return (GetFormat(n) == VertexAttributeFormat::Float)
                        ? 4
-                       : (GetFormat(n) == VertexAttributeFormat::SHORT) ? 2 : 1;
+                       : (GetFormat(n) == VertexAttributeFormat::Short) ? 2 : 1;
         }
 
         u32 GetStride(std::size_t n) const {

@@ -7,7 +7,7 @@
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir.h"
 #include "core/settings.h"
-#include "video_core/renderer_base.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
 namespace Settings {
@@ -67,7 +67,6 @@ void LogSettings() {
     LogSetting("Camera_OuterLeftFlip", Settings::values.camera_flip[OuterLeftCamera]);
     LogSetting("DataStorage_UseVirtualSd", Settings::values.use_virtual_sd);
     LogSetting("System_RegionValue", Settings::values.region_value);
-    LogSetting("System_EnableNewMode", Settings::values.enable_new_mode);
     LogSetting("Hacks_PriorityBoost", Settings::values.priority_boost);
     LogSetting("Hacks_Ticks", Settings::values.ticks);
     LogSetting("Hacks_TicksMode", static_cast<int>(Settings::values.ticks_mode));

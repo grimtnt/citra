@@ -83,6 +83,8 @@ public:
     Module();
     ~Module();
 
+    bool IsNewModeEnabled();
+
     class Interface : public ServiceFramework<Interface> {
     public:
         Interface(std::shared_ptr<Module> cfg, const char* name, u32 max_session);
@@ -405,5 +407,6 @@ private:
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
 std::shared_ptr<Module> GetCurrentModule();
+bool IsNewModeEnabled();
 
 } // namespace Service::CFG

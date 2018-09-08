@@ -6,22 +6,21 @@
 
 #include <utility>
 #include <vector>
-#include <glad/glad.h>
 #include "common/common_types.h"
-#include "video_core/renderer_opengl/gl_shader_util.h"
-#include "video_core/renderer_opengl/gl_state.h"
+#include "video_core/renderer/shader_util.h"
+#include "video_core/renderer/state.h"
 
-class OGLTexture : private NonCopyable {
+class Texture : private NonCopyable {
 public:
-    OGLTexture() = default;
+    Texture() = default;
 
-    OGLTexture(OGLTexture&& o) : handle(std::exchange(o.handle, 0)) {}
+    Texture(Texture&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLTexture() {
+    ~Texture() {
         Release();
     }
 
-    OGLTexture& operator=(OGLTexture&& o) {
+    Texture& operator=(Texture&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;
@@ -46,17 +45,17 @@ public:
     GLuint handle{};
 };
 
-class OGLSampler : private NonCopyable {
+class Sampler : private NonCopyable {
 public:
-    OGLSampler() = default;
+    Sampler() = default;
 
-    OGLSampler(OGLSampler&& o) : handle(std::exchange(o.handle, 0)) {}
+    Sampler(Sampler&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLSampler() {
+    ~Sampler() {
         Release();
     }
 
-    OGLSampler& operator=(OGLSampler&& o) {
+    Sampler& operator=(Sampler&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;
@@ -81,17 +80,17 @@ public:
     GLuint handle{};
 };
 
-class OGLShader : private NonCopyable {
+class Shader : private NonCopyable {
 public:
-    OGLShader() = default;
+    Shader() = default;
 
-    OGLShader(OGLShader&& o) : handle(std::exchange(o.handle, 0)) {}
+    Shader(Shader&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLShader() {
+    ~Shader() {
         Release();
     }
 
-    OGLShader& operator=(OGLShader&& o) {
+    Shader& operator=(Shader&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;
@@ -115,17 +114,17 @@ public:
     GLuint handle{};
 };
 
-class OGLProgram : private NonCopyable {
+class Program : private NonCopyable {
 public:
-    OGLProgram() = default;
+    Program() = default;
 
-    OGLProgram(OGLProgram&& o) : handle(std::exchange(o.handle, 0)) {}
+    Program(Program&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLProgram() {
+    ~Program() {
         Release();
     }
 
-    OGLProgram& operator=(OGLProgram&& o) {
+    Program& operator=(Program&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;
@@ -140,7 +139,7 @@ public:
 
     /// Creates a new program from given shader soruce code
     void Create(const char* vert_shader, const char* frag_shader) {
-        OGLShader vert, frag;
+        Shader vert, frag;
         vert.Create(vert_shader, GL_VERTEX_SHADER);
         frag.Create(frag_shader, GL_FRAGMENT_SHADER);
         Create(false, {vert.handle, frag.handle});
@@ -158,16 +157,16 @@ public:
     GLuint handle{};
 };
 
-class OGLPipeline : private NonCopyable {
+class Pipeline : private NonCopyable {
 public:
-    OGLPipeline() = default;
-    OGLPipeline(OGLPipeline&& o) {
+    Pipeline() = default;
+    Pipeline(Pipeline&& o) {
         handle = std::exchange<GLuint>(o.handle, 0);
     }
-    ~OGLPipeline() {
+    ~Pipeline() {
         Release();
     }
-    OGLPipeline& operator=(OGLPipeline&& o) {
+    Pipeline& operator=(Pipeline&& o) {
         Release();
         handle = std::exchange<GLuint>(o.handle, 0);
         return *this;
@@ -190,17 +189,17 @@ public:
     GLuint handle{};
 };
 
-class OGLBuffer : private NonCopyable {
+class Buffer : private NonCopyable {
 public:
-    OGLBuffer() = default;
+    Buffer() = default;
 
-    OGLBuffer(OGLBuffer&& o) : handle(std::exchange(o.handle, 0)) {}
+    Buffer(Buffer&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLBuffer() {
+    ~Buffer() {
         Release();
     }
 
-    OGLBuffer& operator=(OGLBuffer&& o) {
+    Buffer& operator=(Buffer&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;
@@ -225,16 +224,16 @@ public:
     GLuint handle{};
 };
 
-class OGLSync : private NonCopyable {
+class Sync : private NonCopyable {
 public:
-    OGLSync() = default;
+    Sync() = default;
 
-    OGLSync(OGLSync&& o) : handle(std::exchange(o.handle, nullptr)) {}
+    Sync(Sync&& o) : handle(std::exchange(o.handle, nullptr)) {}
 
-    ~OGLSync() {
+    ~Sync() {
         Release();
     }
-    OGLSync& operator=(OGLSync&& o) {
+    Sync& operator=(Sync&& o) {
         Release();
         handle = std::exchange(o.handle, nullptr);
         return *this;
@@ -258,17 +257,17 @@ public:
     GLsync handle{};
 };
 
-class OGLVertexArray : private NonCopyable {
+class VertexArray : private NonCopyable {
 public:
-    OGLVertexArray() = default;
+    VertexArray() = default;
 
-    OGLVertexArray(OGLVertexArray&& o) : handle(std::exchange(o.handle, 0)) {}
+    VertexArray(VertexArray&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLVertexArray() {
+    ~VertexArray() {
         Release();
     }
 
-    OGLVertexArray& operator=(OGLVertexArray&& o) {
+    VertexArray& operator=(VertexArray&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;
@@ -293,17 +292,17 @@ public:
     GLuint handle{};
 };
 
-class OGLFramebuffer : private NonCopyable {
+class Framebuffer : private NonCopyable {
 public:
-    OGLFramebuffer() = default;
+    Framebuffer() = default;
 
-    OGLFramebuffer(OGLFramebuffer&& o) : handle(std::exchange(o.handle, 0)) {}
+    Framebuffer(Framebuffer&& o) : handle(std::exchange(o.handle, 0)) {}
 
-    ~OGLFramebuffer() {
+    ~Framebuffer() {
         Release();
     }
 
-    OGLFramebuffer& operator=(OGLFramebuffer&& o) {
+    Framebuffer& operator=(Framebuffer&& o) {
         Release();
         handle = std::exchange(o.handle, 0);
         return *this;

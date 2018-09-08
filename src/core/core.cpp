@@ -16,6 +16,8 @@
 #include "core/hle/kernel/process.h"
 #include "core/hle/kernel/thread.h"
 #include "core/hle/service/am/am.h"
+#include "core/hle/service/cfg/cfg.h"
+#include "core/hle/service/fs/fs_user.h"
 #include "core/hle/service/service.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hw/hw.h"
@@ -155,12 +157,17 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     shutdown_requested = false;
     shell_open = true;
 
+    // Initialize FS and CFG before kernel because kernel uses CFG (and Citra crashes if CFG is
+    // initialized before FS is initialized)
+    Service::FS::ArchiveInit();
+    Service::FS::InstallInterfaces(*service_manager);
+    Service::CFG::InstallInterfaces(*service_manager);
     HW::Init();
     Kernel::Init(system_mode);
     Service::Init(service_manager);
     CheatCore::Init();
 
-    ResultStatus result = VideoCore::Init(emu_window);
+    ResultStatus result{VideoCore::Init(emu_window)};
     if (result != ResultStatus::Success) {
         return result;
     }

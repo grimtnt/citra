@@ -10,14 +10,14 @@
 #include "core/frontend/emu_window.h"
 
 class EmuWindow;
-class RendererBase;
+class Renderer;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Video Core namespace
 
 namespace VideoCore {
 
-extern std::unique_ptr<RendererBase> g_renderer; ///< Renderer plugin
+extern std::unique_ptr<Renderer> g_renderer; ///< Renderer plugin
 
 // TODO: Wrap these in a user settings struct along with any other graphics settings (often set from
 // qt ui)

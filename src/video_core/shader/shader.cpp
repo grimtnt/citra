@@ -16,12 +16,12 @@
 namespace Pica::Shader {
 
 void OutputVertex::ValidateSemantics(const RasterizerRegs& regs) {
-    unsigned int num_attributes = regs.vs_output_total;
+    unsigned int num_attributes{regs.vs_output_total};
     ASSERT(num_attributes <= 7);
     for (std::size_t attrib{}; attrib < num_attributes; ++attrib) {
-        u32 output_register_map = regs.vs_output_attributes[attrib].raw;
+        u32 output_register_map{regs.vs_output_attributes[attrib].raw};
         for (std::size_t comp{}; comp < 4; ++comp) {
-            u32 semantic = (output_register_map >> (8 * comp)) & 0x1F;
+            u32 semantic{(output_register_map >> (8 * comp)) & 0x1F};
             ASSERT_MSG(semantic < 24 || semantic == RasterizerRegs::VSOutputAttributes::INVALID,
                        "Invalid/unknown semantic id: {}", semantic);
         }
@@ -43,9 +43,9 @@ OutputVertex OutputVertex::FromAttributeBuffer(const RasterizerRegs& regs,
     static_assert(sizeof(std::array<float24, 24>) == sizeof(ret),
                   "Struct and array have different sizes.");
 
-    unsigned int num_attributes = regs.vs_output_total & 7;
+    unsigned int num_attributes{regs.vs_output_total & 7};
     for (std::size_t attrib{}; attrib < num_attributes; ++attrib) {
-        const auto output_register_map = regs.vs_output_attributes[attrib];
+        const auto output_register_map{regs.vs_output_attributes[attrib]};
         vertex_slots_overflow[output_register_map.map_x] = input.attr[attrib][0];
         vertex_slots_overflow[output_register_map.map_y] = input.attr[attrib][1];
         vertex_slots_overflow[output_register_map.map_z] = input.attr[attrib][2];
@@ -55,7 +55,7 @@ OutputVertex OutputVertex::FromAttributeBuffer(const RasterizerRegs& regs,
     // The hardware takes the absolute and saturates vertex colors like this, *before* doing
     // interpolation
     for (unsigned i{}; i < 4; ++i) {
-        float c = std::fabs(ret.color[i].ToFloat32());
+        float c{std::fabs(ret.color[i].ToFloat32())};
         ret.color[i] = float24::FromFloat32(c < 1.0f ? c : 1.0f);
     }
 
@@ -107,7 +107,7 @@ void GSEmitter::Emit(Math::Vec4<float24> (&output_regs)[16]) {
     }
 }
 
-GSUnitState::GSUnitState() : UnitState(&emitter) {}
+GSUnitState::GSUnitState() : UnitState{&emitter} {}
 
 void GSUnitState::SetVertexHandler(VertexHandler vertex_handler, WindingSetter winding_setter) {
     emitter.handlers->vertex_handler = std::move(vertex_handler);

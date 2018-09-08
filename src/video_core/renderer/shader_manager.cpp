@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <boost/variant.hpp>
-#include "video_core/renderer_opengl/gl_shader_manager.h"
+#include "video_core/renderer/shader_manager.h"
+#include "video_core/renderer/state.h"
 
 static void SetShaderUniformBlockBinding(GLuint shader, const char* name, UniformBindings binding,
                                          std::size_t expected_size) {
@@ -90,23 +91,23 @@ void PicaUniformsData::SetFromRegs(const Pica::ShaderRegs& regs,
  * An object representing a shader program staging. It can be either a shader object or a program
  * object, depending on whether separable program is used.
  */
-class OGLShaderStage {
+class ShaderStage {
 public:
-    explicit OGLShaderStage(bool separable) {
+    explicit ShaderStage(bool separable) {
         if (separable) {
-            shader_or_program = OGLProgram();
+            shader_or_program = Program();
         } else {
-            shader_or_program = OGLShader();
+            shader_or_program = Shader();
         }
     }
 
     void Create(const char* source, GLenum type) {
         if (shader_or_program.which() == 0) {
-            boost::get<OGLShader>(shader_or_program).Create(source, type);
+            boost::get<Shader>(shader_or_program).Create(source, type);
         } else {
-            OGLShader shader;
+            Shader shader;
             shader.Create(source, type);
-            OGLProgram& program = boost::get<OGLProgram>(shader_or_program);
+            Program& program = boost::get<Program>(shader_or_program);
             program.Create(true, {shader.handle});
             SetShaderUniformBlockBindings(program.handle);
             SetShaderSamplerBindings(program.handle);
@@ -115,14 +116,14 @@ public:
 
     GLuint GetHandle() const {
         if (shader_or_program.which() == 0) {
-            return boost::get<OGLShader>(shader_or_program).handle;
+            return boost::get<Shader>(shader_or_program).handle;
         } else {
-            return boost::get<OGLProgram>(shader_or_program).handle;
+            return boost::get<Program>(shader_or_program).handle;
         }
     }
 
 private:
-    boost::variant<OGLShader, OGLProgram> shader_or_program;
+    boost::variant<Shader, Program> shader_or_program;
 };
 
 class TrivialVertexShader {
@@ -135,7 +136,7 @@ public:
     }
 
 private:
-    OGLShaderStage program;
+    ShaderStage program;
 };
 
 template <typename KeyConfigType, std::string (*CodeGenerator)(const KeyConfigType&, bool),
@@ -144,8 +145,8 @@ class ShaderCache {
 public:
     explicit ShaderCache(bool separable) : separable(separable) {}
     GLuint Get(const KeyConfigType& config) {
-        auto [iter, new_shader] = shaders.emplace(config, OGLShaderStage{separable});
-        OGLShaderStage& cached_shader = iter->second;
+        auto [iter, new_shader] = shaders.emplace(config, ShaderStage{separable});
+        ShaderStage& cached_shader = iter->second;
         if (new_shader) {
             cached_shader.Create(CodeGenerator(config, separable).c_str(), ShaderType);
         }
@@ -154,7 +155,7 @@ public:
 
 private:
     bool separable;
-    std::unordered_map<KeyConfigType, OGLShaderStage> shaders;
+    std::unordered_map<KeyConfigType, ShaderStage> shaders;
 };
 
 // This is a cache designed for shaders translated from PICA shaders. The first cache matches the
@@ -179,8 +180,8 @@ public:
             }
 
             std::string& program = program_opt.get();
-            auto [iter, new_shader] = shader_cache.emplace(program, OGLShaderStage{separable});
-            OGLShaderStage& cached_shader = iter->second;
+            auto [iter, new_shader] = shader_cache.emplace(program, ShaderStage{separable});
+            ShaderStage& cached_shader = iter->second;
             if (new_shader) {
                 cached_shader.Create(program.c_str(), ShaderType);
             }
@@ -197,8 +198,8 @@ public:
 
 private:
     bool separable;
-    std::unordered_map<KeyConfigType, OGLShaderStage*> shader_map;
-    std::unordered_map<std::string, OGLShaderStage> shader_cache;
+    std::unordered_map<KeyConfigType, ShaderStage*> shader_map;
+    std::unordered_map<std::string, ShaderStage> shader_cache;
 };
 
 using ProgrammableVertexShaders =
@@ -262,8 +263,8 @@ public:
     FragmentShaders fragment_shaders;
 
     bool separable;
-    std::unordered_map<ShaderTuple, OGLProgram, ShaderTuple::Hash> program_cache;
-    OGLPipeline pipeline;
+    std::unordered_map<ShaderTuple, Program, ShaderTuple::Hash> program_cache;
+    Pipeline pipeline;
 };
 
 ShaderProgramManager::ShaderProgramManager(bool separable, bool is_amd)
@@ -323,7 +324,7 @@ void ShaderProgramManager::ApplyTo(OpenGLState& state) {
         state.draw.shader_program = 0;
         state.draw.program_pipeline = impl->pipeline.handle;
     } else {
-        OGLProgram& cached_program = impl->program_cache[impl->current];
+        Program& cached_program = impl->program_cache[impl->current];
         if (cached_program.handle == 0) {
             cached_program.Create(false, {impl->current.vs, impl->current.gs, impl->current.fs});
             SetShaderUniformBlockBindings(cached_program.handle);

@@ -295,13 +295,17 @@ void ConfigureSystem::ReadSystemSettings() {
     u64 console_id{cfg->GetConsoleUniqueId()};
     ui->label_console_id->setText(
         QString("Console ID: 0x%1").arg(QString::number(console_id, 16).toUpper()));
+
+    // set the region
+    // The first item is "auto-select" with actual value -1, so plus one here will do the trick
+    ui->region_combobox->setCurrentIndex(Settings::values.region_value + 1);
 }
 
 void ConfigureSystem::applyConfiguration() {
     if (!enabled)
         return;
 
-    bool modified = false;
+    bool modified{};
 
     // apply username
     std::u16string new_username{ui->edit_username->text().toStdU16String()};
@@ -346,13 +350,14 @@ void ConfigureSystem::applyConfiguration() {
         modified = true;
     }
 
-    // update the config savegame if any item is modified.
+    // update the config savegame if any item except region is modified.
     if (modified)
         cfg->UpdateConfigNANDSavegame();
 
     Settings::values.init_clock =
         static_cast<Settings::InitClock>(ui->combo_init_clock->currentIndex());
     Settings::values.init_time = ui->edit_init_time->dateTime().toTime_t();
+    Settings::values.region_value = ui->region_combobox->currentIndex() - 1;
     Settings::Apply();
 }
 

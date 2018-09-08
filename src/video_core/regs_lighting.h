@@ -5,7 +5,6 @@
 #pragma once
 
 #include <array>
-
 #include "common/assert.h"
 #include "common/bit_field.h"
 #include "common/common_funcs.h"
@@ -26,7 +25,7 @@ struct LightingRegs {
         DistanceAttenuation = 16,
     };
 
-    static constexpr unsigned NumLightingSampler = 24;
+    static constexpr unsigned NumLightingSampler{24};
 
     static LightingSampler SpotlightAttenuationSampler(unsigned index) {
         return static_cast<LightingSampler>(

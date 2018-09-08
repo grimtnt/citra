@@ -845,7 +845,7 @@ void Module::Interface::IsStandardMemoryLayout(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    if (Settings::values.enable_new_mode)
+    if (CFG::IsNewModeEnabled())
         rb.Push<u32>((ConfigMem::config_mem.app_mem_type != 7) ? 1 : 0);
     else
         rb.Push<u32>((ConfigMem::config_mem.app_mem_type == 0) ? 1 : 0);

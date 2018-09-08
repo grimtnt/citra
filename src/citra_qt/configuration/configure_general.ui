@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>338</width>
-    <height>441</height>
+    <width>227</width>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,65 +24,6 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QCheckBox" name="toggle_check_exit">
-            <property name="text">
-             <string>Confirm exit while emulation is running</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="toggle_new_mode">
-            <property name="text">
-             <string>Enable New Mode</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="toggle_console">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this is disabled and the software keyboard implementation is StdIn, Citra will freeze when a title starts software keyboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Show Console</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout_sd_card_root">
-            <item>
-             <widget class="QLabel" name="label_sd_card_root">
-              <property name="text">
-               <string>SD card root</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="sd_card_root">
-              <property name="toolTip">
-               <string>Empty for user directory/sdmc</string>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="button_sd_card_root_empty">
-              <property name="text">
-               <string>Empty</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="button_sd_card_root">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
           <item>
            <layout class="QHBoxLayout" name="layout_keyboard_mode">
             <item>
@@ -122,61 +63,6 @@
             </item>
            </layout>
           </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Region</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="region_combobox">
-              <item>
-               <property name="text">
-                <string>Auto-select</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">JPN</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">USA</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">EUR</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">AUS</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">CHN</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">KOR</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string notr="true">TWN</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
-          </item>
          </layout>
         </item>
        </layout>
@@ -188,6 +74,16 @@
         <string>Logging</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <widget class="QCheckBox" name="toggle_console">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this is disabled and the software keyboard implementation is StdIn, Citra will freeze when a title starts software keyboard.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Show Console</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>

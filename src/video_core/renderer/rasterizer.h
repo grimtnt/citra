@@ -4,60 +4,56 @@
 
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <cstring>
 #include <memory>
 #include <vector>
-#include <glad/glad.h>
 #include "common/bit_field.h"
 #include "common/common_types.h"
 #include "common/vector_math.h"
 #include "core/hw/gpu.h"
 #include "video_core/pica_state.h"
 #include "video_core/pica_types.h"
-#include "video_core/rasterizer_interface.h"
 #include "video_core/regs_framebuffer.h"
 #include "video_core/regs_lighting.h"
 #include "video_core/regs_rasterizer.h"
 #include "video_core/regs_texturing.h"
-#include "video_core/renderer_opengl/gl_rasterizer_cache.h"
-#include "video_core/renderer_opengl/gl_resource_manager.h"
-#include "video_core/renderer_opengl/gl_shader_manager.h"
-#include "video_core/renderer_opengl/gl_state.h"
-#include "video_core/renderer_opengl/gl_stream_buffer.h"
-#include "video_core/renderer_opengl/pica_to_gl.h"
+#include "video_core/renderer/pica_to_gl.h"
+#include "video_core/renderer/rasterizer_cache.h"
+#include "video_core/renderer/resource_manager.h"
+#include "video_core/renderer/shader_manager.h"
+#include "video_core/renderer/stream_buffer.h"
 #include "video_core/shader/shader.h"
 
 class EmuWindow;
-struct ScreenInfo;
 class ShaderProgramManager;
+struct ScreenInfo;
 
-class RasterizerOpenGL : public VideoCore::RasterizerInterface {
+class Rasterizer {
 public:
-    explicit RasterizerOpenGL(EmuWindow& renderer);
-    ~RasterizerOpenGL() override;
+    explicit Rasterizer(EmuWindow& render_window);
+    ~Rasterizer();
 
     void AddTriangle(const Pica::Shader::OutputVertex& v0, const Pica::Shader::OutputVertex& v1,
-                     const Pica::Shader::OutputVertex& v2) override;
-    void DrawTriangles() override;
-    void NotifyPicaRegisterChanged(u32 id) override;
-    void FlushAll() override;
-    void FlushRegion(PAddr addr, u32 size) override;
-    void InvalidateRegion(PAddr addr, u32 size) override;
-    void FlushAndInvalidateRegion(PAddr addr, u32 size) override;
-    bool AccelerateDisplayTransfer(const GPU::Regs::DisplayTransferConfig& config) override;
-    bool AccelerateTextureCopy(const GPU::Regs::DisplayTransferConfig& config) override;
-    bool AccelerateFill(const GPU::Regs::MemoryFillConfig& config) override;
+                     const Pica::Shader::OutputVertex& v2);
+    void DrawTriangles();
+    void NotifyPicaRegisterChanged(u32 id);
+    void FlushAll();
+    void FlushRegion(PAddr addr, u32 size);
+    void InvalidateRegion(PAddr addr, u32 size);
+    void FlushAndInvalidateRegion(PAddr addr, u32 size);
+    bool AccelerateDisplayTransfer(const GPU::Regs::DisplayTransferConfig& config);
+    bool AccelerateTextureCopy(const GPU::Regs::DisplayTransferConfig& config);
+    bool AccelerateFill(const GPU::Regs::MemoryFillConfig& config);
     bool AccelerateDisplay(const GPU::Regs::FramebufferConfig& config, PAddr framebuffer_addr,
-                           u32 pixel_stride, ScreenInfo& screen_info) override;
-    bool AccelerateDrawBatch(bool is_indexed) override;
+                           u32 pixel_stride, ScreenInfo& screen_info);
+    bool AccelerateDrawBatch(bool is_indexed);
 
 private:
     struct SamplerInfo {
         using TextureConfig = Pica::TexturingRegs::TextureConfig;
 
-        OGLSampler sampler;
+        Sampler sampler;
 
         /// Creates the sampler object, initializing its state so that it's in sync with the
         /// SamplerInfo struct.
@@ -248,7 +244,7 @@ private:
 
     OpenGLState state;
 
-    RasterizerCacheOpenGL res_cache;
+    RasterizerCache res_cache;
 
     EmuWindow& emu_window;
 
@@ -277,16 +273,16 @@ private:
     static constexpr std::size_t UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
     static constexpr std::size_t TEXTURE_BUFFER_SIZE = 1 * 1024 * 1024;
 
-    OGLVertexArray sw_vao; // VAO for software shader draw
-    OGLVertexArray hw_vao; // VAO for hardware shader / accelerate draw
+    VertexArray sw_vao; // VAO for software shader draw
+    VertexArray hw_vao; // VAO for hardware shader / accelerate draw
     std::array<bool, 16> hw_vao_enabled_attributes{};
 
     std::array<SamplerInfo, 3> texture_samplers;
-    OGLStreamBuffer vertex_buffer;
-    OGLStreamBuffer uniform_buffer;
-    OGLStreamBuffer index_buffer;
-    OGLStreamBuffer texture_buffer;
-    OGLFramebuffer framebuffer;
+    StreamBuffer vertex_buffer;
+    StreamBuffer uniform_buffer;
+    StreamBuffer index_buffer;
+    StreamBuffer texture_buffer;
+    Framebuffer framebuffer;
     GLint uniform_buffer_alignment;
     std::size_t uniform_size_aligned_vs;
     std::size_t uniform_size_aligned_gs;
@@ -294,8 +290,8 @@ private:
 
     SamplerInfo texture_cube_sampler;
 
-    OGLTexture texture_buffer_lut_rg;
-    OGLTexture texture_buffer_lut_rgba;
+    Texture texture_buffer_lut_rg;
+    Texture texture_buffer_lut_rgba;
 
     std::array<std::array<GLvec2, 256>, Pica::LightingRegs::NumLightingSampler> lighting_lut_data{};
     std::array<GLvec2, 128> fog_lut_data{};

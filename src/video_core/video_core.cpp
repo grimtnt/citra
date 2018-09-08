@@ -6,8 +6,7 @@
 #include "common/logging/log.h"
 #include "core/settings.h"
 #include "video_core/pica.h"
-#include "video_core/renderer_base.h"
-#include "video_core/renderer_opengl/renderer_opengl.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,7 +14,7 @@
 
 namespace VideoCore {
 
-std::unique_ptr<RendererBase> g_renderer; ///< Renderer plugin
+std::unique_ptr<Renderer> g_renderer; ///< Renderer plugin
 
 std::atomic<bool> g_hw_shader_enabled;
 std::atomic<bool> g_hw_shader_accurate_gs;
@@ -31,7 +30,7 @@ Layout::FramebufferLayout g_screenshot_framebuffer_layout;
 Core::System::ResultStatus Init(EmuWindow& emu_window) {
     Pica::Init();
 
-    g_renderer = std::make_unique<RendererOpenGL>(emu_window);
+    g_renderer = std::make_unique<Renderer>(emu_window);
     Core::System::ResultStatus result = g_renderer->Init();
 
     if (result != Core::System::ResultStatus::Success) {

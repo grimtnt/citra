@@ -180,7 +180,8 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Data Storage");
     Settings::values.use_virtual_sd = qt_config->value("use_virtual_sd", true).toBool();
-    Settings::values.sd_card_root = qt_config->value("sd_card_root", "").toString().toStdString();
+    Settings::values.sd_card_directory =
+        qt_config->value("sd_card_directory", "").toString().toStdString();
     qt_config->endGroup();
 
     qt_config->beginGroup("System");
@@ -189,7 +190,8 @@ void Config::ReadValues() {
     Settings::values.init_clock = static_cast<Settings::InitClock>(
         qt_config->value("init_clock", static_cast<u32>(Settings::InitClock::SystemTime)).toInt());
     Settings::values.init_time = qt_config->value("init_time", 946681277ULL).toULongLong();
-    Settings::values.enable_new_mode = qt_config->value("enable_new_mode", false).toBool();
+    Settings::values.memory_developer_mode =
+        qt_config->value("memory_developer_mode", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");
@@ -263,7 +265,6 @@ void Config::ReadValues() {
     UISettings::values.display_titlebar = qt_config->value("displayTitleBars", true).toBool();
     UISettings::values.show_filter_bar = qt_config->value("showFilterBar", true).toBool();
     UISettings::values.show_status_bar = qt_config->value("showStatusBar", true).toBool();
-    UISettings::values.confirm_before_closing = qt_config->value("confirmClose", true).toBool();
     UISettings::values.show_console = qt_config->value("showConsole", false).toBool();
 
     qt_config->beginGroup("Multiplayer");
@@ -368,14 +369,15 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Data Storage");
     qt_config->setValue("use_virtual_sd", Settings::values.use_virtual_sd);
-    qt_config->setValue("sd_card_root", QString::fromStdString(Settings::values.sd_card_root));
+    qt_config->setValue("sd_card_directory",
+                        QString::fromStdString(Settings::values.sd_card_directory));
     qt_config->endGroup();
 
     qt_config->beginGroup("System");
     qt_config->setValue("region_value", Settings::values.region_value);
     qt_config->setValue("init_clock", static_cast<u32>(Settings::values.init_clock));
     qt_config->setValue("init_time", static_cast<unsigned long long>(Settings::values.init_time));
-    qt_config->setValue("enable_new_mode", Settings::values.enable_new_mode);
+    qt_config->setValue("memory_developer_mode", Settings::values.memory_developer_mode);
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");
@@ -426,7 +428,6 @@ void Config::SaveValues() {
     qt_config->setValue("displayTitleBars", UISettings::values.display_titlebar);
     qt_config->setValue("showFilterBar", UISettings::values.show_filter_bar);
     qt_config->setValue("showStatusBar", UISettings::values.show_status_bar);
-    qt_config->setValue("confirmClose", UISettings::values.confirm_before_closing);
     qt_config->setValue("showConsole", UISettings::values.show_console);
 
     qt_config->beginGroup("Multiplayer");

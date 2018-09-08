@@ -689,9 +689,9 @@ void GameListWorker::run() {
             // Add normal titles
             {
                 QString path{QString::fromStdString(
-                    (Settings::values.sd_card_root.empty()
+                    (Settings::values.sd_card_directory.empty()
                          ? FileUtil::GetUserPath(D_SDMC_IDX)
-                         : std::string(Settings::values.sd_card_root + "/")) +
+                         : std::string(Settings::values.sd_card_directory + "/")) +
                     "Nintendo "
                     "3DS/00000000000000000000000000000000/"
                     "00000000000000000000000000000000/title/00040000")};
@@ -704,9 +704,9 @@ void GameListWorker::run() {
             // Add demos
             {
                 QString path{QString::fromStdString(
-                    (Settings::values.sd_card_root.empty()
+                    (Settings::values.sd_card_directory.empty()
                          ? FileUtil::GetUserPath(D_SDMC_IDX)
-                         : std::string(Settings::values.sd_card_root + "/")) +
+                         : std::string(Settings::values.sd_card_directory + "/")) +
                     "Nintendo "
                     "3DS/00000000000000000000000000000000/"
                     "00000000000000000000000000000000/title/00040002")};

@@ -51,7 +51,7 @@
 #include "core/loader/loader.h"
 #include "core/movie.h"
 #include "core/settings.h"
-#include "video_core/renderer_base.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
 #ifdef QT_STATICPLUGIN
@@ -365,6 +365,13 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Load_File, &QAction::triggered, this, &GMainWindow::OnMenuLoadFile);
     connect(ui.action_Install_CIA, &QAction::triggered, this, &GMainWindow::OnMenuInstallCIA);
     connect(ui.action_Exit, &QAction::triggered, this, &QMainWindow::close);
+    connect(ui.action_Select_SD_Card_Directory, &QAction::triggered, this, [&] {
+        QString dir{QFileDialog::getExistingDirectory(this, "Set SD Card Directory", ".")};
+        if (dir.isEmpty())
+            return;
+        Settings::values.sd_card_directory = dir.toStdString();
+        game_list->PopulateAsync(UISettings::values.game_dirs);
+    });
 
     // Emulation
     connect(ui.action_Start, &QAction::triggered, this, &GMainWindow::OnStartGame);
@@ -378,8 +385,8 @@ void GMainWindow::ConnectMenuEvents() {
         QString path{QFileDialog::getSaveFileName(this, "Save RAM Dump", ".")};
         if (path.isEmpty())
             return;
-        FileUtil::IOFile file(path.toStdString(), "wb");
-        u8* ram = new u8[0x08000000];
+        FileUtil::IOFile file{path.toStdString(), "wb"};
+        u8* ram{new u8[0x08000000]};
         Memory::ReadBlock(0x08000000, ram, 0x08000000);
         file.WriteBytes(ram, 0x08000000);
         delete[] ram;
@@ -667,6 +674,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Stop->setEnabled(false);
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
+    ui.action_Select_SD_Card_Directory->setEnabled(true);
     ui.action_Dump_RAM->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(false);
@@ -806,9 +814,9 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
     switch (target) {
     case GameListOpenTarget::SAVE_DATA: {
         open_target = "Save Data";
-        std::string sdmc_dir = Settings::values.sd_card_root.empty()
+        std::string sdmc_dir = Settings::values.sd_card_directory.empty()
                                    ? FileUtil::GetUserPath(D_SDMC_IDX)
-                                   : Settings::values.sd_card_root + "/";
+                                   : Settings::values.sd_card_directory + "/";
         path = FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(sdmc_dir, program_id);
         break;
     }
@@ -845,9 +853,9 @@ void GMainWindow::OnGameListOpenDirectory(QString directory) {
     QString path{};
     if (directory == "INSTALLED") {
         path = QString::fromStdString(
-            (Settings::values.sd_card_root.empty()
+            (Settings::values.sd_card_directory.empty()
                  ? FileUtil::GetUserPath(D_SDMC_IDX)
-                 : std::string(Settings::values.sd_card_root + "/")) +
+                 : std::string(Settings::values.sd_card_directory + "/")) +
             "Nintendo "
             "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000");
     } else if (directory == "SYSTEM") {
@@ -996,6 +1004,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Stop->setEnabled(true);
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
+    ui.action_Select_SD_Card_Directory->setEnabled(false);
     ui.action_Dump_RAM->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(true);
@@ -1135,7 +1144,6 @@ void GMainWindow::OnConfigure() {
             UpdateUITheme();
             emit UpdateThemedIcons();
         }
-        game_list->PopulateAsync(UISettings::values.game_dirs);
         SyncMenuUISettings();
         config->Save();
     }
@@ -1341,12 +1349,17 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
         break;
     }
 
-    default:
+    case Core::System::ResultStatus::FatalError: {
         title = "Fatal Error";
         message = "A fatal error occured. Check the log for details.<br/>To access the log, "
                   "Click Open Log Location in the general tab of the configuration "
                   "window.<br/>Continuing emulation may result in crashes and bugs.";
         status_message = "Fatal Error encountered";
+        break;
+    }
+
+    default:
+        UNREACHABLE_MSG("Unknown result status");
         break;
     }
 
@@ -1385,7 +1398,7 @@ void GMainWindow::OnMenuAboutCitra() {
 }
 
 bool GMainWindow::ConfirmClose() {
-    if (emu_thread == nullptr || !UISettings::values.confirm_before_closing)
+    if (emu_thread == nullptr)
         return true;
 
     QMessageBox::StandardButton answer{

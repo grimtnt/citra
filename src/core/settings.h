@@ -126,13 +126,13 @@ struct Values {
 
     // Data Storage
     bool use_virtual_sd;
-    std::string sd_card_root;
+    std::string sd_card_directory;
 
     // System
     int region_value;
     InitClock init_clock;
     u64 init_time;
-    bool enable_new_mode;
+    bool memory_developer_mode;
 
     // Renderer
     bool use_hw_shader;

@@ -58,10 +58,10 @@ struct PrimitiveAssembler {
 private:
     PipelineRegs::TriangleTopology topology;
 
-    int buffer_index;
+    int buffer_index{};
     VertexType buffer[2];
-    bool strip_ready = false;
-    bool winding = false;
+    bool strip_ready{};
+    bool winding{};
 };
 
 } // namespace Pica

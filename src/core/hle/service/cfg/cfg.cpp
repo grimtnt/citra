@@ -114,6 +114,7 @@ static const std::vector<u8> cfg_system_savedata_id = {
 };
 
 static std::weak_ptr<Module> current_cfg;
+static bool new_mode_enabled{};
 
 std::shared_ptr<Module> GetCurrentModule() {
     auto cfg{current_cfg.lock()};
@@ -590,6 +591,13 @@ Module::Module() {
 
 Module::~Module() = default;
 
+bool Module::IsNewModeEnabled() {
+    SystemModel model{GetSystemModel()};
+    if (model == NEW_NINTENDO_2DS_XL || model == NEW_NINTENDO_3DS || model == NEW_NINTENDO_3DS_XL)
+        return true;
+    return false;
+}
+
 /// Checks if the language is available in the chosen region, and returns a proper one
 static SystemLanguage AdjustLanguageInfoBlock(u32 region, SystemLanguage language) {
     static const std::array<std::vector<SystemLanguage>, 7> region_languages{{
@@ -739,6 +747,11 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<CFG_U>(cfg)->InstallAsService(service_manager);
     std::make_shared<CFG_NOR>()->InstallAsService(service_manager);
     current_cfg = cfg;
+    new_mode_enabled = cfg->IsNewModeEnabled();
+}
+
+bool IsNewModeEnabled() {
+    return new_mode_enabled;
 }
 
 } // namespace Service::CFG

@@ -123,7 +123,7 @@ void EmuWindow::TouchMoved(unsigned framebuffer_x, unsigned framebuffer_y) {
 }
 
 void EmuWindow::UpdateCurrentFramebufferLayout(unsigned width, unsigned height) {
-    Layout::FramebufferLayout layout;
+    Layout::FramebufferLayout layout{};
     if (Settings::values.custom_layout == true) {
         layout = Layout::CustomFrameLayout(width, height);
     } else {

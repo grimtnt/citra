@@ -49,8 +49,6 @@ struct Values {
     bool show_filter_bar;
     bool show_status_bar;
 
-    bool confirm_before_closing;
-
     u16 screenshot_resolution_factor;
 
     QList<UISettings::GameDir> game_dirs;

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <array>
 #include <list>
 #include <memory>
 #include <set>
@@ -20,7 +19,6 @@
 #endif
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
-#include <glad/glad.h>
 #include "common/assert.h"
 #include "common/common_funcs.h"
 #include "common/common_types.h"
@@ -28,7 +26,7 @@
 #include "core/hw/gpu.h"
 #include "video_core/regs_framebuffer.h"
 #include "video_core/regs_texturing.h"
-#include "video_core/renderer_opengl/gl_resource_manager.h"
+#include "video_core/renderer/resource_manager.h"
 #include "video_core/texture/texture_decode.h"
 
 struct CachedSurface;
@@ -288,7 +286,7 @@ public:
 private:
     friend struct CachedSurface;
     std::weak_ptr<CachedSurface> surface;
-    bool valid = false;
+    bool valid{};
 };
 
 struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface> {
@@ -303,13 +301,13 @@ struct CachedSurface : SurfaceParams, std::enable_shared_from_this<CachedSurface
         return (invalid_regions & GetInterval()) == SurfaceRegions(GetInterval());
     }
 
-    bool registered = false;
+    bool registered{};
     SurfaceRegions invalid_regions;
 
     u32 fill_size{}; /// Number of bytes to read from fill_data
     std::array<u8, 4> fill_data;
 
-    OGLTexture texture;
+    Texture texture;
 
     static constexpr unsigned int GetGLBytesPerPixel(PixelFormat format) {
         // OpenGL needs 4 bpp alignment for D24 since using GL_UNSIGNED_INT as type
@@ -390,7 +388,7 @@ struct hash<TextureCubeConfig> {
 } // namespace std
 
 struct CachedTextureCube {
-    OGLTexture texture;
+    Texture texture;
     u16 res_scale = 1;
     std::shared_ptr<SurfaceWatcher> px;
     std::shared_ptr<SurfaceWatcher> nx;
@@ -400,10 +398,10 @@ struct CachedTextureCube {
     std::shared_ptr<SurfaceWatcher> nz;
 };
 
-class RasterizerCacheOpenGL : NonCopyable {
+class RasterizerCache : NonCopyable {
 public:
-    RasterizerCacheOpenGL();
-    ~RasterizerCacheOpenGL();
+    RasterizerCache();
+    ~RasterizerCache();
 
     /// Blit one surface's texture to another
     bool BlitSurfaces(const Surface& src_surface, const MathUtil::Rectangle<u32>& src_rect,
@@ -474,13 +472,13 @@ private:
     SurfaceMap dirty_regions;
     SurfaceSet remove_surfaces;
 
-    OGLFramebuffer read_framebuffer;
-    OGLFramebuffer draw_framebuffer;
+    Framebuffer read_framebuffer;
+    Framebuffer draw_framebuffer;
 
-    OGLVertexArray attributeless_vao;
-    OGLBuffer d24s8_abgr_buffer;
+    VertexArray attributeless_vao;
+    Buffer d24s8_abgr_buffer;
     GLsizeiptr d24s8_abgr_buffer_size;
-    OGLProgram d24s8_abgr_shader;
+    Program d24s8_abgr_shader;
     GLint d24s8_abgr_tbo_size_u_id;
     GLint d24s8_abgr_viewport_u_id;
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>284</width>
-    <height>277</height>
+    <width>293</width>
+    <height>306</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,13 @@
           </property>
           <property name="text">
            <string>Enable Priority Boost</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="toggle_memory_developer_mode">
+          <property name="text">
+           <string>Enable Memory Developer Mode</string>
           </property>
          </widget>
         </item>

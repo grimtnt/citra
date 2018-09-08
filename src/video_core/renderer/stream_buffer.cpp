@@ -6,11 +6,11 @@
 #include <vector>
 #include "common/alignment.h"
 #include "common/assert.h"
-#include "video_core/renderer_opengl/gl_state.h"
-#include "video_core/renderer_opengl/gl_stream_buffer.h"
+#include "video_core/renderer/state.h"
+#include "video_core/renderer/stream_buffer.h"
 
-OGLStreamBuffer::OGLStreamBuffer(GLenum target, GLsizeiptr size, bool array_buffer_for_amd,
-                                 bool prefer_coherent)
+StreamBuffer::StreamBuffer(GLenum target, GLsizeiptr size, bool array_buffer_for_amd,
+                           bool prefer_coherent)
     : gl_target(target), buffer_size(size) {
     gl_buffer.Create();
     glBindBuffer(gl_target, gl_buffer.handle);
@@ -38,7 +38,7 @@ OGLStreamBuffer::OGLStreamBuffer(GLenum target, GLsizeiptr size, bool array_buff
     }
 }
 
-OGLStreamBuffer::~OGLStreamBuffer() {
+StreamBuffer::~StreamBuffer() {
     if (persistent) {
         glBindBuffer(gl_target, gl_buffer.handle);
         glUnmapBuffer(gl_target);
@@ -46,15 +46,15 @@ OGLStreamBuffer::~OGLStreamBuffer() {
     gl_buffer.Release();
 }
 
-GLuint OGLStreamBuffer::GetHandle() const {
+GLuint StreamBuffer::GetHandle() const {
     return gl_buffer.handle;
 }
 
-GLsizeiptr OGLStreamBuffer::GetSize() const {
+GLsizeiptr StreamBuffer::GetSize() const {
     return buffer_size;
 }
 
-std::tuple<u8*, GLintptr, bool> OGLStreamBuffer::Map(GLsizeiptr size, GLintptr alignment) {
+std::tuple<u8*, GLintptr, bool> StreamBuffer::Map(GLsizeiptr size, GLintptr alignment) {
     ASSERT(size <= buffer_size);
     ASSERT(alignment <= buffer_size);
     mapped_size = size;
@@ -86,7 +86,7 @@ std::tuple<u8*, GLintptr, bool> OGLStreamBuffer::Map(GLsizeiptr size, GLintptr a
     return std::make_tuple(mapped_ptr + buffer_pos - mapped_offset, buffer_pos, invalidate);
 }
 
-void OGLStreamBuffer::Unmap(GLsizeiptr size) {
+void StreamBuffer::Unmap(GLsizeiptr size) {
     ASSERT(size <= mapped_size);
 
     if (!coherent && size > 0) {

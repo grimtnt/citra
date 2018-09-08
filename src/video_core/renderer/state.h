@@ -1,4 +1,4 @@
-// Copyright 2015 Citra Emulator Project
+// Copyright 2018 Citra Emulator Project
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
@@ -6,6 +6,8 @@
 
 #include <array>
 #include <glad/glad.h>
+#include "common/common_funcs.h"
+#include "common/logging/log.h"
 
 namespace TextureUnits {
 
@@ -145,7 +147,7 @@ public:
 
     OpenGLState();
 
-    /// Get the currently active OpenGL state
+    /// Get the currently active state
     static OpenGLState GetCurState() {
         return cur_state;
     }

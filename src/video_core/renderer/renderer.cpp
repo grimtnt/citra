@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <memory>
-#include <glad/glad.h>
 #include "common/assert.h"
 #include "common/bit_field.h"
 #include "common/logging/log.h"
@@ -18,9 +17,8 @@
 #include "core/hw/lcd.h"
 #include "core/memory.h"
 #include "core/settings.h"
-#include "video_core/rasterizer_interface.h"
-#include "video_core/renderer_opengl/gl_rasterizer.h"
-#include "video_core/renderer_opengl/renderer_opengl.h"
+#include "video_core/renderer/rasterizer.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
 constexpr char vertex_shader[]{R"(
@@ -93,14 +91,14 @@ static std::array<GLfloat, 6> MakeOrthographicMatrix(const float width, const fl
     return matrix;
 }
 
-RendererOpenGL::RendererOpenGL(EmuWindow& window)
-    : RendererBase{window, std::make_unique<RasterizerOpenGL>(window)} {}
+Renderer::Renderer(EmuWindow& window)
+    : render_window{window}, rasterizer{std::make_unique<Rasterizer>(window)} {}
 
-RendererOpenGL::~RendererOpenGL() = default;
+Renderer::~Renderer() = default;
 
 /// Swap buffers (render frame)
-void RendererOpenGL::SwapBuffers() {
-    // Maintain the rasterizer's state as a priority
+void Renderer::SwapBuffers() {
+    // Maintain the rasterizer's OpenGLState as a priority
     OpenGLState prev_state{OpenGLState::GetCurState()};
     state.Apply();
 
@@ -188,8 +186,8 @@ void RendererOpenGL::SwapBuffers() {
 /**
  * Loads framebuffer from emulated memory into the active OpenGL texture.
  */
-void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& framebuffer,
-                                        ScreenInfo& screen_info, bool right_eye) {
+void Renderer::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& framebuffer,
+                                  ScreenInfo& screen_info, bool right_eye) {
 
     if (framebuffer.address_right1 == 0 || framebuffer.address_right2 == 0)
         right_eye = false;
@@ -199,7 +197,7 @@ void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& fram
             ? (!right_eye ? framebuffer.address_left1 : framebuffer.address_right1)
             : (!right_eye ? framebuffer.address_left2 : framebuffer.address_right2)};
 
-    LOG_TRACE(Render_OpenGL, "0x{:08x} bytes from 0x{:08x}({:x}{}), fmt {}",
+    LOG_TRACE(Render, "0x{:08x} bytes from 0x{:08x}({:x}{}), fmt {}",
               framebuffer.stride * framebuffer.height, framebuffer_addr, (int)framebuffer.width,
               (int)framebuffer.height, (int)framebuffer.format);
 
@@ -213,8 +211,8 @@ void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& fram
     // only allows rows to have a memory alignement of 4.
     ASSERT(pixel_stride % 4 == 0);
 
-    if (!Rasterizer()->AccelerateDisplay(framebuffer, framebuffer_addr,
-                                         static_cast<u32>(pixel_stride), screen_info)) {
+    if (!rasterizer->AccelerateDisplay(framebuffer, framebuffer_addr,
+                                       static_cast<u32>(pixel_stride), screen_info)) {
         // Reset the screen info's display texture to its own permanent texture
         screen_info.display_texture = screen_info.texture.resource.handle;
         screen_info.display_texcoords = MathUtil::Rectangle<float>(0.f, 0.f, 1.f, 1.f);
@@ -249,8 +247,8 @@ void RendererOpenGL::LoadFBToScreenInfo(const GPU::Regs::FramebufferConfig& fram
  * Fills active OpenGL texture with the given RGB color. Since the color is solid, the texture can
  * be 1x1 but will stretch across whatever it's rendered on.
  */
-void RendererOpenGL::LoadColorToActiveGLTexture(u8 color_r, u8 color_g, u8 color_b,
-                                                const TextureInfo& texture) {
+void Renderer::LoadColorToActiveGLTexture(u8 color_r, u8 color_g, u8 color_b,
+                                          const TextureInfo& texture) {
     state.texture_units[0].texture_2d = texture.resource.handle;
     state.Apply();
 
@@ -265,9 +263,9 @@ void RendererOpenGL::LoadColorToActiveGLTexture(u8 color_r, u8 color_g, u8 color
 }
 
 /**
- * Initializes the OpenGL state and creates persistent objects.
+ * Initializes the OpenGL OpenGLState and creates persistent objects.
  */
-void RendererOpenGL::InitOpenGLObjects() {
+void Renderer::InitOpenGLObjects() {
     // Link shaders and get variable locations
     shader.Create(vertex_shader, fragment_shader);
     state.draw.shader_program = shader.handle;
@@ -321,8 +319,8 @@ void RendererOpenGL::InitOpenGLObjects() {
     state.Apply();
 }
 
-void RendererOpenGL::ConfigureFramebufferTexture(TextureInfo& texture,
-                                                 const GPU::Regs::FramebufferConfig& framebuffer) {
+void Renderer::ConfigureFramebufferTexture(TextureInfo& texture,
+                                           const GPU::Regs::FramebufferConfig& framebuffer) {
     GPU::Regs::PixelFormat format{framebuffer.color_format};
     GLint internal_format{};
 
@@ -384,8 +382,8 @@ void RendererOpenGL::ConfigureFramebufferTexture(TextureInfo& texture,
  * Draws a single texture to the emulator window, rotating the texture to correct for the 3DS's LCD
  * rotation.
  */
-void RendererOpenGL::DrawSingleScreenRotated(const ScreenInfo& screen_info, float x, float y,
-                                             float w, float h) {
+void Renderer::DrawSingleScreenRotated(const ScreenInfo& screen_info, float x, float y, float w,
+                                       float h) {
     auto& texcoords = screen_info.display_texcoords;
 
     std::array<ScreenRectVertex, 4> vertices = {{
@@ -408,7 +406,7 @@ void RendererOpenGL::DrawSingleScreenRotated(const ScreenInfo& screen_info, floa
 /**
  * Draws the emulated screens to the emulator window.
  */
-void RendererOpenGL::DrawScreens(const Layout::FramebufferLayout& layout) {
+void Renderer::DrawScreens(const Layout::FramebufferLayout& layout) {
     if (VideoCore::g_renderer_bg_color_update_requested.exchange(false)) {
         // Update background color before drawing
         glClearColor(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue,
@@ -513,12 +511,11 @@ static void APIENTRY DebugHandler(GLenum source, GLenum type, GLuint id, GLenum 
         level = Log::Level::Debug;
         break;
     }
-    LOG_GENERIC(Render_OpenGL, level, "{} {} {}: {}", GetSource(source), GetType(type), id,
-                message);
+    LOG_GENERIC(Render, level, "{} {} {}: {}", GetSource(source), GetType(type), id, message);
 }
 
 /// Initialize the renderer
-Core::System::ResultStatus RendererOpenGL::Init() {
+Core::System::ResultStatus Renderer::Init() {
     render_window.MakeCurrent();
 
     if (GLAD_GL_KHR_debug) {
@@ -530,9 +527,9 @@ Core::System::ResultStatus RendererOpenGL::Init() {
     const char* gpu_vendor{reinterpret_cast<char const*>(glGetString(GL_VENDOR))};
     const char* gpu_model{reinterpret_cast<char const*>(glGetString(GL_RENDERER))};
 
-    LOG_INFO(Render_OpenGL, "GL_VERSION: {}", gl_version);
-    LOG_INFO(Render_OpenGL, "GL_VENDOR: {}", gpu_vendor);
-    LOG_INFO(Render_OpenGL, "GL_RENDERER: {}", gpu_model);
+    LOG_INFO(Render, "GL_VERSION: {}", gl_version);
+    LOG_INFO(Render, "GL_VENDOR: {}", gpu_vendor);
+    LOG_INFO(Render, "GL_RENDERER: {}", gpu_model);
 
     if (gpu_vendor == "GDI Generic") {
         return Core::System::ResultStatus::ErrorVideoCore_ErrorGenericDrivers;
@@ -545,4 +542,13 @@ Core::System::ResultStatus RendererOpenGL::Init() {
     InitOpenGLObjects();
 
     return Core::System::ResultStatus::Success;
+}
+
+void Renderer::UpdateCurrentFramebufferLayout() {
+    const Layout::FramebufferLayout& layout{render_window.GetFramebufferLayout()};
+    render_window.UpdateCurrentFramebufferLayout(layout.width, layout.height);
+}
+
+Rasterizer* Renderer::GetRasterizer() {
+    return rasterizer.get();
 }

@@ -5,11 +5,10 @@
 #pragma once
 
 #include <memory>
-#include <glad/glad.h>
 #include "video_core/regs_lighting.h"
-#include "video_core/renderer_opengl/gl_resource_manager.h"
-#include "video_core/renderer_opengl/gl_shader_gen.h"
-#include "video_core/renderer_opengl/pica_to_gl.h"
+#include "video_core/renderer/pica_to_gl.h"
+#include "video_core/renderer/resource_manager.h"
+#include "video_core/renderer/shader_gen.h"
 
 enum class UniformBindings : GLuint { Common, VS, GS };
 

@@ -92,7 +92,7 @@ void DSP_DSP::WriteProcessPipe(Kernel::HLERequestContext& ctx) {
     const u32 size{rp.Pop<u32>()};
     auto buffer{rp.PopStaticBuffer()};
 
-    const DspPipe pipe = static_cast<DspPipe>(channel);
+    const DspPipe pipe{static_cast<DspPipe>(channel)};
 
     // This behaviour was confirmed by RE.
     // The likely reason for this is that games tend to pass in garbage at these bytes
@@ -127,14 +127,17 @@ void DSP_DSP::ReadPipe(Kernel::HLERequestContext& ctx) {
     const u32 peer{rp.Pop<u32>()};
     const u16 size{rp.Pop<u16>()};
 
-    const DspPipe pipe = static_cast<DspPipe>(channel);
-    const u16 pipe_readable_size = static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe));
+    const DspPipe pipe{static_cast<DspPipe>(channel)};
+    const u16 pipe_readable_size{static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe))};
 
     std::vector<u8> pipe_buffer;
     if (pipe_readable_size >= size)
         pipe_buffer = Core::DSP().PipeRead(pipe, size);
-    else
-        UNREACHABLE(); // No more data is in pipe. Hardware hangs in this case; Should never happen.
+    else {
+        // No more data is in pipe. Hardware hangs in this case. we emulate the hang
+        for (;;)
+            ;
+    }
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
@@ -149,8 +152,8 @@ void DSP_DSP::GetPipeReadableSize(Kernel::HLERequestContext& ctx) {
     const u32 channel{rp.Pop<u32>()};
     const u32 peer{rp.Pop<u32>()};
 
-    const DspPipe pipe = static_cast<DspPipe>(channel);
-    const u16 pipe_readable_size = static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe));
+    const DspPipe pipe{static_cast<DspPipe>(channel)};
+    const u16 pipe_readable_size{static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe))};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -166,10 +169,10 @@ void DSP_DSP::ReadPipeIfPossible(Kernel::HLERequestContext& ctx) {
     const u32 peer{rp.Pop<u32>()};
     const u16 size{rp.Pop<u16>()};
 
-    const DspPipe pipe = static_cast<DspPipe>(channel);
-    const u16 pipe_readable_size = static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe));
+    const DspPipe pipe{static_cast<DspPipe>(channel)};
+    const u16 pipe_readable_size{static_cast<u16>(Core::DSP().GetPipeReadableSize(pipe))};
 
-    std::vector<u8> pipe_buffer;
+    std::vector<u8> pipe_buffer{};
     if (pipe_readable_size >= size)
         pipe_buffer = Core::DSP().PipeRead(pipe, size);
 
@@ -254,8 +257,8 @@ void DSP_DSP::RegisterInterruptEvents(Kernel::HLERequestContext& ctx) {
     ASSERT_MSG(interrupt < NUM_INTERRUPT_TYPE && channel < AudioCore::num_dsp_pipe,
                "Invalid type or pipe: interrupt = {}, channel = {}", interrupt, channel);
 
-    const InterruptType type = static_cast<InterruptType>(interrupt);
-    const DspPipe pipe = static_cast<DspPipe>(channel);
+    const InterruptType type{static_cast<InterruptType>(interrupt)};
+    const DspPipe pipe{static_cast<DspPipe>(channel)};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
@@ -337,7 +340,7 @@ void DSP_DSP::GetIsDspOccupied(Kernel::HLERequestContext& ctx) {
 void DSP_DSP::SignalInterrupt(InterruptType type, DspPipe pipe) {
     LOG_DEBUG(Service_DSP, "called, type={}, pipe={}", static_cast<u32>(type),
               static_cast<u32>(pipe));
-    const auto& event = GetInterruptEvent(type, pipe);
+    const auto& event{GetInterruptEvent(type, pipe)};
     if (event)
         event->Signal();
 }
@@ -349,7 +352,7 @@ Kernel::SharedPtr<Kernel::Event>& DSP_DSP::GetInterruptEvent(InterruptType type,
     case InterruptType::One:
         return interrupt_one;
     case InterruptType::Pipe: {
-        const std::size_t pipe_index = static_cast<std::size_t>(pipe);
+        const std::size_t pipe_index{static_cast<std::size_t>(pipe)};
         ASSERT(pipe_index < AudioCore::num_dsp_pipe);
         return pipes[pipe_index];
     }
@@ -358,8 +361,8 @@ Kernel::SharedPtr<Kernel::Event>& DSP_DSP::GetInterruptEvent(InterruptType type,
 }
 
 bool DSP_DSP::HasTooManyEventsRegistered() const {
-    std::size_t number =
-        std::count_if(pipes.begin(), pipes.end(), [](const auto& evt) { return evt != nullptr; });
+    std::size_t number{static_cast<std::size_t>(
+        std::count_if(pipes.begin(), pipes.end(), [](const auto& evt) { return evt != nullptr; }))};
 
     if (interrupt_zero != nullptr)
         number++;

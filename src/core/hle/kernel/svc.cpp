@@ -33,13 +33,14 @@
 #include "core/hle/kernel/wait_object.h"
 #include "core/hle/lock.h"
 #include "core/hle/result.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/service.h"
 #include "core/settings.h"
 
 namespace Kernel {
 
-static bool enable_higher_core_clock{false};
-static bool enable_additional_cache{false};
+static bool enable_higher_core_clock{};
+static bool enable_additional_cache{};
 
 enum ControlMemoryOperation {
     MEMOP_FREE = 1,
@@ -144,6 +145,77 @@ static ResultCode ControlMemory(u32* out_addr, u32 operation, u32 addr0, u32 add
 
     process.vm_manager.LogLayout(Log::Level::Trace);
 
+    return RESULT_SUCCESS;
+}
+
+/// Map application memory
+static ResultCode ControlProcessMemory(Handle process, u32 addr0, u32 addr1, u32 size, u32 type,
+                                       u32 permissions) {
+    LOG_INFO(Kernel_SVC, "process={}, addr0={}, addr1={}, size={}, type={}, permissions={}",
+             static_cast<u32>(process), addr0, addr1, size, type, permissions);
+    if ((addr0 & Memory::PAGE_MASK) != 0 || (addr1 & Memory::PAGE_MASK) != 0) {
+        return ERR_MISALIGNED_ADDRESS;
+    }
+    if ((size & Memory::PAGE_MASK) != 0) {
+        return ERR_MISALIGNED_SIZE;
+    }
+    if ((permissions & (u32)MemoryPermission::ReadWrite) != permissions) {
+        return ERR_INVALID_COMBINATION;
+    }
+    VMAPermission vma_permissions{(VMAPermission)permissions};
+    auto& p{*GetProcessById(process)};
+    switch (type & MEMOP_OPERATION_MASK) {
+    case MEMOP_MAP: {
+        // TODO: This is just a hack to avoid regressions until memory aliasing is implemented
+        p.HeapAllocate(addr0, size, vma_permissions);
+        break;
+    }
+    case MEMOP_UNMAP: {
+        // TODO: This is just a hack to avoid regressions until memory aliasing is implemented
+        ResultCode result{p.HeapFree(addr0, size)};
+        if (result.IsError())
+            return result;
+        break;
+    }
+    case MEMOP_PROTECT: {
+        ResultCode result{p.vm_manager.ReprotectRange(addr0, size, vma_permissions)};
+        if (result.IsError())
+            return result;
+        break;
+    }
+    default:
+        LOG_ERROR(Kernel_SVC, "unknown type=0x{:08X}", type);
+        return ERR_INVALID_COMBINATION;
+    }
+    p.vm_manager.LogLayout(Log::Level::Trace);
+    return RESULT_SUCCESS;
+}
+
+/// Map application memory
+static ResultCode MapProcessMemory(Handle process, u32 start_addr, u32 size) {
+    LOG_INFO(Kernel, "process={}, start_addr={}, size={}", static_cast<u32>(process), start_addr,
+             size);
+    if ((size & Memory::PAGE_MASK) != 0) {
+        return ERR_MISALIGNED_SIZE;
+    }
+    auto& p{*GetProcessById(process)};
+    p.HeapAllocate(start_addr, size, VMAPermission::ReadWrite);
+    p.vm_manager.LogLayout(Log::Level::Trace);
+    return RESULT_SUCCESS;
+}
+
+/// Unmap application memory
+static ResultCode UnmapProcessMemory(Handle process, u32 start_addr, u32 size) {
+    LOG_INFO(Kernel, "process={}, start_addr={}, size={}", static_cast<u32>(process), start_addr,
+             size);
+    if ((size & Memory::PAGE_MASK) != 0) {
+        return ERR_MISALIGNED_SIZE;
+    }
+    auto& p{*GetProcessById(process)};
+    ResultCode result{p.HeapFree(start_addr, size)};
+    if (result.IsError())
+        return result;
+    p.vm_manager.LogLayout(Log::Level::Trace);
     return RESULT_SUCCESS;
 }
 
@@ -259,6 +331,29 @@ static ResultCode SendSyncRequest(Handle handle) {
     Core::System::GetInstance().PrepareReschedule();
 
     return session->SendSyncRequest(GetCurrentThread());
+}
+
+/// Opens a process
+static ResultCode OpenProcess(Handle* process, u32 process_id) {
+    auto ptr = GetProcessById(process_id);
+    if (!ptr)
+        return ERR_NOT_FOUND;
+    *process = ptr->process_id;
+    return RESULT_SUCCESS;
+}
+/// Opens a thread
+static ResultCode OpenThread(Handle* thread, Handle process, u32 thread_id) {
+    const auto& thread_list = GetThreadList();
+    auto itr =
+        std::find_if(thread_list.begin(), thread_list.end(), [&](const SharedPtr<Thread>& thread) {
+            bool check1 = thread->thread_id == thread_id;
+            bool check2 = thread->owner_process->process_id == process;
+            return check1 && check2;
+        });
+    if (itr == thread_list.end())
+        return ERR_NOT_FOUND;
+    *thread = (*itr)->thread_id;
+    return RESULT_SUCCESS;
 }
 
 /// Close a handle
@@ -1188,7 +1283,7 @@ static ResultCode GetSystemInfo(s64* out, u32 type, s32 param) {
         }
         break;
     case SystemInfoType::KERNEL_SPAWNED_PIDS:
-        *out = 5;
+        *out = GetProcessListSize();
         break;
     default:
         LOG_ERROR(Kernel_SVC, "unknown GetSystemInfo type={} param={}", type, param);
@@ -1262,8 +1357,8 @@ ResultCode KernelSetState(u32 type, u32 param0, u32 param1, u32 param2) {
         break;
     }
     case KernelSetStateType::ConfigureNew3DSCPU: {
-        enable_higher_core_clock = (Settings::values.enable_new_mode && param0 & 0x00000001);
-        enable_additional_cache = (Settings::values.enable_new_mode && (param0 >> 1) & 0x00000001);
+        enable_higher_core_clock = (Service::CFG::IsNewModeEnabled() && param0 & 0x00000001);
+        enable_additional_cache = (Service::CFG::IsNewModeEnabled() && (param0 >> 1) & 0x00000001);
         LOG_TRACE(Kernel_SVC, "called, enable_higher_core_clock={}, enable_additional_cache={}",
                   enable_higher_core_clock, enable_additional_cache);
         break;
@@ -1339,8 +1434,8 @@ static const FunctionDef SVC_Table[] = {
     {0x30, nullptr, "SendSyncRequest3"},
     {0x31, nullptr, "SendSyncRequest4"},
     {0x32, HLE::Wrap<SendSyncRequest>, "SendSyncRequest"},
-    {0x33, nullptr, "OpenProcess"},
-    {0x34, nullptr, "OpenThread"},
+    {0x33, HLE::Wrap<OpenProcess>, "OpenProcess"},
+    {0x34, HLE::Wrap<OpenThread>, "OpenThread"},
     {0x35, HLE::Wrap<GetProcessId>, "GetProcessId"},
     {0x36, HLE::Wrap<GetProcessIdOfThread>, "GetProcessIdOfThread"},
     {0x37, HLE::Wrap<GetThreadId>, "GetThreadId"},
@@ -1400,9 +1495,9 @@ static const FunctionDef SVC_Table[] = {
     {0x6D, nullptr, "GetDebugThreadParam"},
     {0x6E, nullptr, "Unknown"},
     {0x6F, nullptr, "Unknown"},
-    {0x70, nullptr, "ControlProcessMemory"},
-    {0x71, nullptr, "MapProcessMemory"},
-    {0x72, nullptr, "UnmapProcessMemory"},
+    {0x70, HLE::Wrap<ControlProcessMemory>, "ControlProcessMemory"},
+    {0x71, HLE::Wrap<MapProcessMemory>, "MapProcessMemory"},
+    {0x72, HLE::Wrap<UnmapProcessMemory>, "UnmapProcessMemory"},
     {0x73, nullptr, "CreateCodeSet"},
     {0x74, nullptr, "RandomStub"},
     {0x75, nullptr, "CreateProcess"},

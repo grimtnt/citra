@@ -5,7 +5,7 @@
 #include "video_core/geometry_pipeline.h"
 #include "video_core/pica_state.h"
 #include "video_core/regs.h"
-#include "video_core/renderer_base.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
 namespace Pica {
@@ -44,7 +44,7 @@ public:
         ASSERT(regs.pipeline.variable_primitive == 0);
         ASSERT(regs.gs.input_to_uniform == 0);
         vs_output_num = regs.pipeline.vs_outmap_total_minus_1_a + 1;
-        std::size_t gs_input_num = regs.gs.max_input_attribute_index + 1;
+        std::size_t gs_input_num{regs.gs.max_input_attribute_index + 1};
         ASSERT(gs_input_num % vs_output_num == 0);
         buffer_cur = attribute_buffer.attr;
         buffer_end = attribute_buffer.attr + gs_input_num;
@@ -105,7 +105,7 @@ public:
         DEBUG_ASSERT(need_index);
 
         // The number of vertex input is put to the uniform register
-        float24 vertex_num = float24::FromFloat32(static_cast<float>(val));
+        float24 vertex_num{float24::FromFloat32(static_cast<float>(val))};
         setup.uniforms.f[0] = Math::MakeVec(vertex_num, vertex_num, vertex_num, vertex_num);
 
         // The second uniform register and so on are used for receiving input vertices
@@ -137,12 +137,12 @@ public:
     }
 
 private:
-    bool need_index = true;
+    bool need_index{true};
     const Regs& regs;
     Shader::ShaderSetup& setup;
     unsigned int main_vertex_num;
     unsigned int total_vertex_num;
-    Math::Vec4<float24>* buffer_cur;
+    Math::Vec4<float24>* buffer_cur{};
     unsigned int vs_output_num;
 };
 
@@ -152,12 +152,12 @@ private:
 class GeometryPipeline_FixedPrimitive : public GeometryPipelineBackend {
 public:
     GeometryPipeline_FixedPrimitive(const Regs& regs, Shader::ShaderSetup& setup)
-        : regs(regs), setup(setup) {
+        : regs{regs}, setup{setup} {
         ASSERT(regs.pipeline.variable_primitive == 0);
         ASSERT(regs.gs.input_to_uniform == 1);
         vs_output_num = regs.pipeline.vs_outmap_total_minus_1_a + 1;
         ASSERT(vs_output_num == regs.pipeline.gs_config.stride_minus_1 + 1);
-        std::size_t vertex_num = regs.pipeline.gs_config.fixed_vertex_num_minus_1 + 1;
+        std::size_t vertex_num{regs.pipeline.gs_config.fixed_vertex_num_minus_1 + 1};
         buffer_cur = buffer_begin = setup.uniforms.f + regs.pipeline.gs_config.start_index;
         buffer_end = buffer_begin + vs_output_num * vertex_num;
     }

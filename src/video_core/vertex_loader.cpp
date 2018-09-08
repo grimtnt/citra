@@ -76,37 +76,37 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
     for (int i{}; i < num_total_attributes; ++i) {
         if (vertex_attribute_elements[i] != 0) {
             // Load per-vertex data from the loader arrays
-            u32 source_addr =
-                base_address + vertex_attribute_sources[i] + vertex_attribute_strides[i] * vertex;
+            u32 source_addr{base_address + vertex_attribute_sources[i] +
+                            vertex_attribute_strides[i] * vertex};
 
             switch (vertex_attribute_formats[i]) {
-            case PipelineRegs::VertexAttributeFormat::BYTE: {
-                const s8* srcdata =
-                    reinterpret_cast<const s8*>(Memory::GetPhysicalPointer(source_addr));
+            case PipelineRegs::VertexAttributeFormat::Byte: {
+                const s8* srcdata{
+                    reinterpret_cast<const s8*>(Memory::GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;
             }
-            case PipelineRegs::VertexAttributeFormat::UBYTE: {
-                const u8* srcdata =
-                    reinterpret_cast<const u8*>(Memory::GetPhysicalPointer(source_addr));
+            case PipelineRegs::VertexAttributeFormat::UnsignedByte: {
+                const u8* srcdata{
+                    reinterpret_cast<const u8*>(Memory::GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;
             }
-            case PipelineRegs::VertexAttributeFormat::SHORT: {
-                const s16* srcdata =
-                    reinterpret_cast<const s16*>(Memory::GetPhysicalPointer(source_addr));
+            case PipelineRegs::VertexAttributeFormat::Short: {
+                const s16* srcdata{
+                    reinterpret_cast<const s16*>(Memory::GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
                 break;
             }
-            case PipelineRegs::VertexAttributeFormat::FLOAT: {
-                const float* srcdata =
-                    reinterpret_cast<const float*>(Memory::GetPhysicalPointer(source_addr));
+            case PipelineRegs::VertexAttributeFormat::Float: {
+                const float* srcdata{
+                    reinterpret_cast<const float*>(Memory::GetPhysicalPointer(source_addr))};
                 for (unsigned int comp{}; comp < vertex_attribute_elements[i]; ++comp) {
                     input.attr[i][comp] = float24::FromFloat32(srcdata[comp]);
                 }
@@ -117,7 +117,7 @@ void VertexLoader::LoadVertex(u32 base_address, int index, int vertex,
             // Default attribute values set if array elements have < 4 components. This
             // is *not* carried over from the default attribute settings even if they're
             // enabled for this attribute.
-            for (unsigned int comp = vertex_attribute_elements[i]; comp < 4; ++comp) {
+            for (unsigned int comp{vertex_attribute_elements[i]}; comp < 4; ++comp) {
                 input.attr[i][comp] =
                     comp == 3 ? float24::FromFloat32(1.0f) : float24::FromFloat32(0.0f);
             }

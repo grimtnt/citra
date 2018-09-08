@@ -231,10 +231,10 @@ struct ShaderSetup {
     }
 
 private:
-    bool program_code_hash_dirty = true;
-    bool swizzle_data_hash_dirty = true;
-    u64 program_code_hash = 0xDEADC0DE;
-    u64 swizzle_data_hash = 0xDEADC0DE;
+    bool program_code_hash_dirty{true};
+    bool swizzle_data_hash_dirty{true};
+    u64 program_code_hash{0xDEADC0DE};
+    u64 swizzle_data_hash{0xDEADC0DE};
 };
 
 class ShaderEngine {

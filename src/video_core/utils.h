@@ -39,12 +39,12 @@ static inline u32 GetMortonOffset(u32 x, u32 y, u32 bytes_per_pixel) {
     //
     // This pattern is what's called Z-order curve, or Morton order.
 
-    const unsigned int block_height = 8;
-    const unsigned int coarse_x = x & ~7;
+    const unsigned int block_height{8};
+    const unsigned int coarse_x{x & ~7};
 
-    u32 i = VideoCore::MortonInterleave(x, y);
+    u32 i{VideoCore::MortonInterleave(x, y)};
 
-    const unsigned int offset = coarse_x * block_height;
+    const unsigned int offset{coarse_x * block_height};
 
     return (i + offset) * bytes_per_pixel;
 }

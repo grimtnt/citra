@@ -16,8 +16,7 @@
 #include "core/hw/hw.h"
 #include "core/memory.h"
 #include "video_core/command_processor.h"
-#include "video_core/rasterizer_interface.h"
-#include "video_core/renderer_base.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/utils.h"
 #include "video_core/video_core.h"
 
@@ -91,7 +90,7 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
     u8* start{Memory::GetPhysicalPointer(start_addr)};
     u8* end{Memory::GetPhysicalPointer(end_addr)};
 
-    if (VideoCore::g_renderer->Rasterizer()->AccelerateFill(config))
+    if (VideoCore::g_renderer->GetRasterizer()->AccelerateFill(config))
         return;
 
     Memory::RasterizerInvalidateRegion(config.GetStartAddress(),
@@ -155,7 +154,7 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
         return;
     }
 
-    if (VideoCore::g_renderer->Rasterizer()->AccelerateDisplayTransfer(config))
+    if (VideoCore::g_renderer->GetRasterizer()->AccelerateDisplayTransfer(config))
         return;
 
     u8* src_pointer = Memory::GetPhysicalPointer(src_addr);
@@ -314,7 +313,7 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
         return;
     }
 
-    if (VideoCore::g_renderer->Rasterizer()->AccelerateTextureCopy(config))
+    if (VideoCore::g_renderer->GetRasterizer()->AccelerateTextureCopy(config))
         return;
 
     u8* src_pointer = Memory::GetPhysicalPointer(src_addr);

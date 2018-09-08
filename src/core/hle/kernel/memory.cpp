@@ -10,13 +10,13 @@
 #include <vector>
 #include "common/assert.h"
 #include "common/common_types.h"
-#include "common/file_util.h"
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/hle/config_mem.h"
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/vm_manager.h"
 #include "core/hle/result.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/memory.h"
 #include "core/memory_setup.h"
 #include "core/settings.h"
@@ -44,8 +44,8 @@ static const u32 memory_region_sizes[8][3] = {
 };
 
 void MemoryInit(u32 mem_type) {
-    if (Settings::values.enable_new_mode) {
-        if (FileUtil::Exists(FileUtil::GetUserPath(D_USER_IDX) + ".dev")) {
+    if (Service::CFG::IsNewModeEnabled()) {
+        if (Settings::values.memory_developer_mode) {
             mem_type = 7;
         } else if (mem_type <= 5) {
             mem_type = 6;

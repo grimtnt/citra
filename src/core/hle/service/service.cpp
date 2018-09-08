@@ -234,15 +234,12 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     MIC::InstallInterfaces(*sm);
     NWM::InstallInterfaces(*sm);
 
-    FS::InstallInterfaces(*sm);
-    FS::ArchiveInit();
     ACT::InstallInterfaces(*sm);
     AM::InstallInterfaces(*sm);
     APT::InstallInterfaces(*sm);
     BOSS::InstallInterfaces(*sm);
     CAM::InstallInterfaces(*sm);
     CECD::InstallInterfaces(*sm);
-    CFG::InstallInterfaces(*sm);
     DLP::InstallInterfaces(*sm);
     DSP::InstallInterfaces(*sm);
     FRD::InstallInterfaces(*sm);

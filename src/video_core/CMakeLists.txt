@@ -9,7 +9,6 @@ add_library(video_core STATIC
     pica_types.h
     primitive_assembly.cpp
     primitive_assembly.h
-    rasterizer_interface.h
     regs.h
     regs_framebuffer.h
     regs_lighting.h
@@ -17,28 +16,26 @@ add_library(video_core STATIC
     regs_rasterizer.h
     regs_shader.h
     regs_texturing.h
-    renderer_base.cpp
-    renderer_base.h
-    renderer_opengl/gl_rasterizer.cpp
-    renderer_opengl/gl_rasterizer.h
-    renderer_opengl/gl_rasterizer_cache.cpp
-    renderer_opengl/gl_rasterizer_cache.h
-    renderer_opengl/gl_resource_manager.h
-    renderer_opengl/gl_shader_decompiler.cpp
-    renderer_opengl/gl_shader_decompiler.h
-    renderer_opengl/gl_shader_gen.cpp
-    renderer_opengl/gl_shader_gen.h
-    renderer_opengl/gl_shader_manager.cpp
-    renderer_opengl/gl_shader_manager.h
-    renderer_opengl/gl_shader_util.cpp
-    renderer_opengl/gl_shader_util.h
-    renderer_opengl/gl_state.cpp
-    renderer_opengl/gl_state.h
-    renderer_opengl/gl_stream_buffer.cpp
-    renderer_opengl/gl_stream_buffer.h
-    renderer_opengl/pica_to_gl.h
-    renderer_opengl/renderer_opengl.cpp
-    renderer_opengl/renderer_opengl.h
+    renderer/state.cpp
+    renderer/state.h
+    renderer/renderer.cpp
+    renderer/renderer.h
+    renderer/rasterizer.cpp
+    renderer/rasterizer.h
+    renderer/rasterizer_cache.cpp
+    renderer/rasterizer_cache.h
+    renderer/resource_manager.h
+    renderer/shader_decompiler.cpp
+    renderer/shader_decompiler.h
+    renderer/shader_gen.cpp
+    renderer/shader_gen.h
+    renderer/shader_manager.cpp
+    renderer/shader_manager.h
+    renderer/shader_util.cpp
+    renderer/shader_util.h
+    renderer/stream_buffer.cpp
+    renderer/stream_buffer.h
+    renderer/pica_to_gl.h
     shader/shader.cpp
     shader/shader.h
     shader/shader_jit_x64.cpp
@@ -58,5 +55,4 @@ add_library(video_core STATIC
 
 create_target_directory_groups(video_core)
 
-target_link_libraries(video_core PUBLIC common core xbyak)
-target_link_libraries(video_core PRIVATE glad nihstro-headers)
+target_link_libraries(video_core PUBLIC common core xbyak glad nihstro-headers)

@@ -312,9 +312,9 @@ public:
     QVariant data(int role) const override {
         if (role == Qt::DisplayRole) {
             std::string path, filename, extension;
-            std::string sdmc_root = Settings::values.sd_card_root.empty()
+            std::string sdmc_root = Settings::values.sd_card_directory.empty()
                                         ? FileUtil::GetUserPath(D_SDMC_IDX)
-                                        : Settings::values.sd_card_root + "/";
+                                        : Settings::values.sd_card_directory + "/";
             Common::SplitPath(data(FullPathRole).toString().toStdString(), &path, &filename,
                               &extension);
             QString title = data(TitleRole).toString();

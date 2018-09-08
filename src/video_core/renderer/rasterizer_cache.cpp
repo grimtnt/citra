@@ -3,7 +3,6 @@
 // Refer to the license.txt file included.
 
 #include <algorithm>
-#include <array>
 #include <atomic>
 #include <cstring>
 #include <iterator>
@@ -13,7 +12,6 @@
 #include <vector>
 #include <boost/optional.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <glad/glad.h>
 #include "common/alignment.h"
 #include "common/bit_field.h"
 #include "common/color.h"
@@ -25,9 +23,9 @@
 #include "core/memory.h"
 #include "core/settings.h"
 #include "video_core/pica_state.h"
-#include "video_core/renderer_base.h"
-#include "video_core/renderer_opengl/gl_rasterizer_cache.h"
-#include "video_core/renderer_opengl/gl_state.h"
+#include "video_core/renderer/rasterizer_cache.h"
+#include "video_core/renderer/renderer.h"
+#include "video_core/renderer/state.h"
 #include "video_core/utils.h"
 #include "video_core/video_core.h"
 
@@ -585,8 +583,8 @@ SurfaceInterval SurfaceParams::GetCopyableInterval(const Surface& src_surface) c
     return result;
 }
 
-void RasterizerCacheOpenGL::CopySurface(const Surface& src_surface, const Surface& dst_surface,
-                                        SurfaceInterval copy_interval) {
+void RasterizerCache::CopySurface(const Surface& src_surface, const Surface& dst_surface,
+                                  SurfaceInterval copy_interval) {
     SurfaceParams subrect_params{dst_surface->FromInterval(copy_interval)};
     ASSERT(subrect_params.GetInterval() == copy_interval);
 
@@ -664,8 +662,8 @@ void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
                 }
             }
         } else {
-            morton_to_gl_fns[static_cast<std::size_t>(pixel_format)](stride, height, &gl_buffer[0], addr,
-                                                                load_start, load_end);
+            morton_to_gl_fns[static_cast<std::size_t>(pixel_format)](stride, height, &gl_buffer[0],
+                                                                     addr, load_start, load_end);
         }
     }
 }
@@ -707,8 +705,8 @@ void CachedSurface::FlushGLBuffer(PAddr flush_start, PAddr flush_end) {
         ASSERT(type == SurfaceType::Color);
         std::memcpy(dst_buffer + start_offset, &gl_buffer[start_offset], flush_end - flush_start);
     } else {
-        gl_to_morton_fns[static_cast<std::size_t>(pixel_format)](stride, height, &gl_buffer[0], addr,
-                                                            flush_start, flush_end);
+        gl_to_morton_fns[static_cast<std::size_t>(pixel_format)](stride, height, &gl_buffer[0],
+                                                                 addr, flush_start, flush_end);
     }
 }
 
@@ -729,7 +727,7 @@ void CachedSurface::UploadGLTexture(const MathUtil::Rectangle<u32>& rect, GLuint
 
     // If not 1x scale, create 1x texture that we will blit from to replace texture subrect in
     // surface
-    OGLTexture unscaled_tex{};
+    Texture unscaled_tex{};
     if (res_scale != 1) {
         x0 = 0;
         y0 = 0;
@@ -792,7 +790,8 @@ void CachedSurface::DownloadGLTexture(const MathUtil::Rectangle<u32>& rect, GLui
     // Ensure no bad interactions with GL_PACK_ALIGNMENT
     ASSERT(stride * GetGLBytesPerPixel(pixel_format) % 4 == 0);
     glPixelStorei(GL_PACK_ROW_LENGTH, static_cast<GLint>(stride));
-    std::size_t buffer_offset{(rect.bottom * stride + rect.left) * GetGLBytesPerPixel(pixel_format)};
+    std::size_t buffer_offset{(rect.bottom * stride + rect.left) *
+                              GetGLBytesPerPixel(pixel_format)};
 
     // If not 1x scale, blit scaled texture to a new 1x texture and use that to flush
     if (res_scale != 1) {
@@ -802,7 +801,7 @@ void CachedSurface::DownloadGLTexture(const MathUtil::Rectangle<u32>& rect, GLui
         scaled_rect.right *= res_scale;
         scaled_rect.bottom *= res_scale;
 
-        OGLTexture unscaled_tex{};
+        Texture unscaled_tex{};
         unscaled_tex.Create();
 
         MathUtil::Rectangle<u32> unscaled_tex_rect{0, rect.GetHeight(), rect.GetWidth(), 0};
@@ -945,7 +944,7 @@ Surface FindMatch(const SurfaceCache& surface_cache, const SurfaceParams& params
     return match_surface;
 }
 
-RasterizerCacheOpenGL::RasterizerCacheOpenGL() {
+RasterizerCache::RasterizerCache() {
     read_framebuffer.Create();
     draw_framebuffer.Create();
 
@@ -996,16 +995,16 @@ void main() {
     ASSERT(d24s8_abgr_viewport_u_id != -1);
 }
 
-RasterizerCacheOpenGL::~RasterizerCacheOpenGL() {
+RasterizerCache::~RasterizerCache() {
     FlushAll();
     while (!surface_cache.empty())
         UnregisterSurface(*surface_cache.begin()->second.begin());
 }
 
-bool RasterizerCacheOpenGL::BlitSurfaces(const Surface& src_surface,
-                                         const MathUtil::Rectangle<u32>& src_rect,
-                                         const Surface& dst_surface,
-                                         const MathUtil::Rectangle<u32>& dst_rect) {
+bool RasterizerCache::BlitSurfaces(const Surface& src_surface,
+                                   const MathUtil::Rectangle<u32>& src_rect,
+                                   const Surface& dst_surface,
+                                   const MathUtil::Rectangle<u32>& dst_rect) {
     if (!SurfaceParams::CheckFormatsBlittable(src_surface->pixel_format, dst_surface->pixel_format))
         return false;
 
@@ -1016,10 +1015,8 @@ bool RasterizerCacheOpenGL::BlitSurfaces(const Surface& src_surface,
                         draw_framebuffer.handle);
 }
 
-void RasterizerCacheOpenGL::ConvertD24S8toABGR(GLuint src_tex,
-                                               const MathUtil::Rectangle<u32>& src_rect,
-                                               GLuint dst_tex,
-                                               const MathUtil::Rectangle<u32>& dst_rect) {
+void RasterizerCache::ConvertD24S8toABGR(GLuint src_tex, const MathUtil::Rectangle<u32>& src_rect,
+                                         GLuint dst_tex, const MathUtil::Rectangle<u32>& dst_rect) {
     OpenGLState prev_state{OpenGLState::GetCurState()};
     SCOPE_EXIT({ prev_state.Apply(); });
 
@@ -1055,7 +1052,7 @@ void RasterizerCacheOpenGL::ConvertD24S8toABGR(GLuint src_tex,
     state.viewport.height = static_cast<GLsizei>(dst_rect.GetHeight());
     state.Apply();
 
-    OGLTexture tbo{};
+    Texture tbo{};
     tbo.Create();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_BUFFER, tbo.handle);
@@ -1074,8 +1071,8 @@ void RasterizerCacheOpenGL::ConvertD24S8toABGR(GLuint src_tex,
     glBindTexture(GL_TEXTURE_BUFFER, 0);
 }
 
-Surface RasterizerCacheOpenGL::GetSurface(const SurfaceParams& params, ScaleMatch match_res_scale,
-                                          bool load_if_create) {
+Surface RasterizerCache::GetSurface(const SurfaceParams& params, ScaleMatch match_res_scale,
+                                    bool load_if_create) {
     if (params.addr == 0 || params.height * params.width == 0) {
         return nullptr;
     }
@@ -1122,9 +1119,9 @@ Surface RasterizerCacheOpenGL::GetSurface(const SurfaceParams& params, ScaleMatc
     return surface;
 }
 
-SurfaceRect_Tuple RasterizerCacheOpenGL::GetSurfaceSubRect(const SurfaceParams& params,
-                                                           ScaleMatch match_res_scale,
-                                                           bool load_if_create) {
+SurfaceRect_Tuple RasterizerCache::GetSurfaceSubRect(const SurfaceParams& params,
+                                                     ScaleMatch match_res_scale,
+                                                     bool load_if_create) {
     if (params.addr == 0 || params.height * params.width == 0) {
         return std::make_tuple(nullptr, MathUtil::Rectangle<u32>{});
     }
@@ -1201,14 +1198,13 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetSurfaceSubRect(const SurfaceParams& 
     return std::make_tuple(surface, surface->GetScaledSubRect(params));
 }
 
-Surface RasterizerCacheOpenGL::GetTextureSurface(
-    const Pica::TexturingRegs::FullTextureConfig& config) {
+Surface RasterizerCache::GetTextureSurface(const Pica::TexturingRegs::FullTextureConfig& config) {
     Pica::Texture::TextureInfo info{
         Pica::Texture::TextureInfo::FromPicaRegister(config.config, config.format)};
     return GetTextureSurface(info);
 }
 
-Surface RasterizerCacheOpenGL::GetTextureSurface(const Pica::Texture::TextureInfo& info) {
+Surface RasterizerCache::GetTextureSurface(const Pica::Texture::TextureInfo& info) {
     SurfaceParams params{};
     params.addr = info.physical_address;
     params.width = info.width;
@@ -1236,7 +1232,7 @@ Surface RasterizerCacheOpenGL::GetTextureSurface(const Pica::Texture::TextureInf
     return GetSurface(params, ScaleMatch::Ignore, true);
 }
 
-const CachedTextureCube& RasterizerCacheOpenGL::GetTextureCube(const TextureCubeConfig& config) {
+const CachedTextureCube& RasterizerCache::GetTextureCube(const TextureCubeConfig& config) {
     auto& cube{texture_cube_cache[config]};
 
     struct Face {
@@ -1325,7 +1321,7 @@ const CachedTextureCube& RasterizerCacheOpenGL::GetTextureCube(const TextureCube
     return cube;
 }
 
-SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
+SurfaceSurfaceRect_Tuple RasterizerCache::GetFramebufferSurfaces(
     bool using_color_fb, bool using_depth_fb, const MathUtil::Rectangle<s32>& viewport_rect) {
     const auto& regs{Pica::g_state.regs};
     const auto& config{regs.framebuffer.framebuffer};
@@ -1369,8 +1365,9 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
     // Make sure that framebuffers don't overlap if both color and depth are being used
     if (using_color_fb && using_depth_fb &&
         boost::icl::length(color_vp_interval & depth_vp_interval)) {
-        LOG_CRITICAL(Render_OpenGL, "Color and depth framebuffer memory regions overlap; "
-                                    "overlapping framebuffers not supported!");
+        LOG_CRITICAL(
+            Render,
+            "Color and depth framebuffer memory regions overlapping framebuffers not supported!");
         using_depth_fb = false;
     }
 
@@ -1416,7 +1413,7 @@ SurfaceSurfaceRect_Tuple RasterizerCacheOpenGL::GetFramebufferSurfaces(
     return std::make_tuple(color_surface, depth_surface, fb_rect);
 }
 
-Surface RasterizerCacheOpenGL::GetFillSurface(const GPU::Regs::MemoryFillConfig& config) {
+Surface RasterizerCache::GetFillSurface(const GPU::Regs::MemoryFillConfig& config) {
     Surface new_surface{std::make_shared<CachedSurface>()};
 
     new_surface->addr = config.GetStartAddress();
@@ -1438,7 +1435,7 @@ Surface RasterizerCacheOpenGL::GetFillSurface(const GPU::Regs::MemoryFillConfig&
     return new_surface;
 }
 
-SurfaceRect_Tuple RasterizerCacheOpenGL::GetTexCopySurface(const SurfaceParams& params) {
+SurfaceRect_Tuple RasterizerCache::GetTexCopySurface(const SurfaceParams& params) {
     MathUtil::Rectangle<u32> rect{};
 
     Surface match_surface{FindMatch<MatchFlags::TexCopy | MatchFlags::Invalid>(
@@ -1465,8 +1462,7 @@ SurfaceRect_Tuple RasterizerCacheOpenGL::GetTexCopySurface(const SurfaceParams& 
     return std::make_tuple(match_surface, rect);
 }
 
-void RasterizerCacheOpenGL::DuplicateSurface(const Surface& src_surface,
-                                             const Surface& dest_surface) {
+void RasterizerCache::DuplicateSurface(const Surface& src_surface, const Surface& dest_surface) {
     ASSERT(dest_surface->addr <= src_surface->addr && dest_surface->end >= src_surface->end);
 
     BlitSurfaces(src_surface, src_surface->GetScaledRect(), dest_surface,
@@ -1486,7 +1482,7 @@ void RasterizerCacheOpenGL::DuplicateSurface(const Surface& src_surface,
     }
 }
 
-void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, u32 size) {
+void RasterizerCache::ValidateSurface(const Surface& surface, PAddr addr, u32 size) {
     if (size == 0)
         return;
 
@@ -1560,7 +1556,7 @@ void RasterizerCacheOpenGL::ValidateSurface(const Surface& surface, PAddr addr, 
     }
 }
 
-void RasterizerCacheOpenGL::FlushRegion(PAddr addr, u32 size, Surface flush_surface) {
+void RasterizerCache::FlushRegion(PAddr addr, u32 size, Surface flush_surface) {
     if (size == 0)
         return;
 
@@ -1592,11 +1588,11 @@ void RasterizerCacheOpenGL::FlushRegion(PAddr addr, u32 size, Surface flush_surf
     dirty_regions -= flushed_intervals;
 }
 
-void RasterizerCacheOpenGL::FlushAll() {
+void RasterizerCache::FlushAll() {
     FlushRegion(0, 0xFFFFFFFF);
 }
 
-void RasterizerCacheOpenGL::InvalidateRegion(PAddr addr, u32 size, const Surface& region_owner) {
+void RasterizerCache::InvalidateRegion(PAddr addr, u32 size, const Surface& region_owner) {
     if (size == 0)
         return;
 
@@ -1626,7 +1622,7 @@ void RasterizerCacheOpenGL::InvalidateRegion(PAddr addr, u32 size, const Surface
             const auto interval{cached_surface->GetInterval() & invalid_interval};
             cached_surface->invalid_regions.insert(interval);
 
-            // Remove only "empty" fill surfaces to avoid destroying and recreating OGL textures
+            // Remove only "empty" fill surfaces to avoid destroying and recreating  textures
             if (cached_surface->type == SurfaceType::Fill &&
                 cached_surface->IsSurfaceFullyInvalid()) {
                 remove_surfaces.emplace(cached_surface);
@@ -1657,7 +1653,7 @@ void RasterizerCacheOpenGL::InvalidateRegion(PAddr addr, u32 size, const Surface
     remove_surfaces.clear();
 }
 
-Surface RasterizerCacheOpenGL::CreateSurface(const SurfaceParams& params) {
+Surface RasterizerCache::CreateSurface(const SurfaceParams& params) {
     Surface surface{std::make_shared<CachedSurface>()};
     static_cast<SurfaceParams&>(*surface) = params;
 
@@ -1671,7 +1667,7 @@ Surface RasterizerCacheOpenGL::CreateSurface(const SurfaceParams& params) {
     return surface;
 }
 
-void RasterizerCacheOpenGL::RegisterSurface(const Surface& surface) {
+void RasterizerCache::RegisterSurface(const Surface& surface) {
     if (surface->registered) {
         return;
     }
@@ -1680,7 +1676,7 @@ void RasterizerCacheOpenGL::RegisterSurface(const Surface& surface) {
     UpdatePagesCachedCount(surface->addr, surface->size, 1);
 }
 
-void RasterizerCacheOpenGL::UnregisterSurface(const Surface& surface) {
+void RasterizerCache::UnregisterSurface(const Surface& surface) {
     if (!surface->registered) {
         return;
     }
@@ -1689,7 +1685,7 @@ void RasterizerCacheOpenGL::UnregisterSurface(const Surface& surface) {
     surface_cache.subtract({surface->GetInterval(), SurfaceSet{surface}});
 }
 
-void RasterizerCacheOpenGL::UpdatePagesCachedCount(PAddr addr, u32 size, int delta) {
+void RasterizerCache::UpdatePagesCachedCount(PAddr addr, u32 size, int delta) {
     const u32 num_pages{((addr + size - 1) >> Memory::PAGE_BITS) - (addr >> Memory::PAGE_BITS) + 1};
     const u32 page_start{addr >> Memory::PAGE_BITS};
     const u32 page_end{page_start + num_pages};

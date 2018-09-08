@@ -9,9 +9,9 @@
 #include "common/common_types.h"
 #include "common/math_util.h"
 #include "core/hw/gpu.h"
-#include "video_core/renderer_base.h"
-#include "video_core/renderer_opengl/gl_resource_manager.h"
-#include "video_core/renderer_opengl/gl_state.h"
+#include "video_core/renderer/rasterizer.h"
+#include "video_core/renderer/resource_manager.h"
+#include "video_core/renderer/state.h"
 
 class EmuWindow;
 
@@ -21,7 +21,7 @@ class FramebufferLayout;
 
 /// Structure used for storing information about the textures for each 3DS screen
 struct TextureInfo {
-    OGLTexture resource;
+    Texture resource;
     GLsizei width;
     GLsizei height;
     GPU::Regs::PixelFormat format;
@@ -36,16 +36,24 @@ struct ScreenInfo {
     TextureInfo texture;
 };
 
-class RendererOpenGL : public RendererBase {
+class Renderer {
 public:
-    explicit RendererOpenGL(EmuWindow& window);
-    ~RendererOpenGL() override;
+    explicit Renderer(EmuWindow& window);
+    ~Renderer();
 
     /// Swap buffers (render frame)
-    void SwapBuffers() override;
+    void SwapBuffers();
 
     /// Initialize the renderer
-    Core::System::ResultStatus Init() override;
+    Core::System::ResultStatus Init();
+
+    void UpdateCurrentFramebufferLayout();
+
+    Rasterizer* GetRasterizer();
+
+    EmuWindow& GetRenderWindow() {
+        return render_window;
+    }
 
 private:
     void InitOpenGLObjects();
@@ -63,10 +71,10 @@ private:
     OpenGLState state;
 
     // OpenGL object IDs
-    OGLVertexArray vertex_array;
-    OGLBuffer vertex_buffer;
-    OGLProgram shader;
-    OGLFramebuffer screenshot_framebuffer;
+    VertexArray vertex_array;
+    Buffer vertex_buffer;
+    Program shader;
+    Framebuffer screenshot_framebuffer;
 
     /// Display information for top and bottom screens respectively
     std::array<ScreenInfo, 3> screen_infos;
@@ -78,4 +86,7 @@ private:
     // Shader attribute input indices
     GLuint attrib_position;
     GLuint attrib_tex_coord;
+
+    EmuWindow& render_window;
+    std::unique_ptr<Rasterizer> rasterizer;
 };

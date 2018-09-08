@@ -5,6 +5,7 @@
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/hle/ipc_helpers.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/nwm/nwm_ext.h"
 #include "core/settings.h"
 
@@ -34,7 +35,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
             break;
         }
 
-        Settings::values.n_wifi_status = Settings::values.enable_new_mode ? 2 : 1;
+        Settings::values.n_wifi_status = Service::CFG::IsNewModeEnabled() ? 2 : 1;
         Settings::values.n_wifi_link_level = 3;
         Settings::values.n_state = 2;
         Core::System::GetInstance().GetSharedPageHandler()->SetWifiLinkLevel(
