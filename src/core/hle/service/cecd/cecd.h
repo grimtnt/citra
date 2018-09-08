@@ -555,14 +555,14 @@ public:
 
 private:
     /// String used by cecd for base64 encoding found in the sysmodule disassembly
-    const std::string base64_dict =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-";
+    const std::string base64_dict{
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"};
 
     const std::vector<u8> cecd_system_savedata_id = {0x00, 0x00, 0x00, 0x00,
                                                      0x26, 0x00, 0x01, 0x00};
 
     /// Encoding function used for the message id
-    std::string EncodeBase64(const std::vector<u8>& in, const std::string& dictionary) const;
+    std::string EncodeBase64(const std::vector<u8>& in) const;
 
     std::string GetCecDataPathTypeAsString(const CecDataPathType type, const u32 program_id,
                                            const std::vector<u8>& msg_id = std::vector<u8>()) const;
