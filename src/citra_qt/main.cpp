@@ -231,8 +231,8 @@ void GMainWindow::InitializeHotkeys() {
                    Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Decrease Speed Limit", QKeySequence("-"),
                    Qt::ApplicationShortcut);
-    RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence(tr("CTRL+S")));
-    RegisterHotkey("Main Window", "Toggle Shell Open", QKeySequence(tr("F2")));
+    RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence("CTRL+S"));
+    RegisterHotkey("Main Window", "Toggle Shell Open", QKeySequence("F2"));
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), &QShortcut::activated, this,
@@ -842,7 +842,7 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
 }
 
 void GMainWindow::OnGameListOpenDirectory(QString directory) {
-    QString path;
+    QString path{};
     if (directory == "INSTALLED") {
         path = QString::fromStdString(
             (Settings::values.sd_card_root.empty()
