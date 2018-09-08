@@ -53,10 +53,7 @@ void DspInterface::OutputFrame(StereoFrame16& frame) {
 }
 
 void DspInterface::OutputCallback(s16* buffer, size_t num_frames) {
-<<<<<<< HEAD
-    const size_t frames_written{fifo.Pop(buffer, num_frames)};
-=======
-    size_t frames_written;
+    size_t frames_written{};
     if (perform_time_stretching) {
         const std::vector<s16> in{fifo.Pop()};
         const size_t num_in{in.size() / 2};
@@ -69,7 +66,6 @@ void DspInterface::OutputCallback(s16* buffer, size_t num_frames) {
     } else {
         frames_written = fifo.Pop(buffer, num_frames);
     }
->>>>>>> e17df1756... time_stretch: Simplify audio stretcher
 
     if (frames_written > 0) {
         std::memcpy(&last_frame[0], buffer + 2 * (frames_written - 1), 2 * sizeof(s16));
