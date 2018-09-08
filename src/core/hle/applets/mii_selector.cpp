@@ -16,6 +16,17 @@
 
 namespace HLE::Applets {
 
+static const std::array<u8, 132> mii = {
+    0,   0,    0,    0,    0,    0,    0,   0,    0377, 0377, 0377, 0377, 03,   0,   0,   '0', 0253,
+    '#', 0226, '3',  0134, '?',  0312, '9', 0227, 0374, 0317, 'P',  '@',  0364, 07,  014, 'Z', 021,
+    0,   0,    0262, 'Z',  'V',  0,    'a', 0,    'l',  0,    'e',  0,    'n',  0,   't', 0,   'i',
+    0,   'n',  0,    0,    0,    0,    0,   '@',  '@',  022,  0,    '!',  01,   02,  'h', 'D', 030,
+    ' ', '4',  'F',  024,  0201, 022,  023, 'f',  015,  0,    0,    ')',  0,    'R', 'H', 'P', 'V',
+    0,   'a',  0,    'l',  0,    'e',  0,   'n',  0,    't',  0,    'i',  0,    'n', 0,   0,   0,
+    0,   0,    0,    0,    0134, 'i',  0,   0,    0,    0,    0,    0,    0,    0,   0,   0,   0,
+    0,   0,    0,    0,    0,    0,    0,   0,    0,    0,    0,    0,    0,
+};
+
 ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
         LOG_ERROR(Applet_MiiSelector, "unsupported signal {}", static_cast<u32>(parameter.signal));
@@ -55,16 +66,10 @@ ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& p
 ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& parameter) {
     is_running = true;
 
-    // TODO(Subv): Set the expected fields in the response buffer before resending it to the
-    // application.
-    // TODO(Subv): Reverse the parameter format for the Mii Selector
-
     memcpy(&config, parameter.buffer.data(), parameter.buffer.size());
 
-    // TODO(Subv): Find more about this structure, result code 0 is enough to let most games
-    // continue.
     MiiResult result{};
-    result.return_code = 0;
+    std::memcpy(&result, mii.data(), mii.size());
 
     // Let the application know that we're closing
     Service::APT::MessageParameter message{};

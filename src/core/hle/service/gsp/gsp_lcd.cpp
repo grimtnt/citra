@@ -9,15 +9,15 @@
 
 namespace Service::GSP {
 
-constexpr u32 MIN_BRIGHTNESS_RAW = 0x10;
-constexpr u32 MAX_BRIGHTNESS_RAW = 0xAC;
-constexpr u32 MIN_BRIGHTNESS = 1;
-constexpr u32 MAX_BRIGHTNESS = 5;
+constexpr u32 MIN_BRIGHTNESS_RAW{0x10};
+constexpr u32 MAX_BRIGHTNESS_RAW{0xAC};
+constexpr u32 MIN_BRIGHTNESS{1};
+constexpr u32 MAX_BRIGHTNESS{5};
 
 void GSP_LCD::SetBrightnessRaw(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xA, 2, 0};
     u32 screen{rp.Pop<u32>()};
-    u32 brightness{std::clamp(rp.Pop<u32>(), MAX_BRIGHTNESS_RAW, MAX_BRIGHTNESS_RAW)};
+    u32 brightness{std::clamp(rp.Pop<u32>(), MIN_BRIGHTNESS_RAW, MAX_BRIGHTNESS_RAW)};
     float brightness_f{static_cast<float>(brightness / MAX_BRIGHTNESS_RAW)};
     int ret{1};
     // TODO: add support for Windows & OS X

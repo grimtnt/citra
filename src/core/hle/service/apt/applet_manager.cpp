@@ -19,11 +19,11 @@ struct AppletTitleData {
     std::array<AppletId, 2> applet_ids;
 
     // There's a specific TitleId per region for each applet.
-    static constexpr std::size_t NumRegions = 7;
+    static constexpr std::size_t NumRegions{7};
     std::array<u64, NumRegions> title_ids;
 };
 
-static constexpr std::size_t NumApplets = 29;
+static constexpr std::size_t NumApplets{29};
 static constexpr std::array<AppletTitleData, NumApplets> applet_titleids = {{
     {AppletId::HomeMenu, AppletId::None, 0x4003000008202, 0x4003000008F02, 0x4003000009802,
      0x4003000008202, 0x400300000A102, 0x400300000A902, 0x400300000B102},
@@ -72,10 +72,10 @@ static constexpr std::array<AppletTitleData, NumApplets> applet_titleids = {{
 static u64 GetTitleIdForApplet(AppletId id) {
     ASSERT_MSG(id != AppletId::None, "Invalid applet id");
 
-    auto itr = std::find_if(applet_titleids.begin(), applet_titleids.end(),
-                            [id](const AppletTitleData& data) {
-                                return data.applet_ids[0] == id || data.applet_ids[1] == id;
-                            });
+    auto itr{std::find_if(applet_titleids.begin(), applet_titleids.end(),
+                          [id](const AppletTitleData& data) {
+                              return data.applet_ids[0] == id || data.applet_ids[1] == id;
+                          })};
 
     ASSERT_MSG(itr != applet_titleids.end(), "Unknown applet id {:#05X}", static_cast<u32>(id));
 
@@ -83,9 +83,9 @@ static u64 GetTitleIdForApplet(AppletId id) {
 }
 
 AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {
-    auto GetSlot = [this](AppletSlot slot) -> AppletSlotData* {
+    auto GetSlot{[this](AppletSlot slot) -> AppletSlotData* {
         return &applet_slots[static_cast<std::size_t>(slot)];
-    };
+    }};
 
     if (id == AppletId::Application) {
         auto* slot = GetSlot(AppletSlot::Application);
@@ -96,13 +96,13 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {
     }
 
     if (id == AppletId::AnySystemApplet) {
-        auto* system_slot = GetSlot(AppletSlot::SystemApplet);
+        auto* system_slot{GetSlot(AppletSlot::SystemApplet)};
         if (system_slot->applet_id != AppletId::None)
             return system_slot;
 
         // The Home Menu is also a system applet, but it lives in its own slot to be able to run
         // concurrently with other system applets.
-        auto* home_slot = GetSlot(AppletSlot::HomeMenu);
+        auto* home_slot{GetSlot(AppletSlot::HomeMenu)};
         if (home_slot->applet_id != AppletId::None)
             return home_slot;
 
@@ -110,11 +110,11 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {
     }
 
     if (id == AppletId::AnyLibraryApplet || id == AppletId::AnySysLibraryApplet) {
-        auto* slot = GetSlot(AppletSlot::LibraryApplet);
+        auto* slot{GetSlot(AppletSlot::LibraryApplet)};
         if (slot->applet_id == AppletId::None)
             return nullptr;
 
-        u32 applet_pos = slot->attributes.applet_pos;
+        u32 applet_pos{slot->attributes.applet_pos};
 
         if (id == AppletId::AnyLibraryApplet && applet_pos == static_cast<u32>(AppletPos::Library))
             return slot;
@@ -127,7 +127,7 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {
     }
 
     if (id == AppletId::HomeMenu || id == AppletId::AlternateMenu) {
-        auto* slot = GetSlot(AppletSlot::HomeMenu);
+        auto* slot{GetSlot(AppletSlot::HomeMenu)};
         if (slot->applet_id != AppletId::None)
             return slot;
 
@@ -148,11 +148,11 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletAttributes
         AppletSlot::Application,   AppletSlot::LibraryApplet, AppletSlot::SystemApplet,
         AppletSlot::LibraryApplet, AppletSlot::Error,         AppletSlot::LibraryApplet};
 
-    u32 applet_pos = attributes.applet_pos;
+    u32 applet_pos{attributes.applet_pos};
     if (applet_pos >= applet_position_slots.size())
         return nullptr;
 
-    AppletSlot slot = applet_position_slots[applet_pos];
+    AppletSlot slot{applet_position_slots[applet_pos]};
 
     if (slot == AppletSlot::Error)
         return nullptr;
@@ -168,7 +168,7 @@ AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletAttributes
 void AppletManager::CancelAndSendParameter(const MessageParameter& parameter) {
     next_parameter = parameter;
     // Signal the event to let the receiver know that a new parameter is ready to be read
-    auto* const slot_data = GetAppletSlotData(static_cast<AppletId>(parameter.destination_id));
+    auto* const slot_data{GetAppletSlotData(static_cast<AppletId>(parameter.destination_id))};
     if (slot_data == nullptr) {
         LOG_DEBUG(Service_APT, "No applet was registered with the id {:03X}",
                   static_cast<u32>(parameter.destination_id));
@@ -185,7 +185,7 @@ ResultCode AppletManager::SendParameter(const MessageParameter& parameter) {
                           ErrorSummary::InvalidState, ErrorLevel::Status);
     }
     CancelAndSendParameter(parameter);
-    if (auto dest_applet = HLE::Applets::Applet::Get(parameter.destination_id)) {
+    if (auto dest_applet{HLE::Applets::Applet::Get(parameter.destination_id)}) {
         return dest_applet->ReceiveParameter(parameter);
     } else {
         return RESULT_SUCCESS;
@@ -203,7 +203,7 @@ ResultVal<MessageParameter> AppletManager::GlanceParameter(AppletId app_id) {
                           ErrorLevel::Status);
     }
 
-    MessageParameter parameter = *next_parameter;
+    MessageParameter parameter{*next_parameter};
 
     // Note: The NS module always clears the DSPSleep and DSPWakeup signals even in GlanceParameter.
     if (next_parameter->signal == SignalType::DspSleep ||
@@ -214,7 +214,7 @@ ResultVal<MessageParameter> AppletManager::GlanceParameter(AppletId app_id) {
 }
 
 ResultVal<MessageParameter> AppletManager::ReceiveParameter(AppletId app_id) {
-    auto result = GlanceParameter(app_id);
+    auto result{GlanceParameter(app_id)};
     if (result.Succeeded()) {
         // Clear the parameter
         next_parameter = boost::none;
