@@ -296,6 +296,9 @@ void PollLoop() {
         LOG_CRITICAL(Input, "SDL_Init(SDL_INIT_JOYSTICK) failed with: {}", SDL_GetError());
         return;
     }
+    if (SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1") == SDL_FALSE) {
+        LOG_ERROR(Input, "Failed to set Hint for background events", SDL_GetError());
+    }
 
     SDL_Event event;
     while (initialized) {
@@ -365,17 +368,26 @@ private:
 
 class SDLAnalog final : public Input::AnalogDevice {
 public:
-    SDLAnalog(std::shared_ptr<SDLJoystick> joystick_, int axis_x_, int axis_y_)
-        : joystick{std::move(joystick_)}, axis_x{axis_x_}, axis_y{axis_y_} {}
+    SDLAnalog(std::shared_ptr<SDLJoystick> joystick_, int axis_x_, int axis_y_, float deadzone_)
+        : joystick{std::move(joystick_)}, axis_x{axis_x_}, axis_y{axis_y_}, deadzone{deadzone_} {}
 
     std::tuple<float, float> GetStatus() const override {
-        return joystick->GetAnalog(axis_x, axis_y);
+        float x;
+        float y;
+        std::tie(x, y) = joystick->GetAnalog(axis_x, axis_y);
+        const float r{std::sqrt((x * x) + (y * y))};
+        if (r > deadzone) {
+            return std::make_tuple(x / r * (r - deadzone) / (1 - deadzone),
+                                   y / r * (r - deadzone) / (1 - deadzone));
+        }
+        return std::make_tuple<float, float>(0.0f, 0.0f);
     }
 
 private:
     std::shared_ptr<SDLJoystick> joystick;
-    int axis_x;
-    int axis_y;
+    const int axis_x;
+    const int axis_y;
+    const float deadzone;
 };
 
 /// A button device factory that creates button devices from SDL joystick
@@ -386,14 +398,14 @@ public:
      * @param params contains parameters for creating the device:
      *     - "guid": the guid of the joystick to bind
      *     - "port": the nth joystick of the same type to bind
-     *     - "button"(optional): the index of the button to bind
-     *     - "hat"(optional): the index of the hat to bind as direction buttons
-     *     - "axis"(optional): the index of the axis to bind
-     *     - "direction"(only used for hat): the direction name of the hat to bind. Can be "up",
+     *     - "button" (optional): the index of the button to bind
+     *     - "hat" (optional): the index of the hat to bind as direction buttons
+     *     - "axis" (optional): the index of the axis to bind
+     *     - "direction" (only used for hat): the direction name of the hat to bind. Can be "up",
      *         "down", "left" or "right"
-     *     - "threshold"(only used for axis): a float value in (-1.0, 1.0) which the button is
+     *     - "threshold" (only used for axis): a float value in (-1.0, 1.0) which the button is
      *         triggered if the axis value crosses
-     *     - "direction"(only used for axis): "+" means the button is triggered when the axis
+     *     - "direction" (only used for axis): "+" means the button is triggered when the axis
      * value is greater than the threshold; "-" means the button is triggered when the axis
      * value is smaller than the threshold
      */
@@ -464,13 +476,20 @@ public:
         const int port{params.Get("port", 0)};
         const int axis_x{params.Get("axis_x", 0)};
         const int axis_y{params.Get("axis_y", 1)};
+        float deadzone{params.Get("deadzone", 0.0f)};
+        if (deadzone >= 1.0f) {
+            deadzone = 0.99f;
+        }
+        if (deadzone < 0.0f) {
+            deadzone = 0.0f;
+        }
 
         auto joystick{GetSDLJoystickByGUID(guid, port)};
 
         // This is necessary so accessing GetAxis with axis_x and axis_y won't crash
         joystick->SetAxis(axis_x, 0);
         joystick->SetAxis(axis_y, 0);
-        return std::make_unique<SDLAnalog>(joystick, axis_x, axis_y);
+        return std::make_unique<SDLAnalog>(joystick, axis_x, axis_y, deadzone);
     }
 };
 
