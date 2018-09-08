@@ -37,15 +37,15 @@ public:
     /// @param slot_count  Number of slots to push
     /// @returns The number of slots actually pushed
     size_t Push(const void* new_slots, size_t slot_count) {
-        const size_t write_index = m_write_index.load();
-        const size_t slots_free = capacity + m_read_index.load() - write_index;
-        const size_t push_count = std::min(slot_count, slots_free);
+        const size_t write_index{m_write_index.load()};
+        const size_t slots_free{capacity + m_read_index.load() - write_index};
+        const size_t push_count{std::min(slot_count, slots_free)};
 
-        const size_t pos = write_index % capacity;
-        const size_t first_copy = std::min(capacity - pos, push_count);
-        const size_t second_copy = push_count - first_copy;
+        const size_t pos{write_index % capacity};
+        const size_t first_copy{std::min(capacity - pos, push_count)};
+        const size_t second_copy{push_count - first_copy};
 
-        const char* in = static_cast<const char*>(new_slots);
+        const char* in{static_cast<const char*>(new_slots)};
         std::memcpy(m_data.data() + pos * granularity, in, first_copy * slot_size);
         in += first_copy * slot_size;
         std::memcpy(m_data.data(), in, second_copy * slot_size);
@@ -64,15 +64,15 @@ public:
     /// @param max_slots  Maximum number of slots to pop
     /// @returns The number of slots actually popped
     size_t Pop(void* output, size_t max_slots = ~size_t(0)) {
-        const size_t read_index = m_read_index.load();
-        const size_t slots_filled = m_write_index.load() - read_index;
-        const size_t pop_count = std::min(slots_filled, max_slots);
+        const size_t read_index{m_read_index.load()};
+        const size_t slots_filled{m_write_index.load() - read_index};
+        const size_t pop_count{std::min(slots_filled, max_slots)};
 
-        const size_t pos = read_index % capacity;
-        const size_t first_copy = std::min(capacity - pos, pop_count);
-        const size_t second_copy = pop_count - first_copy;
+        const size_t pos{read_index % capacity};
+        const size_t first_copy{std::min(capacity - pos, pop_count)};
+        const size_t second_copy{pop_count - first_copy};
 
-        char* out = static_cast<char*>(output);
+        char* out{static_cast<char*>(output)};
         std::memcpy(out, m_data.data() + pos * granularity, first_copy * slot_size);
         out += first_copy * slot_size;
         std::memcpy(out, m_data.data(), second_copy * slot_size);
@@ -84,7 +84,7 @@ public:
 
     std::vector<T> Pop(size_t max_slots = ~size_t(0)) {
         std::vector<T> out(std::min(max_slots, capacity) * granularity);
-        const size_t count = Pop(out.data(), out.size() / granularity);
+        const size_t count{Pop(out.data(), out.size() / granularity)};
         out.resize(count * granularity);
         return out;
     }
