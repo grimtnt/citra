@@ -822,10 +822,6 @@ void NWM_UDS::BeginHostingNetwork(Kernel::HLERequestContext& ctx) {
 
         connection_status.status = static_cast<u32>(NetworkStatus::ConnectedAsHost);
 
-        // Ensure the application data size is less than the maximum value.
-        ASSERT_MSG(network_info.application_data_size <= ApplicationDataSize,
-                   "Data size is too big.");
-
         // Set up basic information for this network.
         network_info.oui_value = NintendoOUI;
         network_info.oui_type = static_cast<u8>(NintendoTagId::NetworkInfo);

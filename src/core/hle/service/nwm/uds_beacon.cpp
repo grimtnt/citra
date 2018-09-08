@@ -137,9 +137,6 @@ std::vector<u8> GenerateNintendoNetworkInfoTag(const NetworkInfo& network_info) 
     ASSERT(network_info.oui_type == static_cast<u8>(NintendoTagId::NetworkInfo));
     ASSERT(network_info.oui_value == NintendoOUI);
 
-    // Ensure the application data size is less than the maximum value.
-    ASSERT_MSG(network_info.application_data_size <= ApplicationDataSize, "Data size is too big.");
-
     // This tag contains the network info structure starting at the OUI.
     std::memcpy(tag.network_info.data(), &network_info.oui_value, tag.network_info.size());
 
@@ -272,12 +269,8 @@ std::vector<u8> GenerateNintendoSecondEncryptedDataTag(const NetworkInfo& networ
     if (nodes.size() * sizeof(NodeInfo) <= EncryptedDataSizeCutoff)
         return {};
 
-    const std::size_t payload_size = nodes.size() * sizeof(NodeInfo) - EncryptedDataSizeCutoff;
-
-    const std::size_t tag_length = sizeof(EncryptedDataTag) - sizeof(TagHeader) + payload_size;
-
-    // TODO(Subv): What does the 3DS do when a game has too much data to fit into the tag?
-    ASSERT_MSG(tag_length <= 255, "Data is too big.");
+    const std::size_t payload_size{nodes.size() * sizeof(NodeInfo) - EncryptedDataSizeCutoff};
+    const std::size_t tag_length{sizeof(EncryptedDataTag) - sizeof(TagHeader) + payload_size};
 
     EncryptedDataTag tag{};
     tag.header.tag_id = static_cast<u8>(TagId::VendorSpecific);
