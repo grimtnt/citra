@@ -70,13 +70,13 @@ union ETC1Tile {
     } separate;
 
     const Math::Vec3<u8> GetRGB(unsigned int x, unsigned int y) const {
-        int texel = 4 * x + y;
+        unsigned int texel{4 * x + y};
 
         if (flip)
             std::swap(x, y);
 
         // Lookup base value
-        Math::Vec3<int> ret;
+        Math::Vec3<int> ret{};
         if (differential_mode) {
             ret.r() = static_cast<int>(differential.r);
             ret.g() = static_cast<int>(differential.g);
@@ -102,8 +102,7 @@ union ETC1Tile {
         }
 
         // Add modifier
-        unsigned table_index =
-            static_cast<int>((x < 2) ? table_index_1.Value() : table_index_2.Value());
+        int table_index{static_cast<int>((x < 2) ? table_index_1.Value() : table_index_2.Value())};
 
         int modifier = etc1_modifier_table[table_index][GetTableSubIndex(texel)];
         if (GetNegationFlag(texel))

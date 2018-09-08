@@ -14,7 +14,7 @@
 
 namespace Util {
 void ToggleConsole() {
-    static bool console_shown{false};
+    static bool console_shown{};
     if (console_shown == UISettings::values.show_console) {
         return;
     } else {
