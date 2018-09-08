@@ -17,13 +17,10 @@ constexpr u32 MAX_BRIGHTNESS = 5;
 void GSP_LCD::SetBrightnessRaw(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xA, 2, 0};
     u32 screen{rp.Pop<u32>()};
-    u32 brightness{rp.Pop<u32>()};
-    if (brightness < MIN_BRIGHTNESS_RAW)
-        brightness = MIN_BRIGHTNESS_RAW;
-    if (brightness > MAX_BRIGHTNESS_RAW)
-        brightness = MAX_BRIGHTNESS_RAW;
+    u32 brightness{std::clamp(rp.Pop<u32>(), MAX_BRIGHTNESS_RAW, MAX_BRIGHTNESS_RAW)};
     float brightness_f{static_cast<float>(brightness / MAX_BRIGHTNESS_RAW)};
     int ret{1};
+    // TODO: add support for Windows & OS X
 #ifdef __linux__
     std::string command{"xrandr --output eDP-1 --brightness "};
     std::ostringstream os;
@@ -40,13 +37,10 @@ void GSP_LCD::SetBrightnessRaw(Kernel::HLERequestContext& ctx) {
 void GSP_LCD::SetBrightness(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0xB, 2, 0};
     u32 screen{rp.Pop<u32>()};
-    u32 brightness{rp.Pop<u32>()};
-    if (brightness < MIN_BRIGHTNESS)
-        brightness = MIN_BRIGHTNESS;
-    if (brightness > MAX_BRIGHTNESS)
-        brightness = MAX_BRIGHTNESS;
+    u32 brightness{std::clamp(rp.Pop<u32>(), MIN_BRIGHTNESS, MAX_BRIGHTNESS)};
     float brightness_f{static_cast<float>(brightness / MAX_BRIGHTNESS)};
     int ret{1};
+    // TODO: add support for Windows & OS X
 #ifdef __linux__
     std::string command{"xrandr --output eDP-1 --brightness "};
     std::ostringstream os;
@@ -81,6 +75,7 @@ GSP_LCD::GSP_LCD() : ServiceFramework("gsp::Lcd") {
         {0x00150040, &GSP_LCD::GetBrightness, "GetBrightness"},
     };
     RegisterHandlers(functions);
+    // TODO: get brightness & update it in Citra when the user changes it
 };
 
 } // namespace Service::GSP
