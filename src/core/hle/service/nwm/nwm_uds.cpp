@@ -73,7 +73,7 @@ static std::unordered_map<u32, BindNodeData> channel_data;
 
 // The WiFi network channel that the network is currently on.
 // Since we're not actually interacting with physical radio waves, this is just a dummy value.
-static u8 network_channel = DefaultNetworkChannel;
+static u8 network_channel{DefaultNetworkChannel};
 
 // Information about the network that we're currently connected to.
 static NetworkInfo network_info;
@@ -99,13 +99,13 @@ static std::mutex beacon_mutex;
 
 // Number of beacons to store before we start dropping the old ones.
 // TODO(Subv): Find a more accurate value for this limit.
-constexpr std::size_t MaxBeaconFrames = 15;
+constexpr std::size_t MaxBeaconFrames{15};
 
 // List of the last <MaxBeaconFrames> beacons received from the network.
 static std::list<Network::WifiPacket> received_beacons;
 
 // Network node id used when a SecureData packet is addressed to every connected node.
-constexpr u16 BroadcastNetworkNodeId = 0xFFFF;
+constexpr u16 BroadcastNetworkNodeId{0xFFFF};
 
 /**
  * Returns a list of received 802.11 beacon frames from the specified sender since the last call.
@@ -1060,7 +1060,7 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
     u32 max_out_buff_size{rp.Pop<u32>()};
 
     // This size is hard coded into the uds module. We don't know the meaning yet.
-    u32 buff_size = std::min<u32>(max_out_buff_size_aligned, 0x172) << 2;
+    u32 buff_size{std::min<u32>(max_out_buff_size_aligned, 0x172) << 2};
 
     std::lock_guard<std::mutex> lock{connection_status_mutex};
     if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost) &&
@@ -1072,10 +1072,10 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    auto channel =
+    auto channel{
         std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
             return data.second.bind_node_id == bind_node_id;
-        });
+        })};
 
     if (channel == channel_data.end()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -1094,10 +1094,10 @@ void NWM_UDS::PullPacket(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    const auto& next_packet = channel->second.received_packets.front();
+    const auto& next_packet{channel->second.received_packets.front()};
 
-    auto secure_data = ParseSecureDataHeader(next_packet);
-    auto data_size = secure_data.GetActualDataSize();
+    auto secure_data{ParseSecureDataHeader(next_packet)};
+    auto data_size{secure_data.GetActualDataSize()};
 
     if (data_size > max_out_buff_size) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -1126,9 +1126,9 @@ void NWM_UDS::GetChannel(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
 
     std::lock_guard<std::mutex> lock{connection_status_mutex};
-    bool is_connected = connection_status.status != static_cast<u32>(NetworkStatus::NotConnected);
+    bool is_connected{connection_status.status != static_cast<u32>(NetworkStatus::NotConnected)};
 
-    u8 channel = is_connected ? network_channel : 0;
+    u8 channel{static_cast<u8>(is_connected ? network_channel : 0)};
 
     rb.Push(RESULT_SUCCESS);
     rb.Push(channel);
@@ -1232,7 +1232,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
 
     u8 num_nodes = net_info.max_nodes;
 
-    std::vector<NodeInfo> nodes;
+    std::vector<NodeInfo> nodes{};
 
     for (int i{}; i < num_nodes; ++i) {
         BeaconNodeInfo info;
@@ -1265,7 +1265,7 @@ static void BeaconBroadcastCallback(u64 userdata, s64 cycles_late) {
     if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost))
         return;
 
-    std::vector<u8> frame = GenerateBeaconFrame(network_info, node_info);
+    std::vector<u8> frame{GenerateBeaconFrame(network_info, node_info)};
 
     using Network::WifiPacket;
     WifiPacket packet{};
@@ -1321,8 +1321,8 @@ NWM_UDS::NWM_UDS() : ServiceFramework("nwm::UDS") {
     beacon_broadcast_event =
         CoreTiming::RegisterEvent("UDS::BeaconBroadcastCallback", BeaconBroadcastCallback);
 
-    CryptoPP::AutoSeededRandomPool rng;
-    auto mac = SharedPage::DefaultMac;
+    CryptoPP::AutoSeededRandomPool rng{};
+    auto mac{SharedPage::DefaultMac};
     // Keep the Nintendo 3DS MAC header and randomly generate the last 3 bytes
     rng.GenerateBlock(static_cast<CryptoPP::byte*>(mac.data() + 3), 3);
     if (auto room_member{Network::GetRoomMember().lock()}) {
