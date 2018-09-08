@@ -381,16 +381,6 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
-    connect(ui.action_Dump_RAM, &QAction::triggered, this, [&] {
-        QString path{QFileDialog::getSaveFileName(this, "Save RAM Dump", ".")};
-        if (path.isEmpty())
-            return;
-        FileUtil::IOFile file{path.toStdString(), "wb"};
-        u8* ram{new u8[0x08000000]};
-        Memory::ReadBlock(0x08000000, ram, 0x08000000);
-        file.WriteBytes(ram, 0x08000000);
-        delete[] ram;
-    });
 
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
@@ -675,7 +665,6 @@ void GMainWindow::ShutdownGame() {
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     ui.action_Select_SD_Card_Directory->setEnabled(true);
-    ui.action_Dump_RAM->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(false);
     render_window->hide();
@@ -1005,7 +994,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Select_SD_Card_Directory->setEnabled(false);
-    ui.action_Dump_RAM->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(true);
 }
