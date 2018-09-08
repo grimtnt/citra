@@ -13,8 +13,6 @@
 #include "input_common/motion_emu.h"
 #include "video_core/video_core.h"
 
-constexpr const char WINDOW_TITLE_FORMAT[]{""};
-
 EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window) {}
 
 void EmuThread::run() {
@@ -67,6 +65,7 @@ public:
     void DisablePainting() {
         do_painting = false;
     }
+
     void EnablePainting() {
         do_painting = true;
     }

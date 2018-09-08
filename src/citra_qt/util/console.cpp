@@ -14,7 +14,7 @@
 
 namespace Util {
 void ToggleConsole() {
-    static bool console_shown = false;
+    static bool console_shown{false};
     if (console_shown == UISettings::values.show_console) {
         return;
     } else {
@@ -22,7 +22,7 @@ void ToggleConsole() {
     }
 
 #ifdef _WIN32
-    FILE* temp;
+    FILE* temp{};
     if (UISettings::values.show_console) {
         if (AllocConsole()) {
             // The first parameter for freopen_s is a out parameter, so we can just ignore it
