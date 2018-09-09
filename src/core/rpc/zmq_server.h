@@ -23,7 +23,7 @@ private:
     void SendReply(Packet& request);
 
     std::thread worker_thread;
-    std::atomic_bool running = true;
+    std::atomic_bool running{true};
 
     std::unique_ptr<zmq::context_t> zmq_context;
     std::unique_ptr<zmq::socket_t> zmq_socket;

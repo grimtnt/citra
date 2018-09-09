@@ -25,8 +25,6 @@ ZMQServer::~ZMQServer() {
     // Triggering the zmq_context destructor will cancel
     // any blocking calls to zmq_socket->recv()
     running = false;
-    zmq_socket->close();
-    zmq_context->close();
     zmq_context.reset();
     worker_thread.join();
 
@@ -39,15 +37,15 @@ void ZMQServer::WorkerLoop() {
         try {
             if (zmq_socket->recv(&request, 0)) {
                 if (request.size() >= MIN_PACKET_SIZE && request.size() <= MAX_PACKET_SIZE) {
-                    u8* request_buffer = static_cast<u8*>(request.data());
+                    u8* request_buffer{static_cast<u8*>(request.data())};
                     PacketHeader header;
                     std::memcpy(&header, request_buffer, sizeof(header));
                     if ((request.size() - MIN_PACKET_SIZE) == header.packet_size) {
-                        u8* data = request_buffer + MIN_PACKET_SIZE;
-                        std::function<void(Packet&)> send_reply_callback =
-                            std::bind(&ZMQServer::SendReply, this, std::placeholders::_1);
-                        std::unique_ptr<Packet> new_packet =
-                            std::make_unique<Packet>(header, data, send_reply_callback);
+                        u8* data{request_buffer + MIN_PACKET_SIZE};
+                        std::function<void(Packet&)> send_reply_callback{
+                            std::bind(&ZMQServer::SendReply, this, std::placeholders::_1)};
+                        std::unique_ptr<Packet> new_packet{
+                            std::make_unique<Packet>(header, data, send_reply_callback)};
 
                         // Send the request to the upper layer for handling
                         new_request_callback(std::move(new_packet));
@@ -65,9 +63,9 @@ void ZMQServer::WorkerLoop() {
 
 void ZMQServer::SendReply(Packet& reply_packet) {
     if (running) {
-        auto reply_buffer =
-            std::make_unique<u8[]>(MIN_PACKET_SIZE + reply_packet.GetPacketDataSize());
-        auto reply_header = reply_packet.GetHeader();
+        auto reply_buffer{
+            std::make_unique<u8[]>(MIN_PACKET_SIZE + reply_packet.GetPacketDataSize())};
+        auto reply_header{reply_packet.GetHeader()};
 
         std::memcpy(reply_buffer.get(), &reply_header, sizeof(reply_header));
         std::memcpy(reply_buffer.get() + (4 * sizeof(u32)), reply_packet.GetPacketData().data(),
