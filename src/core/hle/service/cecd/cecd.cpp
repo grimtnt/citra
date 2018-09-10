@@ -4,6 +4,7 @@
 
 #include <cryptopp/base64.h>
 #include <cryptopp/hmac.h>
+#include <cryptopp/sha.h>
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -189,8 +190,8 @@ void Module::Interface::ReadMessage(Kernel::HLERequestContext& ctx) {
         message->backend->Close();
 
         CecMessageHeader msg_header;
-
         std::memcpy(&msg_header, buffer.data(), sizeof(CecMessageHeader));
+
         LOG_DEBUG(Service_CECD,
                   "magic={:#06x}, message_size={:#010x}, header_size={:#010x}, "
                   "body_size={:#010x}, title_id={:#010x}, title_id_2={:#010x}, "
@@ -234,8 +235,6 @@ void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
     auto& hmac_key_buffer{rp.PopMappedBuffer()};
     auto& write_buffer{rp.PopMappedBuffer()};
 
-    // TODO verify message HMAC with the given key
-
     FileSys::Mode mode;
     mode.read_flag.Assign(1);
 
@@ -262,8 +261,8 @@ void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
         message->backend->Close();
 
         CecMessageHeader msg_header;
-
         std::memcpy(&msg_header, buffer.data(), sizeof(CecMessageHeader));
+
         LOG_DEBUG(Service_CECD,
                   "magic={:#06x}, message_size={:#010x}, header_size={:#010x}, "
                   "body_size={:#010x}, title_id={:#010x}, title_id_2={:#010x}, "
@@ -280,6 +279,28 @@ void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
                   msg_header.send_method, msg_header.is_unopen, msg_header.is_new,
                   msg_header.sender_id, msg_header.sender_id2, msg_header.send_count,
                   msg_header.forward_count, msg_header.user_data);
+
+        std::vector<u8> hmac_digest(0x20);
+        std::memcpy(hmac_digest.data(),
+                    buffer.data() + msg_header.header_size + msg_header.body_size, 0x20);
+
+        std::vector<u8> message_body(msg_header.body_size);
+        std::memcpy(message_body.data(), buffer.data() + msg_header.header_size,
+                    msg_header.body_size);
+
+        using namespace CryptoPP;
+        SecByteBlock key(0x20);
+        hmac_key_buffer.Read(key.data(), 0, key.size());
+
+        HMAC<SHA256> hmac(key, key.size());
+
+        const bool verify_hmac =
+            hmac.VerifyDigest(hmac_digest.data(), message_body.data(), message_body.size());
+
+        if (verify_hmac)
+            LOG_DEBUG(Service_CECD, "Verification succeeded");
+        else
+            LOG_DEBUG(Service_CECD, "Verification failed");
 
         rb.Push(RESULT_SUCCESS);
         rb.Push<u32>(bytes_read);
@@ -375,11 +396,13 @@ void Module::Interface::WriteMessage(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     if (message_result.Succeeded()) {
         auto message{message_result.Unwrap()};
-        std::vector<u8> buffer(buffer_size);
-        CecMessageHeader msg_header;
 
+        std::vector<u8> buffer(buffer_size);
         read_buffer.Read(buffer.data(), 0, buffer_size);
+
+        CecMessageHeader msg_header;
         std::memcpy(&msg_header, buffer.data(), sizeof(CecMessageHeader));
+
         LOG_DEBUG(Service_CECD,
                   "magic={:#06x}, message_size={:#010x}, header_size={:#010x}, "
                   "body_size={:#010x}, title_id={:#010x}, title_id_2={:#010x}, "
@@ -426,8 +449,6 @@ void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
     auto& hmac_key_buffer{rp.PopMappedBuffer()};
     auto& message_id_buffer{rp.PopMappedBuffer()};
 
-    // TODO verify message HMAC with the given key
-
     FileSys::Mode mode{};
     mode.write_flag.Assign(1);
     mode.create_flag.Assign(1);
@@ -447,11 +468,13 @@ void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 6)};
     if (message_result.Succeeded()) {
         auto message{message_result.Unwrap()};
-        std::vector<u8> buffer(buffer_size);
-        CecMessageHeader msg_header;
 
+        std::vector<u8> buffer(buffer_size);
         read_buffer.Read(buffer.data(), 0, buffer_size);
+
+        CecMessageHeader msg_header;
         std::memcpy(&msg_header, buffer.data(), sizeof(CecMessageHeader));
+
         LOG_DEBUG(Service_CECD,
                   "magic={:#06x}, message_size={:#010x}, header_size={:#010x}, "
                   "body_size={:#010x}, title_id={:#010x}, title_id_2={:#010x}, "
@@ -469,8 +492,23 @@ void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
                   msg_header.sender_id, msg_header.sender_id2, msg_header.send_count,
                   msg_header.forward_count, msg_header.user_data);
 
-        const u32 bytes_written{static_cast<u32>(
-            message->backend->Write(0, buffer_size, true, buffer.data()).Unwrap())};
+        const u32 hmac_offset{msg_header.header_size + msg_header.body_size};
+        const u32 hmac_size{0x20};
+
+        std::vector<u8> hmac_digest(hmac_size);
+        std::vector<u8> message_body(msg_header.body_size);
+        std::memcpy(message_body.data(), buffer.data() + msg_header.header_size,
+                    msg_header.body_size);
+
+        using namespace CryptoPP;
+        SecByteBlock key(hmac_size);
+        hmac_key_buffer.Read(key.data(), 0, hmac_size);
+
+        HMAC<SHA256> hmac(key, hmac_size);
+        hmac.CalculateDigest(hmac_digest.data(), message_body.data(), msg_header.body_size);
+        std::memcpy(buffer.data() + hmac_offset, hmac_digest.data(), hmac_size);
+
+        message->backend->Write(0, buffer_size, true, buffer.data());
         message->backend->Close();
 
         rb.Push(RESULT_SUCCESS);
@@ -1153,25 +1191,25 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         /// We need to read the /CEC/<id>/OutBox directory to find out which messages, if any,
         /// are present. The num_of_messages = (total_read_count) - 2, to adjust for
         /// the BoxInfo____ and OBIndex_____files that are present in the directory as well.
-        FileSys::Path outbox_path(
-            GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id).data());
+        FileSys::Path outbox_path{
+            GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id).data()};
 
-        auto dir_result =
-            Service::FS::OpenDirectoryFromArchive(cecd_system_save_data_archive, outbox_path);
+        auto dir_result{
+            Service::FS::OpenDirectoryFromArchive(cecd_system_save_data_archive, outbox_path)};
 
-        auto outbox_dir = dir_result.Unwrap();
+        auto outbox_dir{dir_result.Unwrap()};
         std::vector<FileSys::Entry> entries(outbox_info_header.max_message_num + 2);
-        const u32 entry_count =
-            outbox_dir->backend->Read(outbox_info_header.max_message_num + 2, entries.data());
+        const u32 entry_count{static_cast<u32>(
+            outbox_dir->backend->Read(outbox_info_header.max_message_num + 2, entries.data()))};
         outbox_dir->backend->Close();
 
         LOG_DEBUG(Service_CECD, "Number of entries found in /OutBox: {}", entry_count);
-        std::array<CecMessageHeader, 8> message_headers;
+        std::array<CecMessageHeader, 8> message_headers{};
 
-        std::string boxinfo_name("BoxInfo_____");
-        std::string obindex_name("OBIndex_____");
-        std::string file_name;
-        std::u16string u16_filename;
+        std::string boxinfo_name{"BoxInfo_____"};
+        std::string obindex_name{"OBIndex_____"};
+        std::string file_name{};
+        std::u16string u16_filename{};
 
         for (auto i = 0; i < entry_count; i++) {
             u16_filename = std::u16string(entries[i].filename);
@@ -1180,22 +1218,22 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
             if (boxinfo_name.compare(file_name) != 0 && obindex_name.compare(file_name) != 0) {
                 LOG_DEBUG(Service_CECD, "Adding message to BoxInfo_____: {}", file_name);
 
-                FileSys::Path message_path(
+                FileSys::Path message_path{
                     (GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id) + "/" +
                      file_name)
-                        .data());
+                        .data()};
 
-                FileSys::Mode mode;
+                FileSys::Mode mode{};
                 mode.read_flag.Assign(1);
 
-                auto message_result = Service::FS::OpenFileFromArchive(
-                    cecd_system_save_data_archive, message_path, mode);
+                auto message_result{Service::FS::OpenFileFromArchive(cecd_system_save_data_archive,
+                                                                     message_path, mode)};
 
-                auto message = message_result.Unwrap();
-                const u32 message_size = message->backend->GetSize();
+                auto message{message_result.Unwrap()};
+                const u32 message_size{static_cast<u32>(message->backend->GetSize())};
                 std::vector<u8> buffer(message_size);
 
-                message->backend->Read(0, message_size, buffer.data()).Unwrap();
+                message->backend->Read(0, message_size, buffer.data());
                 message->backend->Close();
 
                 std::memcpy(&message_headers[outbox_info_header.message_num++], buffer.data(),
@@ -1204,8 +1242,8 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         }
 
         if (outbox_info_header.message_num > 0) {
-            const u32 message_headers_size =
-                outbox_info_header.message_num * sizeof(CecMessageHeader);
+            const u32 message_headers_size{
+                static_cast<u32>(outbox_info_header.message_num * sizeof(CecMessageHeader))};
 
             file_buffer.resize(sizeof(CecBoxInfoHeader) + message_headers_size, 0);
             outbox_info_header.box_info_size += message_headers_size;
@@ -1254,9 +1292,9 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         auto dir_result =
             Service::FS::OpenDirectoryFromArchive(cecd_system_save_data_archive, outbox_path);
 
-        auto outbox_dir = dir_result.Unwrap();
+        auto outbox_dir{dir_result.Unwrap()};
         std::vector<FileSys::Entry> entries(8);
-        const u32 entry_count = outbox_dir->backend->Read(8, entries.data());
+        const u32 entry_count{static_cast<u32>(outbox_dir->backend->Read(8, entries.data()))};
         outbox_dir->backend->Close();
 
         LOG_DEBUG(Service_CECD, "Number of entries found in /OutBox: {}", entry_count);
@@ -1280,14 +1318,14 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
                 FileSys::Mode mode;
                 mode.read_flag.Assign(1);
 
-                auto message_result = Service::FS::OpenFileFromArchive(
-                    cecd_system_save_data_archive, message_path, mode);
+                auto message_result{Service::FS::OpenFileFromArchive(cecd_system_save_data_archive,
+                                                                     message_path, mode)};
 
-                auto message = message_result.Unwrap();
-                const u32 message_size = message->backend->GetSize();
+                auto message{message_result.Unwrap()};
+                const u32 message_size{static_cast<u32>(message->backend->GetSize())};
                 std::vector<u8> buffer(message_size);
 
-                message->backend->Read(0, message_size, buffer.data()).Unwrap();
+                message->backend->Read(0, message_size, buffer.data());
                 message->backend->Close();
 
                 // Message id is at offset 0x20, and is 8 bytes
