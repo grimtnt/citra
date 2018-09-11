@@ -171,22 +171,6 @@ void Module::Interface::GetSharedFont(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x44, 0, 0}; // 0x00440000
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
 
-    if (!apt->shared_font_loaded) {
-        // On real 3DS, font loading happens on booting. However, we load it on demand to coordinate
-        // with CFG region auto configuration, which happens later than APT initialization.
-        if (apt->LoadSharedFont()) {
-            apt->shared_font_loaded = true;
-        } else {
-            LOG_ERROR(Service_APT, "shared font file missing - go dump it from your 3ds");
-            rb.Push<u32>(-1); // TODO: Find the right error code
-            rb.Push<u32>(0);
-            rb.PushCopyObjects<Kernel::Object>(nullptr);
-            Core::System::GetInstance().SetStatus(Core::System::ResultStatus::ErrorSystemFiles,
-                                                  "Shared fonts");
-            return;
-        }
-    }
-
     // The shared font has to be relocated to the new address before being passed to the
     // application.
     VAddr target_address{
@@ -876,6 +860,14 @@ Module::Module() {
                                      Kernel::MemoryRegion::SYSTEM, "APT:SharedFont");
 
     lock = Kernel::Mutex::Create(false, "APT_U:Lock");
+
+    if (LoadSharedFont()) {
+        shared_font_loaded = true;
+    } else {
+        LOG_ERROR(Service_APT, "shared font file missing - go dump it from your 3ds");
+        Core::System::GetInstance().SetStatus(Core::System::ResultStatus::ErrorSystemFiles,
+                                              "Shared fonts");
+    }
 }
 
 Module::~Module() {}
