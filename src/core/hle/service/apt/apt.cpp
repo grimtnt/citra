@@ -36,12 +36,12 @@ void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_APT, "called app_id={:#010X}, attributes={:#010X}", static_cast<u32>(app_id),
               attributes);
 
-    auto result = apt->applet_manager->Initialize(app_id, attributes);
+    auto result{apt->applet_manager->Initialize(app_id, attributes)};
     if (result.Failed()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(result.Code());
     } else {
-        auto events = std::move(result).Unwrap();
+        auto events{std::move(result).Unwrap()};
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 3)};
         rb.Push(RESULT_SUCCESS);
         rb.PushCopyObjects(events.notification_event, events.parameter_event);
@@ -119,33 +119,34 @@ bool Module::LoadSharedFont() {
         break;
     }
 
-    const u64_le shared_font_archive_id_low = 0x0004009b00014002 | ((font_region_code - 1) << 8);
-    const u64_le shared_font_archive_id_high = 0x00000001ffffff00;
+    const u64_le shared_font_archive_id_low{
+        static_cast<u64_le>(0x0004009b00014002 | ((font_region_code - 1) << 8))};
+    const u64_le shared_font_archive_id_high{0x00000001ffffff00};
     std::vector<u8> shared_font_archive_id(16);
     std::memcpy(&shared_font_archive_id[0], &shared_font_archive_id_low, sizeof(u64));
     std::memcpy(&shared_font_archive_id[8], &shared_font_archive_id_high, sizeof(u64));
-    FileSys::Path archive_path(shared_font_archive_id);
+    FileSys::Path archive_path{shared_font_archive_id};
     auto archive_result = Service::FS::OpenArchive(Service::FS::ArchiveIdCode::NCCH, archive_path);
     if (archive_result.Failed())
         return false;
 
     std::vector<u8> romfs_path(20, 0); // 20-byte all zero path for opening RomFS
-    FileSys::Path file_path(romfs_path);
+    FileSys::Path file_path{romfs_path};
     FileSys::Mode open_mode = {};
     open_mode.read_flag.Assign(1);
-    auto file_result = Service::FS::OpenFileFromArchive(*archive_result, file_path, open_mode);
+    auto file_result{Service::FS::OpenFileFromArchive(*archive_result, file_path, open_mode)};
     if (file_result.Failed())
         return false;
 
-    auto romfs = std::move(file_result).Unwrap();
+    auto romfs{std::move(file_result).Unwrap()};
     std::vector<u8> romfs_buffer(romfs->backend->GetSize());
     romfs->backend->Read(0, romfs_buffer.size(), romfs_buffer.data());
     romfs->backend->Close();
 
     const char16_t* file_name[4] = {u"cbf_std.bcfnt.lz", u"cbf_zh-Hans-CN.bcfnt.lz",
                                     u"cbf_ko-Hang-KR.bcfnt.lz", u"cbf_zh-Hant-TW.bcfnt.lz"};
-    const RomFS::RomFSFile font_file =
-        RomFS::GetFile(romfs_buffer.data(), {file_name[font_region_code - 1]});
+    const RomFS::RomFSFile font_file{
+        RomFS::GetFile(romfs_buffer.data(), {file_name[font_region_code - 1]})};
     if (font_file.Data() == nullptr)
         return false;
 
@@ -170,6 +171,13 @@ bool Module::LoadSharedFont() {
 void Module::Interface::GetSharedFont(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x44, 0, 0}; // 0x00440000
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
+
+    if (!apt->shared_font_loaded) {
+        rb.Push<u32>(-1); // TODO: Find the right error code
+        rb.Push<u32>(0);
+        rb.PushCopyObjects<Kernel::Object>(nullptr);
+        return;
+    }
 
     // The shared font has to be relocated to the new address before being passed to the
     // application.
@@ -294,7 +302,7 @@ void Module::Interface::ReceiveParameter(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_APT, "called, app_id={:#010X}, buffer_size={:#010X}",
               static_cast<u32>(app_id), buffer_size);
 
-    auto next_parameter = apt->applet_manager->ReceiveParameter(app_id);
+    auto next_parameter{apt->applet_manager->ReceiveParameter(app_id)};
 
     if (next_parameter.Failed()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -865,8 +873,6 @@ Module::Module() {
         shared_font_loaded = true;
     } else {
         LOG_ERROR(Service_APT, "shared font file missing - go dump it from your 3ds");
-        Core::System::GetInstance().SetStatus(Core::System::ResultStatus::ErrorSystemFiles,
-                                              "Shared fonts");
     }
 }
 

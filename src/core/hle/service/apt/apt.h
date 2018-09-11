@@ -603,8 +603,8 @@ private:
 
     /// Handle to shared memory region designated to for shared system font
     Kernel::SharedPtr<Kernel::SharedMemory> shared_font_mem;
-    bool shared_font_loaded = false;
-    bool shared_font_relocated = false;
+    bool shared_font_loaded{};
+    bool shared_font_relocated{};
 
     Kernel::SharedPtr<Kernel::Mutex> lock;
 
@@ -615,8 +615,8 @@ private:
 
     std::vector<u8> screen_capture_buffer;
 
-    ScreencapPostPermission screen_capture_post_permission =
-        ScreencapPostPermission::CleanThePermission; // TODO(JamePeng): verify the initial value
+    ScreencapPostPermission screen_capture_post_permission{
+        ScreencapPostPermission::CleanThePermission}; // TODO(JamePeng): verify the initial value
 
     std::shared_ptr<AppletManager> applet_manager;
 };

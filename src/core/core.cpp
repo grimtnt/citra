@@ -33,10 +33,10 @@ namespace Core {
 /*static*/ System System::s_instance;
 
 System::ResultStatus System::RunLoop() {
+    status = ResultStatus::Success;
     if (!cpu_core) {
         return ResultStatus::ErrorNotInitialized;
     }
-
     // If we don't have a currently active thread then don't execute instructions,
     // instead advance to the next event and try to yield to the next thread
     if (Kernel::GetCurrentThread() == nullptr) {
@@ -58,7 +58,7 @@ System::ResultStatus System::RunLoop() {
         return ResultStatus::ShutdownRequested;
     }
 
-    return ResultStatus::Success;
+    return status;
 }
 
 System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& filepath) {
