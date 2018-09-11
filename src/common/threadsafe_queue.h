@@ -18,7 +18,7 @@ namespace Common {
 template <typename T, bool NeedSize = true>
 class SPSCQueue {
 public:
-    SPSCQueue() : size(0), should_end(false) {
+    SPSCQueue() : size{0}, should_end{false} {
         write_ptr = read_ptr = new ElementPtr();
     }
     ~SPSCQueue() {

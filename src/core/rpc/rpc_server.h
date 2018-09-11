@@ -38,10 +38,8 @@ private:
 
     Server server;
     Common::SPSCQueue<std::unique_ptr<Packet>> request_queue;
-    bool running{};
     std::thread request_handler_thread;
     std::mutex request_queue_mutex;
-    std::condition_variable request_queue_cv;
 };
 
 } // namespace RPC

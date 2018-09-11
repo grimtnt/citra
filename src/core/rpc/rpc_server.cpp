@@ -245,32 +245,23 @@ void RPCServer::HandleRequestsLoop() {
 
     LOG_INFO(RPC, "Request handler started.");
 
-    for (;;) {
-        std::unique_lock<std::mutex> lock{request_queue_mutex};
-        request_queue_cv.wait(lock, [&] { return !running || request_queue.Pop(request_packet); });
-        if (!running) {
-            break;
-        }
+    while (request_queue.PopWait(request_packet)) {
         HandleSingleRequest(std::move(request_packet));
     }
 }
 
 void RPCServer::QueueRequest(std::unique_ptr<RPC::Packet> request) {
-    std::unique_lock<std::mutex> lock{request_queue_mutex};
     request_queue.Push(std::move(request));
-    request_queue_cv.notify_one();
 }
 
 void RPCServer::Start() {
-    running = true;
     const auto threadFunction{[this]() { HandleRequestsLoop(); }};
     request_handler_thread = std::thread(threadFunction);
     server.Start();
 }
 
 void RPCServer::Stop() {
-    running = false;
-    request_queue_cv.notify_one();
+    request_queue.EndWait();
     request_handler_thread.join();
     server.Stop();
 }
