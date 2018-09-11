@@ -93,6 +93,9 @@ struct VirtualMemoryArea {
     PAddr paddr{};
     Memory::MMIORegionPointer mmio_handler{};
 
+    /// Originating address of the IPC mapped buffer
+    VAddr originating_buffer_address = 0;
+
     /// Tests if this area can be merged to the right with `next`.
     bool CanBeMergedWith(const VirtualMemoryArea& next) const;
 };
