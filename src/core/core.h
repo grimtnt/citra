@@ -21,18 +21,16 @@ class EmuWindow;
 class CPU;
 
 namespace AudioCore {
-class DspInterface;
+class DspHle;
 } // namespace AudioCore
 
 namespace RPC {
 class RPCServer;
 } // namespace RPC
 
-namespace Service {
-namespace SM {
+namespace Service::SM {
 class ServiceManager;
-} // namespace SM
-} // namespace Service
+} // namespace Service::SM
 
 namespace Core {
 
@@ -143,7 +141,7 @@ public:
      * Gets a reference to the emulated DSP.
      * @returns A reference to the emulated DSP.
      */
-    AudioCore::DspInterface& DSP() {
+    AudioCore::DspHle& DSP() {
         return *dsp_core;
     }
 
@@ -218,7 +216,7 @@ private:
     std::unique_ptr<CPU> cpu_core;
 
     /// DSP core
-    std::unique_ptr<AudioCore::DspInterface> dsp_core;
+    std::unique_ptr<AudioCore::DspHle> dsp_core;
 
     /// When true, signals that a reschedule should happen
     bool reschedule_pending{};
@@ -226,16 +224,16 @@ private:
     /// Service manager
     std::shared_ptr<Service::SM::ServiceManager> service_manager;
 
-    /// Shared Page
+    /// Shared page
     std::shared_ptr<SharedPage::Handler> shared_page_handler;
 
-    /// RPC Server for scripting support
+    /// RPC server for scripting
     std::unique_ptr<RPC::RPCServer> rpc_server;
 
     static System s_instance;
 
-    ResultStatus status = ResultStatus::Success;
-    std::string status_details = "";
+    ResultStatus status{ResultStatus::Success};
+    std::string status_details{""};
     /// Saved variables for jump
     EmuWindow* m_emu_window;
     std::string m_filepath;
@@ -251,7 +249,7 @@ inline CPU& GetCPU() {
     return System::GetInstance().GetCPU();
 }
 
-inline AudioCore::DspInterface& DSP() {
+inline AudioCore::DspHle& DSP() {
     return System::GetInstance().DSP();
 }
 

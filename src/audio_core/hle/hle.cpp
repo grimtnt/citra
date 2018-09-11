@@ -9,12 +9,13 @@
 #include "audio_core/hle/mixers.h"
 #include "audio_core/hle/shared_memory.h"
 #include "audio_core/hle/source.h"
-#include "audio_core/sink.h"
+#include "audio_core/sink_details.h"
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/hle/service/dsp/dsp_dsp.h"
 #include "core/settings.h"
 
 using InterruptType = Service::DSP::DSP_DSP::InterruptType;
@@ -45,6 +46,8 @@ public:
 
     void SetServiceToInterrupt(std::weak_ptr<DSP_DSP> dsp);
 
+    bool IsOutputAllowed();
+
 private:
     void ResetPipes();
     void WriteU16(DspPipe pipe_number, u16 value);
@@ -56,7 +59,6 @@ private:
 
     StereoFrame16 GenerateCurrentFrame();
     bool Tick();
-    bool IsOutputAllowed();
     void AudioTickCallback(s64 cycles_late);
 
     DspState dsp_state{DspState::Off};
@@ -82,9 +84,8 @@ DspHle::Impl::Impl(DspHle& parent_) : parent(parent_) {
     dsp_memory.raw_memory.fill(0);
 
     tick_event =
-        CoreTiming::RegisterEvent("AudioCore::DspHle::tick_event", [this](u64, s64 cycles_late) {
-            this->AudioTickCallback(cycles_late);
-        });
+        CoreTiming::RegisterEvent("AudioCore::DspHle::tick_event",
+                                  [this](u64, s64 cycles_late) { AudioTickCallback(cycles_late); });
     CoreTiming::ScheduleEvent(audio_frame_ticks, tick_event);
 }
 
@@ -97,7 +98,7 @@ DspState DspHle::Impl::GetDspState() const {
 }
 
 std::vector<u8> DspHle::Impl::PipeRead(DspPipe pipe_number, u32 length) {
-    const std::size_t pipe_index = static_cast<std::size_t>(pipe_number);
+    const std::size_t pipe_index{static_cast<std::size_t>(pipe_number)};
 
     if (pipe_index >= num_dsp_pipe) {
         LOG_ERROR(Audio_DSP, "pipe_number = {} invalid", pipe_index);
@@ -197,7 +198,8 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
                   std::back_inserter(pipe_data[static_cast<std::size_t>(DspPipe::Binary)]));
         return;
     default:
-        LOG_CRITICAL(Audio_DSP, "pipe_number = {} unimplemented", static_cast<std::size_t>(pipe_number));
+        LOG_CRITICAL(Audio_DSP, "pipe_number = {} unimplemented",
+                     static_cast<std::size_t>(pipe_number));
         UNIMPLEMENTED();
         return;
     }
@@ -263,8 +265,8 @@ void DspHle::Impl::AudioPipeWriteStructAddresses() {
 size_t DspHle::Impl::CurrentRegionIndex() const {
     // The region with the higher frame counter is chosen unless there is wraparound.
     // This function only returns a 0 or 1.
-    const u16 frame_counter_0 = dsp_memory.region_0.frame_counter;
-    const u16 frame_counter_1 = dsp_memory.region_1.frame_counter;
+    const u16 frame_counter_0{dsp_memory.region_0.frame_counter};
+    const u16 frame_counter_1{dsp_memory.region_1.frame_counter};
 
     if (frame_counter_0 == 0xFFFFu && frame_counter_1 != 0xFFFEu) {
         // Wraparound has occurred.
@@ -381,6 +383,75 @@ std::array<u8, Memory::DSP_RAM_SIZE>& DspHle::GetDspMemory() {
 
 void DspHle::SetServiceToInterrupt(std::weak_ptr<DSP_DSP> dsp) {
     impl->SetServiceToInterrupt(std::move(dsp));
+}
+
+void DspHle::SetSink(const std::string& sink_id, const std::string& audio_device) {
+    const SinkDetails& sink_details = GetSinkDetails(sink_id);
+    sink = sink_details.factory(audio_device);
+    sink->SetCallback(
+        [this](s16* buffer, std::size_t num_frames) { OutputCallback(buffer, num_frames); });
+    time_stretcher.SetOutputSampleRate(sink->GetNativeSampleRate());
+}
+
+Sink& DspHle::GetSink() {
+    ASSERT(sink);
+    return *sink.get();
+}
+
+void DspHle::EnableStretching(bool enable) {
+    if (perform_time_stretching == enable)
+        return;
+
+    if (!enable) {
+        flushing_time_stretcher = true;
+    }
+    perform_time_stretching = enable;
+}
+
+void DspHle::OutputFrame(StereoFrame16& frame) {
+    if (!sink)
+        return;
+
+    fifo.Push(frame.data(), frame.size());
+}
+
+void DspHle::OutputCallback(s16* buffer, size_t num_frames) {
+    size_t frames_written{};
+    if (perform_time_stretching) {
+        const std::vector<s16> in{fifo.Pop()};
+        const size_t num_in{in.size() / 2};
+        frames_written = time_stretcher.Process(in.data(), num_in, buffer, num_frames);
+    } else if (flushing_time_stretcher) {
+        time_stretcher.Flush();
+        frames_written = time_stretcher.Process(nullptr, 0, buffer, num_frames);
+        frames_written += fifo.Pop(buffer, num_frames - frames_written);
+        flushing_time_stretcher = false;
+    } else {
+        frames_written = fifo.Pop(buffer, num_frames);
+    }
+
+    if (frames_written > 0) {
+        std::memcpy(&last_frame[0], buffer + 2 * (frames_written - 1), 2 * sizeof(s16));
+    }
+
+    // Hold last emitted frame; this prevents popping.
+    for (size_t i{frames_written}; i < num_frames; i++) {
+        std::memcpy(buffer + 2 * i, &last_frame[0], 2 * sizeof(s16));
+    }
+
+    // Implementation of the hardware volume slider with a dynamic range of 60 dB
+    const float linear_volume{std::clamp(Settings::values.volume, 0.0f, 1.0f)};
+    if (linear_volume != 1.0) {
+        const float volume_scale_factor{std::exp(6.90775f * linear_volume) * 0.001f};
+        for (std::size_t i{}; i < num_frames; i++) {
+            buffer[i * 2 + 0] = static_cast<s16>(buffer[i * 2 + 0] * volume_scale_factor);
+            buffer[i * 2 + 1] = static_cast<s16>(buffer[i * 2 + 1] * volume_scale_factor);
+        }
+    }
+}
+
+bool DspHle::IsOutputAllowed() {
+    return impl->IsOutputAllowed();
 }
 
 } // namespace AudioCore

@@ -2,7 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "audio_core/dsp_interface.h"
+#include "audio_core/hle/hle.h"
 #include "core/core.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir.h"

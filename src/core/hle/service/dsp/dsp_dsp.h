@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "audio_core/dsp_interface.h"
+#include "audio_core/hle/hle.h"
 #include "core/hle/kernel/event.h"
 #include "core/hle/result.h"
 #include "core/hle/service/service.h"
@@ -111,7 +111,7 @@ private:
      * DSP_DSP::ReadPipeIfPossible service function
      *      A pipe is a means of communication between the ARM11 and DSP that occurs on
      *      hardware by writing to/reading from the DSP registers at 0x10203000.
-     *      Pipes are used for initialisation. See also DspInterface::PipeRead.
+     *      Pipes are used for initialisation. See also DspHle::PipeRead.
      *  Inputs:
      *      1 : Channel (0 - 7 0:Debug from DSP 1:P-DMA 2:audio 3:binary 4-7: free ?)
      *      2 : Peer (0 = from DSP, 1 = from ARM)

@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <utility>
-#include "audio_core/dsp_interface.h"
 #include "audio_core/hle/hle.h"
 #include "common/logging/log.h"
 #include "core/cheat_core.h"
@@ -26,6 +25,8 @@
 #include "core/movie.h"
 #include "core/rpc/rpc_server.h"
 #include "core/settings.h"
+#include "video_core/renderer/rasterizer.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
 namespace Core {
@@ -36,6 +37,13 @@ System::ResultStatus System::RunLoop() {
     status = ResultStatus::Success;
     if (!cpu_core) {
         return ResultStatus::ErrorNotInitialized;
+    }
+    if (!dsp_core->IsOutputAllowed()) {
+        // Draw black screens to the emulator window
+        VideoCore::g_renderer->SwapBuffers();
+        // Sleep for a frame or the PC would overheat
+        std::this_thread::sleep_for(std::chrono::milliseconds{16});
+        return ResultStatus::Success;
     }
     // If we don't have a currently active thread then don't execute instructions,
     // instead advance to the next event and try to yield to the next thread
@@ -57,7 +65,6 @@ System::ResultStatus System::RunLoop() {
     } else if (shutdown_requested.exchange(false)) {
         return ResultStatus::ShutdownRequested;
     }
-
     return status;
 }
 

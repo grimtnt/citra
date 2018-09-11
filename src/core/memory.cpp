@@ -4,7 +4,7 @@
 
 #include <array>
 #include <cstring>
-#include "audio_core/dsp_interface.h"
+#include "audio_core/hle/hle.h"
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
