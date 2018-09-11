@@ -38,17 +38,7 @@ Rasterizer::Rasterizer(EmuWindow& window)
       index_buffer{GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE, false},
       texture_buffer{GL_TEXTURE_BUFFER, TEXTURE_BUFFER_SIZE, false}, emu_window{window} {
 
-    if (Settings::values.enable_shadows) {
-        allow_shadow = GLAD_GL_ARB_shader_image_load_store && GLAD_GL_ARB_shader_image_size &&
-                       GLAD_GL_ARB_framebuffer_no_attachments;
-        if (!allow_shadow) {
-            LOG_WARNING(
-                Render,
-                "Shadow might not be able to render because of unsupported OpenGL extensions.");
-        }
-    } else {
-        allow_shadow = false;
-    }
+    SyncSettings();
 
     if (!GLAD_GL_ARB_texture_barrier) {
         LOG_WARNING(Render,
@@ -2100,4 +2090,18 @@ void Rasterizer::UploadUniforms(bool accelerate_draw, bool use_gs) {
     }
 
     uniform_buffer.Unmap(used_bytes);
+}
+
+void Rasterizer::SyncSettings() {
+    if (Settings::values.enable_shadows) {
+        allow_shadow = GLAD_GL_ARB_shader_image_load_store && GLAD_GL_ARB_shader_image_size &&
+                       GLAD_GL_ARB_framebuffer_no_attachments;
+        if (!allow_shadow) {
+            LOG_WARNING(
+                Render,
+                "Shadow might not be able to render because of unsupported OpenGL extensions.");
+        }
+    } else {
+        allow_shadow = false;
+    }
 }

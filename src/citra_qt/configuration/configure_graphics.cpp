@@ -10,6 +10,9 @@
 #include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_graphics.h"
+#include "video_core/renderer/rasterizer.h"
+#include "video_core/renderer/renderer.h"
+#include "video_core/video_core.h"
 
 ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     : QWidget{parent}, ui{std::make_unique<Ui::ConfigureGraphics>()} {
@@ -49,8 +52,6 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
         }
     });
 #endif
-
-    ui->enable_shadows->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 }
 
 ConfigureGraphics::~ConfigureGraphics() {}
@@ -85,4 +86,6 @@ void ConfigureGraphics::applyConfiguration() {
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
     Settings::values.enable_shadows = ui->enable_shadows->isChecked();
+    if (VideoCore::g_renderer)
+        VideoCore::g_renderer->GetRasterizer()->SyncSettings();
 }
