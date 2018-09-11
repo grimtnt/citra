@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>365</width>
-    <height>399</height>
+    <height>428</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -125,6 +125,13 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="enable_shadows">
+        <property name="text">
+         <string>Enable Shadows</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="toggle_hw_shader">

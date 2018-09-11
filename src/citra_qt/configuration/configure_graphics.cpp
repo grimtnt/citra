@@ -49,6 +49,8 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
         }
     });
 #endif
+
+    ui->enable_shadows->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 }
 
 ConfigureGraphics::~ConfigureGraphics() {}
@@ -65,6 +67,7 @@ void ConfigureGraphics::setConfiguration() {
     bg_color.setRgbF(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue);
     ui->layout_bg->setStyleSheet(
         QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
+    ui->enable_shadows->setChecked(Settings::values.enable_shadows);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -81,4 +84,5 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.layout_option =
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
+    Settings::values.enable_shadows = ui->enable_shadows->isChecked();
 }

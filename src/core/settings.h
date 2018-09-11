@@ -141,6 +141,7 @@ struct Values {
     u16 resolution_factor;
     bool use_frame_limit;
     u16 frame_limit;
+    bool enable_shadows;
 
     LayoutOption layout_option;
     bool swap_screen;

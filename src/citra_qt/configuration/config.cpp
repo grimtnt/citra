@@ -132,6 +132,7 @@ void Config::ReadValues() {
     Settings::values.bg_red = qt_config->value("bg_red", 0.0).toFloat();
     Settings::values.bg_green = qt_config->value("bg_green", 0.0).toFloat();
     Settings::values.bg_blue = qt_config->value("bg_blue", 0.0).toFloat();
+    Settings::values.enable_shadows = qt_config->value("enable_shadows", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Layout");
@@ -329,6 +330,7 @@ void Config::SaveValues() {
     qt_config->setValue("bg_red", (double)Settings::values.bg_red);
     qt_config->setValue("bg_green", (double)Settings::values.bg_green);
     qt_config->setValue("bg_blue", (double)Settings::values.bg_blue);
+    qt_config->setValue("enable_shadows", Settings::values.enable_shadows);
     qt_config->endGroup();
 
     qt_config->beginGroup("Layout");
