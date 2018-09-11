@@ -261,7 +261,7 @@ void RPCServer::Start() {
 }
 
 void RPCServer::Stop() {
-    request_queue.EndWait();
+    request_queue.Finalize();
     request_handler_thread.join();
     server.Stop();
 }
