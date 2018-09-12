@@ -217,7 +217,7 @@ private:
 /// An adaptor for getting swizzle pattern string from nihstro interfaces.
 template <SwizzlePattern::Selector (SwizzlePattern::*getter)(int) const>
 std::string GetSelectorSrc(const SwizzlePattern& pattern) {
-    std::string out;
+    std::string out{};
     for (std::size_t i{}; i < 4; ++i) {
         switch ((pattern.*getter)(i)) {
         case SwizzlePattern::Selector::x:
@@ -240,9 +240,9 @@ std::string GetSelectorSrc(const SwizzlePattern& pattern) {
     return out;
 }
 
-constexpr auto GetSelectorSrc1 = GetSelectorSrc<&SwizzlePattern::GetSelectorSrc1>;
-constexpr auto GetSelectorSrc2 = GetSelectorSrc<&SwizzlePattern::GetSelectorSrc2>;
-constexpr auto GetSelectorSrc3 = GetSelectorSrc<&SwizzlePattern::GetSelectorSrc3>;
+constexpr auto GetSelectorSrc1{GetSelectorSrc<&SwizzlePattern::GetSelectorSrc1>};
+constexpr auto GetSelectorSrc2{GetSelectorSrc<&SwizzlePattern::GetSelectorSrc2>};
+constexpr auto GetSelectorSrc3{GetSelectorSrc<&SwizzlePattern::GetSelectorSrc3>};
 
 class GLSLGenerator {
 public:
@@ -250,9 +250,9 @@ public:
                   const SwizzleData& swizzle_data, u32 main_offset,
                   const RegGetter& inputreg_getter, const RegGetter& outputreg_getter,
                   bool sanitize_mul, bool is_gs)
-        : subroutines(subroutines), program_code(program_code), swizzle_data(swizzle_data),
-          main_offset(main_offset), inputreg_getter(inputreg_getter),
-          outputreg_getter(outputreg_getter), sanitize_mul(sanitize_mul), is_gs(is_gs) {
+        : subroutines{subroutines}, program_code{program_code}, swizzle_data{swizzle_data},
+          main_offset{main_offset}, inputreg_getter{inputreg_getter},
+          outputreg_getter{outputreg_getter}, sanitize_mul{sanitize_mul}, is_gs{is_gs} {
 
         Generate();
     }
@@ -264,7 +264,7 @@ public:
 private:
     /// Gets the Subroutine object corresponding to the specified address.
     const Subroutine& GetSubroutine(u32 begin, u32 end) const {
-        auto iter = subroutines.find(Subroutine{begin, end});
+        auto iter{subroutines.find(Subroutine{begin, end})};
         ASSERT(iter != subroutines.end());
         return *iter;
     }
@@ -273,10 +273,10 @@ private:
     static std::string EvaluateCondition(Instruction::FlowControlType flow_control) {
         using Op = Instruction::FlowControlType::Op;
 
-        std::string result_x =
-            flow_control.refx.Value() ? "conditional_code.x" : "!conditional_code.x";
-        std::string result_y =
-            flow_control.refy.Value() ? "conditional_code.y" : "!conditional_code.y";
+        std::string result_x{flow_control.refx.Value() ? "conditional_code.x"
+                                                       : "!conditional_code.x"};
+        std::string result_y{flow_control.refy.Value() ? "conditional_code.y"
+                                                       : "!conditional_code.y"};
 
         switch (flow_control.op) {
         case Op::JustX:
@@ -285,8 +285,8 @@ private:
             return result_y;
         case Op::Or:
         case Op::And: {
-            std::string and_or = flow_control.op == Op::Or ? "any" : "all";
-            std::string bvec;
+            std::string and_or{flow_control.op == Op::Or ? "any" : "all"};
+            std::string bvec{};
             if (flow_control.refx.Value() && flow_control.refy.Value()) {
                 bvec = "conditional_code";
             } else if (!flow_control.refx.Value() && !flow_control.refy.Value()) {
@@ -417,8 +417,8 @@ private:
         const Instruction instr{program_code[offset]};
 
         std::size_t swizzle_offset{instr.opcode.Value().GetInfo().type == OpCode::Type::MultiplyAdd
-                                  ? instr.mad.operand_desc_id
-                                  : instr.common.operand_desc_id};
+                                       ? instr.mad.operand_desc_id
+                                       : instr.common.operand_desc_id};
         const SwizzlePattern swizzle{swizzle_data[swizzle_offset]};
 
         shader.AddLine("// " + std::to_string(offset) + ": " + instr.opcode.Value().GetInfo().name);
@@ -913,11 +913,10 @@ boost::optional<std::string> DecompileProgram(const ProgramCode& program_code,
                                               const RegGetter& inputreg_getter,
                                               const RegGetter& outputreg_getter, bool sanitize_mul,
                                               bool is_gs) {
-
     try {
         auto subroutines{ControlFlowAnalyzer(program_code, main_offset).MoveSubroutines()};
-        GLSLGenerator generator(subroutines, program_code, swizzle_data, main_offset,
-                                inputreg_getter, outputreg_getter, sanitize_mul, is_gs);
+        GLSLGenerator generator{subroutines,     program_code,     swizzle_data, main_offset,
+                                inputreg_getter, outputreg_getter, sanitize_mul, is_gs};
         return generator.MoveShaderCode();
     } catch (const DecompileFail& exception) {
         LOG_INFO(HW_GPU, "Shader decompilation failed: {}", exception.what());
