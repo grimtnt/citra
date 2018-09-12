@@ -129,10 +129,6 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
 // Returns the path to where the sys file are
 std::string GetSysDirectory();
 
-#ifdef __APPLE__
-std::string GetBundleDirectory();
-#endif
-
 #ifdef _WIN32
 const std::string& GetExeDirectory();
 std::string AppDataRoamingDirectory();

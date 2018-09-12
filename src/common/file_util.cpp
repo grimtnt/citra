@@ -569,21 +569,6 @@ bool SetCurrentDir(const std::string& directory) {
     return success;
 }
 
-#if defined(__APPLE__)
-std::string GetBundleDirectory() {
-    CFURLRef BundleRef;
-    char AppBundlePath[MAXPATHLEN];
-    // Get the main bundle for the app
-    BundleRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
-    CFStringRef BundlePath = CFURLCopyFileSystemPath(BundleRef, kCFURLPOSIXPathStyle);
-    CFStringGetFileSystemRepresentation(BundlePath, AppBundlePath, sizeof(AppBundlePath));
-    CFRelease(BundleRef);
-    CFRelease(BundlePath);
-
-    return AppBundlePath;
-}
-#endif
-
 #ifdef _WIN32
 const std::string& GetExeDirectory() {
     static std::string exe_path;
@@ -624,35 +609,8 @@ static const std::string& GetHomeDirectory() {
     return home_path;
 }
 
-/**
- * Follows the XDG Base Directory Specification to get a directory path
- * @param envvar The XDG environment variable to get the value from
- * @return The directory path
- * @sa http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
- */
-static const std::string GetUserDirectory(const std::string& envvar) {
-    const char* directory = getenv(envvar.c_str());
-
-    std::string user_dir;
-    if (directory) {
-        user_dir = directory;
-    } else {
-        std::string subdirectory;
-        if (envvar == "XDG_DATA_HOME")
-            subdirectory = DIR_SEP ".local" DIR_SEP "share";
-        else if (envvar == "XDG_CONFIG_HOME")
-            subdirectory = DIR_SEP ".config";
-        else if (envvar == "XDG_CACHE_HOME")
-            subdirectory = DIR_SEP ".cache";
-        else
-            ASSERT_MSG(false, "Unknown XDG variable {}.", envvar);
-        user_dir = GetHomeDirectory() + subdirectory;
-    }
-
-    ASSERT_MSG(!user_dir.empty(), "User directory {} musn’t be empty.", envvar);
-    ASSERT_MSG(user_dir[0] == '/', "User directory {} must be absolute.", envvar);
-
-    return user_dir;
+static const std::string GetDataDirectory() {
+    return GetHomeDirectory() + DIR_SEP ".local" DIR_SEP "share";
 }
 #endif
 
@@ -670,28 +628,19 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
         } else {
             LOG_INFO(Common_Filesystem, "Using the local user directory");
         }
-
-        paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
-        paths[D_CACHE_IDX] = paths[D_USER_IDX] + CACHE_DIR DIR_SEP;
 #else
         if (FileUtil::Exists(ROOT_DIR DIR_SEP USERDATA_DIR)) {
             paths[D_USER_IDX] = ROOT_DIR DIR_SEP USERDATA_DIR DIR_SEP;
-            paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
-            paths[D_CACHE_IDX] = paths[D_USER_IDX] + CACHE_DIR DIR_SEP;
         } else {
-            std::string data_dir = GetUserDirectory("XDG_DATA_HOME");
-            std::string config_dir = GetUserDirectory("XDG_CONFIG_HOME");
-            std::string cache_dir = GetUserDirectory("XDG_CACHE_HOME");
-
+            std::string data_dir{GetDataDirectory()};
             paths[D_USER_IDX] = data_dir + DIR_SEP EMU_DATA_DIR DIR_SEP;
-            paths[D_CONFIG_IDX] = config_dir + DIR_SEP EMU_DATA_DIR DIR_SEP;
-            paths[D_CACHE_IDX] = cache_dir + DIR_SEP EMU_DATA_DIR DIR_SEP;
         }
 #endif
+
+        paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
         paths[D_SDMC_IDX] = paths[D_USER_IDX] + SDMC_DIR DIR_SEP;
         paths[D_NAND_IDX] = paths[D_USER_IDX] + NAND_DIR DIR_SEP;
         paths[D_SYSDATA_IDX] = paths[D_USER_IDX] + SYSDATA_DIR DIR_SEP;
-        // TODO: Put the logs in a better location for each OS
         paths[D_LOGS_IDX] = paths[D_USER_IDX] + LOG_DIR DIR_SEP;
     }
 
@@ -711,7 +660,6 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
         case D_USER_IDX:
             paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
             paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
-            paths[D_CACHE_IDX] = paths[D_USER_IDX] + CACHE_DIR DIR_SEP;
             paths[D_SDMC_IDX] = paths[D_USER_IDX] + SDMC_DIR DIR_SEP;
             paths[D_NAND_IDX] = paths[D_USER_IDX] + NAND_DIR DIR_SEP;
             break;
@@ -744,13 +692,13 @@ size_t ReadFileToString(bool text_file, const char* filename, std::string& str) 
  */
 void SplitFilename83(const std::string& filename, std::array<char, 9>& short_name,
                      std::array<char, 4>& extension) {
-    const std::string forbidden_characters = ".\"/\\[]:;=, ";
+    const std::string forbidden_characters{".\"/\\[]:;=, "};
 
     // On a FAT32 partition, 8.3 names are stored as a 11 bytes array, filled with spaces.
     short_name = {{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '\0'}};
     extension = {{' ', ' ', ' ', '\0'}};
 
-    std::string::size_type point = filename.rfind('.');
+    std::string::size_type point{filename.rfind('.')};
     if (point == filename.size() - 1)
         point = filename.rfind('.', point);
 
