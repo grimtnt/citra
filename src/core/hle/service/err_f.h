@@ -21,11 +21,20 @@ public:
 private:
     /* ThrowFatalError function
      * Inputs:
-     *    1-32 : FatalErrInfo
+     *  1-32 : FatalErrInfo
      * Outputs:
-     *       1 : Result code
+     *  1 : Result code
      */
     void ThrowFatalError(Kernel::HLERequestContext& ctx);
+
+    /* SetUserString function
+     * Inputs:
+     *  1 : Size
+     *  2 : String
+     * Outputs:
+     *  1 : Result code
+     */
+    void SetUserString(Kernel::HLERequestContext& ctx);
 };
 
 void InstallInterfaces();

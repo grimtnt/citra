@@ -122,10 +122,10 @@ static std::string GetExceptionType(u8 type_code) {
 }
 
 static std::string GetCurrentSystemTime() {
-    auto now = std::chrono::system_clock::now();
-    auto time = std::chrono::system_clock::to_time_t(now);
+    auto now{std::chrono::system_clock::now()};
+    auto time{std::chrono::system_clock::to_time_t(now)};
 
-    std::stringstream time_stream;
+    std::stringstream time_stream{};
     time_stream << std::put_time(std::localtime(&time), "%Y/%m/%d %H:%M:%S");
     return time_stream.str();
 }
@@ -168,7 +168,7 @@ void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
         break;
     }
     case FatalErrType::Exception: {
-        const auto& errtype = errinfo.exception;
+        const auto& errtype{errinfo.exception};
 
         // Register Info
         LOG_CRITICAL(Service_ERR, "ARM Registers:");
@@ -219,7 +219,7 @@ void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
     }
 
     case FatalErrType::ResultFailure: {
-        const auto& errtype = errinfo.result_failure;
+        const auto& errtype{errinfo.result_failure};
 
         // Failure Message
         LOG_CRITICAL(Service_ERR, "Failure Message: {}", errtype.message);
@@ -232,10 +232,21 @@ void ERR_F::ThrowFatalError(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 }
 
+void ERR_F::SetUserString(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x2, 1, 2};
+    u32 size{rp.Pop<u32>()};
+    auto buffer{rp.PopStaticBuffer()};
+    std::string string(size, '\0');
+    std::memcpy(&string[0], buffer.data(), size);
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
+    rb.Push(RESULT_SUCCESS);
+    rb.PushStaticBuffer(std::move(buffer), 0);
+}
+
 ERR_F::ERR_F() : ServiceFramework("err:f", 1) {
     static const FunctionInfo functions[] = {
         {0x00010800, &ERR_F::ThrowFatalError, "ThrowFatalError"},
-        {0x00020042, nullptr, "SetUserString"},
+        {0x00020042, &ERR_F::SetUserString, "SetUserString"},
     };
     RegisterHandlers(functions);
 }
@@ -243,7 +254,7 @@ ERR_F::ERR_F() : ServiceFramework("err:f", 1) {
 ERR_F::~ERR_F() = default;
 
 void InstallInterfaces() {
-    auto errf = std::make_shared<ERR_F>();
+    auto errf{std::make_shared<ERR_F>()};
     errf->InstallAsNamedPort();
 }
 

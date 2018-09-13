@@ -33,10 +33,10 @@ inline u32* GetCommandBuffer(const int offset = 0) {
 namespace IPC {
 
 /// Size of the command buffer area, in 32-bit words.
-constexpr std::size_t COMMAND_BUFFER_LENGTH = 0x100 / sizeof(u32);
+constexpr std::size_t COMMAND_BUFFER_LENGTH{0x100 / sizeof(u32)};
 
 // Maximum number of static buffers per thread.
-constexpr std::size_t MAX_STATIC_BUFFERS = 16;
+constexpr std::size_t MAX_STATIC_BUFFERS{16};
 
 // These errors are commonly returned by invalid IPC translations, so alias them here for
 // convenience.
@@ -45,7 +45,7 @@ using Kernel::ERR_INVALID_BUFFER_DESCRIPTOR;
 constexpr auto ERR_INVALID_HANDLE = Kernel::ERR_INVALID_HANDLE_OS;
 
 enum DescriptorType : u32 {
-    // Buffer related desciptors types (mask : 0x0F)
+    // Buffer related 0x00020042 types (mask : 0x0F)
     StaticBuffer = 0x02,
     PXIBuffer = 0x04,
     MappedBuffer = 0x08,
