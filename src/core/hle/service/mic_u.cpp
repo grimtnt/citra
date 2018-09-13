@@ -40,34 +40,35 @@ struct MIC_U::Impl {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "called, size=0x{:X}", size);
+        LOG_DEBUG(Service_MIC, "size=0x{:X}", size);
     }
 
     void UnmapSharedMem(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x02, 0, 0};
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
-        LOG_WARNING(Service_MIC, "called");
+
+        LOG_DEBUG(Service_MIC, "called");
     }
 
     void StartSampling(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x03, 5, 0};
-
         encoding = rp.PopEnum<Encoding>();
         sample_rate = rp.PopEnum<SampleRate>();
-        audio_buffer_offset = rp.PopRaw<s32>();
+        audio_buffer_offset = rp.Pop<u32>();
         audio_buffer_size = rp.Pop<u32>();
         audio_buffer_loop = rp.Pop<bool>();
+        is_sampling = true;
 
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
-        is_sampling = true;
 
-        LOG_WARNING(Service_MIC,
-                    "(STUBBED) called, encoding={}, sample_rate={}, "
-                    "audio_buffer_offset={}, audio_buffer_size={}, audio_buffer_loop={}",
-                    static_cast<u32>(encoding), static_cast<u32>(sample_rate), audio_buffer_offset,
-                    audio_buffer_size, audio_buffer_loop);
+        LOG_DEBUG(Service_MIC,
+                  "encoding={}, sample_rate={}, "
+                  "audio_buffer_offset={}, audio_buffer_size={}, audio_buffer_loop={}",
+                  static_cast<u32>(encoding), static_cast<u32>(sample_rate), audio_buffer_offset,
+                  audio_buffer_size, audio_buffer_loop);
+        UNIMPLEMENTED();
     }
 
     void AdjustSampling(Kernel::HLERequestContext& ctx) {
@@ -77,16 +78,16 @@ struct MIC_U::Impl {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, sample_rate={}", static_cast<u32>(sample_rate));
+        LOG_DEBUG(Service_MIC, "sample_rate={}", static_cast<u32>(sample_rate));
     }
 
     void StopSampling(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x05, 0, 0};
+        is_sampling = false;
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
-        is_sampling = false;
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called");
+        UNIMPLEMENTED();
     }
 
     void IsSampling(Kernel::HLERequestContext& ctx) {
@@ -95,7 +96,7 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
         rb.Push<bool>(is_sampling);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called");
+        LOG_DEBUG(Service_MIC, "is_sampling={}", is_sampling);
     }
 
     void GetBufferFullEvent(Kernel::HLERequestContext& ctx) {
@@ -104,7 +105,7 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
         rb.PushCopyObjects(buffer_full_event);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called");
+        LOG_DEBUG(Service_MIC, "called");
     }
 
     void SetGain(Kernel::HLERequestContext& ctx) {
@@ -114,7 +115,7 @@ struct MIC_U::Impl {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, mic_gain={}", mic_gain);
+        LOG_DEBUG(Service_MIC, "mic_gain={}", mic_gain);
     }
 
     void GetGain(Kernel::HLERequestContext& ctx) {
@@ -124,7 +125,7 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
         rb.Push<u8>(mic_gain);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called");
+        LOG_DEBUG(Service_MIC, "mic_gain={}", mic_gain);
     }
 
     void SetPower(Kernel::HLERequestContext& ctx) {
@@ -134,7 +135,7 @@ struct MIC_U::Impl {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, mic_power={}", mic_power);
+        LOG_DEBUG(Service_MIC, "mic_power={}", mic_power);
     }
 
     void GetPower(Kernel::HLERequestContext& ctx) {
@@ -143,7 +144,7 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
         rb.Push<u8>(mic_power);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called");
+        LOG_DEBUG(Service_MIC, "mic_power={}", mic_power);
     }
 
     void SetIirFilterMic(Kernel::HLERequestContext& ctx) {
@@ -155,8 +156,7 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
         rb.PushMappedBuffer(buffer);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, size=0x{:X}, buffer=0x{:08X}", size,
-                    buffer.GetId());
+        LOG_DEBUG(Service_MIC, "size=0x{:X}, buffer=0x{:08X}", size, buffer.GetId());
     }
 
     void SetClamp(Kernel::HLERequestContext& ctx) {
@@ -166,7 +166,7 @@ struct MIC_U::Impl {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, clamp={}", clamp);
+        LOG_DEBUG(Service_MIC, "clamp={}", clamp);
     }
 
     void GetClamp(Kernel::HLERequestContext& ctx) {
@@ -175,7 +175,7 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
         rb.Push<bool>(clamp);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called");
+        LOG_DEBUG(Service_MIC, "clamp={}", clamp);
     }
 
     void SetAllowShellClosed(Kernel::HLERequestContext& ctx) {
@@ -185,16 +185,17 @@ struct MIC_U::Impl {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, allow_shell_closed={}", allow_shell_closed);
+        LOG_DEBUG(Service_MIC, "allow_shell_closed={}", allow_shell_closed);
     }
 
     void SetClientVersion(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x10, 1, 0};
         const u32 version{rp.Pop<u32>()};
+        client_version = version;
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        LOG_WARNING(Service_MIC, "(STUBBED) called, version: 0x{:08X}", version);
+        LOG_DEBUG(Service_MIC, "version=0x{:08X}", version);
     }
 
     u32 client_version{};
@@ -208,7 +209,7 @@ struct MIC_U::Impl {
     bool clamp{};
     Encoding encoding{Encoding::PCM8};
     SampleRate sample_rate{SampleRate::SampleRate32730};
-    s32 audio_buffer_offset{};
+    u32 audio_buffer_offset{};
     u32 audio_buffer_size{};
     bool audio_buffer_loop{};
 };
