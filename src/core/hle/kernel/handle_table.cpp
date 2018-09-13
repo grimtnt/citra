@@ -39,7 +39,7 @@ ResultVal<Handle> HandleTable::Create(SharedPtr<Object> obj) {
     generations[slot] = generation;
     objects[slot] = std::move(obj);
 
-    Handle handle{generation | (slot << 15)};
+    Handle handle{static_cast<Handle>(generation | (slot << 15))};
     return MakeResult<Handle>(handle);
 }
 
