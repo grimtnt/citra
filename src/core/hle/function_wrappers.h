@@ -229,20 +229,20 @@ void Wrap() {
 
 template <ResultCode func(Kernel::Handle, u32, u32, u32, u32, u32)>
 void Wrap() {
-    u32 retval{func(PARAM(0), PARAM(1), PARAM(2), PARAM(3), PARAM(4), PARAM(5)).raw};
+    u32 retval{func(Param(0), Param(1), Param(2), Param(3), Param(4), Param(5)).raw};
     FuncReturn(retval);
 }
 
 template <ResultCode func(Kernel::Handle, u32, u32)>
 void Wrap() {
-    u32 retval{func(PARAM(0), PARAM(1), PARAM(2)).raw};
+    u32 retval{func(Param(0), Param(1), Param(2)).raw};
     FuncReturn(retval);
 }
 
 template <ResultCode func(Kernel::Handle*, Kernel::Handle, u32)>
 void Wrap() {
     Kernel::Handle out_handle{};
-    u32 retval{func(&out_handle, PARAM(2), PARAM(3)).raw};
+    u32 retval{func(&out_handle, Param(2), Param(3)).raw};
     Core::GetCPU().SetReg(1, out_handle);
     FuncReturn(retval);
 }

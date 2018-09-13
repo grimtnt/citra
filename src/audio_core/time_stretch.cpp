@@ -57,9 +57,8 @@ size_t TimeStretcher::Process(const s16* in, size_t num_in, s16* out, size_t num
     // samples. These do not need to be timestretched.
     stretch_ratio = std::max(stretch_ratio, 0.05);
     sound_touch->setTempo(stretch_ratio);
-
-    sound_touch->putSamples(in, num_in);
-    return sound_touch->receiveSamples(out, num_out);
+    sound_touch->putSamples(in, static_cast<u32>(num_in));
+    return sound_touch->receiveSamples(out, static_cast<u32>(num_out));
 }
 
 void TimeStretcher::Clear() {
