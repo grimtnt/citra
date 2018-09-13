@@ -56,9 +56,11 @@ public:
     virtual std::string GetTypeName() const {
         return "[BAD KERNEL OBJECT TYPE]";
     }
+
     virtual std::string GetName() const {
         return "[UNKNOWN KERNEL OBJECT]";
     }
+
     virtual HandleType GetHandleType() const = 0;
 
     /**

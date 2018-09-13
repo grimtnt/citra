@@ -24,13 +24,14 @@ class DiskFile : public FileBackend {
 public:
     DiskFile(FileUtil::IOFile&& file_, const Mode& mode_,
              std::unique_ptr<DelayGenerator> delay_generator_)
-        : file(new FileUtil::IOFile(std::move(file_))) {
+        : file{new FileUtil::IOFile(std::move(file_))} {
         delay_generator = std::move(delay_generator_);
         mode.hex = mode_.hex;
     }
 
     ResultVal<std::size_t> Read(u64 offset, std::size_t length, u8* buffer) const override;
-    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush, const u8* buffer) override;
+    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush,
+                                 const u8* buffer) override;
     u64 GetSize() const override;
     bool SetSize(u64 size) const override;
     bool Close() const override;

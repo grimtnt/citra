@@ -16,7 +16,7 @@ Event::Event() {}
 Event::~Event() {}
 
 SharedPtr<Event> Event::Create(ResetType reset_type, std::string name) {
-    SharedPtr<Event> evt(new Event);
+    SharedPtr<Event> evt{new Event};
 
     evt->signaled = false;
     evt->reset_type = reset_type;

@@ -22,14 +22,14 @@ HandleTable::HandleTable() {
 ResultVal<Handle> HandleTable::Create(SharedPtr<Object> obj) {
     DEBUG_ASSERT(obj != nullptr);
 
-    u16 slot = next_free_slot;
+    u16 slot{next_free_slot};
     if (slot >= generations.size()) {
         LOG_ERROR(Kernel, "Unable to allocate Handle, too many slots in use.");
         return ERR_OUT_OF_HANDLES;
     }
     next_free_slot = generations[slot];
 
-    u16 generation = next_generation++;
+    u16 generation{next_generation++};
 
     // Overflow count so it fits in the 15 bits dedicated to the generation in the handle.
     // CTR-OS doesn't use generation 0, so skip straight to 1.
@@ -39,12 +39,12 @@ ResultVal<Handle> HandleTable::Create(SharedPtr<Object> obj) {
     generations[slot] = generation;
     objects[slot] = std::move(obj);
 
-    Handle handle = generation | (slot << 15);
+    Handle handle{generation | (slot << 15)};
     return MakeResult<Handle>(handle);
 }
 
 ResultVal<Handle> HandleTable::Duplicate(Handle handle) {
-    SharedPtr<Object> object = GetGeneric(handle);
+    SharedPtr<Object> object{GetGeneric(handle)};
     if (object == nullptr) {
         LOG_ERROR(Kernel, "Tried to duplicate invalid handle: {:08X}", handle);
         return ERR_INVALID_HANDLE;
@@ -56,7 +56,7 @@ ResultCode HandleTable::Close(Handle handle) {
     if (!IsValid(handle))
         return ERR_INVALID_HANDLE;
 
-    u16 slot = GetSlot(handle);
+    u16 slot{GetSlot(handle)};
 
     objects[slot] = nullptr;
 
@@ -66,8 +66,8 @@ ResultCode HandleTable::Close(Handle handle) {
 }
 
 bool HandleTable::IsValid(Handle handle) const {
-    std::size_t slot = GetSlot(handle);
-    u16 generation = GetGeneration(handle);
+    std::size_t slot{GetSlot(handle)};
+    u16 generation{GetGeneration(handle)};
 
     return slot < MAX_COUNT && objects[slot] != nullptr && generations[slot] == generation;
 }

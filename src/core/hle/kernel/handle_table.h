@@ -93,32 +93,33 @@ private:
      * This is the maximum limit of handles allowed per process in CTR-OS. It can be further
      * reduced by ExHeader values, but this is not emulated here.
      */
-    static const std::size_t MAX_COUNT = 4096;
+    static const std::size_t MAX_COUNT{4096};
 
     static u16 GetSlot(Handle handle) {
         return handle >> 15;
     }
+
     static u16 GetGeneration(Handle handle) {
         return handle & 0x7FFF;
     }
 
     /// Stores the Object referenced by the handle or null if the slot is empty.
-    std::array<SharedPtr<Object>, MAX_COUNT> objects;
+    std::array<SharedPtr<Object>, MAX_COUNT> objects{};
 
     /**
      * The value of `next_generation` when the handle was created, used to check for validity. For
      * empty slots, contains the index of the next free slot in the list.
      */
-    std::array<u16, MAX_COUNT> generations;
+    std::array<u16, MAX_COUNT> generations{};
 
     /**
      * Global counter of the number of created handles. Stored in `generations` when a handle is
      * created, and wraps around to 1 when it hits 0x8000.
      */
-    u16 next_generation;
+    u16 next_generation{};
 
     /// Head of the free slots linked list.
-    u16 next_free_slot;
+    u16 next_free_slot{};
 };
 
 extern HandleTable g_handle_table;

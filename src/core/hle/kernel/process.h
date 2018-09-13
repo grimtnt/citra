@@ -134,21 +134,28 @@ public:
     static u32 next_process_id;
 
     SharedPtr<CodeSet> codeset;
+
     /// Resource limit descriptor for this process
     SharedPtr<ResourceLimit> resource_limit;
 
     /// The process may only call SVCs which have the corresponding bit set.
     std::bitset<0x80> svc_access_mask;
+
     /// Maximum size of the handle table for the process.
-    unsigned int handle_table_size = 0x200;
+    unsigned int handle_table_size{0x200};
+
     /// Special memory ranges mapped into this processes address space. This is used to give
     /// processes access to specific I/O regions and device memory.
     boost::container::static_vector<AddressMapping, 8> address_mappings;
+
     ProcessFlags flags;
+
     /// Kernel compatibility version for this process
     u16 kernel_version{};
+
     /// The default CPU for this process, threads are scheduled on this cpu by default.
     u8 ideal_processor{};
+
     /// Current status of the process
     ProcessStatus status;
 
@@ -214,4 +221,5 @@ SharedPtr<Process> GetProcessById(u32 process_id);
 s64 GetProcessListSize();
 
 extern SharedPtr<Process> g_current_process;
+
 } // namespace Kernel

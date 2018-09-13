@@ -52,7 +52,7 @@ public:
 
 private:
     /// Threads waiting for this object to become available
-    std::vector<SharedPtr<Thread>> waiting_threads;
+    std::vector<SharedPtr<Thread>> waiting_threads{};
 };
 
 // Specialization of DynamicObjectCast for WaitObjects

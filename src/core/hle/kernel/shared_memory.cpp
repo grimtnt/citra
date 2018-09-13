@@ -18,7 +18,7 @@ SharedPtr<SharedMemory> SharedMemory::Create(SharedPtr<Process> owner_process, u
                                              MemoryPermission permissions,
                                              MemoryPermission other_permissions, VAddr address,
                                              MemoryRegion region, std::string name) {
-    SharedPtr<SharedMemory> shared_memory(new SharedMemory);
+    SharedPtr<SharedMemory> shared_memory{new SharedMemory};
 
     shared_memory->owner_process = owner_process;
     shared_memory->name = std::move(name);
@@ -29,8 +29,8 @@ SharedPtr<SharedMemory> SharedMemory::Create(SharedPtr<Process> owner_process, u
     if (address == 0) {
         // We need to allocate a block from the Linear Heap ourselves.
         // We'll manually allocate some memory from the linear heap in the specified region.
-        MemoryRegionInfo* memory_region = GetMemoryRegion(region);
-        auto& linheap_memory = memory_region->linear_heap_memory;
+        MemoryRegionInfo* memory_region{GetMemoryRegion(region)};
+        auto& linheap_memory{memory_region->linear_heap_memory};
 
         ASSERT_MSG(linheap_memory->size() + size <= memory_region->size,
                    "Not enough space in region to allocate shared memory!");
@@ -55,14 +55,14 @@ SharedPtr<SharedMemory> SharedMemory::Create(SharedPtr<Process> owner_process, u
             Kernel::g_current_process->vm_manager.RefreshMemoryBlockMappings(linheap_memory.get());
         }
     } else {
-        auto& vm_manager = shared_memory->owner_process->vm_manager;
+        auto& vm_manager{shared_memory->owner_process->vm_manager};
         // The memory is already available and mapped in the owner process.
-        auto vma = vm_manager.FindVMA(address);
+        auto vma{vm_manager.FindVMA(address)};
         ASSERT_MSG(vma != vm_manager.vma_map.end(), "Invalid memory address");
         ASSERT_MSG(vma->second.backing_block, "Backing block doesn't exist for address");
 
         // The returned VMA might be a bigger one encompassing the desired address.
-        auto vma_offset = address - vma->first;
+        auto vma_offset{address - vma->first};
         ASSERT_MSG(vma_offset + size <= vma->second.size,
                    "Shared memory exceeds bounds of mapped block");
 
@@ -79,7 +79,7 @@ SharedPtr<SharedMemory> SharedMemory::CreateForApplet(std::shared_ptr<std::vecto
                                                       MemoryPermission permissions,
                                                       MemoryPermission other_permissions,
                                                       std::string name) {
-    SharedPtr<SharedMemory> shared_memory(new SharedMemory);
+    SharedPtr<SharedMemory> shared_memory{new SharedMemory};
 
     shared_memory->owner_process = nullptr;
     shared_memory->name = std::move(name);
@@ -96,8 +96,8 @@ SharedPtr<SharedMemory> SharedMemory::CreateForApplet(std::shared_ptr<std::vecto
 ResultCode SharedMemory::Map(Process* target_process, VAddr address, MemoryPermission permissions,
                              MemoryPermission other_permissions) {
 
-    MemoryPermission own_other_permissions =
-        target_process == owner_process ? this->permissions : this->other_permissions;
+    MemoryPermission own_other_permissions{
+        target_process == owner_process ? this->permissions : this->other_permissions};
 
     // Automatically allocated memory blocks can only be mapped with other_permissions = DontCare
     if (base_address == 0 && other_permissions != MemoryPermission::DontCare) {
@@ -143,7 +143,7 @@ ResultCode SharedMemory::Map(Process* target_process, VAddr address, MemoryPermi
         }
     }
 
-    VAddr target_address = address;
+    VAddr target_address{address};
 
     if (base_address == 0 && target_address == 0) {
         // Calculate the address at which to map the memory block.

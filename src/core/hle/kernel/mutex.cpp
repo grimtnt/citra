@@ -28,7 +28,7 @@ Mutex::Mutex() {}
 Mutex::~Mutex() {}
 
 SharedPtr<Mutex> Mutex::Create(bool initial_locked, std::string name) {
-    SharedPtr<Mutex> mutex(new Mutex);
+    SharedPtr<Mutex> mutex{new Mutex};
 
     mutex->lock_count = 0;
     mutex->name = std::move(name);
@@ -109,7 +109,7 @@ void Mutex::UpdatePriority() {
     if (!holding_thread)
         return;
 
-    u32 best_priority = THREADPRIO_LOWEST;
+    u32 best_priority{THREADPRIO_LOWEST};
     for (auto& waiter : GetWaitingThreads()) {
         if (waiter->current_priority < best_priority)
             best_priority = waiter->current_priority;

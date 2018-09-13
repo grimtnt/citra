@@ -15,7 +15,7 @@ ResourceLimit::ResourceLimit() {}
 ResourceLimit::~ResourceLimit() {}
 
 SharedPtr<ResourceLimit> ResourceLimit::Create(std::string name) {
-    SharedPtr<ResourceLimit> resource_limit(new ResourceLimit);
+    SharedPtr<ResourceLimit> resource_limit{new ResourceLimit};
 
     resource_limit->name = std::move(name);
     return resource_limit;
@@ -93,7 +93,7 @@ u32 ResourceLimit::GetMaxResourceValue(u32 resource) const {
 void ResourceLimitsInit() {
     // Create the four resource limits that the system uses
     // Create the APPLICATION resource limit
-    SharedPtr<ResourceLimit> resource_limit = ResourceLimit::Create("Applications");
+    SharedPtr<ResourceLimit> resource_limit{ResourceLimit::Create("Applications")};
     resource_limit->max_priority = 0x18;
     resource_limit->max_commit = 0x4000000;
     resource_limit->max_threads = 0x20;

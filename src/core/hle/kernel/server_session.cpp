@@ -14,6 +14,7 @@
 namespace Kernel {
 
 ServerSession::ServerSession() = default;
+
 ServerSession::~ServerSession() {
     // This destructor will be called automatically when the last ServerSession handle is closed by
     // the emulated application.
@@ -29,7 +30,7 @@ ServerSession::~ServerSession() {
 }
 
 ResultVal<SharedPtr<ServerSession>> ServerSession::Create(std::string name) {
-    SharedPtr<ServerSession> server_session(new ServerSession);
+    SharedPtr<ServerSession> server_session{new ServerSession};
 
     server_session->name = std::move(name);
     server_session->parent = nullptr;
@@ -101,11 +102,11 @@ ResultCode ServerSession::HandleSyncRequest(SharedPtr<Thread> thread) {
 
 ServerSession::SessionPair ServerSession::CreateSessionPair(const std::string& name,
                                                             SharedPtr<ClientPort> port) {
-    auto server_session = ServerSession::Create(name + "_Server").Unwrap();
-    SharedPtr<ClientSession> client_session(new ClientSession);
+    auto server_session{ServerSession::Create(name + "_Server").Unwrap()};
+    SharedPtr<ClientSession> client_session{new ClientSession};
     client_session->name = name + "_Client";
 
-    std::shared_ptr<Session> parent(new Session);
+    std::shared_ptr<Session> parent{new Session};
     parent->client = client_session.get();
     parent->server = server_session.get();
     parent->port = port;

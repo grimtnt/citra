@@ -19,7 +19,7 @@ ResultVal<SharedPtr<Semaphore>> Semaphore::Create(s32 initial_count, s32 max_cou
     if (initial_count > max_count)
         return ERR_INVALID_COMBINATION_KERNEL;
 
-    SharedPtr<Semaphore> semaphore(new Semaphore);
+    SharedPtr<Semaphore> semaphore{new Semaphore};
 
     // When the semaphore is created, some slots are reserved for other threads,
     // and the rest is reserved for the caller thread

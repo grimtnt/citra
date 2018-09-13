@@ -62,20 +62,23 @@ enum class MemoryState : u8 {
  */
 struct VirtualMemoryArea {
     /// Virtual base address of the region.
-    VAddr base = 0;
-    /// Size of the region.
-    u32 size = 0;
+    VAddr base{};
 
-    VMAType type = VMAType::Free;
-    VMAPermission permissions = VMAPermission::None;
+    /// Size of the region.
+    u32 size{};
+
+    VMAType type{VMAType::Free};
+    VMAPermission permissions{VMAPermission::None};
+
     /// Tag returned by svcQueryMemory. Not otherwise used.
     MemoryState meminfo_state = MemoryState::Free;
 
     // Settings for type = AllocatedMemoryBlock
     /// Memory block backing this VMA.
-    std::shared_ptr<std::vector<u8>> backing_block = nullptr;
+    std::shared_ptr<std::vector<u8>> backing_block{};
+
     /// Offset into the backing_memory the mapping starts from.
-    std::size_t offset = 0;
+    std::size_t offset{};
 
     // Settings for type = BackingMemory
     /// Pointer backing this VMA. It will not be destroyed or freed when the VMA is removed.
@@ -109,7 +112,7 @@ public:
      * used.
      * @note This is the limit used by the New 3DS kernel. Old 3DS used 0x20000000.
      */
-    static const u32 MAX_ADDRESS = 0x40000000;
+    static const u32 MAX_ADDRESS{0x40000000};
 
     /**
      * A map covering the entirety of the managed address space, keyed by the `base` field of each
@@ -119,6 +122,7 @@ public:
      * merged.
      */
     std::map<VAddr, VirtualMemoryArea> vma_map;
+
     using VMAHandle = decltype(vma_map)::const_iterator;
 
     VMManager();
@@ -156,8 +160,8 @@ public:
      * @returns The address at which the memory was mapped.
      */
     ResultVal<VAddr> MapMemoryBlockToBase(VAddr base, u32 region_size,
-                                          std::shared_ptr<std::vector<u8>> block, std::size_t offset,
-                                          u32 size, MemoryState state);
+                                          std::shared_ptr<std::vector<u8>> block,
+                                          std::size_t offset, u32 size, MemoryState state);
     /**
      * Maps an unmanaged host memory pointer at a given address.
      *

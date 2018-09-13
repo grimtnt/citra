@@ -23,7 +23,7 @@ Timer::Timer() {}
 Timer::~Timer() {}
 
 SharedPtr<Timer> Timer::Create(ResetType reset_type, std::string name) {
-    SharedPtr<Timer> timer(new Timer);
+    SharedPtr<Timer> timer{new Timer};
 
     timer->reset_type = reset_type;
     timer->signaled = false;

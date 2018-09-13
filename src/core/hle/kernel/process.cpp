@@ -23,7 +23,7 @@ namespace Kernel {
 static std::vector<SharedPtr<Process>> process_list;
 
 SharedPtr<CodeSet> CodeSet::Create(std::string name, u64 program_id) {
-    SharedPtr<CodeSet> codeset(new CodeSet);
+    SharedPtr<CodeSet> codeset{new CodeSet};
 
     codeset->name = std::move(name);
     codeset->program_id = program_id;
@@ -331,4 +331,5 @@ s64 GetProcessListSize() {
 }
 
 SharedPtr<Process> g_current_process;
+
 } // namespace Kernel

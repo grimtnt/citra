@@ -27,11 +27,13 @@ public:
     std::string GetTypeName() const override {
         return "Mutex";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::Mutex;
+    static const HandleType HANDLE_TYPE{HandleType::Mutex};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

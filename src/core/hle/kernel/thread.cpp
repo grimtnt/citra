@@ -342,7 +342,7 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
                           ErrorSummary::InvalidArgument, ErrorLevel::Permanent);
     }
 
-    SharedPtr<Thread> thread(new Thread);
+    SharedPtr<Thread> thread{new Thread};
 
     thread_list.push_back(thread);
     ready_queue.prepare(priority);
