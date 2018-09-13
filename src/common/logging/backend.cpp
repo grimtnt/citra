@@ -48,9 +48,10 @@ public:
 
     void RemoveBackend(std::string_view backend_name) {
         std::lock_guard<std::mutex> lock{writing_mutex};
-        const auto it =
-            std::remove_if(backends.begin(), backends.end(),
-                           [&backend_name](const auto& i) { return backend_name == i->GetName(); });
+        const auto it{
+            std::remove_if(backends.begin(), backends.end(), [&backend_name](const auto& i) {
+                return backend_name == i->GetName();
+            })};
         backends.erase(it, backends.end());
     }
 
@@ -63,9 +64,9 @@ public:
     }
 
     Backend* GetBackend(std::string_view backend_name) {
-        const auto it =
+        const auto it{
             std::find_if(backends.begin(), backends.end(),
-                         [&backend_name](const auto& i) { return backend_name == i->GetName(); });
+                         [&backend_name](const auto& i) { return backend_name == i->GetName(); })};
         if (it == backends.end())
             return nullptr;
         return it->get();
@@ -99,18 +100,13 @@ private:
     Filter filter;
 };
 
-void ConsoleBackend::Write(const Entry& entry) {
-    PrintMessage(entry);
-}
-
 void ColorConsoleBackend::Write(const Entry& entry) {
     PrintColoredMessage(entry);
 }
 
 // _SH_DENYWR allows read only access to the file for other programs.
 // It is #defined to 0 on other platforms
-FileBackend::FileBackend(const std::string& filename)
-    : file(filename, "w", _SH_DENYWR), bytes_written(0) {}
+FileBackend::FileBackend(const std::string& filename) : file{filename, "w", _SH_DENYWR} {}
 
 void FileBackend::Write(const Entry& entry) {
     // prevent logs from going over the maximum size (in case its spamming and the user doesn't
@@ -130,15 +126,12 @@ void FileBackend::Write(const Entry& entry) {
     CLS(Log)                                                                                       \
     CLS(Common)                                                                                    \
     SUB(Common, Filesystem)                                                                        \
-    SUB(Common, Memory)                                                                            \
     CLS(Core)                                                                                      \
     SUB(Core, ARM11)                                                                               \
     SUB(Core, Timing)                                                                              \
     CLS(Config)                                                                                    \
     CLS(Debug)                                                                                     \
     SUB(Debug, Emulated)                                                                           \
-    SUB(Debug, GPU)                                                                                \
-    SUB(Debug, Breakpoint)                                                                         \
     CLS(Kernel)                                                                                    \
     SUB(Kernel, SVC)                                                                               \
     CLS(Applet)                                                                                    \

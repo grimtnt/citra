@@ -54,20 +54,6 @@ private:
 };
 
 /**
- * Backend that writes to stderr without any color commands
- */
-class ConsoleBackend : public Backend {
-public:
-    static const char* Name() {
-        return "console";
-    }
-    const char* GetName() const override {
-        return Name();
-    }
-    void Write(const Entry& entry) override;
-};
-
-/**
  * Backend that writes to stderr and with color
  */
 class ColorConsoleBackend : public Backend {
@@ -101,7 +87,7 @@ public:
 
 private:
     FileUtil::IOFile file;
-    std::size_t bytes_written;
+    std::size_t bytes_written{};
 };
 
 void AddBackend(std::unique_ptr<Backend> backend);

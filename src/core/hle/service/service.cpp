@@ -65,12 +65,10 @@ namespace Service {
 
 std::unordered_map<std::string, SharedPtr<ClientPort>> g_kernel_named_ports;
 
-const std::array<ServiceModuleInfo, 40> service_module_map{
-    {{"FS", 0x00040130'00001102, FS::InstallInterfaces},
-     {"PM", 0x00040130'00001202, PM::InstallInterfaces},
+const std::array<ServiceModuleInfo, 38> service_module_map{
+    {{"PM", 0x00040130'00001202, PM::InstallInterfaces},
      {"LDR", 0x00040130'00003702, LDR::InstallInterfaces},
      {"PXI", 0x00040130'00001402, PXI::InstallInterfaces},
-
      {"ERR", 0x00040030'00008A02, [](SM::ServiceManager& sm) { ERR::InstallInterfaces(); }},
      {"AC", 0x00040130'00002402, AC::InstallInterfaces},
      {"ACT", 0x00040130'00003802, ACT::InstallInterfaces},
@@ -82,7 +80,6 @@ const std::array<ServiceModuleInfo, 40> service_module_map{
           Y2R::InstallInterfaces(sm);
       }},
      {"CECD", 0x00040130'00002602, CECD::InstallInterfaces},
-     {"CFG", 0x00040130'00001702, CFG::InstallInterfaces},
      {"DLP", 0x00040130'00002802, DLP::InstallInterfaces},
      {"DSP", 0x00040130'00001A02, DSP::InstallInterfaces},
      {"FRD", 0x00040130'00003202, FRD::InstallInterfaces},
@@ -218,49 +215,31 @@ void AddNamedPort(std::string name, SharedPtr<ClientPort> port) {
     g_kernel_named_ports.emplace(std::move(name), std::move(port));
 }
 
+static bool AttemptLLE(const ServiceModuleInfo& service_module) {
+    if (!Settings::values.lle_modules.at(service_module.name))
+        return false;
+    std::unique_ptr<Loader::AppLoader> loader{
+        Loader::GetLoader(AM::GetTitleContentPath(FS::MediaType::NAND, service_module.title_id))};
+    if (!loader) {
+        LOG_ERROR(Service,
+                  "Service module \"{}\" could not be loaded; Defaulting to HLE implementation.",
+                  service_module.name);
+        return false;
+    }
+    SharedPtr<Kernel::Process> process;
+    loader->Load(process);
+    LOG_DEBUG(Service, "Service module \"{}\" has been successfully loaded.", service_module.name);
+    return true;
+}
+
 /// Initialize ServiceManager
 void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     SM::ServiceManager::InstallInterfaces(sm);
 
-    ERR::InstallInterfaces();
-
-    PS::InstallInterfaces(*sm);
-    PXI::InstallInterfaces(*sm);
-    NS::InstallInterfaces(*sm);
-    AC::InstallInterfaces(*sm);
-    LDR::InstallInterfaces(*sm);
-    MCU::InstallInterfaces(*sm);
-    MP::InstallInterfaces(*sm);
-    MIC::InstallInterfaces(*sm);
-    NWM::InstallInterfaces(*sm);
-
-    ACT::InstallInterfaces(*sm);
-    AM::InstallInterfaces(*sm);
-    APT::InstallInterfaces(*sm);
-    BOSS::InstallInterfaces(*sm);
-    CAM::InstallInterfaces(*sm);
-    CECD::InstallInterfaces(*sm);
-    DLP::InstallInterfaces(*sm);
-    DSP::InstallInterfaces(*sm);
-    FRD::InstallInterfaces(*sm);
-    GSP::InstallInterfaces(*sm);
-    HID::InstallInterfaces(*sm);
-    HTTP::InstallInterfaces(*sm);
-    IR::InstallInterfaces(*sm);
-    MVD::InstallInterfaces(*sm);
-    NDM::InstallInterfaces(*sm);
-    NEWS::InstallInterfaces(*sm);
-    NFC::InstallInterfaces(*sm);
-    NIM::InstallInterfaces(*sm);
-    PTM::InstallInterfaces(*sm);
-    QTM::InstallInterfaces(*sm);
-
-    CSND::InstallInterfaces(*sm);
-    PM::InstallInterfaces(*sm);
-    SOC::InstallInterfaces(*sm);
-    SSL::InstallInterfaces(*sm);
-    Y2R::InstallInterfaces(*sm);
-
+    for (const auto& service_module : service_module_map) {
+        if (!AttemptLLE(service_module) && service_module.init_function != nullptr)
+            service_module.init_function(*sm);
+    }
     LOG_DEBUG(Service, "initialized OK");
 }
 

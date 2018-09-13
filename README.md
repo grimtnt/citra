@@ -10,7 +10,7 @@ Citra
 
 [![License](https://img.shields.io/github/license/valentinvanelslande/citra.svg)](license.txt)
 
-Citra is an open-source Nintendo 3DS emulator written in C++. It is written with portability in mind, with builds actively maintained for Windows.
+Citra is an open-source Nintendo 3DS emulator written in C++. It is written with portability in mind, with builds for Windows.
 
 Citra emulates a subset of 3DS hardware and therefore is useful for running/debugging homebrew applications, and it is also able to run many commercial games! Some of these do not run at a playable state, but we are working every day to advance the project forward.
 

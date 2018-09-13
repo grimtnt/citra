@@ -34,15 +34,12 @@ enum class Class : u8 {
     Log,               ///< Messages about the log system itself
     Common,            ///< Library routines
     Common_Filesystem, ///< Filesystem interface library
-    Common_Memory,     ///< Memory mapping and management functions
     Core,              ///< LLE emulation core
     Core_ARM11,        ///< ARM11 CPU core
     Core_Timing,       ///< CoreTiming functions
     Config,            ///< Emulator configuration (including commandline)
     Debug,             ///< Debugging tools
     Debug_Emulated,    ///< Debug messages from the emulated programs
-    Debug_GPU,         ///< GPU debugging tools
-    Debug_Breakpoint,  ///< Logging breakpoints and watchpoints
     Kernel,            ///< The HLE implementation of the CTR kernel
     Kernel_SVC,        ///< Kernel system calls
     Applet,            ///< HLE implementation of system applets. Each applet

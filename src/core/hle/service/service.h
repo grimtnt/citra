@@ -196,7 +196,7 @@ struct ServiceModuleInfo {
     u64 title_id;
     std::function<void(SM::ServiceManager&)> init_function;
 };
-extern const std::array<ServiceModuleInfo, 40> service_module_map;
+extern const std::array<ServiceModuleInfo, 38> service_module_map;
 
 /// Adds a port to the named port table
 void AddNamedPort(std::string name, Kernel::SharedPtr<Kernel::ClientPort> port);
