@@ -103,8 +103,9 @@ public:
     void AddTicks(std::uint64_t ticks) override {
         CoreTiming::AddTicks(use_custom_ticks ? custom_ticks : ticks);
     }
+
     std::uint64_t GetTicksRemaining() override {
-        s64 ticks = CoreTiming::GetDowncount();
+        s64 ticks{CoreTiming::GetDowncount()};
         return static_cast<u64>(ticks <= 0 ? 0 : ticks);
     }
 
@@ -164,7 +165,7 @@ void CPU::SetVFPSystemReg(VFPSystemRegister reg, u32 value) {
         jit->SetFpscr(value);
     }
 
-    // Dynarmic does not implement and/or expose other VFP registers, fallback to interpreter state
+    // Dynarmic does not implement and/or expose other VFP registers
     state->vfp[reg] = value;
 }
 
@@ -240,7 +241,7 @@ void CPU::SyncSettings() {
     case Settings::TicksMode::Auto: {
         u64 program_id{};
         Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
-        auto itr = custom_ticks_map.find(program_id);
+        auto itr{custom_ticks_map.find(program_id)};
         if (itr != custom_ticks_map.end()) {
             cb->custom_ticks = itr->second;
             cb->use_custom_ticks = true;
@@ -263,5 +264,6 @@ std::unique_ptr<Dynarmic::A32::Jit> CPU::MakeJit() {
     config.callbacks = cb.get();
     config.page_table = &current_page_table->pointers;
     config.coprocessors[15] = std::make_shared<CPUCP15>(state);
+    config.define_unpredictable_behaviour = true;
     return std::make_unique<Dynarmic::A32::Jit>(config);
 }
