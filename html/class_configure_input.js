@@ -1,0 +1,25 @@
+var class_configure_input =
+[
+    [ "ConfigureInput", "class_configure_input.html#a280861e354e453608baedd4222d4405a", null ],
+    [ "applyConfiguration", "class_configure_input.html#a7872eacb0d73979a86099f4e760a9075", null ],
+    [ "ClearAll", "class_configure_input.html#af0fa544b1abdac596ff198123d77ee56", null ],
+    [ "handleClick", "class_configure_input.html#a3b7b48a16507f67b55afb00003bdb482", null ],
+    [ "keyPressEvent", "class_configure_input.html#a36ab24351dc7bdde7ee9fb88568bcc5a", null ],
+    [ "loadConfiguration", "class_configure_input.html#a723658560d148eae6c0986c6aa49225a", null ],
+    [ "restoreDefaults", "class_configure_input.html#aa282a823974fc27b76cc4358c97c7637", null ],
+    [ "setPollingResult", "class_configure_input.html#a838ed3ebe4883b5b0a1fc2add17f15c4", null ],
+    [ "updateButtonLabels", "class_configure_input.html#a4223b77e0e6531c19fd8dc786242ae81", null ],
+    [ "analog_map_buttons", "class_configure_input.html#a317a12ae0693190909730c8b7cb9a6cb", null ],
+    [ "analog_map_stick", "class_configure_input.html#acf35354c620c513b949a95bd5020eea1", null ],
+    [ "analog_sub_buttons", "class_configure_input.html#a3e24ecdd7952651e2654174797a68e60", null ],
+    [ "ANALOG_SUB_BUTTONS_NUM", "class_configure_input.html#a713803c9bd5d6b504c7bee1a6d9aeed0", null ],
+    [ "analogs_param", "class_configure_input.html#a77e62d86639279dde8bb0cbf5a89f2d2", null ],
+    [ "button_map", "class_configure_input.html#a97ae3aa42f9402779685c791b9865f61", null ],
+    [ "buttons_param", "class_configure_input.html#ad860fb0f229bbb1714d0d80f0903fbec", null ],
+    [ "device_pollers", "class_configure_input.html#ab31b3a489978fdf965a2a594afdaf571", null ],
+    [ "input_setter", "class_configure_input.html#a75f5c95e6e82420cca6e4e96b2ce79df", null ],
+    [ "poll_timer", "class_configure_input.html#aab2ba9db8920448462f536f9214571b1", null ],
+    [ "timeout_timer", "class_configure_input.html#aca38c23eef7742c95dd3b2ea2356b1f7", null ],
+    [ "ui", "class_configure_input.html#a28a17ccb603f29f2e7b9872cca9d2183", null ],
+    [ "want_keyboard_keys", "class_configure_input.html#a1348cdafe014a8f995d55165848df767", null ]
+];

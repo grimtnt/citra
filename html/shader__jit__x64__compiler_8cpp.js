@@ -1,0 +1,26 @@
+var shader__jit__x64__compiler_8cpp =
+[
+    [ "JitFunction", "shader__jit__x64__compiler_8cpp.html#abb06dfd506cceb5b167dd71f9940858a", null ],
+    [ "Emit", "shader__jit__x64__compiler_8cpp.html#ac119bd5ded59bb7388c22bd599c4f354", null ],
+    [ "LogCritical", "shader__jit__x64__compiler_8cpp.html#ac98bb0941a463b51c4b1b2e52027420e", null ],
+    [ "ADDROFFS_REG_0", "shader__jit__x64__compiler_8cpp.html#a7fbbc0eeaebff27e90943912e4cf76c5", null ],
+    [ "ADDROFFS_REG_1", "shader__jit__x64__compiler_8cpp.html#ae9b441a22eda58bc5f6f53ee7285249a", null ],
+    [ "COND0", "shader__jit__x64__compiler_8cpp.html#aec5d8e961de0d55c1f91d82b2a8e1494", null ],
+    [ "COND1", "shader__jit__x64__compiler_8cpp.html#ad5843f8ce6e9ef4d3887bfbe3f80e932", null ],
+    [ "instr_table", "shader__jit__x64__compiler_8cpp.html#a5dd6f8b9653d1dd40122a39338b07ce8", null ],
+    [ "LOOPCOUNT", "shader__jit__x64__compiler_8cpp.html#a5408b7b1cacea8bc38465124d37d39e5", null ],
+    [ "LOOPCOUNT_REG", "shader__jit__x64__compiler_8cpp.html#a87dc0713642d2bd8151ab90c73cf9004", null ],
+    [ "LOOPINC", "shader__jit__x64__compiler_8cpp.html#af76add0c31fc1c11b204a469c3b17b6f", null ],
+    [ "NEGBIT", "shader__jit__x64__compiler_8cpp.html#a0b32cc87009a27a0df96ba1fbd1b497e", null ],
+    [ "NO_DEST_REG_MASK", "shader__jit__x64__compiler_8cpp.html#ac86a3586310766a3e6ed8a5769f7cdc0", null ],
+    [ "NO_SRC_REG_SWIZZLE", "shader__jit__x64__compiler_8cpp.html#a15ed93ea43623a0990ffc29dbba35c4d", null ],
+    [ "ONE", "shader__jit__x64__compiler_8cpp.html#aaf53fa19ae0d387b2180ae8ee6facb2f", null ],
+    [ "persistent_regs", "shader__jit__x64__compiler_8cpp.html#acd71ebf8f5dac2f18453861953d09e93", null ],
+    [ "SCRATCH", "shader__jit__x64__compiler_8cpp.html#ad81e2b9e3cb07d7cfe240c51f5bfd3fe", null ],
+    [ "SCRATCH2", "shader__jit__x64__compiler_8cpp.html#aa33f394d95104846c9bd7b4bd4a17f1f", null ],
+    [ "SRC1", "shader__jit__x64__compiler_8cpp.html#a93b4e36dea42b24ef8b9ba47d1de7c99", null ],
+    [ "SRC2", "shader__jit__x64__compiler_8cpp.html#a80f4aa2b67c47421ebfcf278b43014d8", null ],
+    [ "SRC3", "shader__jit__x64__compiler_8cpp.html#a4b42198020481422c8714732346387db", null ],
+    [ "STATE", "shader__jit__x64__compiler_8cpp.html#a929b8362709cf92fb684792435840d0f", null ],
+    [ "UNIFORMS", "shader__jit__x64__compiler_8cpp.html#ac294ba74369b196eebefc5bfa0bcf6f8", null ]
+];

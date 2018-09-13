@@ -1,0 +1,37 @@
+var archive_8cpp =
+[
+    [ "DirectoryCommand", "archive_8cpp.html#aab3718e789be2301fa9f23c241bcc956", [
+      [ "Dummy1", "archive_8cpp.html#aab3718e789be2301fa9f23c241bcc956ac2279ca85d3e1f824a9d710ef0a5654f", null ],
+      [ "Control", "archive_8cpp.html#aab3718e789be2301fa9f23c241bcc956aa1595abbb4c3a326636dd178757cd6c1", null ],
+      [ "Read", "archive_8cpp.html#aab3718e789be2301fa9f23c241bcc956a7a1a5f3e79fdc91edf2f5ead9d66abb4", null ],
+      [ "Close", "archive_8cpp.html#aab3718e789be2301fa9f23c241bcc956ad3d2e617335f08df83599665eef8a418", null ]
+    ] ],
+    [ "ArchiveInit", "archive_8cpp.html#a4bc98685423e27bc36568a23af9472e4", null ],
+    [ "ArchiveShutdown", "archive_8cpp.html#acca04d4ffaa95f06e922468671bdcf8b", null ],
+    [ "CloseArchive", "archive_8cpp.html#a36a2e43d04fef490d27c12c590b667ac", null ],
+    [ "CreateDirectoryFromArchive", "archive_8cpp.html#a659b449d3d1249cfb4a6a4c56a1882a5", null ],
+    [ "CreateExtSaveData", "archive_8cpp.html#aeb22d463389eca7585cd86e22e9c8052", null ],
+    [ "CreateFileInArchive", "archive_8cpp.html#aa2651f86139bdab36114c8c47ab0354f", null ],
+    [ "CreateSystemSaveData", "archive_8cpp.html#ab8fe8f399181c1acb34563960b16bf7c", null ],
+    [ "DeleteDirectoryFromArchive", "archive_8cpp.html#a6f3f74f36e50bdc42d234ae273d29b52", null ],
+    [ "DeleteDirectoryRecursivelyFromArchive", "archive_8cpp.html#ac00084e4d5ced6fd4c50197edab6c96c", null ],
+    [ "DeleteExtSaveData", "archive_8cpp.html#a61ee50209a92f4ce2e79c35d378a7578", null ],
+    [ "DeleteFileFromArchive", "archive_8cpp.html#abba3c4495626896da870fea685d89788", null ],
+    [ "DeleteSystemSaveData", "archive_8cpp.html#aa542303872e9045245bd889e203626a4", null ],
+    [ "FormatArchive", "archive_8cpp.html#ac3845cf491f7c8e3134ed27d51142bd2", null ],
+    [ "GetArchive", "archive_8cpp.html#adeb378ff716608c370dc5ff67ee08bba", null ],
+    [ "GetArchiveFormatInfo", "archive_8cpp.html#aeeefbc7f826e571319cb35be0b877571", null ],
+    [ "GetFreeBytesInArchive", "archive_8cpp.html#ae49d1eec2e38bb5b3db8817d7ccbd5e5", null ],
+    [ "OpenArchive", "archive_8cpp.html#a84c9413b4585001e5f40a473639565f6", null ],
+    [ "OpenDirectoryFromArchive", "archive_8cpp.html#a5dab9d6fbe5ff6e50acc2f8869bcf98d", null ],
+    [ "OpenFileFromArchive", "archive_8cpp.html#aa11a720fd25c2133ece9592244835863", null ],
+    [ "RegisterArchiveType", "archive_8cpp.html#af62d2625eaa1125905ba4d14033a9f07", null ],
+    [ "RegisterArchiveTypes", "archive_8cpp.html#a9c7e1c8ca4bc570c3a2a657bc47ef625", null ],
+    [ "RegisterSelfNCCH", "archive_8cpp.html#a19f65578f9ddbf1c8be0d98676307938", null ],
+    [ "RenameDirectoryBetweenArchives", "archive_8cpp.html#a20f57a47f98ee4873856f02ebd1bc38b", null ],
+    [ "RenameFileBetweenArchives", "archive_8cpp.html#a0313b983360dc09288e79a1f8caa93a2", null ],
+    [ "UnregisterArchiveTypes", "archive_8cpp.html#aaaf9692f037ca32682257ab923e36216", null ],
+    [ "handle_map", "archive_8cpp.html#af1a992e6f2512579351bec958bc768a2", null ],
+    [ "id_code_map", "archive_8cpp.html#a0d3c37f7c8383023ab811e9efa52576d", null ],
+    [ "next_handle", "archive_8cpp.html#aba271fc98081246a48664ecdb5962d75", null ]
+];

@@ -1,0 +1,37 @@
+var sdl_8cpp =
+[
+    [ "SDLJoystick", "class_input_common_1_1_s_d_l_1_1_s_d_l_joystick.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_joystick" ],
+    [ "State", "class_input_common_1_1_s_d_l_1_1_s_d_l_joystick.html#struct_input_common_1_1_s_d_l_1_1_s_d_l_joystick_1_1_state", [
+      [ "axes", "class_input_common_1_1_s_d_l_1_1_s_d_l_joystick.html#ac1687a2815a86c21e37cd28422d2ae04", null ],
+      [ "buttons", "class_input_common_1_1_s_d_l_1_1_s_d_l_joystick.html#a2e51449072846fd1faed929cb73bbc51", null ],
+      [ "hats", "class_input_common_1_1_s_d_l_1_1_s_d_l_joystick.html#a75e646a7db7a7a1a1a47752a150181dd", null ]
+    ] ],
+    [ "SDLButton", "class_input_common_1_1_s_d_l_1_1_s_d_l_button.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_button" ],
+    [ "SDLDirectionButton", "class_input_common_1_1_s_d_l_1_1_s_d_l_direction_button.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_direction_button" ],
+    [ "SDLAxisButton", "class_input_common_1_1_s_d_l_1_1_s_d_l_axis_button.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_axis_button" ],
+    [ "SDLAnalog", "class_input_common_1_1_s_d_l_1_1_s_d_l_analog.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_analog" ],
+    [ "SDLButtonFactory", "class_input_common_1_1_s_d_l_1_1_s_d_l_button_factory.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_button_factory" ],
+    [ "SDLAnalogFactory", "class_input_common_1_1_s_d_l_1_1_s_d_l_analog_factory.html", "class_input_common_1_1_s_d_l_1_1_s_d_l_analog_factory" ],
+    [ "SDLPoller", "class_input_common_1_1_s_d_l_1_1_polling_1_1_s_d_l_poller.html", "class_input_common_1_1_s_d_l_1_1_polling_1_1_s_d_l_poller" ],
+    [ "SDLButtonPoller", "class_input_common_1_1_s_d_l_1_1_polling_1_1_s_d_l_button_poller.html", "class_input_common_1_1_s_d_l_1_1_polling_1_1_s_d_l_button_poller" ],
+    [ "SDLAnalogPoller", "class_input_common_1_1_s_d_l_1_1_polling_1_1_s_d_l_analog_poller.html", "class_input_common_1_1_s_d_l_1_1_polling_1_1_s_d_l_analog_poller" ],
+    [ "CloseJoystick", "sdl_8cpp.html#a09fef066670e63cded4ccf72af6cfd1e", null ],
+    [ "CloseSDLJoysticks", "sdl_8cpp.html#a72af2566b4179a338ee68bd7cdaf4138", null ],
+    [ "GetGUID", "sdl_8cpp.html#aa5545de80d83cd2fafb38f49fdd422bd", null ],
+    [ "GetPollers", "sdl_8cpp.html#a8fed0391094de8e1d92558495318dceb", null ],
+    [ "GetSDLJoystickByGUID", "sdl_8cpp.html#a8f491c9adacd060c1795662b0d66ab19", null ],
+    [ "GetSDLJoystickBySDLID", "sdl_8cpp.html#a42311ed62d1b8ed3d22df28344597bef", null ],
+    [ "HandleGameControllerEvent", "sdl_8cpp.html#a566fab1fc5a2b8f780b95974b493c8b2", null ],
+    [ "Init", "sdl_8cpp.html#a01d2092e6ca4f415d9f24621c6974c8f", null ],
+    [ "InitJoystick", "sdl_8cpp.html#a14297a3b97ec008f0feaf161677cdda3", null ],
+    [ "PollLoop", "sdl_8cpp.html#a07c51d0bac0c66c5e67426a9a1031943", null ],
+    [ "SDLEventToButtonParamPackage", "sdl_8cpp.html#a2d984350f8fd08cf68b09d855a83da7a", null ],
+    [ "Shutdown", "sdl_8cpp.html#aa47f9fc8d098d2c0f2bdafa4ec0a7712", null ],
+    [ "analog_factory", "sdl_8cpp.html#aaa89505f1608e749f74f8a5ccc64837f", null ],
+    [ "button_factory", "sdl_8cpp.html#a187379663fe43d9781ca03774c72b72c", null ],
+    [ "event_queue", "sdl_8cpp.html#a80654cb399e21f5bf82afbd6f19456f2", null ],
+    [ "initialized", "sdl_8cpp.html#a74f7edf1bcb539016bf10e3d88a2a1a3", null ],
+    [ "joystick_map", "sdl_8cpp.html#a22ad72911766bb37666ad7a5f1977d46", null ],
+    [ "joystick_map_mutex", "sdl_8cpp.html#aa92fbf928e8662811674b6d8a6dfc21f", null ],
+    [ "polling", "sdl_8cpp.html#a8b469a88b9756628307c17dc81813485", null ]
+];

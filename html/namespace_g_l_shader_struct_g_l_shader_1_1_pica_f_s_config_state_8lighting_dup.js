@@ -1,0 +1,26 @@
+var namespace_g_l_shader_struct_g_l_shader_1_1_pica_f_s_config_state_8lighting_dup =
+[
+    [ "bump_mode", "namespace_g_l_shader.html#a42e72fa6b3ec10b11f199670759c911f", null ],
+    [ "bump_renorm", "namespace_g_l_shader.html#a631dcbf4687e910ca2c8287024ff7297", null ],
+    [ "bump_selector", "namespace_g_l_shader.html#ab30358e94923c521c21593e85803e95c", null ],
+    [ "clamp_highlights", "namespace_g_l_shader.html#a89035a655819a81c4e4216d6cd50dc92", null ],
+    [ "config", "namespace_g_l_shader.html#a2245023265ae4cf87d02c8b6ba991139", null ],
+    [ "enable", "namespace_g_l_shader.html#a208f156d4a803025c284bb595a7576b4", null ],
+    [ "enable_primary_alpha", "namespace_g_l_shader.html#a204b9fbcf4e3fb746d84e75edb556134", null ],
+    [ "enable_secondary_alpha", "namespace_g_l_shader.html#a42730b1de6894a861c5e2a5bd9ea7875", null ],
+    [ "enable_shadow", "namespace_g_l_shader.html#a7f1885cda9c658b521521f09e74bd526", null ],
+    [ "light", "namespace_g_l_shader.html#aabbfddd3b10c8993981597ea663b91fb", null ],
+    [ "lut_d0", "namespace_g_l_shader.html#a7b6905dec5ed8deb13338d9b8880d9b4", null ],
+    [ "lut_d1", "namespace_g_l_shader.html#a0971ac2e95c4b893ccd4fdf5ab5b192d", null ],
+    [ "lut_fr", "namespace_g_l_shader.html#a8ca1d650f8c4d34a597b9208b208906e", null ],
+    [ "lut_rb", "namespace_g_l_shader.html#a78af111f65a7c611242c4e6419f240e3", null ],
+    [ "lut_rg", "namespace_g_l_shader.html#a2723260608090564b4ce0c476416a33f", null ],
+    [ "lut_rr", "namespace_g_l_shader.html#a87e504b2eb992a9273daa6919ed7ac83", null ],
+    [ "lut_sp", "namespace_g_l_shader.html#a60d3e582645785c71016bd8f4d41e647", null ],
+    [ "shadow_alpha", "namespace_g_l_shader.html#a6dd960aa26b5a5767fa16e6a31b8c1e2", null ],
+    [ "shadow_invert", "namespace_g_l_shader.html#aac82564f76ae748d623284a3f121a85c", null ],
+    [ "shadow_primary", "namespace_g_l_shader.html#a8146bf185e452d22300863e178c86325", null ],
+    [ "shadow_secondary", "namespace_g_l_shader.html#aa91dfc86dacbcb393c56df63e74b0c6f", null ],
+    [ "shadow_selector", "namespace_g_l_shader.html#a2b5e4d6c527011dec85f36cd503821da", null ],
+    [ "src_num", "namespace_g_l_shader.html#a88b496caa790fa23a43832ebbd120db7", null ]
+];

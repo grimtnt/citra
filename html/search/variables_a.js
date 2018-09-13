@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['k0',['k0',['../namespace_common.html#ae4d6fb3d0d5fcf0254d24002daba7785',1,'Common']]],
+  ['k1',['k1',['../namespace_common.html#a5e4f85525babf91dd5d037f0af9e109e',1,'Common']]],
+  ['k2',['k2',['../namespace_common.html#ab82a69a1ffbce415ccf80aeae5dfa545',1,'Common']]],
+  ['kblocksize',['kBlockSize',['../namespace_file_sys.html#af53cafcecc68219b79aff26eed08d3c8',1,'FileSys']]],
+  ['kcommandheaderoffset',['kCommandHeaderOffset',['../namespace_kernel.html#ae6ba505f401b878b2f0c61ddc220869d',1,'Kernel']]],
+  ['kernel_5funk',['kernel_unk',['../struct_config_mem_1_1_config_mem_def.html#a9f938c90e62beb7d3beaff6fe7a15607',1,'ConfigMem::ConfigMemDef']]],
+  ['kernel_5fversion',['kernel_version',['../class_kernel_1_1_process.html#a1cde3928319d09e8fb3ffdadf5f6ddfa',1,'Kernel::Process']]],
+  ['kernel_5fversion_5fmaj',['kernel_version_maj',['../struct_config_mem_1_1_config_mem_def.html#ae3251e3d618281735fd3d83de526da10',1,'ConfigMem::ConfigMemDef']]],
+  ['kernel_5fversion_5fmin',['kernel_version_min',['../struct_config_mem_1_1_config_mem_def.html#aa1cd1ca2acf3f17c96a076697ac45862',1,'ConfigMem::ConfigMemDef']]],
+  ['kernel_5fversion_5frev',['kernel_version_rev',['../struct_config_mem_1_1_config_mem_def.html#aaead3946b2fd1d3b7ee7171673d18d4c',1,'ConfigMem::ConfigMemDef']]],
+  ['key',['key',['../class_file_sys_1_1_rom_f_s_reader.html#a3666a497b33ab8beb071e379d6e6a2ce',1,'FileSys::RomFSReader']]],
+  ['key_5fbutton',['key_button',['../namespace_input_common.html#a4b83aa3f7d4711bb2e43e1a1db870bf2',1,'InputCommon::KeyButtonPair']]],
+  ['key_5fbutton_5flist',['key_button_list',['../class_input_common_1_1_key_button.html#a78f0928f5eaff3554ecd4d81be3ec470',1,'InputCommon::KeyButton::key_button_list()'],['../class_input_common_1_1_keyboard.html#a9988bc78f3f1b067f9222ab58ca6d059',1,'InputCommon::Keyboard::key_button_list()']]],
+  ['key_5fcode',['key_code',['../namespace_input_common.html#adb451cef5406afe67709f635cd43a45f',1,'InputCommon::KeyButtonPair']]],
+  ['key_5fvalue_5fseparator',['KEY_VALUE_SEPARATOR',['../namespace_common.html#abd1b23176a85457ba4c005688e710ca3',1,'Common']]],
+  ['key_5fvalue_5fseparator_5fescape',['KEY_VALUE_SEPARATOR_ESCAPE',['../namespace_common.html#a5594f83fe49943e87da0723eda61867c',1,'Common']]],
+  ['keyboard',['keyboard',['../namespace_input_common.html#a69effd1dfb8f2047e2c61efac036147c',1,'InputCommon']]],
+  ['keyboard_5fmode',['keyboard_mode',['../namespace_settings.html#a0b313ebbf612ea4e5bca10d0084c0b73',1,'Settings::Values']]],
+  ['keyseq',['keyseq',['../struct_hotkey.html#a3bf972bbbc4c6b3fcc0312c9705ce8d6',1,'Hotkey']]],
+  ['kmaxportsize',['kMaxPortSize',['../namespace_service.html#a3e237c543fa4574a7e58e9b66bae5895',1,'Service']]],
+  ['kmaxsections',['kMaxSections',['../namespace_file_sys.html#a734e15304b10e9e37a6a6b5a08d00444',1,'FileSys']]],
+  ['kscreenbottomheight',['kScreenBottomHeight',['../namespace_core.html#a39ba46606659d9bbb44a419d4b0a6090',1,'Core']]],
+  ['kscreenbottomwidth',['kScreenBottomWidth',['../namespace_core.html#a5b2efb054333a69e66ca2bed30aaee34',1,'Core']]],
+  ['kscreentopheight',['kScreenTopHeight',['../namespace_core.html#aef03f5636db269117b08cedb989fe672',1,'Core']]],
+  ['kscreentopwidth',['kScreenTopWidth',['../namespace_core.html#ade5720b4064b0a5a0bb2b63ae256060e',1,'Core']]]
+];

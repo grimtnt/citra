@@ -1,0 +1,28 @@
+var hw_8h =
+[
+    [ "VADDR_HASH", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a68e45d71d39adf56289effab2906cb81", null ],
+    [ "VADDR_CSND", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a2da3d2cd979447fd18d3278fdd197369", null ],
+    [ "VADDR_DSP", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a8f16838e84e00965c4845d194c6329ef", null ],
+    [ "VADDR_PDN", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48acce04cdd9e1415d66faf6c40aaaaecf0", null ],
+    [ "VADDR_CODEC", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48aa24dfce38adb71a37776149da6b31523", null ],
+    [ "VADDR_SPI", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a603d81c01fa6782006f43fd4a72c6ddf", null ],
+    [ "VADDR_SPI_2", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48ac5fc314872f504ec7003e63cd883b1a9", null ],
+    [ "VADDR_I2C", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a7103d4fc3ed41832dda2d043640dd8ea", null ],
+    [ "VADDR_CODEC_2", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48af2f2b1be4a9df6486b8cf540b6d05120", null ],
+    [ "VADDR_HID", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48abbe7b75cbe66545fa7ab9838e94f5239", null ],
+    [ "VADDR_GPIO", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a46a5710e9234600f2571a00df1cd3ac1", null ],
+    [ "VADDR_I2C_2", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48ab6981e912a6c8394ee39298af2c60cbd", null ],
+    [ "VADDR_SPI_3", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a53645b1ff706eb087ab18421ebf65328", null ],
+    [ "VADDR_I2C_3", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a779d844d42c27a487e0b5033a8f3a923", null ],
+    [ "VADDR_MIC", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a677538352d06948af0f29a03913c0af8", null ],
+    [ "VADDR_PXI", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a2056dd33cdbe8c292e20260b31cf8ce8", null ],
+    [ "VADDR_LCD", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a53004fe6b0426cee872e61d71bc9e6ac", null ],
+    [ "VADDR_DSP_2", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a536410fbc343fa9f576ffa56e5002ab0", null ],
+    [ "VADDR_HASH_2", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48aab688dd2f6b2311f5b1e62bfbd3d021b", null ],
+    [ "VADDR_GPU", "hw_8h.html#a2c79aab48ebc8fc1b1b6668662f83d48a1f32303cc57eb020b1b6d55e9eef1729", null ],
+    [ "Init", "hw_8h.html#a0db79866dc4ce8874bfb5186cbfb7987", null ],
+    [ "Read", "hw_8h.html#a25ad6727f4f182ab0b025ad5d68b4e43", null ],
+    [ "Shutdown", "hw_8h.html#a5bf43c3591477512c10ab5302beb9fe5", null ],
+    [ "Update", "hw_8h.html#a716e542b352ee1d166274f64e604d879", null ],
+    [ "Write", "hw_8h.html#a4b4618e673bd5ed8f2086a7b226dca0f", null ]
+];

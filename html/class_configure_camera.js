@@ -1,0 +1,35 @@
+var class_configure_camera =
+[
+    [ "CameraPosition", "class_configure_camera.html#aedde35fb219555069c98ce52431092f6", [
+      [ "RearRight", "class_configure_camera.html#aedde35fb219555069c98ce52431092f6a8a357013b94be4f6a91099e412664cba", null ],
+      [ "Front", "class_configure_camera.html#aedde35fb219555069c98ce52431092f6a5835bab1ade0060909e31a06af2e2cde", null ],
+      [ "RearLeft", "class_configure_camera.html#aedde35fb219555069c98ce52431092f6a8f89ba5640f320263e8e425d1f68a40e", null ],
+      [ "RearBoth", "class_configure_camera.html#aedde35fb219555069c98ce52431092f6a3758a71d9784a7203b0ce6f58a3ee40d", null ],
+      [ "Null", "class_configure_camera.html#aedde35fb219555069c98ce52431092f6abbb93ef26e3c101ff11cdd21cab08a94", null ]
+    ] ],
+    [ "ConfigureCamera", "class_configure_camera.html#a63f1aac86b3a0dc91eb5f4607ad9df04", null ],
+    [ "~ConfigureCamera", "class_configure_camera.html#aa1bdd3a2d98b0a17295abc32b4e8a779", null ],
+    [ "applyConfiguration", "class_configure_camera.html#a0f824dc1dc1e790e8d408d7cdd43d45c", null ],
+    [ "connectEvents", "class_configure_camera.html#ab38cc6097784d744af2bf62f8cd9a01d", null ],
+    [ "getCameraSelection", "class_configure_camera.html#a97b2eda547e0d3b1682df67c350cf171", null ],
+    [ "getSelectedCameraIndex", "class_configure_camera.html#a81fdac0bb044c2fe368b7e205c87b78b", null ],
+    [ "onToolButtonClicked", "class_configure_camera.html#addef052d1257818fd8b17bd5a7dbed05", null ],
+    [ "recordConfig", "class_configure_camera.html#a2411feea938a99a2b3180a6b4cd63102", null ],
+    [ "setConfiguration", "class_configure_camera.html#a3f51037dc93ef09944b76e4bc2644e51", null ],
+    [ "startPreviewing", "class_configure_camera.html#a4ee00c1788f427862ce27728442c83f2", null ],
+    [ "stopPreviewing", "class_configure_camera.html#a00f985da21ed1fcfd700b847cda0130d", null ],
+    [ "timerEvent", "class_configure_camera.html#ab5cf18da909627a6aa9529d62178a93e", null ],
+    [ "updateCameraMode", "class_configure_camera.html#acc833242009495b114239cd76761b15b", null ],
+    [ "updateImageSourceUI", "class_configure_camera.html#a1b20caf7851b3d24ac4555b8ba6309e8", null ],
+    [ "camera_config", "class_configure_camera.html#a91d67d0776e77c33b78e64cdc5c55752", null ],
+    [ "camera_flip", "class_configure_camera.html#a67342d412675c6aa83b035606ca37a39", null ],
+    [ "camera_name", "class_configure_camera.html#a7ae87e015fb57acf5e65d61c62566070", null ],
+    [ "current_selected", "class_configure_camera.html#a0a755d07a025a92c16c1d20ee13a7ec5", null ],
+    [ "Implementations", "class_configure_camera.html#acfd803477a9a597a74e6f7f9d895494c", null ],
+    [ "is_previewing", "class_configure_camera.html#ac82e05e03d9269339c6062fb38d3b7ab", null ],
+    [ "preview_height", "class_configure_camera.html#a05851724fb37ea9596445b374a52a297", null ],
+    [ "preview_width", "class_configure_camera.html#a065f6328cc3187a6b4e3e46a8e6f504e", null ],
+    [ "previewing_camera", "class_configure_camera.html#ab2f14720d08bc8584fd9b493aa76eec0", null ],
+    [ "timer_id", "class_configure_camera.html#a7648a2012066cb795ee856c1482b8618", null ],
+    [ "ui", "class_configure_camera.html#aeb855b267f9d9808d0ca8419ed83d37b", null ]
+];

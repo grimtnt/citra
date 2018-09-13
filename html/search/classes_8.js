@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['immediatemodestate',['ImmediateModeState',['../struct_pica_1_1_state.html#struct_pica_1_1_state_1_1_immediate_mode_state',1,'Pica::State']]],
+  ['impl',['Impl',['../struct_service_1_1_m_i_c_1_1_m_i_c___u_1_1_impl.html',1,'Service::MIC::MIC_U::Impl'],['../struct_audio_core_1_1_cubeb_sink_1_1_impl.html',1,'AudioCore::CubebSink::Impl'],['../class_shader_program_manager_1_1_impl.html',1,'ShaderProgramManager::Impl'],['../struct_audio_core_1_1_s_d_l2_sink_1_1_impl.html',1,'AudioCore::SDL2Sink::Impl'],['../struct_audio_core_1_1_dsp_hle_1_1_impl.html',1,'AudioCore::DspHle::Impl'],['../class_log_1_1_impl.html',1,'Log::Impl']]],
+  ['importanonymoussymbolentry',['ImportAnonymousSymbolEntry',['../struct_service_1_1_l_d_r_1_1_c_r_o_helper_1_1_import_anonymous_symbol_entry.html',1,'Service::LDR::CROHelper']]],
+  ['importindexedsymbolentry',['ImportIndexedSymbolEntry',['../struct_service_1_1_l_d_r_1_1_c_r_o_helper_1_1_import_indexed_symbol_entry.html',1,'Service::LDR::CROHelper']]],
+  ['importmoduleentry',['ImportModuleEntry',['../struct_service_1_1_l_d_r_1_1_c_r_o_helper_1_1_import_module_entry.html',1,'Service::LDR::CROHelper']]],
+  ['importnamedsymbolentry',['ImportNamedSymbolEntry',['../struct_service_1_1_l_d_r_1_1_c_r_o_helper_1_1_import_named_symbol_entry.html',1,'Service::LDR::CROHelper']]],
+  ['infoblock',['InfoBlock',['../namespace_service_1_1_a_c_t.html#struct_service_1_1_a_c_t_1_1_info_block',1,'Service::ACT']]],
+  ['initializeresult',['InitializeResult',['../class_service_1_1_a_p_t_1_1_applet_manager.html#struct_service_1_1_a_p_t_1_1_applet_manager_1_1_initialize_result',1,'Service::APT::AppletManager']]],
+  ['inputdevice',['InputDevice',['../class_input_1_1_input_device.html',1,'Input']]],
+  ['interface',['Interface',['../class_service_1_1_p_t_m_1_1_module_1_1_interface.html',1,'Service::PTM::Module::Interface'],['../class_service_1_1_a_m_1_1_module_1_1_interface.html',1,'Service::AM::Module::Interface'],['../class_service_1_1_a_c_1_1_module_1_1_interface.html',1,'Service::AC::Module::Interface'],['../class_service_1_1_b_o_s_s_1_1_module_1_1_interface.html',1,'Service::BOSS::Module::Interface'],['../class_service_1_1_c_a_m_1_1_module_1_1_interface.html',1,'Service::CAM::Module::Interface'],['../class_service_1_1_c_e_c_d_1_1_module_1_1_interface.html',1,'Service::CECD::Module::Interface'],['../class_service_1_1_a_c_t_1_1_module_1_1_interface.html',1,'Service::ACT::Module::Interface'],['../class_service_1_1_c_f_g_1_1_module_1_1_interface.html',1,'Service::CFG::Module::Interface'],['../class_service_1_1_f_r_d_1_1_module_1_1_interface.html',1,'Service::FRD::Module::Interface'],['../class_service_1_1_a_p_t_1_1_module_1_1_interface.html',1,'Service::APT::Module::Interface'],['../class_service_1_1_h_i_d_1_1_module_1_1_interface.html',1,'Service::HID::Module::Interface'],['../class_service_1_1_m_c_u_1_1_module_1_1_interface.html',1,'Service::MCU::Module::Interface'],['../class_service_1_1_n_f_c_1_1_module_1_1_interface.html',1,'Service::NFC::Module::Interface']]],
+  ['intermediatemixsamples',['IntermediateMixSamples',['../namespace_audio_core_1_1_h_l_e.html#struct_audio_core_1_1_h_l_e_1_1_intermediate_mix_samples',1,'AudioCore::HLE']]],
+  ['internalrelocationentry',['InternalRelocationEntry',['../struct_service_1_1_l_d_r_1_1_c_r_o_helper_1_1_internal_relocation_entry.html',1,'Service::LDR::CROHelper']]],
+  ['interruptrelayqueue',['InterruptRelayQueue',['../namespace_service_1_1_g_s_p.html#struct_service_1_1_g_s_p_1_1_interrupt_relay_queue',1,'Service::GSP']]],
+  ['iofile',['IOFile',['../class_file_util_1_1_i_o_file.html',1,'FileUtil']]],
+  ['ipconnectwindow',['IpConnectWindow',['../class_ip_connect_window.html',1,'']]],
+  ['ir_5frst',['IR_RST',['../class_service_1_1_i_r_1_1_i_r___r_s_t.html',1,'Service::IR']]],
+  ['ir_5fu',['IR_U',['../class_service_1_1_i_r_1_1_i_r___u.html',1,'Service::IR']]],
+  ['ir_5fuser',['IR_USER',['../class_service_1_1_i_r_1_1_i_r___u_s_e_r.html',1,'Service::IR']]],
+  ['irdevice',['IRDevice',['../class_service_1_1_i_r_1_1_i_r_device.html',1,'Service::IR']]],
+  ['iterator',['Iterator',['../class_common_1_1_bit_set_1_1_iterator.html',1,'Common::BitSet']]],
+  ['ivfcarchive',['IVFCArchive',['../class_file_sys_1_1_i_v_f_c_archive.html',1,'FileSys']]],
+  ['ivfcdelaygenerator',['IVFCDelayGenerator',['../class_file_sys_1_1_i_v_f_c_delay_generator.html',1,'FileSys']]],
+  ['ivfcdirectory',['IVFCDirectory',['../class_file_sys_1_1_i_v_f_c_directory.html',1,'FileSys']]],
+  ['ivfcfile',['IVFCFile',['../class_file_sys_1_1_i_v_f_c_file.html',1,'FileSys']]],
+  ['ivfcfileinmemory',['IVFCFileInMemory',['../class_file_sys_1_1_i_v_f_c_file_in_memory.html',1,'FileSys']]]
+];
