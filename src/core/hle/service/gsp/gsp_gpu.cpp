@@ -698,8 +698,11 @@ void GSP_GPU::SetLedForceOff(Kernel::HLERequestContext& ctx) {
 
     u8 state{rp.Pop<u8>()};
 
-    if (state == 1)
+    if (state == 1) {
         Settings::values.factor_3d = 0;
+    } else {
+        Settings::values.factor_3d = 100;
+    }
     Core::System::GetInstance().GetSharedPageHandler()->Update3DSettings();
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
