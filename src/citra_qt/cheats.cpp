@@ -16,6 +16,7 @@
 #include "common/common_types.h"
 #include "core/core.h"
 #include "core/hle/kernel/process.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/memory.h"
 #include "ui_cheats.h"
 
@@ -269,14 +270,14 @@ T Read(const VAddr addr) {
 }
 
 QString IntToHex(int value) {
-    std::stringstream ss;
+    std::stringstream ss{};
     ss << std::setfill('0') << std::setw(sizeof(int) * 2) << std::hex << value;
     return QString::fromStdString(ss.str());
 }
 
 int HexToInt(const QString& hex) {
-    int dec;
-    std::stringstream ss;
+    int dec{};
+    std::stringstream ss{};
     ss << hex.toStdString();
     ss >> std::hex >> dec;
     return dec;
@@ -301,7 +302,7 @@ QString DoubleToHexString(double value) {
 
     d = value;
 
-    std::ostringstream oss;
+    std::ostringstream oss{};
     oss << std::hex << std::setfill('0') << std::setw(16) << i;
 
     return QString::fromStdString(oss.str());
@@ -338,9 +339,7 @@ void CheatDialog::OnScan(bool is_next_scan) {
         return;
     }
 
-    std::function<bool(int, int, int)> comparer = [&](int a, int b, int c) {
-        return Equals(a, b, c);
-    };
+    std::function<bool(int, int, int)> comparer{};
 
     switch (search_type) {
     case 0: { // Equals
@@ -361,11 +360,11 @@ void CheatDialog::OnScan(bool is_next_scan) {
     }
     }
 
-    int base = (ui->chkHex->isChecked()) ? 16 : 10;
+    int base{ui->chkHex->isChecked() ? 16 : 10};
 
     switch (value_type) {
     case 0: { // u32
-        u32 value = search_value.toUInt(nullptr, base);
+        u32 value{search_value.toUInt(nullptr, base)};
         if (!is_next_scan)
             previous_found = FirstSearch<u32>(value, comparer);
         else
@@ -374,7 +373,7 @@ void CheatDialog::OnScan(bool is_next_scan) {
     }
 
     case 1: { // u16
-        u16 value = search_value.toUShort(nullptr, base);
+        u16 value{search_value.toUShort(nullptr, base)};
         if (!is_next_scan)
             previous_found = FirstSearch<u16>(value, comparer);
         else
@@ -382,7 +381,7 @@ void CheatDialog::OnScan(bool is_next_scan) {
         break;
     }
     case 2: { // u8
-        u8 value = static_cast<u8>(search_value.toUShort(nullptr, base));
+        u8 value{static_cast<u8>(search_value.toUShort(nullptr, base))};
         if (!is_next_scan)
             previous_found = FirstSearch<u8>(value, comparer);
         else
@@ -475,24 +474,37 @@ void CheatDialog::LoadTable(const std::vector<FoundItem>& items) {
 template <typename T>
 std::vector<FoundItem> CheatDialog::FirstSearch(const T value,
                                                 std::function<bool(int, int, int)> comparer) {
-    u32 start_address{0x00000000};
-    u32 end_address{0x08000000 + 0x08000000};
-    std::vector<int> address_in_use{};
+    std::vector<VAddr> address_in_use{};
     std::vector<FoundItem> results{};
     int base{ui->chkHex->isChecked() ? 16 : 10};
     T search_to_value{static_cast<T>(ui->txtSearchTo->text().toInt(nullptr, base))};
 
-    for (u32 i = start_address; i < end_address; i += 4096) {
+    for (VAddr i{Memory::HEAP_VADDR}; i < Memory::HEAP_VADDR_END; i += 4096) {
         if (Memory::IsValidVirtualAddress(i)) {
             address_in_use.push_back(i);
         }
     }
 
+    for (VAddr i{Memory::LINEAR_HEAP_VADDR}; i < Memory::LINEAR_HEAP_VADDR_END; i += 4096) {
+        if (Memory::IsValidVirtualAddress(i)) {
+            address_in_use.push_back(i);
+        }
+    }
+
+    if (Service::CFG::IsNewModeEnabled()) {
+        for (VAddr i{Memory::NEW_LINEAR_HEAP_VADDR}; i < Memory::NEW_LINEAR_HEAP_VADDR_END;
+             i += 4096) {
+            if (Memory::IsValidVirtualAddress(i)) {
+                address_in_use.push_back(i);
+            }
+        }
+    }
+
     for (auto& range : address_in_use) {
-        for (int i = range; i < (range + 4096); i++) {
+        for (VAddr i{range}; i < (range + 4096); i++) {
             T result{Read<T>(i)};
             if (comparer(result, value, search_to_value)) {
-                FoundItem item;
+                FoundItem item{};
                 item.address = IntToHex(i);
                 item.value = QString::number(result);
                 results.push_back(item);
