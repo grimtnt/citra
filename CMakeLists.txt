@@ -17,8 +17,6 @@ CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "E
 
 option(ENABLE_CUBEB "Enable the cubeb audio backend" ON)
 
-option(ENABLE_DISCORD_RPC "Enable Discord rich presence integration" OFF)
-
 # Sanity check : Check that all submodules are present
 # =======================================================================
 
@@ -221,10 +219,6 @@ if (ENABLE_QT)
     endif()
 
     find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
-endif()
-
-if (ENABLE_DISCORD_RPC)
-    add_definitions(-DENABLE_DISCORD_RPC)
 endif()
 
 # Platform-specific library requirements

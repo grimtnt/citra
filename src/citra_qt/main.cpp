@@ -17,10 +17,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtGui>
 #include <QtWidgets>
-#include "core/hle/service/cfg/cfg.h"
-#ifdef ENABLE_DISCORD_RPC
 #include <discord_rpc.h>
-#endif
 #include <fmt/format.h>
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
@@ -46,6 +43,7 @@
 #include "common/scope_exit.h"
 #include "core/core.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
+#include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
 #include "core/loader/loader.h"
@@ -65,7 +63,6 @@ __declspec(dllexport) unsigned long NvOptimusEnablement{0x00000001};
 }
 #endif
 
-#ifdef ENABLE_DISCORD_RPC
 static void HandleDiscordDisconnected(int error_code, const char* message) {
     LOG_ERROR(Frontend, "Discord RPC disconnected ({} {})", error_code, message);
 }
@@ -73,7 +70,6 @@ static void HandleDiscordDisconnected(int error_code, const char* message) {
 static void HandleDiscordError(int error_code, const char* message) {
     LOG_ERROR(Frontend, "Discord RPC error ({} {})", error_code, message);
 }
-#endif
 
 const int GMainWindow::max_recent_files_item;
 
@@ -569,7 +565,6 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
     game_path = filename;
 
-#ifdef ENABLE_DISCORD_RPC
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
     handlers.errored = HandleDiscordError;
@@ -582,7 +577,6 @@ bool GMainWindow::LoadROM(const QString& filename) {
                                   .count();
     presence.largeImageKey = "icon";
     Discord_UpdatePresence(&presence);
-#endif
 
     if (cheats_window != nullptr)
         cheats_window->UpdateTitleID();
@@ -687,10 +681,9 @@ void GMainWindow::ShutdownGame() {
     SetupUIStrings();
 
     game_path.clear();
-#ifdef ENABLE_DISCORD_RPC
+
     Discord_ClearPresence();
     Discord_Shutdown();
-#endif
 }
 
 void GMainWindow::StoreRecentFile(const QString& filename) {
