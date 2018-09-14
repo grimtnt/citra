@@ -16,9 +16,9 @@
 namespace Loader {
 
 const std::initializer_list<Kernel::AddressMapping> default_address_mappings = {
-    {0x1FF50000, 0x8000, true},    // part of DSP RAM
-    {0x1FF70000, 0x8000, true},    // part of DSP RAM
-    {0x1F000000, 0x600000, false}, // entire VRAM
+    {0x1FF50000, 0x8000, true},                  // part of DSP RAM
+    {0x1FF70000, 0x8000, true},                  // part of DSP RAM
+    {0x1F000000, Memory::VRAM_N3DS_SIZE, false}, // entire VRAM
 };
 
 FileType IdentifyFile(FileUtil::IOFile& file) {

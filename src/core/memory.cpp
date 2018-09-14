@@ -23,6 +23,7 @@ namespace Memory {
 
 static std::array<u8, Memory::VRAM_SIZE> vram;
 static std::array<u8, Memory::N3DS_EXTRA_RAM_SIZE> n3ds_extra_ram;
+static std::array<u8, Memory::L2C_SIZE> l2cache;
 
 static PageTable* current_page_table{};
 
@@ -271,11 +272,12 @@ u8* GetPhysicalPointer(PAddr address) {
     };
 
     static constexpr MemoryArea memory_areas[] = {
-        {VRAM_PADDR, VRAM_SIZE},
+        {VRAM_PADDR, VRAM_N3DS_SIZE},
         {IO_AREA_PADDR, IO_AREA_SIZE},
         {DSP_RAM_PADDR, DSP_RAM_SIZE},
-        {FCRAM_PADDR, FCRAM_N3DS_SIZE},
+        {FCRAM_PADDR, FCRAM_SIZE},
         {N3DS_EXTRA_RAM_PADDR, N3DS_EXTRA_RAM_SIZE},
+        {L2C_PADDR, L2C_SIZE},
     };
 
     const auto area{
@@ -315,6 +317,9 @@ u8* GetPhysicalPointer(PAddr address) {
         break;
     case N3DS_EXTRA_RAM_PADDR:
         target_pointer = n3ds_extra_ram.data() + offset_into_region;
+        break;
+    case L2C_PADDR:
+        target_pointer = l2cache.data() + offset_into_region;
         break;
     default:
         UNREACHABLE();
@@ -451,7 +456,7 @@ void RasterizerFlushVirtualRegion(VAddr start, u32 size, FlushMode mode) {
 
     CheckRegion(LINEAR_HEAP_VADDR, LINEAR_HEAP_VADDR_END);
     CheckRegion(NEW_LINEAR_HEAP_VADDR, NEW_LINEAR_HEAP_VADDR_END);
-    CheckRegion(VRAM_VADDR, VRAM_VADDR_END);
+    CheckRegion(VRAM_VADDR, VRAM_N3DS_VADDR_END);
 }
 
 u8 Read8(const VAddr addr) {
@@ -742,7 +747,7 @@ void WriteMMIO<u64>(MMIORegionPointer mmio_handler, VAddr addr, const u64 data) 
 boost::optional<PAddr> TryVirtualToPhysicalAddress(const VAddr addr) {
     if (addr == 0) {
         return 0;
-    } else if (addr >= VRAM_VADDR && addr < VRAM_VADDR_END) {
+    } else if (addr >= VRAM_VADDR && addr < VRAM_N3DS_VADDR_END) {
         return addr - VRAM_VADDR + VRAM_PADDR;
     } else if (addr >= LINEAR_HEAP_VADDR && addr < LINEAR_HEAP_VADDR_END) {
         return addr - LINEAR_HEAP_VADDR + FCRAM_PADDR;

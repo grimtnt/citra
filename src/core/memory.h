@@ -14,7 +14,7 @@
 
 namespace Kernel {
 class Process;
-}
+} // namespace Kernel
 
 namespace Memory {
 
@@ -22,10 +22,10 @@ namespace Memory {
  * Page size used by the ARM architecture. This is the smallest granularity with which memory can
  * be mapped.
  */
-const u32 PAGE_SIZE = 0x1000;
-const u32 PAGE_MASK = PAGE_SIZE - 1;
-const int PAGE_BITS = 12;
-const std::size_t PAGE_TABLE_NUM_ENTRIES = 1 << (32 - PAGE_BITS);
+const u32 PAGE_SIZE{0x1000};
+const u32 PAGE_MASK{PAGE_SIZE - 1};
+const int PAGE_BITS{12};
+const std::size_t PAGE_TABLE_NUM_ENTRIES{1 << (32 - PAGE_BITS)};
 
 enum class PageType {
     /// Page is unmapped and should cause an access error.
@@ -83,10 +83,17 @@ enum : PAddr {
     MPCORE_RAM_SIZE = 0x00002000, ///< MPCore internal memory size (8KB)
     MPCORE_RAM_PADDR_END = MPCORE_RAM_PADDR + MPCORE_RAM_SIZE,
 
+    /// L2C-310 Level 2 Cache Controller (2MB)
+    L2C_PADDR = 0x17E10000,
+    L2C_SIZE = 0x00001000,
+    L2C_PADDR_END = L2C_PADDR + L2C_SIZE,
+
     /// Video memory
     VRAM_PADDR = 0x18000000,
-    VRAM_SIZE = 0x00600000, ///< VRAM size (6MB)
+    VRAM_SIZE = 0x00600000,      ///< VRAM size (6MB)
+    VRAM_N3DS_SIZE = 0x00A00000, ///< VRAM size on the New 3DS (10MB)
     VRAM_PADDR_END = VRAM_PADDR + VRAM_SIZE,
+    VRAM_N3DS_PADDR_END = VRAM_PADDR + VRAM_N3DS_SIZE,
 
     /// New 3DS additional memory. Supposedly faster than regular FCRAM. Part of it can be used by
     /// applications and system modules if mapped via the ExHeader.
@@ -151,6 +158,7 @@ enum : VAddr {
     /// Maps 1:1 to VRAM.
     VRAM_VADDR = 0x1F000000,
     VRAM_VADDR_END = VRAM_VADDR + VRAM_SIZE,
+    VRAM_N3DS_VADDR_END = VRAM_VADDR + VRAM_N3DS_SIZE,
 
     /// Maps 1:1 to DSP memory.
     DSP_RAM_VADDR = 0x1FF00000,

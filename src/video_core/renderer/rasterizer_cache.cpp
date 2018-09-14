@@ -627,8 +627,8 @@ void CachedSurface::LoadGLBuffer(PAddr load_start, PAddr load_end) {
     }
 
     // TODO: Should probably be done in ::Memory:: and check for other regions too
-    if (load_start < Memory::VRAM_VADDR_END && load_end > Memory::VRAM_VADDR_END)
-        load_end = Memory::VRAM_VADDR_END;
+    if (load_start < Memory::VRAM_N3DS_VADDR_END && load_end > Memory::VRAM_N3DS_VADDR_END)
+        load_end = Memory::VRAM_N3DS_VADDR_END;
 
     if (load_start < Memory::VRAM_VADDR && load_end > Memory::VRAM_VADDR)
         load_start = Memory::VRAM_VADDR;
@@ -677,8 +677,8 @@ void CachedSurface::FlushGLBuffer(PAddr flush_start, PAddr flush_end) {
 
     // TODO: Should probably be done in ::Memory:: and check for other regions too
     // same as loadglbuffer()
-    if (flush_start < Memory::VRAM_VADDR_END && flush_end > Memory::VRAM_VADDR_END)
-        flush_end = Memory::VRAM_VADDR_END;
+    if (flush_start < Memory::VRAM_N3DS_VADDR_END && flush_end > Memory::VRAM_N3DS_VADDR_END)
+        flush_end = Memory::VRAM_N3DS_VADDR_END;
 
     if (flush_start < Memory::VRAM_VADDR && flush_end > Memory::VRAM_VADDR)
         flush_start = Memory::VRAM_VADDR;

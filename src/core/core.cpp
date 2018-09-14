@@ -164,8 +164,7 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     shutdown_requested = false;
     shell_open = true;
 
-    // Initialize FS and CFG before kernel because kernel uses CFG (and Citra crashes if CFG is
-    // initialized before FS is initialized)
+    // Initialize FS and CFG
     Service::FS::ArchiveInit();
     Service::FS::InstallInterfaces(*service_manager);
     Service::CFG::InstallInterfaces(*service_manager);

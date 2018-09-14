@@ -112,11 +112,6 @@ void Module::Interface::GetSoftwareClosedFlag(Kernel::HLERequestContext& ctx) {
 }
 
 void CheckNew3DS(IPC::ResponseBuilder& rb) {
-    if (Service::CFG::IsNewModeEnabled()) {
-        LOG_WARNING(Service_PTM, "The New Mode is enabled. Citra "
-                                 "does not fully support New 3DS/2DS emulation yet!");
-    }
-
     rb.Push(RESULT_SUCCESS);
     rb.Push(Service::CFG::IsNewModeEnabled());
 }
