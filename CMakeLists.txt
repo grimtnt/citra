@@ -66,7 +66,7 @@ if (NOT DEFINED ARCHITECTURE)
     add_definitions(-DARCHITECTURE_GENERIC=1)
 endif()
 if (NOT ARCHITECTURE_x86_64)
-message(SEND_ERROR "Device not supported")
+    message(FATAL_ERROR "Unsupported architecture")
 endif()
 message(STATUS "Target architecture: ${ARCHITECTURE}")
 
