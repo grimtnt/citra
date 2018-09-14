@@ -56,23 +56,25 @@ struct CheatLine {
     explicit CheatLine(std::string line) {
         line = std::string(line.c_str()); // remove '/0' characters if any.
         line = Common::Trim(line);
-        constexpr int cheat_length = 17;
-        if (line.length() != cheat_length) {
-            type = CheatType::Null;
-            cheat_line = line;
-            return;
-        }
         try {
-            std::string type_temp = line.substr(0, 1);
+            std::string type_temp{line.substr(0, 1)};
 
             // 0xD types have extra subtype value, i.e. 0xDA
-            std::string sub_type_temp;
+            std::string sub_type_temp{};
             if (type_temp == "D" || type_temp == "d")
                 sub_type_temp = line.substr(1, 1);
-            type = static_cast<CheatType>(std::stoi(type_temp + sub_type_temp, 0, 16));
-            address = std::stoi(line.substr(1, 8), 0, 16);
-            value = std::stoi(line.substr(10, 8), 0, 16);
-            cheat_line = line;
+            std::string complete_type_str{type_temp + sub_type_temp};
+            type = static_cast<CheatType>(std::stoi(complete_type_str, 0, 16));
+            std::vector<std::string> out{};
+            Common::SplitString(line.substr(complete_type_str.length()), ' ', out);
+            if (out.size() == 2) {
+                address = std::stoi(out[0], 0, 16);
+                value = std::stoi(out[1], 0, 16);
+                cheat_line = line;
+            } else {
+                type = CheatType::Null;
+                cheat_line = line;
+            }
         } catch (const std::exception&) {
             type = CheatType::Null;
             cheat_line = line;
