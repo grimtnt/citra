@@ -38,7 +38,6 @@ target_include_directories(SoundTouch INTERFACE ./soundtouch/include)
 # add_library(xbyak INTERFACE)
 target_include_directories(xbyak INTERFACE ./xbyak/xbyak)
 target_compile_definitions(xbyak INTERFACE XBYAK_NO_OP_NAMES)
-endif()
 
 # ENet
 add_subdirectory(enet)
