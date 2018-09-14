@@ -229,6 +229,7 @@ void GMainWindow::InitializeHotkeys() {
                    Qt::ApplicationShortcut);
     RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence("CTRL+S"));
     RegisterHotkey("Main Window", "Toggle Shell Open", QKeySequence("F2"));
+    RegisterHotkey("Main Window", "Change CPU Ticks", QKeySequence("CTRL+T"));
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), &QShortcut::activated, this,
@@ -291,6 +292,21 @@ void GMainWindow::InitializeHotkeys() {
         auto& system{Core::System::GetInstance()};
         if (system.IsPoweredOn()) {
             system.SetShellOpen(!system.IsShellOpen());
+        }
+    });
+    connect(GetHotkey("Main Window", "Change CPU Ticks", this), &QShortcut::activated, this, [&] {
+        QString str{QInputDialog::getText(this, "Change CPU Ticks", "Ticks:")};
+        if (str.isEmpty())
+            return;
+        bool ok{};
+        u64 ticks{str.toULongLong(&ok)};
+        if (ok) {
+            Settings::values.ticks_mode = Settings::TicksMode::Custom;
+            Settings::values.ticks = ticks;
+            if (Core::System::GetInstance().IsPoweredOn())
+                Core::GetCPU().SyncSettings();
+        } else {
+            QMessageBox::critical(this, "Error", "Invalid number");
         }
     });
 }
