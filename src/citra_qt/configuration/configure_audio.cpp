@@ -20,6 +20,7 @@ ConfigureAudio::~ConfigureAudio() {}
 void ConfigureAudio::setConfiguration() {
     ui->toggle_audio_stretching->setChecked(Settings::values.enable_audio_stretching);
 
+    ui->audio_device_combo_box->addItem("auto");
     std::vector<std::string> device_list{AudioCore::ListDevices()};
     for (const auto& device : device_list) {
         ui->audio_device_combo_box->addItem(device.c_str());
@@ -35,10 +36,6 @@ void ConfigureAudio::setConfiguration() {
     }
 
     ui->audio_device_combo_box->setCurrentIndex(new_device_index);
-
-    if (Settings::values.audio_device_id.empty() && ui->audio_device_combo_box->count() != 0) {
-        ui->audio_device_combo_box->setCurrentIndex(0);
-    }
 }
 
 void ConfigureAudio::applyConfiguration() {

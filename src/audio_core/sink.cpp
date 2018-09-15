@@ -48,19 +48,21 @@ Sink::Sink(std::string target_device_name) : impl(std::make_unique<Impl>()) {
     }
 
     cubeb_devid output_device{};
-    cubeb_device_collection collection;
-    if (cubeb_enumerate_devices(impl->ctx, CUBEB_DEVICE_TYPE_OUTPUT, &collection) != CUBEB_OK) {
-        LOG_WARNING(Audio, "Audio output device enumeration not supported");
-    } else {
-        const auto collection_end{collection.device + collection.count};
-        const auto device{
-            std::find_if(collection.device, collection_end, [&](const cubeb_device_info& device) {
-                return target_device_name == device.friendly_name;
-            })};
-        if (device != collection_end) {
-            output_device = device->devid;
+    if (target_device_name != "auto" && !target_device_name.empty()) {
+        cubeb_device_collection collection;
+        if (cubeb_enumerate_devices(impl->ctx, CUBEB_DEVICE_TYPE_OUTPUT, &collection) != CUBEB_OK) {
+            LOG_WARNING(Audio, "Audio output device enumeration not supported");
+        } else {
+            const auto collection_end{collection.device + collection.count};
+            const auto device{std::find_if(collection.device, collection_end,
+                                           [&](const cubeb_device_info& device) {
+                                               return target_device_name == device.friendly_name;
+                                           })};
+            if (device != collection_end) {
+                output_device = device->devid;
+            }
+            cubeb_device_collection_destroy(impl->ctx, &collection);
         }
-        cubeb_device_collection_destroy(impl->ctx, &collection);
     }
 
     int stream_err{cubeb_stream_init(impl->ctx, &impl->stream, "CitraAudio", nullptr, nullptr,
