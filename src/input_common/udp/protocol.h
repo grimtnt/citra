@@ -14,10 +14,10 @@
 
 namespace InputCommon::CemuhookUDP {
 
-constexpr std::size_t MAX_PACKET_SIZE = 100;
-constexpr u16 PROTOCOL_VERSION = 1001;
-constexpr u32 CLIENT_MAGIC = 0x43555344; // DSUC (but flipped for LE)
-constexpr u32 SERVER_MAGIC = 0x53555344; // DSUS (but flipped for LE)
+constexpr std::size_t MAX_PACKET_SIZE{100};
+constexpr u16 PROTOCOL_VERSION{1001};
+constexpr u32 CLIENT_MAGIC{0x43555344}; // DSUC (but flipped for LE)
+constexpr u32 SERVER_MAGIC{0x53555344}; // DSUS (but flipped for LE)
 
 enum class Type : u32 {
     Version = 0x00100000,

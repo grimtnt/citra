@@ -32,9 +32,6 @@ struct PacketHeader {
 
 constexpr u32 CURRENT_VERSION = 1;
 constexpr u32 MIN_PACKET_SIZE = sizeof(PacketHeader);
-constexpr u32 MAX_PACKET_DATA_SIZE = 200;
-constexpr u32 MAX_PACKET_SIZE = MIN_PACKET_SIZE + MAX_PACKET_DATA_SIZE;
-constexpr u32 MAX_READ_SIZE = MAX_PACKET_DATA_SIZE;
 
 class Packet {
 public:
@@ -60,7 +57,7 @@ public:
         return header;
     }
 
-    std::array<u8, MAX_PACKET_DATA_SIZE>& GetPacketData() {
+    std::vector<u8>& GetPacketData() {
         return packet_data;
     }
 
@@ -84,7 +81,7 @@ private:
     void HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion, bool circle);
 
     struct PacketHeader header;
-    std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;
+    std::vector<u8> packet_data;
 
     std::function<void(Packet&)> send_reply_callback;
 };

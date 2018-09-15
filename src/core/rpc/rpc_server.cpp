@@ -29,10 +29,6 @@ RPCServer::~RPCServer() {
 }
 
 void RPCServer::HandleReadMemory(Packet& packet, u32 address, u32 data_size) {
-    if (data_size > MAX_READ_SIZE) {
-        return;
-    }
-
     // Note: Memory read occurs asynchronously from the state of the emulator
     Memory::ReadBlock(address, packet.GetPacketData().data(), data_size);
     packet.SetPacketDataSize(data_size);
@@ -40,15 +36,10 @@ void RPCServer::HandleReadMemory(Packet& packet, u32 address, u32 data_size) {
 }
 
 void RPCServer::HandleWriteMemory(Packet& packet, u32 address, const u8* data, u32 data_size) {
-    // Only allow writing to certain memory regions
-    if ((address >= Memory::PROCESS_IMAGE_VADDR && address <= Memory::PROCESS_IMAGE_VADDR_END) ||
-        (address >= Memory::HEAP_VADDR && address <= Memory::HEAP_VADDR_END) ||
-        (address >= Memory::N3DS_EXTRA_RAM_VADDR && address <= Memory::N3DS_EXTRA_RAM_VADDR_END)) {
-        // Note: Memory write occurs asynchronously from the state of the emulator
-        Memory::WriteBlock(address, data, data_size);
-        // If the memory happens to be executable code, make sure the changes become visible
-        Core::GetCPU().InvalidateCacheRange(address, data_size);
-    }
+    // Note: Memory write occurs asynchronously from the state of the emulator
+    Memory::WriteBlock(address, data, data_size);
+    // If the memory happens to be executable code, make sure the changes become visible
+    Core::GetCPU().InvalidateCacheRange(address, data_size);
     packet.SetPacketDataSize(0);
     packet.SendReply();
 }
@@ -132,14 +123,14 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                     sizeof(data_size));
         switch (request_packet->GetPacketType()) {
         case PacketType::ReadMemory: {
-            if (data_size > 0 && data_size <= MAX_READ_SIZE) {
+            if (data_size > 0) {
                 HandleReadMemory(*request_packet, address, data_size);
                 success = true;
             }
             break;
         }
         case PacketType::WriteMemory: {
-            if (data_size > 0 && data_size <= MAX_PACKET_DATA_SIZE - (sizeof(u32) * 2)) {
+            if (data_size > 0) {
                 const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
                 HandleWriteMemory(*request_packet, address, data, data_size);
                 success = true;

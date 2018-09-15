@@ -4,7 +4,6 @@ import random
 import binascii
 
 CURRENT_REQUEST_VERSION = 1
-MAX_REQUEST_DATA_SIZE = 200
 
 REQUEST_TYPE_READ_MEMORY = 1
 REQUEST_TYPE_WRITE_MEMORY = 2
@@ -66,64 +65,24 @@ class Citra:
         return None
 
     def read_memory(self, read_address, read_size):
-        """
-        >>> c.read_memory(0x100000, 4)
-        b'\\x07\\x00\\x00\\xeb'
-        """
-        result = bytes()
-        while read_size > 0:
-            temp_read_size = min(read_size, MAX_REQUEST_DATA_SIZE)
-            request_data = struct.pack("II", read_address, temp_read_size)
-            request, request_id = self._generate_header(
-                REQUEST_TYPE_READ_MEMORY, len(request_data))
-            request += request_data
-            self.socket.send(request)
+        request_data = struct.pack("II", read_address, read_size)
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_READ_MEMORY, len(request_data))
+        request += request_data
+        self.socket.send(request)
 
-            raw_reply = self.socket.recv()
-            reply_data = self._read_and_validate_header(
-                raw_reply, request_id, REQUEST_TYPE_READ_MEMORY)
-
-            if reply_data:
-                result += reply_data
-                read_size -= len(reply_data)
-                read_address += len(reply_data)
-            else:
-                return None
-
-        return result
+        raw_reply = self.socket.recv()
+        return self._read_and_validate_header(
+            raw_reply, request_id, REQUEST_TYPE_READ_MEMORY)
 
     def write_memory(self, write_address, write_contents):
-        """
-        >>> c.write_memory(0x100000, b"\\xff\\xff\\xff\\xff")
-        True
-        >>> c.read_memory(0x100000, 4)
-        b'\\xff\\xff\\xff\\xff'
-        >>> c.write_memory(0x100000, b"\\x07\\x00\\x00\\xeb")
-        True
-        >>> c.read_memory(0x100000, 4)
-        b'\\x07\\x00\\x00\\xeb'
-        """
-        write_size = len(write_contents)
-        while write_size > 0:
-            temp_write_size = min(write_size, MAX_REQUEST_DATA_SIZE - 8)
-            request_data = struct.pack("II", write_address, temp_write_size)
-            request_data += write_contents[:temp_write_size]
-            request, request_id = self._generate_header(
-                REQUEST_TYPE_WRITE_MEMORY, len(request_data))
-            request += request_data
-            self.socket.send(request)
-
-            raw_reply = self.socket.recv()
-            reply_data = self._read_and_validate_header(
-                raw_reply, request_id, REQUEST_TYPE_WRITE_MEMORY)
-
-            if None != reply_data:
-                write_address += temp_write_size
-                write_size -= temp_write_size
-                write_contents = write_contents[temp_write_size:]
-            else:
-                return False
-        return True
+        request_data = struct.pack("II", write_address, len(write_contents))
+        request_data += write_contents
+        request, request_id = self._generate_header(
+            REQUEST_TYPE_WRITE_MEMORY, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
 
     def set_pad_state(self, pad_state):
         request_data = struct.pack("III", 0, 0, pad_state)
@@ -181,8 +140,3 @@ class Citra:
         request += request_data
         self.socket.send(request)
         self.socket.recv()
-
-
-if "__main__" == __name__:
-    import doctest
-    doctest.testmod(extraglobs={'c': Citra()})
