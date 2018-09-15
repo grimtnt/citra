@@ -38,6 +38,10 @@ System::ResultStatus System::RunLoop() {
     if (!cpu_core) {
         return ResultStatus::ErrorNotInitialized;
     }
+    if (!running.load(std::memory_order::memory_order_relaxed)) {
+        std::unique_lock<std::mutex> lock{running_mutex};
+        running_cv.wait(lock);
+    }
     if (!dsp_core->IsOutputAllowed()) {
         // Draw black screens to the emulator window
         VideoCore::g_renderer->SwapBuffers();
@@ -183,6 +187,8 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     // Reset counters and set time origin to current frame
     GetAndResetPerfStats();
     perf_stats.BeginSystemFrame();
+
+    SetRunning(true);
 
     return ResultStatus::Success;
 }

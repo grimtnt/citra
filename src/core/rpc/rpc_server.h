@@ -32,6 +32,11 @@ private:
     void HandleSetResolution(Packet& packet, u16 resolution);
     void HandleSetGame(Packet& packet, const std::string&);
     void HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion, bool circle);
+    void HandlePause(Packet& packet);
+    void HandleResume(Packet& packet);
+    void HandleRestart(Packet& packet);
+    void HandleSetSpeedLimit(Packet& packet, u16 speed_limit);
+    void HandleSetBackgroundColor(Packet& packet, float r, float g, float b);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
     void HandleRequestsLoop();

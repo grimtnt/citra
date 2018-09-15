@@ -5,8 +5,6 @@
 #pragma once
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
 #include <QGLWidget>
 #include <QImage>
 #include <QThread>
@@ -33,39 +31,16 @@ public:
     void run() override;
 
     /**
-     * Sets whether the emulation thread is running or not
-     * @param running Boolean value, set the emulation thread to running if true
-     * @note This function is thread-safe
-     */
-    void SetRunning(bool running) {
-        std::unique_lock<std::mutex> lock{running_mutex};
-        this->running = running;
-        lock.unlock();
-        running_cv.notify_all();
-    }
-
-    /**
-     * Check if the emulation thread is running or not
-     * @return True if the emulation thread is running, otherwise false
-     * @note This function is thread-safe
-     */
-    bool IsRunning() const {
-        return running;
-    }
-
-    /**
      * Requests for the emulation thread to stop running
      */
     void RequestStop() {
         stop_run = true;
-        SetRunning(false);
+        Core::System::GetInstance().SetRunning(false);
     };
 
 private:
     bool running{};
     std::atomic<bool> stop_run{false};
-    std::mutex running_mutex;
-    std::condition_variable running_cv;
 
     GRenderWindow* render_window{};
 

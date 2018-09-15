@@ -2,18 +2,27 @@ import zmq
 import struct
 import random
 import binascii
+import enum
 
 CURRENT_REQUEST_VERSION = 1
 
-REQUEST_TYPE_READ_MEMORY = 1
-REQUEST_TYPE_WRITE_MEMORY = 2
-REQUEST_TYPE_PAD_STATE = 3
-REQUEST_TYPE_TOUCH_STATE = 4
-REQUEST_TYPE_MOTION_STATE = 5
-REQUEST_TYPE_CIRCLE_STATE = 6
-REQUEST_TYPE_SET_RESOLUTION = 7
-REQUEST_TYPE_SET_GAME = 8
-REQUEST_TYPE_SET_OVERRIDE_CONTROLS = 9
+
+class RequestType(enum.IntEnum):
+    ReadMemory = 1,
+    WriteMemory = 2,
+    PadState = 3,
+    TouchState = 4,
+    MotionState = 5,
+    CircleState = 6,
+    SetResolution = 7,
+    SetGame = 8,
+    SetOverrideControls = 9,
+    Pause = 10,
+    Resume = 11,
+    Restart = 12,
+    SetSpeedLimit = 13,
+    SetBackgroundColor = 14
+
 
 CITRA_PORT = "45987"
 
@@ -22,23 +31,23 @@ def BIT(n):  # https://github.com/smealum/ctrulib/blob/master/libctru/include/3d
     return (1 << n)
 
 
-# https://github.com/smealum/ctrulib/blob/master/libctru/include/3ds/services/hid.h#L9
-KEY_A = BIT(0)             # A
-KEY_B = BIT(1)             # B
-KEY_SELECT = BIT(2)        # Select
-KEY_START = BIT(3)         # Start
-KEY_DRIGHT = BIT(4)        # D-Pad Right
-KEY_DLEFT = BIT(5)         # D-Pad Left
-KEY_DUP = BIT(6)           # D-Pad Up
-KEY_DDOWN = BIT(7)         # D-Pad Down
-KEY_R = BIT(8)             # R
-KEY_L = BIT(9)             # L
-KEY_X = BIT(10)            # X
-KEY_Y = BIT(11)            # Y
-KEY_CPAD_RIGHT = BIT(28)   # Circle Pad Right
-KEY_CPAD_LEFT = BIT(29)    # Circle Pad Left
-KEY_CPAD_UP = BIT(30)      # Circle Pad Up
-KEY_CPAD_DOWN = BIT(31)    # Circle Pad Down
+class Key(enum.IntEnum):
+    A = BIT(0),             # A
+    B = BIT(1),             # B
+    Select = BIT(2),        # Select
+    Start = BIT(3),         # Start
+    DRight = BIT(4),        # D-Pad Right
+    DLeft = BIT(5),         # D-Pad Left
+    DUp = BIT(6),           # D-Pad Up
+    DDown = BIT(7),         # D-Pad Down
+    R = BIT(8),             # R
+    L = BIT(9),             # L
+    X = BIT(10),            # X
+    Y = BIT(11),            # Y
+    CircleRight = BIT(28),  # Circle Pad Right
+    CircleLeft = BIT(29),   # Circle Pad Left
+    CircleUp = BIT(30),     # Circle Pad Up
+    CircleDown = BIT(31)    # Circle Pad Down
 
 
 class Citra:
@@ -67,27 +76,27 @@ class Citra:
     def read_memory(self, read_address, read_size):
         request_data = struct.pack("II", read_address, read_size)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_READ_MEMORY, len(request_data))
+            RequestType.ReadMemory, len(request_data))
         request += request_data
         self.socket.send(request)
 
         raw_reply = self.socket.recv()
         return self._read_and_validate_header(
-            raw_reply, request_id, REQUEST_TYPE_READ_MEMORY)
+            raw_reply, request_id, RequestType.ReadMemory)
 
     def write_memory(self, write_address, write_contents):
         request_data = struct.pack("II", write_address, len(write_contents))
         request_data += write_contents
         request, request_id = self._generate_header(
-            REQUEST_TYPE_WRITE_MEMORY, len(request_data))
-        request += request_data
+            RequestType.WriteMemory, len(request_data))
+        request += RequestType.WriteMemory
         self.socket.send(request)
         self.socket.recv()
 
     def set_pad_state(self, pad_state):
         request_data = struct.pack("III", 0, 0, pad_state)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_PAD_STATE, len(request_data))
+            RequestType.PadState, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -95,7 +104,7 @@ class Citra:
     def set_touch_state(self, x, y, valid):
         request_data = struct.pack("IIhh?", 0, 0, x, y, valid)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_TOUCH_STATE, len(request_data))
+            RequestType.TouchState, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -103,7 +112,7 @@ class Citra:
     def set_motion_state(self, x, y, z, roll, pitch, yaw):
         request_data = struct.pack("IIhhhhhh", 0, 0, x, y, z, roll, pitch, yaw)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_MOTION_STATE, len(request_data))
+            RequestType.MotionState, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -111,7 +120,7 @@ class Citra:
     def set_circle_state(self, x, y):
         request_data = struct.pack("IIhh", 0, 0, x, y)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_CIRCLE_STATE, len(request_data))
+            RequestType.CircleState, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -119,7 +128,7 @@ class Citra:
     def set_resolution(self, resolution):
         request_data = struct.pack("IIh", 0, 0, resolution)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_SET_RESOLUTION, len(request_data))
+            RequestType.SetResolution, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -128,7 +137,7 @@ class Citra:
         request_data = struct.pack("II", 0, 0)
         request_data += str.encode(path)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_SET_GAME, len(request_data))
+            RequestType.SetGame, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
@@ -136,7 +145,47 @@ class Citra:
     def set_override_controls(self, pad, touch, motion, circle):
         request_data = struct.pack("II????", 0, 0, pad, touch, motion, circle)
         request, request_id = self._generate_header(
-            REQUEST_TYPE_SET_OVERRIDE_CONTROLS, len(request_data))
+            RequestType.SetOverrideControls, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def pause(self):
+        request_data = struct.pack("II", 0, 0)
+        request, request_id = self._generate_header(
+            RequestType.Pause, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def resume(self):
+        request_data = struct.pack("II", 0, 0)
+        request, request_id = self._generate_header(
+            RequestType.Resume, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def restart(self):
+        request_data = struct.pack("II", 0, 0)
+        request, request_id = self._generate_header(
+            RequestType.Restart, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_speed_limit(self, speed_limit):
+        request_data = struct.pack("IIh", 0, 0, speed_limit)
+        request, request_id = self._generate_header(
+            RequestType.SetSpeedLimit, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_background_color(self, r, g, b):
+        request_data = struct.pack("IIfff", 0, 0, r, g, b)
+        request, request_id = self._generate_header(
+            RequestType.SetBackgroundColor, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()

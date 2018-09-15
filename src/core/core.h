@@ -5,8 +5,10 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include "common/common_types.h"
 #include "core/hle/applets/erreula.h"
@@ -191,6 +193,18 @@ public:
         shell_open.store(value, std::memory_order_relaxed);
     }
 
+    void SetRunning(bool running) {
+        this->running.store(running, std::memory_order::memory_order_relaxed);
+        if (running) {
+            std::unique_lock<std::mutex> lock{running_mutex};
+            running_cv.notify_one();
+        }
+    }
+
+    bool IsRunning() {
+        return running.load(std::memory_order::memory_order_relaxed);
+    }
+
     std::string file_path;
 
 private:
@@ -232,9 +246,9 @@ private:
 
     static System s_instance;
 
-    ResultStatus status{ResultStatus::Success};
-    std::string status_details{""};
-    /// Saved variables for jump
+    ResultStatus status;
+    std::string status_details;
+
     EmuWindow* m_emu_window;
     std::string m_filepath;
     u64 jump_tid;
@@ -243,6 +257,9 @@ private:
     std::atomic<bool> jump_requested;
     std::atomic<bool> shutdown_requested;
     std::atomic<bool> shell_open;
+    std::atomic<bool> running;
+    std::mutex running_mutex;
+    std::condition_variable running_cv;
 };
 
 inline CPU& GetCPU() {

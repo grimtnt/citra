@@ -76,14 +76,48 @@ void RPCServer::HandleSetResolution(Packet& packet, u16 resolution) {
 }
 
 void RPCServer::HandleSetGame(Packet& packet, const std::string& path) {
+    Core::System::GetInstance().SetGame(path);
     packet.SetPacketDataSize(0);
     packet.SendReply();
-    Core::System::GetInstance().SetGame(path);
 }
 
 void RPCServer::HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion,
                                           bool circle) {
     Service::HID::SetOverrideControls(pad, touch, motion, circle);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandlePause(Packet& packet) {
+    Core::System::GetInstance().SetRunning(false);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleResume(Packet& packet) {
+    Core::System::GetInstance().SetRunning(true);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleRestart(Packet& packet) {
+    Core::System::GetInstance().RequestJump(0, Service::FS::MediaType::NAND);
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleSetSpeedLimit(Packet& packet, u16 speed_limit) {
+    Settings::values.use_frame_limit = true;
+    Settings::values.frame_limit = speed_limit;
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleSetBackgroundColor(Packet& packet, float r, float g, float b) {
+    Settings::values.bg_red = r;
+    Settings::values.bg_green = g;
+    Settings::values.bg_blue = b;
+    Settings::Apply();
     packet.SetPacketDataSize(0);
     packet.SendReply();
 }
@@ -100,6 +134,11 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::SetResolution:
         case PacketType::SetGame:
         case PacketType::SetOverrideControls:
+        case PacketType::Pause:
+        case PacketType::Resume:
+        case PacketType::Restart:
+        case PacketType::SetSpeedLimit:
+        case PacketType::SetBackgroundColor:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -216,6 +255,42 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             std::memcpy(&state, data, sizeof(State));
             HandleSetOverrideControls(*request_packet, state.pad, state.touch, state.motion,
                                       state.circle);
+            success = true;
+            break;
+        }
+        case PacketType::Pause: {
+            HandlePause(*request_packet);
+            success = true;
+            break;
+        }
+        case PacketType::Resume: {
+            HandleResume(*request_packet);
+            success = true;
+            break;
+        }
+        case PacketType::Restart: {
+            HandleRestart(*request_packet);
+            success = true;
+            break;
+        }
+        case PacketType::SetSpeedLimit: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            u16 speed_limit{};
+            std::memcpy(&speed_limit, data, sizeof(u16));
+            HandleSetSpeedLimit(*request_packet, speed_limit);
+            success = true;
+            break;
+        }
+        case PacketType::SetBackgroundColor: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            struct Color {
+                float r;
+                float g;
+                float b;
+            };
+            Color color{};
+            std::memcpy(&color, data, sizeof(Color));
+            HandleSetBackgroundColor(*request_packet, color.r, color.g, color.b);
             success = true;
             break;
         }

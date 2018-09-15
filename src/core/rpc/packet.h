@@ -21,6 +21,11 @@ enum class PacketType {
     SetResolution,
     SetGame,
     SetOverrideControls,
+    Pause,
+    Resume,
+    Restart,
+    SetSpeedLimit,
+    SetBackgroundColor,
 };
 
 struct PacketHeader {
@@ -79,6 +84,11 @@ private:
     void HandleSetResolution(Packet& packet, u16 resolution);
     void HandleSetGame(Packet& packet, const std::string& path);
     void HandleSetOverrideControls(Packet& packet, bool pad, bool touch, bool motion, bool circle);
+    void HandlePause(Packet& packet);
+    void HandleResume(Packet& packet);
+    void HandleRestart(Packet& packet);
+    void HandleSetSpeedLimit(Packet& packet, u16 speed_limit);
+    void HandleSetBackgroundColor(Packet& packet, float r, float g, float b);
 
     struct PacketHeader header;
     std::vector<u8> packet_data;

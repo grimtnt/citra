@@ -18,28 +18,23 @@ EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window
 void EmuThread::run() {
     render_window->MakeCurrent();
     stop_run = false;
-
+    auto& system{Core::System::GetInstance()};
     while (!stop_run) {
-        if (running) {
-            Core::System::ResultStatus result{Core::System::GetInstance().RunLoop()};
-            if (result == Core::System::ResultStatus::ShutdownRequested) {
-                // Notify frontend we shutdown
-                emit ErrorThrown(result, "");
-                // End emulation execution
-                break;
-            }
-            if (result != Core::System::ResultStatus::Success) {
-                this->SetRunning(false);
-                emit ErrorThrown(result, Core::System::GetInstance().GetStatusDetails());
-            }
-        } else {
-            std::unique_lock<std::mutex> lock{running_mutex};
-            running_cv.wait(lock, [this] { return IsRunning() || stop_run; });
+        Core::System::ResultStatus result{Core::System::GetInstance().RunLoop()};
+        if (result == Core::System::ResultStatus::ShutdownRequested) {
+            // Notify frontend we shutdown
+            emit ErrorThrown(result, "");
+            // End emulation execution
+            break;
+        }
+        if (result != Core::System::ResultStatus::Success) {
+            system.SetRunning(false);
+            emit ErrorThrown(result, system.GetStatusDetails());
         }
     }
 
     // Shutdown the core emulation
-    Core::System::GetInstance().Shutdown();
+    system.Shutdown();
     render_window->moveContext();
 }
 

@@ -238,7 +238,7 @@ void GMainWindow::InitializeHotkeys() {
             &GMainWindow::OnStartGame);
     connect(GetHotkey("Main Window", "Continue/Pause", this), &QShortcut::activated, this, [&] {
         if (emulation_running) {
-            if (emu_thread->IsRunning()) {
+            if (Core::System::GetInstance().IsRunning()) {
                 OnPauseGame();
             } else {
                 OnStartGame();
@@ -284,7 +284,7 @@ void GMainWindow::InitializeHotkeys() {
                 }
             });
     connect(GetHotkey("Main Window", "Capture Screenshot", this), &QShortcut::activated, this, [&] {
-        if (emu_thread->IsRunning()) {
+        if (Core::System::GetInstance().IsRunning()) {
             OnCaptureScreenshot();
         }
     });
@@ -991,10 +991,11 @@ void GMainWindow::OnStartGame() {
         movie_record_path.clear();
     }
 
-    emu_thread->SetRunning(true);
     qRegisterMetaType<Core::System::ResultStatus>("Core::System::ResultStatus");
     qRegisterMetaType<std::string>("std::string");
     connect(emu_thread.get(), &EmuThread::ErrorThrown, this, &GMainWindow::OnCoreError);
+
+    Core::System::GetInstance().SetRunning(true);
 
     ui.action_Start->setEnabled(false);
     ui.action_Start->setText("Continue");
@@ -1008,7 +1009,7 @@ void GMainWindow::OnStartGame() {
 }
 
 void GMainWindow::OnPauseGame() {
-    emu_thread->SetRunning(false);
+    Core::System::GetInstance().SetRunning(false);
     Camera::QtMultimediaCameraHandler::StopCameras();
     ui.action_Start->setEnabled(true);
     ui.action_Pause->setEnabled(false);
@@ -1382,7 +1383,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     } else {
         // Only show the message if the game is still running.
         if (emu_thread) {
-            emu_thread->SetRunning(true);
+            Core::System::GetInstance().SetRunning(true);
             message_label->setText(status_message);
             message_label->setVisible(true);
         }
