@@ -163,7 +163,6 @@ struct Values {
     std::string log_filter;
 
     // Audio
-    std::string sink_id;
     bool enable_audio_stretching;
     std::string audio_device_id;
 

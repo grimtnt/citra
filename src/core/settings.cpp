@@ -26,7 +26,7 @@ void Apply() {
     VideoCore::g_renderer_bg_color_update_requested = true;
 
     if (Core::System::GetInstance().IsPoweredOn()) {
-        Core::DSP().SetSink(values.sink_id, values.audio_device_id);
+        Core::DSP().UpdateSink();
         Core::DSP().EnableStretching(values.enable_audio_stretching);
     }
 
@@ -52,7 +52,6 @@ void LogSettings() {
     LogSetting("Renderer_FrameLimit", Settings::values.frame_limit);
     LogSetting("Layout_LayoutOption", static_cast<int>(Settings::values.layout_option));
     LogSetting("Layout_SwapScreen", Settings::values.swap_screen);
-    LogSetting("Audio_OutputEngine", Settings::values.sink_id);
     LogSetting("Audio_EnableAudioStretching", Settings::values.enable_audio_stretching);
     LogSetting("Audio_OutputDevice", Settings::values.audio_device_id);
     using namespace Service::CAM;

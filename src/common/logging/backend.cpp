@@ -179,7 +179,6 @@ void FileBackend::Write(const Entry& entry) {
     CLS(Render)                                                                                    \
     CLS(Audio)                                                                                     \
     SUB(Audio, DSP)                                                                                \
-    SUB(Audio, Sink)                                                                               \
     CLS(Input)                                                                                     \
     CLS(Network)                                                                                   \
     CLS(Movie)                                                                                     \

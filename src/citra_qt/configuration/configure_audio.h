@@ -20,9 +20,6 @@ public:
 
     void applyConfiguration();
 
-public slots:
-    void updateAudioDevices(int sink_index);
-
 private:
     void setConfiguration();
 

@@ -9,7 +9,7 @@
 #include "audio_core/hle/mixers.h"
 #include "audio_core/hle/shared_memory.h"
 #include "audio_core/hle/source.h"
-#include "audio_core/sink_details.h"
+#include "audio_core/sink.h"
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
@@ -358,7 +358,14 @@ void DspHle::Impl::AudioTickCallback(s64 cycles_late) {
     CoreTiming::ScheduleEvent(audio_frame_ticks - cycles_late, tick_event);
 }
 
-DspHle::DspHle() : impl(std::make_unique<Impl>(*this)) {}
+DspHle::DspHle()
+    : impl{std::make_unique<Impl>(*this)}, sink{std::make_unique<Sink>(
+                                               Settings::values.audio_device_id)} {
+    sink->SetCallback(
+        [this](s16* buffer, std::size_t num_frames) { OutputCallback(buffer, num_frames); });
+    time_stretcher.SetOutputSampleRate(sink->GetNativeSampleRate());
+}
+
 DspHle::~DspHle() = default;
 
 DspState DspHle::GetDspState() const {
@@ -385,17 +392,11 @@ void DspHle::SetServiceToInterrupt(std::weak_ptr<DSP_DSP> dsp) {
     impl->SetServiceToInterrupt(std::move(dsp));
 }
 
-void DspHle::SetSink(const std::string& sink_id, const std::string& audio_device) {
-    const SinkDetails& sink_details = GetSinkDetails(sink_id);
-    sink = sink_details.factory(audio_device);
+void DspHle::UpdateSink() {
+    sink.reset();
+    sink = std::make_unique<Sink>(Settings::values.audio_device_id);
     sink->SetCallback(
         [this](s16* buffer, std::size_t num_frames) { OutputCallback(buffer, num_frames); });
-    time_stretcher.SetOutputSampleRate(sink->GetNativeSampleRate());
-}
-
-Sink& DspHle::GetSink() {
-    ASSERT(sink);
-    return *sink.get();
 }
 
 void DspHle::EnableStretching(bool enable) {

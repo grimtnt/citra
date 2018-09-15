@@ -64,11 +64,8 @@ public:
 
     bool IsOutputAllowed();
 
-    /// Select the sink to use based on sink id.
-    void SetSink(const std::string& sink_id, const std::string& audio_device);
-
-    /// Get the current sink
-    Sink& GetSink();
+    /// Creates a new sink to change the audio device
+    void UpdateSink();
 
     /// Enable/Disable audio stretching.
     void EnableStretching(bool enable);

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>240</width>
-    <height>157</height>
+    <width>229</width>
+    <height>124</height>
    </rect>
   </property>
   <layout class="QVBoxLayout">
@@ -17,20 +17,6 @@
       <string>Audio</string>
      </property>
      <layout class="QVBoxLayout">
-      <item>
-       <layout class="QHBoxLayout">
-        <item>
-         <widget class="QLabel" name="output_sink_label">
-          <property name="text">
-           <string>Output Engine:</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="output_sink_combo_box"/>
-        </item>
-       </layout>
-      </item>
       <item>
        <widget class="QCheckBox" name="toggle_audio_stretching">
         <property name="toolTip">
