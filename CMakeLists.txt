@@ -12,8 +12,7 @@ project(citra)
 option(ENABLE_SDL2 "Enable SDL2" ON)
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_SDL2 "Download bundled SDL2 binaries" ON "ENABLE_SDL2;MSVC" OFF)
 
-option(ENABLE_QT "Enable the Qt frontend" ON)
-CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "ENABLE_QT;MSVC" OFF)
+CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "MSVC" OFF)
 
 option(ENABLE_CUBEB "Enable the cubeb audio backend" ON)
 
@@ -199,27 +198,25 @@ else()
     set(SDL2_FOUND NO)
 endif()
 
-if (ENABLE_QT)
-    if (CITRA_USE_BUNDLED_QT)
-        if (MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920)
-            set(QT_VER qt-5.10.0-msvc2017_64)
-        else()
-            message(FATAL_ERROR "No bundled Qt binaries for your toolchain. Disable CITRA_USE_BUNDLED_QT and provide your own.")
-        endif()
-
-        if (DEFINED QT_VER)
-            download_bundled_external("qt/" ${QT_VER} QT_PREFIX)
-        endif()
-
-        set(QT_PREFIX_HINT HINTS "${QT_PREFIX}")
+if (CITRA_USE_BUNDLED_QT)
+    if (MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920)
+        set(QT_VER qt-5.10.0-msvc2017_64)
     else()
+        message(FATAL_ERROR "No bundled Qt binaries for your toolchain. Disable CITRA_USE_BUNDLED_QT and provide your own.")
+    endif()
+
+    if (DEFINED QT_VER)
+        download_bundled_external("qt/" ${QT_VER} QT_PREFIX)
+    endif()
+
+    set(QT_PREFIX_HINT HINTS "${QT_PREFIX}")
+else()
         # Passing an empty HINTS seems to cause default system paths to get ignored in CMake 2.8 so
         # make sure to not pass anything if we don't have one.
         set(QT_PREFIX_HINT)
-    endif()
-
-    find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
 endif()
+
+find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
 
 # Platform-specific library requirements
 # ======================================
@@ -354,7 +351,7 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT c
 # http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
 # http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
 # http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html
-if(ENABLE_QT AND UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE)
     install(FILES "${CMAKE_SOURCE_DIR}/dist/citra.desktop"
             DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications")
     install(FILES "${CMAKE_SOURCE_DIR}/dist/citra.svg"
