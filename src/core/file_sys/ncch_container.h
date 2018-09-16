@@ -125,7 +125,7 @@ struct ExHeader_SystemInfo {
 };
 
 struct ExHeader_StorageInfo {
-    u8 ext_save_data_id[8];
+    u64_le ext_save_data_id;
     u8 system_save_data_id[8];
     u8 reserved[8];
     u8 access_info[7];
@@ -252,6 +252,12 @@ public:
     Loader::ResultStatus ReadProgramId(u64_le& program_id);
 
     /**
+     * Get the Extdata ID of the NCCH container
+     * @return ResultStatus result of function
+     */
+    Loader::ResultStatus ReadExtdataId(u64& extdata_id);
+
+    /**
      * Checks whether the NCCH container contains an ExeFS
      * @return bool check result
      */
@@ -274,16 +280,16 @@ public:
     ExHeader_Header exheader_header;
 
 private:
-    bool has_header = false;
-    bool has_exheader = false;
-    bool has_exefs = false;
-    bool has_romfs = false;
+    bool has_header{};
+    bool has_exheader{};
+    bool has_exefs{};
+    bool has_romfs{};
 
-    bool is_tainted = false; // Are there parts of this container being overridden?
-    bool is_loaded = false;
-    bool is_compressed = false;
+    bool is_tainted{}; // Are there parts of this container being overridden?
+    bool is_loaded{};
+    bool is_compressed{};
+    bool is_encrypted{};
 
-    bool is_encrypted = false;
     // for decrypting exheader, exefs header and icon/banner section
     std::array<u8, 16> primary_key{};
     std::array<u8, 16> secondary_key{}; // for decrypting romfs and .code section

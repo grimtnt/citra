@@ -487,9 +487,8 @@ std::string GetMediaTitlePath(Service::FS::MediaType media_type) {
 
     if (media_type == Service::FS::MediaType::SDMC)
         return fmt::format("{}Nintendo 3DS/{}/{}/title/",
-                           Settings::values.sd_card_directory.empty()
-                               ? FileUtil::GetUserPath(D_SDMC_IDX)
-                               : Settings::values.sd_card_directory + "/",
+                           Settings::values.sdmc_dir.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                             : Settings::values.sdmc_dir + "/",
                            SYSTEM_ID, SDCARD_ID);
 
     if (media_type == Service::FS::MediaType::GameCard) {

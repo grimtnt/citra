@@ -62,7 +62,7 @@
     <addaction name="separator"/>
     <addaction name="menu_recent_files"/>
     <addaction name="separator"/>
-    <addaction name="action_Select_SD_Card_Directory"/>
+    <addaction name="action_Select_sdmc_dir"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -379,9 +379,9 @@
     <string>Set Play Coins</string>
    </property>
   </action>
-  <action name="action_Select_SD_Card_Directory">
+  <action name="action_Select_sdmc_dir">
    <property name="text">
-    <string>Select SD Card Directory...</string>
+    <string>Select SDMC Directory...</string>
    </property>
   </action>
  </widget>

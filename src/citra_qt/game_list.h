@@ -26,7 +26,7 @@ class QTreeView;
 class QToolButton;
 class QVBoxLayout;
 
-enum class GameListOpenTarget { SAVE_DATA = 0, APPLICATION = 1, UPDATE_DATA = 2 };
+enum class GameListOpenTarget { SAVE_DATA = 0, EXT_DATA = 1, APPLICATION = 2, UPDATE_DATA = 3 };
 
 class GameList : public QWidget {
     Q_OBJECT
@@ -84,7 +84,7 @@ private:
     void RefreshGameDirectory();
 
     void PopupContextMenu(const QPoint& menu_location);
-    void AddGamePopup(QMenu& context_menu, u64 program_id);
+    void AddGamePopup(QMenu& context_menu, QStandardItem* child);
     void AddCustomDirPopup(QMenu& context_menu, QStandardItem* child);
     void AddPermDirPopup(QMenu& context_menu, QStandardItem* child);
 

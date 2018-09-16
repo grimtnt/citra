@@ -274,27 +274,27 @@ std::string CP1252ToUTF8(const std::string& input) {
 
 template <typename T>
 static std::string CodeToUTF8(const char* fromcode, const std::basic_string<T>& input) {
-    iconv_t const conv_desc = iconv_open("UTF-8", fromcode);
+    iconv_t const conv_desc{iconv_open("UTF-8", fromcode)};
     if ((iconv_t)(-1) == conv_desc) {
         LOG_ERROR(Common, "Iconv initialization failure [{}]: {}", fromcode, strerror(errno));
         iconv_close(conv_desc);
         return {};
     }
 
-    const std::size_t in_bytes = sizeof(T) * input.size();
+    const std::size_t in_bytes{sizeof(T) * input.size()};
     // Multiply by 4, which is the max number of bytes to encode a codepoint
-    const std::size_t out_buffer_size = 4 * in_bytes;
+    const std::size_t out_buffer_size{4 * in_bytes};
 
     std::string out_buffer(out_buffer_size, '\0');
 
-    auto src_buffer = &input[0];
-    std::size_t src_bytes = in_bytes;
-    auto dst_buffer = &out_buffer[0];
-    std::size_t dst_bytes = out_buffer.size();
+    auto src_buffer{&input[0]};
+    std::size_t src_bytes{in_bytes};
+    auto dst_buffer{&out_buffer[0]};
+    std::size_t dst_bytes{out_buffer.size()};
 
     while (0 != src_bytes) {
-        std::size_t const iconv_result =
-            iconv(conv_desc, (char**)(&src_buffer), &src_bytes, &dst_buffer, &dst_bytes);
+        std::size_t const iconv_result{
+            iconv(conv_desc, (char**)(&src_buffer), &src_bytes, &dst_buffer, &dst_bytes)};
 
         if (static_cast<std::size_t>(-1) == iconv_result) {
             if (EILSEQ == errno || EINVAL == errno) {
@@ -310,7 +310,7 @@ static std::string CodeToUTF8(const char* fromcode, const std::basic_string<T>& 
         }
     }
 
-    std::string result;
+    std::string result{};
     out_buffer.resize(out_buffer_size - dst_bytes);
     out_buffer.swap(result);
 
@@ -320,27 +320,27 @@ static std::string CodeToUTF8(const char* fromcode, const std::basic_string<T>& 
 }
 
 std::u16string UTF8ToUTF16(const std::string& input) {
-    iconv_t const conv_desc = iconv_open("UTF-16LE", "UTF-8");
+    iconv_t const conv_desc{iconv_open("UTF-16LE", "UTF-8")};
     if ((iconv_t)(-1) == conv_desc) {
         LOG_ERROR(Common, "Iconv initialization failure [UTF-8]: {}", strerror(errno));
         iconv_close(conv_desc);
         return {};
     }
 
-    const std::size_t in_bytes = sizeof(char) * input.size();
+    const std::size_t in_bytes{sizeof(char) * input.size()};
     // Multiply by 4, which is the max number of bytes to encode a codepoint
-    const std::size_t out_buffer_size = 4 * sizeof(char16_t) * in_bytes;
+    const std::size_t out_buffer_size{4 * sizeof(char16_t) * in_bytes};
 
     std::u16string out_buffer(out_buffer_size, char16_t{});
 
-    char* src_buffer = const_cast<char*>(&input[0]);
-    std::size_t src_bytes = in_bytes;
-    char* dst_buffer = (char*)(&out_buffer[0]);
-    std::size_t dst_bytes = out_buffer.size();
+    char* src_buffer{const_cast<char*>(&input[0])};
+    std::size_t src_bytes{in_bytes};
+    char* dst_buffer{(char*)(&out_buffer[0])};
+    std::size_t dst_bytes{out_buffer.size()};
 
     while (0 != src_bytes) {
-        std::size_t const iconv_result =
-            iconv(conv_desc, &src_buffer, &src_bytes, &dst_buffer, &dst_bytes);
+        std::size_t const iconv_result{
+            iconv(conv_desc, &src_buffer, &src_bytes, &dst_buffer, &dst_bytes)};
 
         if (static_cast<std::size_t>(-1) == iconv_result) {
             if (EILSEQ == errno || EINVAL == errno) {
@@ -356,7 +356,7 @@ std::u16string UTF8ToUTF16(const std::string& input) {
         }
     }
 
-    std::u16string result;
+    std::u16string result{};
     out_buffer.resize(out_buffer_size - dst_bytes);
     out_buffer.swap(result);
 
@@ -370,13 +370,10 @@ std::string UTF16ToUTF8(const std::u16string& input) {
 }
 
 std::string CP1252ToUTF8(const std::string& input) {
-    // return CodeToUTF8("CP1252//TRANSLIT", input);
-    // return CodeToUTF8("CP1252//IGNORE", input);
     return CodeToUTF8("CP1252", input);
 }
 
 std::string SHIFTJISToUTF8(const std::string& input) {
-    // return CodeToUTF8("CP932", input);
     return CodeToUTF8("SJIS", input);
 }
 
@@ -391,15 +388,15 @@ std::string StringFromFixedZeroTerminatedBuffer(const char* buffer, std::size_t 
 }
 
 const char* TrimSourcePath(const char* path, const char* root) {
-    const char* p = path;
+    const char* p{path};
 
     while (*p != '\0') {
-        const char* next_slash = p;
+        const char* next_slash{p};
         while (*next_slash != '\0' && *next_slash != '/' && *next_slash != '\\') {
             ++next_slash;
         }
 
-        bool is_src = Common::ComparePartialString(p, next_slash, root);
+        bool is_src{Common::ComparePartialString(p, next_slash, root)};
         p = next_slash;
 
         if (*p != '\0') {
@@ -413,7 +410,7 @@ const char* TrimSourcePath(const char* path, const char* root) {
 }
 
 std::string TrimLeft(const std::string& str, const std::string& delimiters = " \f\n\r\t\v") {
-    const auto pos = str.find_first_not_of(delimiters);
+    const auto pos{str.find_first_not_of(delimiters)};
     if (pos == std::string::npos)
         return "";
 
@@ -421,7 +418,7 @@ std::string TrimLeft(const std::string& str, const std::string& delimiters = " \
 }
 
 std::string TrimRight(const std::string& str, const std::string delimiters = " \f\n\r\t\v") {
-    const auto pos = str.find_last_not_of(delimiters);
+    const auto pos{str.find_last_not_of(delimiters)};
     if (pos == std::string::npos)
         return "";
 
@@ -439,7 +436,7 @@ std::string Join(const std::vector<std::string>& elements, const char* const sep
     case 1:
         return elements[0];
     default:
-        std::ostringstream os;
+        std::ostringstream os{};
         std::copy(elements.begin(), elements.end(),
                   std::ostream_iterator<std::string>(os, separator));
 

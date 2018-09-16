@@ -42,6 +42,7 @@
 #include "common/scm_rev.h"
 #include "common/scope_exit.h"
 #include "core/core.h"
+#include "core/file_sys/archive_extsavedata.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
@@ -377,11 +378,11 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Load_File, &QAction::triggered, this, &GMainWindow::OnMenuLoadFile);
     connect(ui.action_Install_CIA, &QAction::triggered, this, &GMainWindow::OnMenuInstallCIA);
     connect(ui.action_Exit, &QAction::triggered, this, &QMainWindow::close);
-    connect(ui.action_Select_SD_Card_Directory, &QAction::triggered, this, [&] {
-        QString dir{QFileDialog::getExistingDirectory(this, "Set SD Card Directory", ".")};
+    connect(ui.action_Select_sdmc_dir, &QAction::triggered, this, [&] {
+        QString dir{QFileDialog::getExistingDirectory(this, "Set SDMC Directory", ".")};
         if (dir.isEmpty())
             return;
-        Settings::values.sd_card_directory = dir.toStdString();
+        Settings::values.sdmc_dir = dir.toStdString();
         game_list->PopulateAsync(UISettings::values.game_dirs);
     });
 
@@ -674,7 +675,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Stop->setEnabled(false);
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
-    ui.action_Select_SD_Card_Directory->setEnabled(true);
+    ui.action_Select_sdmc_dir->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(false);
     render_window->hide();
@@ -805,26 +806,34 @@ void GMainWindow::OnGameListLoadFile(QString game_path) {
     BootGame(game_path);
 }
 
-void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target) {
+void GMainWindow::OnGameListOpenFolder(u64 data_id, GameListOpenTarget target) {
     std::string path;
     std::string open_target;
 
     switch (target) {
     case GameListOpenTarget::SAVE_DATA: {
         open_target = "Save Data";
-        std::string sdmc_dir = Settings::values.sd_card_directory.empty()
-                                   ? FileUtil::GetUserPath(D_SDMC_IDX)
-                                   : Settings::values.sd_card_directory + "/";
-        path = FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(sdmc_dir, program_id);
+        std::string sdmc_dir{Settings::values.sdmc_dir.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                               : Settings::values.sdmc_dir + "/"};
+        path = FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(sdmc_dir, data_id);
         break;
     }
-    case GameListOpenTarget::APPLICATION:
-        open_target = "Application";
-        path = Service::AM::GetTitlePath(Service::FS::MediaType::SDMC, program_id) + "content/";
+    case GameListOpenTarget::EXT_DATA: {
+        open_target = "Extra Data";
+        std::string sdmc_dir{Settings::values.sdmc_dir.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                               : Settings::values.sdmc_dir + "/"};
+        path = FileSys::GetExtDataPathFromId(sdmc_dir, data_id);
         break;
+    }
+    case GameListOpenTarget::APPLICATION: {
+        open_target = "Application";
+        path = Service::AM::GetTitlePath(Service::AM::GetTitleMediaType(data_id), data_id) +
+               "content/";
+        break;
+    }
     case GameListOpenTarget::UPDATE_DATA:
         open_target = "Update Data";
-        path = Service::AM::GetTitlePath(Service::FS::MediaType::SDMC, program_id + 0xe00000000) +
+        path = Service::AM::GetTitlePath(Service::FS::MediaType::SDMC, data_id + 0xe00000000) +
                "content/";
         break;
     default:
@@ -842,7 +851,7 @@ void GMainWindow::OnGameListOpenFolder(u64 program_id, GameListOpenTarget target
         return;
     }
 
-    LOG_INFO(Frontend, "Opening {} path for program_id={:016x}", open_target, program_id);
+    LOG_INFO(Frontend, "Opening {} path for data_id={:016x}", open_target, data_id);
 
     QDesktopServices::openUrl(QUrl::fromLocalFile(qpath));
 }
@@ -851,9 +860,8 @@ void GMainWindow::OnGameListOpenDirectory(QString directory) {
     QString path{};
     if (directory == "INSTALLED") {
         path = QString::fromStdString(
-            (Settings::values.sd_card_directory.empty()
-                 ? FileUtil::GetUserPath(D_SDMC_IDX)
-                 : std::string(Settings::values.sd_card_directory + "/")) +
+            (Settings::values.sdmc_dir.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                               : std::string(Settings::values.sdmc_dir + "/")) +
             "Nintendo "
             "3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/00040000");
     } else if (directory == "SYSTEM") {
@@ -1003,7 +1011,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Stop->setEnabled(true);
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
-    ui.action_Select_SD_Card_Directory->setEnabled(false);
+    ui.action_Select_sdmc_dir->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(true);
 }

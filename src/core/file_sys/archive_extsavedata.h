@@ -10,9 +10,6 @@
 #include "core/file_sys/archive_backend.h"
 #include "core/hle/result.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 /// File system interface to the ExtSaveData archive
@@ -69,6 +66,15 @@ private:
  * @returns The complete path to the specified extdata archive in the host filesystem
  */
 std::string GetExtSaveDataPath(const std::string& mount_point, const Path& path);
+
+/**
+ * Constructs a path to the concrete ExtData archive in the host filesystem based on the
+ * extdata ID and base mount point.
+ * @param mount_point The base mount point of the ExtSaveData archives.
+ * @param extdata_id The id of the ExtSaveData
+ * @returns The complete path to the specified extdata archive in the host filesystem
+ */
+std::string GetExtDataPathFromId(const std::string& mount_point, u64 extdata_id);
 
 /**
  * Constructs a path to the base folder to hold concrete ExtSaveData archives in the host file

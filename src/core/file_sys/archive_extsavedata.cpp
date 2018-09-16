@@ -16,9 +16,6 @@
 #include "core/file_sys/savedata_archive.h"
 #include "core/hle/service/fs/archive.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 constexpr u32 SharedExtDataHigh{0x48000};
@@ -176,6 +173,13 @@ std::string GetExtDataContainerPath(const std::string& mount_point, bool shared)
         return fmt::format("{}data/{}/extdata/", mount_point, SYSTEM_ID);
 
     return fmt::format("{}Nintendo 3DS/{}/{}/extdata/", mount_point, SYSTEM_ID, SDCARD_ID);
+}
+
+std::string GetExtDataPathFromId(const std::string& mount_point, u64 extdata_id) {
+    u32 high{static_cast<u32>(extdata_id >> 32)};
+    u32 low{static_cast<u32>(extdata_id & 0xFFFFFFFF)};
+
+    return fmt::format("{}{:08x}/{:08x}/", GetExtDataContainerPath(mount_point, false), high, low);
 }
 
 Path ConstructExtDataBinaryPath(u32 media_type, u32 high, u32 low) {

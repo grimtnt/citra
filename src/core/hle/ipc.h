@@ -42,7 +42,7 @@ constexpr std::size_t MAX_STATIC_BUFFERS{16};
 // convenience.
 // TODO(yuriks): These will probably go away once translation is implemented inside the kernel.
 using Kernel::ERR_INVALID_BUFFER_DESCRIPTOR;
-constexpr auto ERR_INVALID_HANDLE = Kernel::ERR_INVALID_HANDLE_OS;
+constexpr auto ERR_INVALID_HANDLE{Kernel::ERR_INVALID_HANDLE_OS};
 
 enum DescriptorType : u32 {
     // Buffer related descriptors types (mask : 0x0F)

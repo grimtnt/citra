@@ -25,6 +25,8 @@
 #include "common/common_paths.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
+#include "core/file_sys/archive_extsavedata.h"
+#include "core/file_sys/archive_source_sd_savedata.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/loader/loader.h"
 #include "core/settings.h"
@@ -436,7 +438,7 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
     QMenu context_menu{};
     switch (static_cast<GameListItemType>(child->type())) {
     case GameListItemType::Game:
-        AddGamePopup(context_menu, child->data(GameListItemPath::ProgramIdRole).toULongLong());
+        AddGamePopup(context_menu, child);
         break;
     case GameListItemType::CustomDir:
         AddPermDirPopup(context_menu, child);
@@ -450,19 +452,46 @@ void GameList::PopupContextMenu(const QPoint& menu_location) {
     context_menu.exec(tree_view->viewport()->mapToGlobal(menu_location));
 }
 
-void GameList::AddGamePopup(QMenu& context_menu, u64 program_id) {
+void GameList::AddGamePopup(QMenu& context_menu, QStandardItem* child) {
+    u64 program_id{child->data(GameListItemPath::ProgramIdRole).toULongLong()};
+    u64 extdata_id{child->data(GameListItemPath::ExtdataIdRole).toULongLong()};
+    QString path{child->data(GameListItemPath::FullPathRole).toString()};
+
     QAction* open_save_location{context_menu.addAction("Open Save Data Location")};
+    QAction* open_extdata_location{context_menu.addAction(tr("Open Extra Data Location"))};
     QAction* open_application_location{context_menu.addAction("Open Application Location")};
     QAction* open_update_location{context_menu.addAction("Open Update Data Location")};
 
-    open_save_location->setEnabled(program_id != 0);
-    open_application_location->setVisible(FileUtil::Exists(
-        Service::AM::GetTitleContentPath(Service::FS::MediaType::SDMC, program_id)));
-    open_update_location->setEnabled(0x0004000000000000 <= program_id &&
-                                     program_id <= 0x00040000FFFFFFFF);
+    open_save_location->setVisible(0x0004000000000000 <= program_id &&
+                                   program_id <= 0x00040000FFFFFFFF);
+
+    std::string sdmc_dir{Settings::values.sdmc_dir.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                           : Settings::values.sdmc_dir + "/"};
+    open_save_location->setEnabled(FileUtil::Exists(
+        FileSys::ArchiveSource_SDSaveData::GetSaveDataPathFor(sdmc_dir, program_id)));
+
+    if (extdata_id) {
+        open_extdata_location->setVisible(
+            0x0004000000000000 <= program_id && program_id <= 0x00040000FFFFFFFF &&
+            FileUtil::Exists(FileSys::GetExtDataPathFromId(sdmc_dir, extdata_id)));
+    } else {
+        open_extdata_location->setVisible(false);
+    }
+
+    auto media_type{Service::AM::GetTitleMediaType(program_id)};
+    open_application_location->setVisible(path.toStdString() ==
+                                          Service::AM::GetTitleContentPath(media_type, program_id));
+    open_update_location->setVisible(
+        0x0004000000000000 <= program_id && program_id <= 0x00040000FFFFFFFF &&
+        FileUtil::Exists(
+            Service::AM::GetTitlePath(Service::FS::MediaType::SDMC, program_id + 0xe00000000) +
+            "content/"));
 
     connect(open_save_location, &QAction::triggered, [&, program_id]() {
         emit OpenFolderRequested(program_id, GameListOpenTarget::SAVE_DATA);
+    });
+    connect(open_extdata_location, &QAction::triggered, [this, extdata_id] {
+        emit OpenFolderRequested(extdata_id, GameListOpenTarget::EXT_DATA);
     });
     connect(open_application_location, &QAction::triggered, [&, program_id]() {
         emit OpenFolderRequested(program_id, GameListOpenTarget::APPLICATION);
@@ -631,6 +660,9 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
             u64 program_id{};
             loader->ReadProgramId(program_id);
 
+            u64 extdata_id{};
+            loader->ReadExtdataId(extdata_id);
+
             std::vector<u8> smdh{[program_id, &loader]() -> std::vector<u8> {
                 std::vector<u8> original_smdh;
                 loader->ReadIcon(original_smdh);
@@ -662,7 +694,8 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
 
             emit EntryReady(
                 {
-                    new GameListItemPath(QString::fromStdString(physical_name), smdh, program_id),
+                    new GameListItemPath(QString::fromStdString(physical_name), smdh, program_id,
+                                         extdata_id),
                     new GameListItemCompat(compatibility),
                     new GameListItemRegion(smdh),
                     new GameListItem(
@@ -688,13 +721,13 @@ void GameListWorker::run() {
         if (game_dir.path == "INSTALLED") {
             // Add normal titles
             {
-                QString path{QString::fromStdString(
-                    (Settings::values.sd_card_directory.empty()
-                         ? FileUtil::GetUserPath(D_SDMC_IDX)
-                         : std::string(Settings::values.sd_card_directory + "/")) +
-                    "Nintendo "
-                    "3DS/00000000000000000000000000000000/"
-                    "00000000000000000000000000000000/title/00040000")};
+                QString path{
+                    QString::fromStdString((Settings::values.sdmc_dir.empty()
+                                                ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                : std::string(Settings::values.sdmc_dir + "/")) +
+                                           "Nintendo "
+                                           "3DS/00000000000000000000000000000000/"
+                                           "00000000000000000000000000000000/title/00040000")};
                 watch_list.append(path);
                 GameListDir* game_list_dir{
                     new GameListDir(game_dir, GameListItemType::InstalledDir)};
@@ -703,13 +736,13 @@ void GameListWorker::run() {
             }
             // Add demos
             {
-                QString path{QString::fromStdString(
-                    (Settings::values.sd_card_directory.empty()
-                         ? FileUtil::GetUserPath(D_SDMC_IDX)
-                         : std::string(Settings::values.sd_card_directory + "/")) +
-                    "Nintendo "
-                    "3DS/00000000000000000000000000000000/"
-                    "00000000000000000000000000000000/title/00040002")};
+                QString path{
+                    QString::fromStdString((Settings::values.sdmc_dir.empty()
+                                                ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                : std::string(Settings::values.sdmc_dir + "/")) +
+                                           "Nintendo "
+                                           "3DS/00000000000000000000000000000000/"
+                                           "00000000000000000000000000000000/title/00040002")};
                 watch_list.append(path);
                 GameListDir* game_list_dir{
                     new GameListDir(game_dir, GameListItemType::InstalledDir)};

@@ -20,10 +20,10 @@ void GSP_LCD::SetBrightnessRaw(Kernel::HLERequestContext& ctx) {
     u32 brightness{std::clamp(rp.Pop<u32>(), MIN_BRIGHTNESS_RAW, MAX_BRIGHTNESS_RAW)};
     float brightness_f{static_cast<float>(brightness / MAX_BRIGHTNESS_RAW)};
     int ret{1};
-    // TODO: add support for Windows & OS X
+    // TODO: add support for Windows & macOS
 #ifdef __linux__
     std::string command{"xrandr --output eDP-1 --brightness "};
-    std::ostringstream os;
+    std::ostringstream os{};
     os << brightness_f;
     command += os.str();
     ret = system(command.c_str());
@@ -40,10 +40,10 @@ void GSP_LCD::SetBrightness(Kernel::HLERequestContext& ctx) {
     u32 brightness{std::clamp(rp.Pop<u32>(), MIN_BRIGHTNESS, MAX_BRIGHTNESS)};
     float brightness_f{static_cast<float>(brightness / MAX_BRIGHTNESS)};
     int ret{1};
-    // TODO: add support for Windows & OS X
+    // TODO: add support for Windows & macOS
 #ifdef __linux__
     std::string command{"xrandr --output eDP-1 --brightness "};
-    std::ostringstream os;
+    std::ostringstream os{};
     os << brightness_f;
     command += os.str();
     ret = system(command.c_str());

@@ -126,7 +126,7 @@ struct Values {
 
     // Data Storage
     bool use_virtual_sd;
-    std::string sd_card_directory;
+    std::string sdmc_dir;
 
     // System
     int region_value;

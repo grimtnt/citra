@@ -222,7 +222,7 @@ void GRenderWindow::InitRenderTarget() {
     fmt.setProfile(QGLFormat::CoreProfile);
     fmt.setSwapInterval(false);
 
-    // Requests a forward-compatible context, which is required to get a 3.2+ context on OS X
+    // Requests a forward-compatible context, which is required to get a 3.2+ context on macOS
     fmt.setOption(QGL::NoDeprecatedFunctions);
 
     child = new GGLWidgetInternal(fmt, this);

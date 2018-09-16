@@ -180,8 +180,7 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("Data Storage");
     Settings::values.use_virtual_sd = qt_config->value("use_virtual_sd", true).toBool();
-    Settings::values.sd_card_directory =
-        qt_config->value("sd_card_directory", "").toString().toStdString();
+    Settings::values.sdmc_dir = qt_config->value("sdmc_dir", "").toString().toStdString();
     qt_config->endGroup();
 
     qt_config->beginGroup("System");
@@ -369,8 +368,7 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("Data Storage");
     qt_config->setValue("use_virtual_sd", Settings::values.use_virtual_sd);
-    qt_config->setValue("sd_card_directory",
-                        QString::fromStdString(Settings::values.sd_card_directory));
+    qt_config->setValue("sdmc_dir", QString::fromStdString(Settings::values.sdmc_dir));
     qt_config->endGroup();
 
     qt_config->beginGroup("System");
