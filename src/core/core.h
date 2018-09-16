@@ -195,10 +195,8 @@ public:
 
     void SetRunning(bool running) {
         this->running.store(running, std::memory_order::memory_order_relaxed);
-        if (running) {
-            std::unique_lock<std::mutex> lock{running_mutex};
-            running_cv.notify_one();
-        }
+        std::unique_lock<std::mutex> lock{running_mutex};
+        running_cv.notify_one();
     }
 
     bool IsRunning() {
