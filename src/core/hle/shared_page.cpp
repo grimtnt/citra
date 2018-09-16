@@ -9,8 +9,6 @@
 #include "core/hle/shared_page.h"
 #include "core/settings.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace SharedPage {
 
 static std::chrono::seconds GetInitTime() {

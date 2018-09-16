@@ -378,7 +378,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Load_File, &QAction::triggered, this, &GMainWindow::OnMenuLoadFile);
     connect(ui.action_Install_CIA, &QAction::triggered, this, &GMainWindow::OnMenuInstallCIA);
     connect(ui.action_Exit, &QAction::triggered, this, &QMainWindow::close);
-    connect(ui.action_Select_sdmc_dir, &QAction::triggered, this, [&] {
+    connect(ui.action_Select_SDMC_Directory, &QAction::triggered, this, [&] {
         QString dir{QFileDialog::getExistingDirectory(this, "Set SDMC Directory", ".")};
         if (dir.isEmpty())
             return;
@@ -391,7 +391,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Pause, &QAction::triggered, this, &GMainWindow::OnPauseGame);
     connect(ui.action_Stop, &QAction::triggered, this, &GMainWindow::OnStopGame);
     connect(ui.action_Restart, &QAction::triggered, this, [this] { BootGame(QString(game_path)); });
-    connect(ui.action_Configure, &QAction::triggered, this, &GMainWindow::OnConfigure);
+    connect(ui.action_Configuration, &QAction::triggered, this, &GMainWindow::OnOpenConfiguration);
     connect(ui.action_Cheats, &QAction::triggered, this, &GMainWindow::OnCheats);
     connect(ui.action_Control_Panel, &QAction::triggered, this, &GMainWindow::OnControlPanel);
 
@@ -675,7 +675,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Stop->setEnabled(false);
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
-    ui.action_Select_sdmc_dir->setEnabled(true);
+    ui.action_Select_SDMC_Directory->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(false);
     render_window->hide();
@@ -744,9 +744,9 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::Eula:
     case HLE::Applets::ErrEulaErrorType::EulaDrawOnly:
     case HLE::Applets::ErrEulaErrorType::EulaFirstBoot: {
-        QMessageBox::StandardButton button{QMessageBox::question(this, "ErrEula", "Accept EULA?")};
+        QMessageBox::StandardButton button{QMessageBox::question(this, "ErrEula", "Agree EULA?")};
         if (button == QMessageBox::StandardButton::Yes)
-            Service::CFG::GetCurrentModule()->AcceptEULA();
+            Service::CFG::GetCurrentModule()->AgreeEula();
         break;
     }
     }
@@ -782,8 +782,8 @@ void GMainWindow::Update3D() {
 }
 
 void GMainWindow::UpdateRecentFiles() {
-    const int num_recent_files =
-        std::min(UISettings::values.recent_files.size(), max_recent_files_item);
+    const int num_recent_files{
+        std::min(UISettings::values.recent_files.size(), max_recent_files_item)};
 
     for (int i{}; i < num_recent_files; i++) {
         const QString text = QString("%1. %2").arg(i + 1).arg(
@@ -1011,7 +1011,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Stop->setEnabled(true);
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
-    ui.action_Select_sdmc_dir->setEnabled(false);
+    ui.action_Select_SDMC_Directory->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(true);
 }
@@ -1140,12 +1140,12 @@ void GMainWindow::OnSwapScreens() {
     Settings::Apply();
 }
 
-void GMainWindow::OnConfigure() {
-    ConfigureDialog configureDialog(this);
+void GMainWindow::OnOpenConfiguration() {
+    ConfigurationDialog configuration_dialog(this);
     auto old_theme{UISettings::values.theme};
-    auto result{configureDialog.exec()};
+    auto result{configuration_dialog.exec()};
     if (result == QDialog::Accepted) {
-        configureDialog.applyConfiguration();
+        configuration_dialog.applyConfiguration();
         if (UISettings::values.theme != old_theme) {
             UpdateUITheme();
             emit UpdateThemedIcons();

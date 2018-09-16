@@ -62,7 +62,7 @@
     <addaction name="separator"/>
     <addaction name="menu_recent_files"/>
     <addaction name="separator"/>
-    <addaction name="action_Select_sdmc_dir"/>
+    <addaction name="action_Select_SDMC_Directory"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -75,7 +75,7 @@
     <addaction name="action_Stop"/>
     <addaction name="action_Restart"/>
     <addaction name="separator"/>
-    <addaction name="action_Configure"/>
+    <addaction name="action_Configuration"/>
     <addaction name="action_Control_Panel"/>
     <addaction name="action_Cheats"/>
    </widget>
@@ -146,12 +146,12 @@
   </widget>
   <action name="action_Load_File">
    <property name="text">
-    <string>Load File...</string>
+    <string>Load File</string>
    </property>
   </action>
   <action name="action_Install_CIA">
    <property name="text">
-    <string>Install CIA...</string>
+    <string>Install CIA</string>
    </property>
   </action>
   <action name="action_Exit">
@@ -196,9 +196,9 @@
     <string>Single Window Mode</string>
    </property>
   </action>
-  <action name="action_Configure">
+  <action name="action_Configuration">
    <property name="text">
-    <string>Configure...</string>
+    <string>Configuration</string>
    </property>
   </action>
   <action name="action_Cheats">
@@ -206,7 +206,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Cheats...</string>
+    <string>Cheats</string>
    </property>
   </action>
   <action name="action_Display_Dock_Widget_Headers">
@@ -379,9 +379,9 @@
     <string>Set Play Coins</string>
    </property>
   </action>
-  <action name="action_Select_sdmc_dir">
+  <action name="action_Select_SDMC_Directory">
    <property name="text">
-    <string>Select SDMC Directory...</string>
+    <string>Select SDMC Directory</string>
    </property>
   </action>
  </widget>

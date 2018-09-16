@@ -76,8 +76,8 @@ void ErrEula::Update() {
     case ErrEulaErrorType::Eula:
     case ErrEulaErrorType::EulaDrawOnly:
     case ErrEulaErrorType::EulaFirstBoot: {
-        LOG_INFO(Applet_ErrEula, "EULA accepted");
-        Service::CFG::GetCurrentModule()->AcceptEULA();
+        LOG_INFO(Applet_ErrEula, "EULA agree");
+        Service::CFG::GetCurrentModule()->AgreeEula();
         break;
     }
     }

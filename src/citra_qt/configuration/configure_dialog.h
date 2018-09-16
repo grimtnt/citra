@@ -8,18 +8,18 @@
 #include <QDialog>
 
 namespace Ui {
-class ConfigureDialog;
+class ConfigurationDialog;
 } // namespace Ui
 
-class ConfigureDialog : public QDialog {
+class ConfigurationDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ConfigureDialog(QWidget* parent);
-    ~ConfigureDialog();
+    explicit ConfigurationDialog(QWidget* parent);
+    ~ConfigurationDialog();
 
     void applyConfiguration();
 
 private:
-    std::unique_ptr<Ui::ConfigureDialog> ui;
+    std::unique_ptr<Ui::ConfigurationDialog> ui;
 };

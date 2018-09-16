@@ -84,6 +84,7 @@ public:
     ~Module();
 
     bool IsNewModeEnabled();
+    std::vector<u8> GetEulaVersion();
 
     class Interface : public ServiceFramework<Interface> {
     public:
@@ -396,7 +397,7 @@ public:
      */
     ResultCode UpdateConfigNANDSavegame();
 
-    void AcceptEULA();
+    void AgreeEula();
 
 private:
     static constexpr u32 CONFIG_SAVEFILE_SIZE{0x8000};

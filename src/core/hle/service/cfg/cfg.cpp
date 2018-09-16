@@ -25,6 +25,7 @@ namespace Service::CFG {
 
 /// The maximum number of block entries that can exist in the config file
 constexpr u32 CONFIG_FILE_MAX_BLOCK_ENTRIES{1479};
+
 /// The maximum EULA version
 constexpr u32 MAX_EULA_VERSION{0xFFFF};
 
@@ -421,20 +422,24 @@ ResultCode Module::UpdateConfigNANDSavegame() {
     return RESULT_SUCCESS;
 }
 
-void Module::AcceptEULA() {
+void Module::AgreeEula() {
     SetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &MAX_EULA_VERSION);
 }
 
 ResultCode Module::FormatConfig() {
     ResultCode res{DeleteConfigNANDSaveFile()};
+
     // The delete command fails if the file doesn't exist, so we have to check that too
     if (!res.IsSuccess() && res != FileSys::ERROR_FILE_NOT_FOUND) {
         return res;
     }
+
     // Delete the old data
     cfg_config_file_buffer.fill(0);
+
     // Create the header
     SaveFileConfig* config{reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data())};
+
     // This value is hardcoded, taken from 3dbrew, verified by hardware, it's always the same value
     config->data_entries_offset = 0x455C;
 
@@ -460,7 +465,7 @@ ResultCode Module::FormatConfig() {
     u64 console_id{};
     GenerateConsoleUniqueId(random_number, console_id);
 
-    u64_le console_id_le = console_id;
+    u64_le console_id_le{console_id};
     res = CreateConfigInfoBlk(ConsoleUniqueID1BlockID, sizeof(console_id_le), 0xE, &console_id_le);
     if (!res.IsSuccess())
         return res;
@@ -469,7 +474,7 @@ ResultCode Module::FormatConfig() {
     if (!res.IsSuccess())
         return res;
 
-    u32_le random_number_le = random_number;
+    u32_le random_number_le{random_number};
     res = CreateConfigInfoBlk(ConsoleUniqueID3BlockID, sizeof(random_number_le), 0xE,
                               &random_number_le);
     if (!res.IsSuccess())
@@ -497,11 +502,13 @@ ResultCode Module::FormatConfig() {
     for (std::size_t i{}; i < 16; ++i) {
         std::copy(region_name.cbegin(), region_name.cend(), country_name_buffer[i]);
     }
+
     // 0x000B0001 - Localized names for the profile Country
     res = CreateConfigInfoBlk(CountryNameBlockID, sizeof(country_name_buffer), 0xE,
                               country_name_buffer);
     if (!res.IsSuccess())
         return res;
+
     // 0x000B0002 - Localized names for the profile State/Province
     res = CreateConfigInfoBlk(StateNameBlockID, sizeof(country_name_buffer), 0xE,
                               country_name_buffer);
@@ -524,7 +531,7 @@ ResultCode Module::FormatConfig() {
         return res;
 
     // 0x000D0000 - Accepted EULA version
-    res = CreateConfigInfoBlk(EULAVersionBlockID, 0x4, 0xE, &MAX_EULA_VERSION);
+    res = CreateConfigInfoBlk(EULAVersionBlockID, 0x4, 0xE, zero_buffer);
     if (!res.IsSuccess())
         return res;
 
@@ -575,10 +582,6 @@ ResultCode Module::LoadConfigNANDSaveFile() {
     if (config_result.Succeeded()) {
         auto config{std::move(config_result).Unwrap()};
         config->backend->Read(0, CONFIG_SAVEFILE_SIZE, cfg_config_file_buffer.data());
-        u32 eula_version{};
-        GetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &eula_version);
-        if (eula_version == 0)
-            SetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, &MAX_EULA_VERSION);
         return RESULT_SUCCESS;
     }
 
@@ -596,6 +599,14 @@ bool Module::IsNewModeEnabled() {
     if (model == NEW_NINTENDO_2DS_XL || model == NEW_NINTENDO_3DS || model == NEW_NINTENDO_3DS_XL)
         return true;
     return false;
+}
+
+std::vector<u8> Module::GetEulaVersion() {
+    std::vector<u8> data{};
+    data.resize(4);
+    GetConfigInfoBlock(EULAVersionBlockID, 0x4, 0xE, data.data());
+    data.resize(2);
+    return data;
 }
 
 /// Checks if the language is available in the chosen region, and returns a proper one

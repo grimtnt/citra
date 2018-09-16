@@ -7,14 +7,14 @@
 #include "core/settings.h"
 #include "ui_configure.h"
 
-ConfigureDialog::ConfigureDialog(QWidget* parent)
-    : QDialog{parent}, ui{std::make_unique<Ui::ConfigureDialog>()} {
+ConfigurationDialog::ConfigurationDialog(QWidget* parent)
+    : QDialog{parent}, ui{std::make_unique<Ui::ConfigurationDialog>()} {
     ui->setupUi(this);
 }
 
-ConfigureDialog::~ConfigureDialog() {}
+ConfigurationDialog::~ConfigurationDialog() {}
 
-void ConfigureDialog::applyConfiguration() {
+void ConfigurationDialog::applyConfiguration() {
     ui->generalTab->applyConfiguration();
     ui->systemTab->applyConfiguration();
     ui->inputTab->applyConfiguration();
