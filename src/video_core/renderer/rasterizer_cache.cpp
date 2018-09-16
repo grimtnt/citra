@@ -19,6 +19,7 @@
 #include "common/math_util.h"
 #include "common/scope_exit.h"
 #include "common/vector_math.h"
+#include "core/core_timing.h"
 #include "core/frontend/emu_window.h"
 #include "core/memory.h"
 #include "core/settings.h"
@@ -54,6 +55,9 @@ static constexpr std::array<FormatTuple, 4> depth_format_tuples = {{
 }};
 
 static constexpr FormatTuple tex_tuple = {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+
+static CoreTiming::EventType* cache_clear_event;
+static RasterizerCache* g_rasterizer_cache;
 
 static const FormatTuple& GetFormatTuple(PixelFormat pixel_format) {
     const SurfaceType type{SurfaceParams::GetFormatType(pixel_format)};
@@ -994,12 +998,22 @@ void main() {
     ASSERT(d24s8_abgr_tbo_size_u_id != -1);
     d24s8_abgr_viewport_u_id = glGetUniformLocation(d24s8_abgr_shader.handle, "viewport");
     ASSERT(d24s8_abgr_viewport_u_id != -1);
+
+    g_rasterizer_cache = this;
+    cache_clear_event = CoreTiming::RegisterEvent(
+        "RasterizerCache::cache_clear_event", [](u64 userdata, s64 cycles_late) {
+            g_rasterizer_cache->Clear();
+            CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
+                                      cache_clear_event);
+        });
+    CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
+                              cache_clear_event);
 }
 
 RasterizerCache::~RasterizerCache() {
-    FlushAll();
-    while (!surface_cache.empty())
-        UnregisterSurface(*surface_cache.begin()->second.begin());
+    CoreTiming::UnscheduleEvent(cache_clear_event, 0);
+    g_rasterizer_cache = nullptr;
+    Clear();
 }
 
 bool RasterizerCache::BlitSurfaces(const Surface& src_surface,
@@ -1591,6 +1605,12 @@ void RasterizerCache::FlushRegion(PAddr addr, u32 size, Surface flush_surface) {
 
 void RasterizerCache::FlushAll() {
     FlushRegion(0, 0xFFFFFFFF);
+}
+
+void RasterizerCache::Clear() {
+    FlushAll();
+    while (!surface_cache.empty())
+        UnregisterSurface(*surface_cache.begin()->second.begin());
 }
 
 void RasterizerCache::InvalidateRegion(PAddr addr, u32 size, const Surface& region_owner) {

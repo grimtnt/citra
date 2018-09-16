@@ -69,6 +69,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->layout_bg->setStyleSheet(
         QString("QPushButton { background-color: %1 }").arg(bg_color.name()));
     ui->enable_shadows->setChecked(Settings::values.enable_shadows);
+    ui->clear_cache_secs->setValue(Settings::values.clear_cache_secs);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -86,6 +87,7 @@ void ConfigureGraphics::applyConfiguration() {
         static_cast<Settings::LayoutOption>(ui->layout_combobox->currentIndex());
     Settings::values.swap_screen = ui->swap_screen->isChecked();
     Settings::values.enable_shadows = ui->enable_shadows->isChecked();
+    Settings::values.clear_cache_secs = ui->clear_cache_secs->value();
     if (VideoCore::g_renderer)
         VideoCore::g_renderer->GetRasterizer()->SyncSettings();
 }

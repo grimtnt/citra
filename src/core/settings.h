@@ -52,17 +52,17 @@ enum Values {
     NumButtons,
 };
 
-constexpr int BUTTON_HID_BEGIN = A;
-constexpr int BUTTON_IR_BEGIN = ZL;
-constexpr int BUTTON_NS_BEGIN = Home;
+constexpr int BUTTON_HID_BEGIN{A};
+constexpr int BUTTON_IR_BEGIN{ZL};
+constexpr int BUTTON_NS_BEGIN{Home};
 
-constexpr int BUTTON_HID_END = BUTTON_IR_BEGIN;
-constexpr int BUTTON_IR_END = BUTTON_NS_BEGIN;
-constexpr int BUTTON_NS_END = NumButtons;
+constexpr int BUTTON_HID_END{BUTTON_IR_BEGIN};
+constexpr int BUTTON_IR_END{BUTTON_NS_BEGIN};
+constexpr int BUTTON_NS_END{NumButtons};
 
-constexpr int NUM_BUTTONS_HID = BUTTON_HID_END - BUTTON_HID_BEGIN;
-constexpr int NUM_BUTTONS_IR = BUTTON_IR_END - BUTTON_IR_BEGIN;
-constexpr int NUM_BUTTONS_NS = BUTTON_NS_END - BUTTON_NS_BEGIN;
+constexpr int NUM_BUTTONS_HID{BUTTON_HID_END - BUTTON_HID_BEGIN};
+constexpr int NUM_BUTTONS_IR{BUTTON_IR_END - BUTTON_IR_BEGIN};
+constexpr int NUM_BUTTONS_NS{BUTTON_NS_END - BUTTON_NS_BEGIN};
 
 static const std::array<const char*, NumButtons> mapping = {{
     "button_a",
@@ -142,6 +142,7 @@ struct Values {
     bool use_frame_limit;
     u16 frame_limit;
     bool enable_shadows;
+    int clear_cache_secs;
 
     LayoutOption layout_option;
     bool swap_screen;
