@@ -715,7 +715,8 @@ void CachedSurface::UploadGLTexture(const MathUtil::Rectangle<u32>& rect, GLuint
     if (type == SurfaceType::Fill)
         return;
 
-    ASSERT(gl_buffer_size == width * height * GetGLBytesPerPixel(pixel_format));
+    if (!(gl_buffer_size == width * height * GetGLBytesPerPixel(pixel_format)))
+        return;
 
     // Load data from memory to the surface
     GLint x0{static_cast<GLint>(rect.left)};
