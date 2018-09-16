@@ -201,7 +201,8 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
             // Grab the address that the target thread set up to receive the response static buffer
             // and write our data there. The static buffers area is located right after the command
             // buffer area.
-            std::size_t static_buffer_offset = IPC::COMMAND_BUFFER_LENGTH + 2 * buffer_info.buffer_id;
+            std::size_t static_buffer_offset =
+                IPC::COMMAND_BUFFER_LENGTH + 2 * buffer_info.buffer_id;
             IPC::StaticBufferDescInfo target_descriptor{dst_cmdbuf[static_buffer_offset]};
             VAddr target_address = dst_cmdbuf[static_buffer_offset + 1];
 

@@ -28,6 +28,10 @@
 
 namespace Service::APT {
 
+static std::vector<u8> argument{};
+static std::vector<u8> hmac{};
+static u64 argument_source{};
+
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x2, 2, 0}; // 0x20080
     AppletId app_id{rp.PopEnum<AppletId>()};
@@ -530,9 +534,9 @@ void Module::Interface::CloseApplication(Kernel::HLERequestContext& ctx) {
 void Module::Interface::PrepareToDoApplicationJump(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x31, 4, 0};
     u32 flags{rp.Pop<u8>()};
-    jump_tid = rp.Pop<u64>();
-    jump_media = static_cast<FS::MediaType>(rp.Pop<u8>());
-    application_reset = flags == 0x2;
+    apt->jump_tid = rp.Pop<u64>();
+    apt->jump_media = static_cast<FS::MediaType>(rp.Pop<u8>());
+    apt->application_restart = flags == 0x2;
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -542,14 +546,16 @@ void Module::Interface::DoApplicationJump(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x32, 2, 4};
     u32 parameter_size{rp.Pop<u32>()};
     u32 hmac_size{rp.Pop<u32>()};
-    std::vector<u8> parameter{rp.PopStaticBuffer()};
-    std::vector<u8> hmac{rp.PopStaticBuffer()};
+    argument = rp.PopStaticBuffer();
+    argument.resize(parameter_size);
+    argument_source = Kernel::g_current_process->codeset->program_id;
+    hmac = rp.PopStaticBuffer();
 
-    if (application_reset) {
-        // Reset system
+    if (apt->application_restart) {
+        // Restart system
         Core::System::GetInstance().RequestJump(0, FS::MediaType::NAND);
     } else {
-        Core::System::GetInstance().RequestJump(jump_tid, jump_media);
+        Core::System::GetInstance().RequestJump(apt->jump_tid, apt->jump_media);
     }
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -690,7 +696,7 @@ void Module::Interface::GetAppletInfo(Kernel::HLERequestContext& ctx) {
 void Module::Interface::GetStartupArgument(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x51, 2, 0}; // 0x00510080
     u32 parameter_size{rp.Pop<u32>()};
-    StartupArgumentType startup_argument_type = static_cast<StartupArgumentType>(rp.Pop<u8>());
+    StartupArgumentType startup_argument_type{static_cast<StartupArgumentType>(rp.Pop<u8>())};
 
     const u32 max_parameter_size{0x1000};
 
@@ -702,15 +708,15 @@ void Module::Interface::GetStartupArgument(Kernel::HLERequestContext& ctx) {
         parameter_size = max_parameter_size;
     }
 
-    std::vector<u8> parameter(parameter_size, 0);
+    LOG_DEBUG(Service_APT, "startup_argument_type={}, parameter_size={:#010X}",
+              static_cast<u32>(startup_argument_type), parameter_size);
 
-    LOG_WARNING(Service_APT, "(STUBBED) called, startup_argument_type={}, parameter_size={:#010X}",
-                static_cast<u32>(startup_argument_type), parameter_size);
+    argument.resize(parameter_size);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0);
-    rb.PushStaticBuffer(parameter, 0);
+    rb.Push(!argument.empty());
+    rb.PushStaticBuffer(argument, 0);
 }
 
 void Module::Interface::Wrap(Kernel::HLERequestContext& ctx) {
@@ -851,6 +857,27 @@ void Module::Interface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_APT, "(STUBBED) called");
+}
+
+void Module::Interface::ReceiveDeliverArg(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x35, 2, 0}; // 0x00350080
+    rp.Skip(2, false);
+    if (argument.empty()) {
+        IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
+        rb.Push(RESULT_SUCCESS);
+        rb.Push<u64>(0);
+        rb.Push<bool>(false);
+    } else {
+        IPC::ResponseBuilder rb{rp.MakeBuilder(3, 4)};
+        rb.Push(RESULT_SUCCESS);
+        rb.Push<u64>(argument_source);
+        rb.Push<bool>(true);
+        rb.PushStaticBuffer(argument, 0);
+        rb.PushStaticBuffer(hmac, 1);
+        argument.clear();
+        hmac.clear();
+        argument_source = 0;
+    }
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> apt, const char* name, u32 max_session)

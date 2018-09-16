@@ -22,7 +22,7 @@ namespace Service::APT {
 class AppletManager;
 
 /// Each APT service can only have up to 2 sessions connected at the same time.
-static const u32 MaxAPTSessions = 2;
+static const u32 MaxAPTSessions{2};
 
 /// Used by the application to pass information about the current framebuffer to applets.
 struct CaptureBufferInfo {
@@ -591,11 +591,11 @@ public:
          */
         void ReplySleepQuery(Kernel::HLERequestContext& ctx);
 
+        // TODO: add documentation for this function
+        void ReceiveDeliverArg(Kernel::HLERequestContext& ctx);
+
     private:
         std::shared_ptr<Module> apt;
-        bool application_reset = false;
-        u64 jump_tid;
-        FS::MediaType jump_media;
     };
 
 private:
@@ -619,6 +619,10 @@ private:
         ScreencapPostPermission::CleanThePermission}; // TODO(JamePeng): verify the initial value
 
     std::shared_ptr<AppletManager> applet_manager;
+
+    bool application_restart{};
+    u64 jump_tid;
+    FS::MediaType jump_media;
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
