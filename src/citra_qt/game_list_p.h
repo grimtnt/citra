@@ -63,7 +63,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x000400000F70CD00, Compatibility::Great},    // Fire Emblem Warriors
     {0x000400000014F200, Compatibility::Great},    // Animal Crossing™: Happy Home Designer
     {0x000400000017EB00, Compatibility::Great},    // Hyrule Warriors™ Legends
-    {0x0004000000076500, Compatibility::WontBoot}, // Luigi’s Mansion™ 2
+    {0x0004000000076500, Compatibility::Bad},      // Luigi’s Mansion™ 2
     {0x00040000001BC600, Compatibility::Okay},     // Monster Hunter Stories™
     {0x0004000000198F00, Compatibility::Great},    // Animal Crossing™: New Leaf - Welcome amiibo
     {0x00040000001A0500, Compatibility::Great},    // Super Mario Maker™ for Nintendo 3DS
