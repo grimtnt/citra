@@ -42,7 +42,8 @@ SharedPtr<Event> HLERequestContext::SleepClientThread(SharedPtr<Thread> thread,
         ASSERT(thread->status == THREADSTATUS_WAIT_HLE_EVENT);
         callback(thread, context, reason);
 
-        auto& process = thread->owner_process;
+        auto& process{thread->owner_process};
+
         // We must copy the entire command buffer *plus* the entire static buffers area, since
         // the translation might need to read from it in order to retrieve the StaticBuffer
         // target addresses.
@@ -50,12 +51,13 @@ SharedPtr<Event> HLERequestContext::SleepClientThread(SharedPtr<Thread> thread,
         Memory::ReadBlock(*process, thread->GetCommandBufferAddress(), cmd_buff.data(),
                           cmd_buff.size() * sizeof(u32));
         context.WriteToOutgoingCommandBuffer(cmd_buff.data(), *process, Kernel::g_handle_table);
+
         // Copy the translated command buffer back into the thread's command buffer area.
         Memory::WriteBlock(*process, thread->GetCommandBufferAddress(), cmd_buff.data(),
                            cmd_buff.size() * sizeof(u32));
     };
 
-    auto event = Kernel::Event::Create(Kernel::ResetType::OneShot, "HLE Pause Event: " + reason);
+    auto event{Kernel::Event::Create(Kernel::ResetType::OneShot, "HLE Pause Event: " + reason)};
     thread->status = THREADSTATUS_WAIT_HLE_EVENT;
     thread->wait_objects = {event};
     event->AddWaitingThread(thread);
@@ -100,13 +102,13 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
                                                                 HandleTable& src_table) {
     IPC::Header header{src_cmdbuf[0]};
 
-    std::size_t untranslated_size = 1u + header.normal_params_size;
-    std::size_t command_size = untranslated_size + header.translate_params_size;
+    std::size_t untranslated_size{1u + header.normal_params_size};
+    std::size_t command_size{untranslated_size + header.translate_params_size};
     ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH); // TODO(yuriks): Return error
 
     std::copy_n(src_cmdbuf, untranslated_size, cmd_buf.begin());
 
-    std::size_t i = untranslated_size;
+    std::size_t i{untranslated_size};
     while (i < command_size) {
         u32 descriptor = cmd_buf[i] = src_cmdbuf[i];
         i += 1;
@@ -114,10 +116,10 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
         switch (IPC::GetDescriptorType(descriptor)) {
         case IPC::DescriptorType::CopyHandle:
         case IPC::DescriptorType::MoveHandle: {
-            u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
+            u32 num_handles{IPC::HandleNumberFromDesc(descriptor)};
             ASSERT(i + num_handles <= command_size); // TODO(yuriks): Return error
             for (u32 j{}; j < num_handles; ++j) {
-                Handle handle = src_cmdbuf[i];
+                Handle handle{src_cmdbuf[i]};
                 SharedPtr<Object> object{};
                 if (handle != 0) {
                     object = src_table.GetGeneric(handle);
@@ -136,7 +138,7 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
             break;
         }
         case IPC::DescriptorType::StaticBuffer: {
-            VAddr source_address = src_cmdbuf[i];
+            VAddr source_address{src_cmdbuf[i]};
             IPC::StaticBufferDescInfo buffer_info{descriptor};
 
             // Copy the input buffer into our own vector and store it.
@@ -148,7 +150,7 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
             break;
         }
         case IPC::DescriptorType::MappedBuffer: {
-            u32 next_id = static_cast<u32>(request_mapped_buffers.size());
+            u32 next_id{static_cast<u32>(request_mapped_buffers.size())};
             request_mapped_buffers.emplace_back(src_process, descriptor, src_cmdbuf[i], next_id);
             cmd_buf[i++] = next_id;
             break;
@@ -165,15 +167,15 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
                                                            HandleTable& dst_table) const {
     IPC::Header header{cmd_buf[0]};
 
-    std::size_t untranslated_size = 1u + header.normal_params_size;
-    std::size_t command_size = untranslated_size + header.translate_params_size;
+    std::size_t untranslated_size{1u + header.normal_params_size};
+    std::size_t command_size{untranslated_size + header.translate_params_size};
     ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH);
 
     std::copy_n(cmd_buf.begin(), untranslated_size, dst_cmdbuf);
 
-    std::size_t i = untranslated_size;
+    std::size_t i{untranslated_size};
     while (i < command_size) {
-        u32 descriptor = dst_cmdbuf[i] = cmd_buf[i];
+        u32 descriptor{dst_cmdbuf[i] = cmd_buf[i]};
         i += 1;
 
         switch (IPC::GetDescriptorType(descriptor)) {
@@ -183,7 +185,7 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
             u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
             ASSERT(i + num_handles <= command_size);
             for (u32 j{}; j < num_handles; ++j) {
-                SharedPtr<Object> object = GetIncomingHandle(cmd_buf[i]);
+                SharedPtr<Object> object{GetIncomingHandle(cmd_buf[i])};
                 Handle handle{};
                 if (object != nullptr) {
                     // TODO(yuriks): Figure out the proper error handling for if this fails
@@ -196,15 +198,15 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
         case IPC::DescriptorType::StaticBuffer: {
             IPC::StaticBufferDescInfo buffer_info{descriptor};
 
-            const auto& data = GetStaticBuffer(buffer_info.buffer_id);
+            const auto& data{GetStaticBuffer(buffer_info.buffer_id)};
 
             // Grab the address that the target thread set up to receive the response static buffer
             // and write our data there. The static buffers area is located right after the command
             // buffer area.
-            std::size_t static_buffer_offset =
-                IPC::COMMAND_BUFFER_LENGTH + 2 * buffer_info.buffer_id;
+            std::size_t static_buffer_offset{IPC::COMMAND_BUFFER_LENGTH +
+                                             2 * buffer_info.buffer_id};
             IPC::StaticBufferDescInfo target_descriptor{dst_cmdbuf[static_buffer_offset]};
-            VAddr target_address = dst_cmdbuf[static_buffer_offset + 1];
+            VAddr target_address{dst_cmdbuf[static_buffer_offset + 1]};
 
             Memory::WriteBlock(dst_process, target_address, data.data(), data.size());
 
@@ -212,7 +214,7 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
             break;
         }
         case IPC::DescriptorType::MappedBuffer: {
-            VAddr addr = request_mapped_buffers[cmd_buf[i]].address;
+            VAddr addr{request_mapped_buffers[cmd_buf[i]].address};
             dst_cmdbuf[i++] = addr;
             break;
         }
