@@ -58,20 +58,26 @@ ControlPanel::ControlPanel(QWidget* parent)
         static_cast<SharedPage::NetworkState>(Settings::values.n_state)));
     connect(ui->power_adapter_connected, &QCheckBox::stateChanged, [this] {
         Settings::values.p_adapter_connected = ui->power_adapter_connected->isChecked();
-        Core::System::GetInstance().GetSharedPageHandler()->SetAdapterConnected(
-            static_cast<u8>(Settings::values.p_adapter_connected));
+        if (Core::System::GetInstance().IsPoweredOn()) {
+            Core::System::GetInstance().GetSharedPageHandler()->SetAdapterConnected(
+                static_cast<u8>(Settings::values.p_adapter_connected));
+        }
     });
     connect(ui->power_battery_charging, &QCheckBox::stateChanged, [this] {
         Settings::values.p_battery_charging = ui->power_battery_charging->isChecked();
-        Core::System::GetInstance().GetSharedPageHandler()->SetBatteryCharging(
-            static_cast<u8>(Settings::values.p_battery_charging));
+        if (Core::System::GetInstance().IsPoweredOn()) {
+            Core::System::GetInstance().GetSharedPageHandler()->SetBatteryCharging(
+                static_cast<u8>(Settings::values.p_battery_charging));
+        }
     });
     connect(ui->power_battery_level,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this] {
                 Settings::values.p_battery_level =
                     static_cast<u32>(ui->power_battery_level->currentIndex() + 1);
-                Core::System::GetInstance().GetSharedPageHandler()->SetBatteryLevel(
-                    static_cast<u8>(Settings::values.p_battery_level));
+                if (Core::System::GetInstance().IsPoweredOn()) {
+                    Core::System::GetInstance().GetSharedPageHandler()->SetBatteryLevel(
+                        static_cast<u8>(Settings::values.p_battery_level));
+                }
             });
     connect(ui->network_wifi_status,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
@@ -80,15 +86,19 @@ ControlPanel::ControlPanel(QWidget* parent)
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this] {
                 Settings::values.n_wifi_link_level =
                     static_cast<u8>(ui->network_link_level->currentIndex());
-                Core::System::GetInstance().GetSharedPageHandler()->SetWifiLinkLevel(
-                    static_cast<SharedPage::WifiLinkLevel>(Settings::values.n_wifi_link_level));
+                if (Core::System::GetInstance().IsPoweredOn()) {
+                    Core::System::GetInstance().GetSharedPageHandler()->SetWifiLinkLevel(
+                        static_cast<SharedPage::WifiLinkLevel>(Settings::values.n_wifi_link_level));
+                }
             });
     connect(ui->network_state,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this] {
                 Settings::values.n_state = static_cast<u8>(
                     SharedPageUtil::IndexToNetworkState(ui->network_state->currentIndex()));
-                Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(
-                    static_cast<SharedPage::NetworkState>(Settings::values.n_state));
+                if (Core::System::GetInstance().IsPoweredOn()) {
+                    Core::System::GetInstance().GetSharedPageHandler()->SetNetworkState(
+                        static_cast<SharedPage::NetworkState>(Settings::values.n_state));
+                }
             });
     connect(ui->volume_slider, &QSlider::valueChanged, [this] {
         Settings::values.volume =
