@@ -78,7 +78,6 @@
     <addaction name="action_Configure"/>
     <addaction name="action_Control_Panel"/>
     <addaction name="action_Cheats"/>
-    <addaction name="action_Set_Play_Coins"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -130,6 +129,7 @@
     <addaction name="menu_Movie"/>
     <addaction name="separator"/>
     <addaction name="action_Capture_Screenshot"/>
+    <addaction name="action_Set_Play_Coins"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
