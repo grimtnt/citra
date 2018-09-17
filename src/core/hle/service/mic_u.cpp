@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <SDL.h>
 #include "common/logging/log.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
@@ -28,6 +29,8 @@ enum class SampleRate : u8 {
 };
 
 struct MIC_U::Impl {
+    SDL_AudioDeviceID dev;
+
     void MapSharedMem(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x01, 1, 2};
         const u32 size{rp.Pop<u32>()};
@@ -58,7 +61,74 @@ struct MIC_U::Impl {
         audio_buffer_offset = rp.Pop<u32>();
         audio_buffer_size = rp.Pop<u32>();
         audio_buffer_loop = rp.Pop<bool>();
-        is_sampling = true;
+        SDL_InitSubSystem(SDL_INIT_AUDIO);
+        SDL_AudioSpec want{}, have;
+        want.channels = 1;
+        switch (encoding) {
+        case Encoding::PCM16:
+            want.format = AUDIO_U16;
+            break;
+        case Encoding::PCM16Signed:
+            want.format = AUDIO_S16;
+            break;
+        case Encoding::PCM8:
+            want.format = AUDIO_U8;
+            break;
+        case Encoding::PCM8Signed:
+            want.format = AUDIO_S8;
+            break;
+        }
+        want.samples = 1024;
+        switch (sample_rate) {
+        case SampleRate::SampleRate10910:
+            want.freq = 10910;
+            break;
+        case SampleRate::SampleRate16360:
+            want.freq = 16360;
+            break;
+        case SampleRate::SampleRate32730:
+            want.freq = 32730;
+            break;
+        case SampleRate::SampleRate8180:
+            want.freq = 8180;
+            break;
+        }
+        want.userdata = this;
+        want.callback = [](void* userdata, Uint8* data, int len) {
+            Impl* impl{static_cast<Impl*>(userdata)};
+            if (!impl) {
+                return;
+            }
+
+            u8* buffer{impl->shared_memory->GetPointer()};
+            if (!buffer) {
+                return;
+            }
+
+            u32 offset;
+            std::memcpy(&offset, buffer + impl->audio_buffer_size, sizeof(offset));
+
+            // TODO: How does the 3DS handles looped input buffers
+            if (len > impl->audio_buffer_size - offset) {
+                offset = impl->audio_buffer_offset;
+            }
+
+            std::memcpy(buffer + offset, data, len);
+            offset += len;
+            std::memcpy(buffer + impl->audio_buffer_size, &offset, sizeof(offset));
+        };
+        dev = SDL_OpenAudioDevice(NULL, 1, &want, &have,
+                                  SDL_AUDIO_ALLOW_FORMAT_CHANGE | SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+        if (dev == 0) {
+            LOG_ERROR(Service_MIC, "Failed to open device: {}", SDL_GetError());
+        } else {
+            if (have.format != want.format) {
+                LOG_WARNING(Service_MIC, "Format not supported");
+            } else {
+                SDL_PauseAudioDevice(dev, 0);
+                is_sampling = true;
+            }
+        }
 
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
@@ -68,7 +138,6 @@ struct MIC_U::Impl {
                   "audio_buffer_offset={}, audio_buffer_size={}, audio_buffer_loop={}",
                   static_cast<u32>(encoding), static_cast<u32>(sample_rate), audio_buffer_offset,
                   audio_buffer_size, audio_buffer_loop);
-        UNIMPLEMENTED();
     }
 
     void AdjustSampling(Kernel::HLERequestContext& ctx) {
@@ -79,11 +148,16 @@ struct MIC_U::Impl {
         rb.Push(RESULT_SUCCESS);
 
         LOG_DEBUG(Service_MIC, "sample_rate={}", static_cast<u32>(sample_rate));
+        UNIMPLEMENTED();
     }
 
     void StopSampling(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x05, 0, 0};
-        is_sampling = false;
+        if (dev != 0) {
+            SDL_CloseAudioDevice(dev);
+            SDL_QuitSubSystem(SDL_INIT_AUDIO);
+            is_sampling = false;
+        }
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
