@@ -11,8 +11,11 @@
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/mic_u.h"
+#include "core/settings.h"
 
 namespace Service::MIC {
+
+MIC_U* current_mic{};
 
 enum class Encoding : u8 {
     PCM8 = 0,
@@ -54,14 +57,7 @@ struct MIC_U::Impl {
         LOG_DEBUG(Service_MIC, "called");
     }
 
-    void StartSampling(Kernel::HLERequestContext& ctx) {
-        IPC::RequestParser rp{ctx, 0x03, 5, 0};
-        encoding = rp.PopEnum<Encoding>();
-        sample_rate = rp.PopEnum<SampleRate>();
-        audio_buffer_offset = rp.Pop<u32>();
-        audio_buffer_size = rp.Pop<u32>();
-        audio_buffer_loop = rp.Pop<bool>();
-        SDL_InitSubSystem(SDL_INIT_AUDIO);
+    void StartSampling() {
         SDL_AudioSpec want{}, have;
         want.channels = 1;
         switch (encoding) {
@@ -117,7 +113,11 @@ struct MIC_U::Impl {
             offset += len;
             std::memcpy(buffer + impl->audio_buffer_size, &offset, sizeof(offset));
         };
-        dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0);
+        dev = SDL_OpenAudioDevice(
+            (Settings::values.input_device.empty() || Settings::values.input_device == "auto")
+                ? NULL
+                : Settings::values.input_device.c_str(),
+            1, &want, &have, 0);
         if (dev == 0) {
             LOG_ERROR(Service_MIC, "Failed to open device: {}", SDL_GetError());
         } else {
@@ -128,7 +128,16 @@ struct MIC_U::Impl {
                 is_sampling = true;
             }
         }
+    }
 
+    void StartSampling(Kernel::HLERequestContext& ctx) {
+        IPC::RequestParser rp{ctx, 0x03, 5, 0};
+        encoding = rp.PopEnum<Encoding>();
+        sample_rate = rp.PopEnum<SampleRate>();
+        audio_buffer_offset = rp.Pop<u32>();
+        audio_buffer_size = rp.Pop<u32>();
+        audio_buffer_loop = rp.Pop<bool>();
+        StartSampling();
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
@@ -142,25 +151,28 @@ struct MIC_U::Impl {
     void AdjustSampling(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x04, 1, 0};
         sample_rate = rp.PopEnum<SampleRate>();
-
+        StopSampling();
+        StartSampling();
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
         LOG_DEBUG(Service_MIC, "sample_rate={}", static_cast<u32>(sample_rate));
-        UNIMPLEMENTED();
+    }
+
+    void StopSampling() {
+        if (dev != 0) {
+            SDL_CloseAudioDevice(dev);
+            is_sampling = false;
+        }
     }
 
     void StopSampling(Kernel::HLERequestContext& ctx) {
         IPC::RequestParser rp{ctx, 0x05, 0, 0};
-        if (dev != 0) {
-            SDL_CloseAudioDevice(dev);
-            SDL_QuitSubSystem(SDL_INIT_AUDIO);
-            is_sampling = false;
-        }
+        StopSampling();
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(RESULT_SUCCESS);
 
-        UNIMPLEMENTED();
+        LOG_DEBUG(Service_MIC, "called");
     }
 
     void IsSampling(Kernel::HLERequestContext& ctx) {
@@ -271,6 +283,13 @@ struct MIC_U::Impl {
         LOG_DEBUG(Service_MIC, "version=0x{:08X}", version);
     }
 
+    void ReloadDevice() {
+        if (is_sampling) {
+            StopSampling();
+            StartSampling();
+        }
+    }
+
     u32 client_version{};
     Kernel::SharedPtr<Kernel::Event> buffer_full_event{
         Kernel::Event::Create(Kernel::ResetType::OneShot, "MIC_U::buffer_full_event")};
@@ -372,12 +391,24 @@ MIC_U::MIC_U() : ServiceFramework{"mic:u", 1}, impl{std::make_unique<Impl>()} {
     };
 
     RegisterHandlers(functions);
+
+    current_mic = this;
 }
 
-MIC_U::~MIC_U() = default;
+MIC_U::~MIC_U() {}
+
+void MIC_U::ReloadDevice() {
+    impl->ReloadDevice();
+}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<MIC_U>()->InstallAsService(service_manager);
+}
+
+void ReloadDevice() {
+    if (!current_mic)
+        return;
+    current_mic->ReloadDevice();
 }
 
 } // namespace Service::MIC

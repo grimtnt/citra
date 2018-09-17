@@ -17,6 +17,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <QtGui>
 #include <QtWidgets>
+#include <SDL.h>
 #include <discord_rpc.h>
 #include <fmt/format.h>
 #include "citra_qt/aboutdialog.h"
@@ -1551,11 +1552,14 @@ int main(int argc, char* argv[]) {
 
     GMainWindow main_window{};
 
-    // Register CameraFactory
+    // Register camera factories
     Camera::RegisterFactory("image", std::make_unique<Camera::StillImageCameraFactory>());
     Camera::RegisterFactory("qt", std::make_unique<Camera::QtMultimediaCameraFactory>());
     Camera::QtMultimediaCameraHandler::Init();
     LOG_INFO(Frontend, "Citra version: {}", Common::g_build_version);
+    SDL_InitSubSystem(SDL_INIT_AUDIO);
     main_window.show();
-    return app.exec();
+    int result{app.exec()};
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    return result;
 }

@@ -360,7 +360,7 @@ void DspHle::Impl::AudioTickCallback(s64 cycles_late) {
 
 DspHle::DspHle()
     : impl{std::make_unique<Impl>(*this)}, sink{std::make_unique<Sink>(
-                                               Settings::values.audio_device_id)} {
+                                               Settings::values.output_device)} {
     sink->SetCallback(
         [this](s16* buffer, std::size_t num_frames) { OutputCallback(buffer, num_frames); });
     time_stretcher.SetOutputSampleRate(sink->GetNativeSampleRate());
@@ -394,7 +394,7 @@ void DspHle::SetServiceToInterrupt(std::weak_ptr<DSP_DSP> dsp) {
 
 void DspHle::UpdateSink() {
     sink.reset();
-    sink = std::make_unique<Sink>(Settings::values.audio_device_id);
+    sink = std::make_unique<Sink>(Settings::values.output_device);
     sink->SetCallback(
         [this](s16* buffer, std::size_t num_frames) { OutputCallback(buffer, num_frames); });
 }

@@ -123,7 +123,7 @@ endif()
 create_target_directory_groups(citra-qt)
 
 target_link_libraries(citra-qt PRIVATE audio_core common core input_common network video_core)
-target_link_libraries(citra-qt PRIVATE Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia discord-rpc)
+target_link_libraries(citra-qt PRIVATE Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia discord-rpc SDL2)
 target_link_libraries(citra-qt PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 
 if(UNIX AND NOT APPLE)

@@ -6,6 +6,7 @@
 #include "core/core.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir.h"
+#include "core/hle/service/mic_u.h"
 #include "core/settings.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
@@ -33,6 +34,7 @@ void Apply() {
     Service::HID::ReloadInputDevices();
     Service::IR::ReloadInputDevices();
     Service::CAM::ReloadCameraDevices();
+    Service::MIC::ReloadDevice();
 }
 
 template <typename T>
@@ -54,7 +56,8 @@ void LogSettings() {
     LogSetting("Layout_LayoutOption", static_cast<int>(Settings::values.layout_option));
     LogSetting("Layout_SwapScreen", Settings::values.swap_screen);
     LogSetting("Audio_EnableAudioStretching", Settings::values.enable_audio_stretching);
-    LogSetting("Audio_OutputDevice", Settings::values.audio_device_id);
+    LogSetting("Audio_OutputDevice", Settings::values.output_device);
+    LogSetting("Audio_InputDevice", Settings::values.input_device);
     using namespace Service::CAM;
     LogSetting("Camera_OuterRightName", Settings::values.camera_name[OuterRightCamera]);
     LogSetting("Camera_OuterRightConfig", Settings::values.camera_config[OuterRightCamera]);
