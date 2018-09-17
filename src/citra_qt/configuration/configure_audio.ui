@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>229</width>
+    <width>239</width>
     <height>157</height>
    </rect>
   </property>
@@ -28,11 +28,11 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout">
+       <layout class="QHBoxLayout" name="output">
         <item>
-         <widget class="QLabel" name="audio_device_label">
+         <widget class="QLabel" name="output_device_label">
           <property name="text">
-           <string>Audio Device:</string>
+           <string>Output Device:</string>
           </property>
          </widget>
         </item>
@@ -42,7 +42,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QHBoxLayout" name="input">
         <item>
          <widget class="QLabel" name="input_device_label">
           <property name="text">
