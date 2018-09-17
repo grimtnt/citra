@@ -20,7 +20,6 @@ ConfigureAudio::ConfigureAudio(QWidget* parent)
 ConfigureAudio::~ConfigureAudio() {}
 
 void ConfigureAudio::setConfiguration() {
-
     ui->toggle_audio_stretching->setChecked(Settings::values.enable_audio_stretching);
 
     // Load output devices
