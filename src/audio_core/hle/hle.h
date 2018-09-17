@@ -70,7 +70,6 @@ public:
     /// Enable/Disable audio stretching.
     void EnableStretching(bool enable);
 
-protected:
     void OutputFrame(StereoFrame16& frame);
 
 private:
