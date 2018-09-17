@@ -117,8 +117,7 @@ struct MIC_U::Impl {
             offset += len;
             std::memcpy(buffer + impl->audio_buffer_size, &offset, sizeof(offset));
         };
-        dev = SDL_OpenAudioDevice(NULL, 1, &want, &have,
-                                  SDL_AUDIO_ALLOW_FORMAT_CHANGE | SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+        dev = SDL_OpenAudioDevice(NULL, 1, &want, &have, 0);
         if (dev == 0) {
             LOG_ERROR(Service_MIC, "Failed to open device: {}", SDL_GetError());
         } else {
