@@ -114,7 +114,7 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
         }
     } else {
         // fill with 16-bit values
-        u16 value_16bit{config.value_16bit.Value()};
+        u16 value_16bit{static_cast<u16>(config.value_16bit.Value())};
         for (u8* ptr{start}; ptr < end; ptr += sizeof(u16))
             memcpy(ptr, &value_16bit, sizeof(u16));
     }
@@ -198,8 +198,10 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
 
             u32 output_y{config.flip_vertically ? output_height - y - 1 : y};
 
-            u32 dst_bytes_per_pixel{GPU::Regs::BytesPerPixel(config.output_format)};
-            u32 src_bytes_per_pixel{GPU::Regs::BytesPerPixel(config.input_format)};
+            u32 dst_bytes_per_pixel{
+                static_cast<u32>(GPU::Regs::BytesPerPixel(config.output_format))};
+            u32 src_bytes_per_pixel{
+                static_cast<u32>(GPU::Regs::BytesPerPixel(config.input_format))};
             u32 src_offset;
             u32 dst_offset;
 
