@@ -17,17 +17,17 @@ private:
     /**
      * GetTotalNotifications service function.
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
-     *      2 : Number of notifications
+     *      1: Result of function, 0 on success, otherwise error code
+     *      2: Number of notifications
      */
     void GetTotalNotifications(Kernel::HLERequestContext& ctx);
 
     /**
      * SetInfoLEDPattern service function.
      *  Inputs:
-     *      1 : Array index
+     *      1: Array index
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void SetInfoLEDPattern(Kernel::HLERequestContext& ctx);
 };

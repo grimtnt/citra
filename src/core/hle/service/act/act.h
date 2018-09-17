@@ -74,37 +74,37 @@ public:
         /**
          * ACT::Initialize service function
          *  Inputs:
-         *      1 : SDK Version
-         *      2 : Shared memory size
-         *      3 : 0x20 (Kernel PID header)
-         *      4 : 0x20 (The code to request the current process handle)
-         *      5 : 0x00 (handle-transfer header for kernel)
-         *      6 : Shared memory address value
+         *      1: SDK Version
+         *      2: Shared memory size
+         *      3: 0x20 (Kernel PID header)
+         *      4: 0x20 (The code to request the current process handle)
+         *      5: 0x00 (handle-transfer header for kernel)
+         *      6: Shared memory address value
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void Initialize(Kernel::HLERequestContext& ctx);
 
         /**
          * ACT::GetErrorCode service function.
          *  Inputs:
-         *      1 : Input error code
+         *      1: Input error code
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Output value
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Output value
          */
         void GetErrorCode(Kernel::HLERequestContext& ctx);
 
         /**
          * ACT::GetAccountDataBlock service function
          *  Inputs:
-         *      1 : Unknown, usually 0xFE?
-         *      2 : Size
-         *      3 : BlkID
-         *      4 : (Size<<4) | 12
-         *      5 : Output buffer ptr
+         *      1: Unknown, usually 0xFE?
+         *      2: Size
+         *      3: BlkID
+         *      4: (Size<<4) | 12
+         *      5: Output buffer ptr
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void GetAccountDataBlock(Kernel::HLERequestContext& ctx);
 

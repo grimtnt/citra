@@ -94,20 +94,20 @@ public:
         /**
          * CFG::GetCountryCodeString service function
          *  Inputs:
-         *      1 : Country Code ID
+         *      1: Country Code ID
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Country's 2-char string
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Country's 2-char string
          */
         void GetCountryCodeString(Kernel::HLERequestContext& ctx);
 
         /**
          * CFG::GetCountryCodeID service function
          *  Inputs:
-         *      1 : Country Code 2-char string
+         *      1: Country Code 2-char string
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Country Code ID
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Country Code ID
          */
         void GetCountryCodeID(Kernel::HLERequestContext& ctx);
 
@@ -116,83 +116,83 @@ public:
         /**
          * CFG::SecureInfoGetRegion service function
          *  Inputs:
-         *      1 : None
+         *      1: None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Region value loaded from SecureInfo offset 0x100
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Region value loaded from SecureInfo offset 0x100
          */
         void SecureInfoGetRegion(Kernel::HLERequestContext& ctx, u16 id);
 
         /**
          * CFG::GenHashConsoleUnique service function
          *  Inputs:
-         *      1 : 20 bit application ID salt
+         *      1: 20 bit application ID salt
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Hash/"ID" lower word
-         *      3 : Hash/"ID" upper word
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Hash/"ID" lower word
+         *      3: Hash/"ID" upper word
          */
         void GenHashConsoleUnique(Kernel::HLERequestContext& ctx);
 
         /**
          * CFG::GetRegionCanadaUSA service function
          *  Inputs:
-         *      1 : None
+         *      1: None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : 1 if the system is a Canada or USA model, 0 otherwise
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: 1 if the system is a Canada or USA model, 0 otherwise
          */
         void GetRegionCanadaUSA(Kernel::HLERequestContext& ctx);
 
         /**
          * CFG::GetSystemModel service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Model of the console
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Model of the console
          */
         void GetSystemModel(Kernel::HLERequestContext& ctx);
 
         /**
          * CFG::GetModelNintendo2DS service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : 0 if the system is a Nintendo 2DS, 1 otherwise
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: 0 if the system is a Nintendo 2DS, 1 otherwise
          */
         void GetModelNintendo2DS(Kernel::HLERequestContext& ctx);
 
         /**
          * CFG::GetConfigInfoBlk2 service function
          *  Inputs:
-         *      1 : Size
-         *      2 : Block ID
-         *      3 : Descriptor for the output buffer
-         *      4 : Output buffer pointer
+         *      1: Size
+         *      2: Block ID
+         *      3: Descriptor for the output buffer
+         *      4: Output buffer pointer
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void GetConfigInfoBlk2(Kernel::HLERequestContext& ctx);
 
         /**
          * CFG::GetConfigInfoBlk8 service function
          *  Inputs:
-         *      1 : Size
-         *      2 : Block ID
-         *      3 : Descriptor for the output buffer
-         *      4 : Output buffer pointer
+         *      1: Size
+         *      2: Block ID
+         *      3: Descriptor for the output buffer
+         *      4: Output buffer pointer
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void GetConfigInfoBlk8(Kernel::HLERequestContext& ctx, u16 id);
 
         /**
          * CFG::SetConfigInfoBlk4 service function
          *  Inputs:
-         *      1 : Block ID
-         *      2 : Size
-         *      3 : Descriptor for the output buffer
-         *      4 : Output buffer pointer
+         *      1: Block ID
+         *      2: Size
+         *      3: Descriptor for the output buffer
+         *      4: Output buffer pointer
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          *  Note:
          *      The parameters order is different from GetConfigInfoBlk2/8's,
          *      where Block ID and Size are switched.
@@ -202,14 +202,14 @@ public:
         /**
          * CFG::UpdateConfigNANDSavegame service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void UpdateConfigNANDSavegame(Kernel::HLERequestContext& ctx, u16 id);
 
         /**
          * CFG::FormatConfig service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void FormatConfig(Kernel::HLERequestContext& ctx);
 

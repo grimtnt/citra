@@ -210,7 +210,7 @@ FramebufferLayout SideFrameLayout(unsigned width, unsigned height, bool swapped)
     return res;
 }
 
-FramebufferLayout CustomFrameLayout(unsigned width, unsigned height) {
+FramebufferLayout CustomFrameLayout(unsigned width, unsigned height, bool swapped) {
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -223,17 +223,18 @@ FramebufferLayout CustomFrameLayout(unsigned width, unsigned height) {
         Settings::values.custom_bottom_left, Settings::values.custom_bottom_top,
         Settings::values.custom_bottom_right, Settings::values.custom_bottom_bottom};
 
-    res.top_screen = top_screen;
-    res.bottom_screen = bot_screen;
+    res.top_screen = swapped ? bot_screen : top_screen;
+    res.bottom_screen = swapped ? top_screen : bot_screen;
     return res;
 }
 
 FramebufferLayout FrameLayoutFromResolutionScale(u16 res_scale) {
     FramebufferLayout layout{};
-    if (Settings::values.custom_layout == true) {
+    if (Settings::values.custom_layout) {
         layout = CustomFrameLayout(
             std::max(Settings::values.custom_top_right, Settings::values.custom_bottom_right),
-            std::max(Settings::values.custom_top_bottom, Settings::values.custom_bottom_bottom));
+            std::max(Settings::values.custom_top_bottom, Settings::values.custom_bottom_bottom),
+            Settings::values.swap_screen);
     } else {
         int width{}, height{};
         // TODO: add support for medium layout

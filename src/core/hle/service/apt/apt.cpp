@@ -861,13 +861,17 @@ void Module::Interface::ReplySleepQuery(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::ReceiveDeliverArg(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x35, 2, 0}; // 0x00350080
-    rp.Skip(2, false);
+    u32 parameter_size{std::clamp(rp.Pop<u32>(), static_cast<u32>(0), static_cast<u32>(0x300))};
+    u32 hmac_size{std::clamp(rp.Pop<u32>(), static_cast<u32>(0), static_cast<u32>(0x20))};
     if (argument.empty()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
         rb.Push(RESULT_SUCCESS);
         rb.Push<u64>(0);
         rb.Push<bool>(false);
     } else {
+        argument.resize(parameter_size);
+        hmac.resize(hmac_size);
+
         IPC::ResponseBuilder rb{rp.MakeBuilder(3, 4)};
         rb.Push(RESULT_SUCCESS);
         rb.Push<u64>(argument_source);

@@ -19,33 +19,33 @@ public:
         /**
          * MCU::GetBatteryLevel service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Battery level (0-0x64)
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Battery level (0-0x64)
          */
         void GetBatteryLevel(Kernel::HLERequestContext& ctx, u16 id);
 
         /**
          * MCU::GetBatteryChargeState service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : True if the battery is charging, otherwise false
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: True if the battery is charging, otherwise false
          */
         void GetBatteryChargeState(Kernel::HLERequestContext& ctx);
 
         /**
          * MCU::Set3DLEDState service function
          *  Inputs:
-         *      1 : 3D LED state
+         *      1: 3D LED state
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void Set3DLEDState(Kernel::HLERequestContext& ctx);
 
         /**
          * MCU::GetSoundVolume service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Sound volume (0-0x3F)
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Sound volume (0-0x3F)
          */
         void GetSoundVolume(Kernel::HLERequestContext& ctx);
 

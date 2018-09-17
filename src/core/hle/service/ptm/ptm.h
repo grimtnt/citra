@@ -53,61 +53,61 @@ public:
          * that controls another part of the HW.
          * PTM::GetAdapterState service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Output of function, 0 = not charging, 1 = charging.
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Output of function, 0 = not charging, 1 = charging.
          */
         void GetAdapterState(Kernel::HLERequestContext& ctx);
 
         /**
          * PTM::GetShellState service function.
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Whether the 3DS's physical shell casing is open (1) or closed (0)
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Whether the 3DS's physical shell casing is open (1) or closed (0)
          */
         void GetShellState(Kernel::HLERequestContext& ctx);
 
         /**
          * PTM::GetBatteryLevel service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Battery level, 5 = completely full battery, 4 = mostly full battery,
-         *          3 = half full battery, 2 =  low battery, 1 = critical battery.
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Battery level, 5 = completely full battery, 4 = mostly full battery,
+         *         3 = half full battery, 2 =  low battery, 1 = critical battery.
          */
         void GetBatteryLevel(Kernel::HLERequestContext& ctx);
 
         /**
          * PTM::GetBatteryChargeState service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Output of function, 0 = not charging, 1 = charging.
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Output of function, 0 = not charging, 1 = charging.
          */
         void GetBatteryChargeState(Kernel::HLERequestContext& ctx);
 
         /**
          * PTM::GetPedometerState service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Output of function, 0 = not counting steps, 1 = counting steps.
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Output of function, 0 = not counting steps, 1 = counting steps.
          */
         void GetPedometerState(Kernel::HLERequestContext& ctx);
 
         /**
          * PTM::GetStepHistory service function
          *  Inputs:
-         *      1 : Number of hours
-         *    2-3 : Start time
-         *      4 : Buffer mapping descriptor
-         *      5 : (short*) Buffer for step counts
+         *      1: Number of hours
+         *    2-3: Start time
+         *      4: Buffer mapping descriptor
+         *      5: (short*) Buffer for step counts
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void GetStepHistory(Kernel::HLERequestContext& ctx);
 
         /**
          * PTM::GetTotalStepCount service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Output of function, * = total step count
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Output of function, * = total step count
          */
         void GetTotalStepCount(Kernel::HLERequestContext& ctx);
 
@@ -131,10 +131,10 @@ public:
         /**
          * PTM::ConfigureNew3DSCPU service function
          * Inputs:
-         *      1 : u8 value, only bit0-1 are used here.
-         *          Bit 0 enables higher core clock, and bit 1 enables additional (L2) cache.
+         *      1: u8 value, only bit0-1 are used here.
+         *         Bit 0 enables higher core clock, and bit 1 enables additional (L2) cache.
          * Outputs:
-         *      1 : Result code
+         *      1: Result code
          * Note:
          *     This just uses svcKernelSetState with Type10 where Param0=<input u8 value from the
          * cmd>. This command is implemented in the Old3DS PTM sysmodule too, but the above type is

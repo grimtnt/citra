@@ -106,7 +106,7 @@ void EmuWindow::TouchPressed(unsigned framebuffer_x, unsigned framebuffer_y) {
 }
 
 void EmuWindow::TouchReleased() {
-    std::lock_guard<std::mutex> guard(touch_state->mutex);
+    std::lock_guard<std::mutex> guard{touch_state->mutex};
     touch_state->touch_pressed = false;
     touch_state->touch_x = 0;
     touch_state->touch_y = 0;
@@ -124,8 +124,8 @@ void EmuWindow::TouchMoved(unsigned framebuffer_x, unsigned framebuffer_y) {
 
 void EmuWindow::UpdateCurrentFramebufferLayout(unsigned width, unsigned height) {
     Layout::FramebufferLayout layout{};
-    if (Settings::values.custom_layout == true) {
-        layout = Layout::CustomFrameLayout(width, height);
+    if (Settings::values.custom_layout) {
+        layout = Layout::CustomFrameLayout(width, height, Settings::values.swap_screen);
     } else {
         switch (Settings::values.layout_option) {
         case Settings::LayoutOption::SingleScreen:

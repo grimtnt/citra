@@ -110,7 +110,7 @@ void Module::Interface::SetOptoutFlag(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_BOSS, "optout_flag={}", optout_flag);
+    LOG_WARNING(Service_BOSS, "called, optout_flag={}", optout_flag);
 }
 
 void Module::Interface::GetOptoutFlag(Kernel::HLERequestContext& ctx) {
@@ -120,7 +120,7 @@ void Module::Interface::GetOptoutFlag(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(optout_flag);
 
-    LOG_WARNING(Service_BOSS, "optout_flag={}", optout_flag);
+    LOG_WARNING(Service_BOSS, "called, optout_flag={}", optout_flag);
 }
 
 void Module::Interface::RegisterTask(Kernel::HLERequestContext& ctx) {

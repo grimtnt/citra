@@ -67,16 +67,16 @@ private:
      * configured
      * to shared mode (with SharedMemoryHeader at the beginning of the shared memory).
      *  Inputs:
-     *      1 : Size of shared memory
-     *      2 : Recv buffer size
-     *      3 : Recv buffer packet count
-     *      4 : Send buffer size
-     *      5 : Send buffer packet count
-     *      6 : BaudRate (u8)
-     *      7 : 0 (Handle descriptor)
-     *      8 : Handle of shared memory
+     *      1: Size of shared memory
+     *      2: Recv buffer size
+     *      3: Recv buffer packet count
+     *      4: Send buffer size
+     *      5: Send buffer packet count
+     *      6: BaudRate (u8)
+     *      7: 0 (Handle descriptor)
+     *      8: Handle of shared memory
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void InitializeIrNopShared(Kernel::HLERequestContext& ctx);
 
@@ -88,9 +88,9 @@ private:
      * communicate
      * with the device.
      *  Inputs:
-     *      1 : device ID? always 1 for circle pad pro
+     *      1: device ID? always 1 for circle pad pro
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void RequireConnection(Kernel::HLERequestContext& ctx);
 
@@ -98,9 +98,9 @@ private:
      * GetReceiveEvent service function
      * Gets an event that is signaled when a packet is received from the IR device.
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
-     *      2 : 0 (Handle descriptor)
-     *      3 : Receive event handle
+     *      1: Result of function, 0 on success, otherwise error code
+     *      2: 0 (Handle descriptor)
+     *      3: Receive event handle
      */
     void GetReceiveEvent(Kernel::HLERequestContext& ctx);
 
@@ -108,9 +108,9 @@ private:
      * GetSendEvent service function
      * Gets an event that is signaled when the sending of a packet is complete
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
-     *      2 : 0 (Handle descriptor)
-     *      3 : Send event handle
+     *      1: Result of function, 0 on success, otherwise error code
+     *      2: 0 (Handle descriptor)
+     *      3: Send event handle
      */
     void GetSendEvent(Kernel::HLERequestContext& ctx);
 
@@ -118,7 +118,7 @@ private:
      * Disconnect service function
      * Disconnects from the current connected IR device.
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void Disconnect(Kernel::HLERequestContext& ctx);
 
@@ -126,9 +126,9 @@ private:
      * GetConnectionStatusEvent service function
      * Gets an event that is signaled when the connection status is changed
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
-     *      2 : 0 (Handle descriptor)
-     *      3 : Connection Status Event handle
+     *      1: Result of function, 0 on success, otherwise error code
+     *      2: 0 (Handle descriptor)
+     *      3: Connection Status Event handle
      */
     void GetConnectionStatusEvent(Kernel::HLERequestContext& ctx);
 
@@ -136,7 +136,7 @@ private:
      * FinalizeIrNop service function
      * Finalize ir:USER service.
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void FinalizeIrNop(Kernel::HLERequestContext& ctx);
 
@@ -144,23 +144,23 @@ private:
      * SendIrNop service function
      * Sends a packet to the connected IR device
      *  Inpus:
-     *      1 : Size of data to send
-     *      2 : 2 + (size << 14) (Static buffer descriptor)
-     *      3 : Data buffer address
+     *      1: Size of data to send
+     *      2: 2 + (size << 14) (Static buffer descriptor)
+     *      3: Data buffer address
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void SendIrNop(Kernel::HLERequestContext& ctx);
 
     /**
-     * ReleaseReceivedData function
+     * ReleaseReceivedData service function
      * Release a specified amount of packet from the receive buffer. This is called after the
      * application reads received packet from the buffer directly, to release the buffer space for
      * future packets.
      *  Inpus:
-     *      1 : Number of packets to release
+     *      1: Number of packets to release
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void ReleaseReceivedData(Kernel::HLERequestContext& ctx);
 

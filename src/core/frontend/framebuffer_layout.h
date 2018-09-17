@@ -72,7 +72,7 @@ FramebufferLayout SideFrameLayout(unsigned width, unsigned height, bool is_swapp
  * @param height Window framebuffer height in pixels
  * @return Newly created FramebufferLayout object with default screen regions initialized
  */
-FramebufferLayout CustomFrameLayout(unsigned width, unsigned height);
+FramebufferLayout CustomFrameLayout(unsigned width, unsigned height, bool swapped);
 
 /**
  * Convenience method to get frame layout by resolution scale

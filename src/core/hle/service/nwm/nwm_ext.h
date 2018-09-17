@@ -20,9 +20,9 @@ public:
 private:
     /** NWM_EXT::ControlWirelessEnabled service function
      *  Inputs:
-     *        1 : Enable
+     *        1: Enable
      *  Outputs:
-     *        1 : Result code
+     *        1: Result code
      */
     void ControlWirelessEnabled(Kernel::HLERequestContext& ctx);
 };

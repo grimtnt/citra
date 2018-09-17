@@ -66,7 +66,8 @@ public:
     ResultCode WriteTicket();
     ResultCode WriteTitleMetadata();
     ResultVal<std::size_t> WriteContentData(u64 offset, std::size_t length, const u8* buffer);
-    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush, const u8* buffer) override;
+    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush,
+                                 const u8* buffer) override;
     u64 GetSize() const override;
     bool SetSize(u64 size) const override;
     bool Close() const override;
@@ -156,10 +157,10 @@ public:
          * AM::GetNumPrograms service function
          * Gets the number of installed titles in the requested media type
          *  Inputs:
-         *      1 : Media type to load the titles from
+         *      1: Media type to load the titles from
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : The number of titles in the requested media type
+         *      1: Result, 0 on success, otherwise error code
+         *      2: The number of titles in the requested media type
          */
         void GetNumPrograms(Kernel::HLERequestContext& ctx);
 
@@ -167,13 +168,13 @@ public:
          * AM::FindDLCContentInfos service function
          * Explicitly checks that TID high value is 0004008C or an error is returned.
          *  Inputs:
-         *      1 : MediaType
-         *    2-3 : u64, Title ID
-         *      4 : Content count
-         *      6 : Content IDs pointer
-         *      8 : Content Infos pointer
+         *      1: MediaType
+         *    2-3: u64, Title ID
+         *      4: Content count
+         *      6: Content IDs pointer
+         *      8: Content Infos pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void FindDLCContentInfos(Kernel::HLERequestContext& ctx);
 
@@ -181,26 +182,26 @@ public:
          * AM::ListDLCContentInfos service function
          * Explicitly checks that TID high value is 0004008C or an error is returned.
          *  Inputs:
-         *      1 : Content count
-         *      2 : MediaType
-         *    3-4 : u64, Title ID
-         *      5 : Start Index
-         *      7 : Content Infos pointer
+         *      1: Content count
+         *      2: MediaType
+         *    3-4: u64, Title ID
+         *      5: Start Index
+         *      7: Content Infos pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Number of content infos returned
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Number of content infos returned
          */
         void ListDLCContentInfos(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::DeleteContents service function
          *  Inputs:
-         *      1 : MediaType
-         *    2-3 : u64, Title ID
-         *      4 : Content count
-         *      6 : Content IDs pointer
+         *      1: MediaType
+         *    2-3: u64, Title ID
+         *      4: Content count
+         *      6: Content IDs pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void DeleteContents(Kernel::HLERequestContext& ctx);
 
@@ -209,24 +210,24 @@ public:
          * Loads information about the desired number of titles from the desired media type into an
          * array
          *  Inputs:
-         *      1 : Title count
-         *      2 : Media type to load the titles from
-         *      4 : Title IDs output pointer
+         *      1: Title count
+         *      2: Media type to load the titles from
+         *      4: Title IDs output pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : The number of titles loaded from the requested media type
+         *      1: Result, 0 on success, otherwise error code
+         *      2: The number of titles loaded from the requested media type
          */
         void GetProgramList(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::GetProgramInfos service function
          *  Inputs:
-         *      1 : u8 Mediatype
-         *      2 : Total titles
-         *      4 : TitleIDList pointer
-         *      6 : TitleList pointer
+         *      1: u8 Mediatype
+         *      2: Total titles
+         *      4: TitleIDList pointer
+         *      6: TitleList pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void GetProgramInfos(Kernel::HLERequestContext& ctx);
 
@@ -234,10 +235,10 @@ public:
          * AM::DeleteUserProgram service function
          * Deletes a user program
          *  Inputs:
-         *      1 : Media Type
-         *      2-3 : Title ID
+         *      1: Media Type
+         *    2-3: Title ID
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void DeleteUserProgram(Kernel::HLERequestContext& ctx);
 
@@ -245,11 +246,11 @@ public:
          * AM::GetProductCode service function
          * Gets the product code of a title
          *  Inputs:
-         *      1 : Media Type
-         *      2-3 : Title ID
+         *      1: Media Type
+         *    2-3: Title ID
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2-5 : Product Code
+         *      1: Result, 0 on success, otherwise error code
+         *    2-5: Product Code
          */
         void GetProductCode(Kernel::HLERequestContext& ctx);
 
@@ -257,12 +258,12 @@ public:
          * AM::GetDLCTitleInfos service function
          * Wrapper for AM::GetProgramInfos, explicitly checks that TID high value is 0004008C.
          *  Inputs:
-         *      1 : u8 Mediatype
-         *      2 : Total titles
-         *      4 : TitleIDList pointer
-         *      6 : TitleList pointer
+         *      1: u8 Mediatype
+         *      2: Total titles
+         *      4: TitleIDList pointer
+         *      6: TitleList pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void GetDLCTitleInfos(Kernel::HLERequestContext& ctx);
 
@@ -270,28 +271,28 @@ public:
          * AM::GetPatchTitleInfos service function
          * Wrapper for AM::GetProgramInfos, explicitly checks that TID high value is 0004000E.
          *  Inputs:
-         *      1 : u8 Mediatype
-         *      2 : Total titles
-         *      4 : TitleIDList input pointer
-         *      6 : TitleList output pointer
+         *      1: u8 Mediatype
+         *      2: Total titles
+         *      4: TitleIDList input pointer
+         *      6: TitleList output pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : TitleIDList input pointer
-         *      4 : TitleList output pointer
+         *      1: Result, 0 on success, otherwise error code
+         *      2: TitleIDList input pointer
+         *      4: TitleList output pointer
          */
         void GetPatchTitleInfos(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::ListDataTitleTicketInfos service function
          *  Inputs:
-         *      1 : Ticket count
-         *    2-3 : u64, Title ID
-         *      4 : Start Index?
-         *      5 : (TicketCount * 24) << 8 | 0x4
-         *      6 : Ticket Infos pointer
+         *      1: Ticket count
+         *    2-3: u64, Title ID
+         *      4: Start Index?
+         *      5: (TicketCount * 24) << 8 | 0x4
+         *      6: Ticket Infos pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Number of ticket infos returned
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Number of ticket infos returned
          */
         void ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx);
 
@@ -299,72 +300,72 @@ public:
          * AM::GetDLCContentInfoCount service function
          * Explicitly checks that TID high value is 0004008C or an error is returned.
          *  Inputs:
-         *      1 : MediaType
-         *    2-3 : u64, Title ID
+         *      1: MediaType
+         *    2-3: u64, Title ID
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Number of content infos plus one
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Number of content infos plus one
          */
         void GetDLCContentInfoCount(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::DeleteTicket service function
          *  Inputs:
-         *    1-2 : u64, Title ID
+         *    1-2: u64, Title ID
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void DeleteTicket(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::GetNumTickets service function
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Number of tickets
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Number of tickets
          */
         void GetNumTickets(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::GetTicketList service function
          *  Inputs:
-         *      1 : Number of TicketList
-         *      2 : Number to skip
-         *      4 : TicketList pointer
+         *      1: Number of TicketList
+         *      2: Number to skip
+         *      4: TicketList pointer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Total TicketList
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Total TicketList
          */
         void GetTicketList(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::QueryAvailableTitleDatabase service function
          *  Inputs:
-         *      1 : Media Type
+         *      1: Media Type
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Boolean, database availability
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Boolean, database availability
          */
         void QueryAvailableTitleDatabase(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::CheckContentRights service function
          *  Inputs:
-         *      1-2 : Title ID
-         *      3 : Content Index
+         *    1-2: Title ID
+         *      3: Content Index
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Boolean, whether we have rights to this content
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Boolean, whether we have rights to this content
          */
         void CheckContentRights(Kernel::HLERequestContext& ctx);
 
         /**
          * AM::CheckContentRightsIgnorePlatform service function
          *  Inputs:
-         *      1-2 : Title ID
-         *      3 : Content Index
+         *    1-2: Title ID
+         *      3: Content Index
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Boolean, whether we have rights to this content
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Boolean, whether we have rights to this content
          */
         void CheckContentRightsIgnorePlatform(Kernel::HLERequestContext& ctx);
 
@@ -372,10 +373,10 @@ public:
          * AM::BeginImportProgram service function
          * Begin importing from a CTR Installable Archive
          *  Inputs:
-         *      1 : Media type to install title to
+         *      1: Media type to install title to
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2-3 : CIAFile handle for application to write to
+         *      1: Result, 0 on success, otherwise error code
+         *    2-3: CIAFile handle for application to write to
          */
         void BeginImportProgram(Kernel::HLERequestContext& ctx);
 
@@ -383,9 +384,9 @@ public:
          * AM::EndImportProgram service function
          * Finish importing from a CTR Installable Archive
          *  Inputs:
-         *      1-2 : CIAFile handle application wrote to
+         *    1-2: CIAFile handle application wrote to
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void EndImportProgram(Kernel::HLERequestContext& ctx);
 
@@ -393,11 +394,11 @@ public:
          * AM::GetProgramInfoFromCia service function
          * Get TitleInfo from a CIA file handle
          *  Inputs:
-         *      1 : Media type of the title
-         *      2-3 : File handle CIA data can be read from
+         *      1: Media type of the title
+         *    2-3: File handle CIA data can be read from
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2-8: TitleInfo structure
+         *      1: Result, 0 on success, otherwise error code
+         *    2-8: TitleInfo structure
          */
         void GetProgramInfoFromCia(Kernel::HLERequestContext& ctx);
 
@@ -405,10 +406,10 @@ public:
          * AM::GetSystemMenuDataFromCia service function
          * Loads a CIA file's SMDH data into a specified buffer
          *  Inputs:
-         *      1-2 : File handle CIA data can be read from
-         *      3-4 : Output buffer
+         *    1-2: File handle CIA data can be read from
+         *    3-4: Output buffer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx);
 
@@ -416,10 +417,10 @@ public:
          * AM::GetDependencyListFromCia service function
          * Loads a CIA's dependency list into a specified buffer
          *  Inputs:
-         *      1-2 : File handle CIA data can be read from
-         *      64-65 : Output buffer
+         *    1-2: File handle CIA data can be read from
+         *  64-65: Output buffer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void GetDependencyListFromCia(Kernel::HLERequestContext& ctx);
 
@@ -427,10 +428,10 @@ public:
          * AM::GetTransferSizeFromCia service function
          * Returns the total expected transfer size up to the CIA meta offset from a CIA
          *  Inputs:
-         *      1-2 : File handle CIA data can be read from
+         *    1-2: File handle CIA data can be read from
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2-3 : Transfer size
+         *      1: Result, 0 on success, otherwise error code
+         *    2-3: Transfer size
          */
         void GetTransferSizeFromCia(Kernel::HLERequestContext& ctx);
 
@@ -438,10 +439,10 @@ public:
          * AM::GetCoreVersionFromCia service function
          * Returns the core version from a CIA
          *  Inputs:
-         *      1-2 : File handle CIA data can be read from
+         *    1-2: File handle CIA data can be read from
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Core version
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Core version
          */
         void GetCoreVersionFromCia(Kernel::HLERequestContext& ctx);
 
@@ -449,11 +450,11 @@ public:
          * AM::GetRequiredSizeFromCia service function
          * Returns the required amount of free space required to install a given CIA file
          *  Inputs:
-         *      1 : Media type to install title to
-         *      2-3 : File handle CIA data can be read from
+         *      1: Media type to install title to
+         *    2-3: File handle CIA data can be read from
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2-3 : Required free space for CIA
+         *      1: Result, 0 on success, otherwise error code
+         *    2-3: Required free space for CIA
          */
         void GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx);
 
@@ -461,10 +462,10 @@ public:
          * AM::DeleteProgram service function
          * Deletes a program
          *  Inputs:
-         *      1 : Media type
-         *      2-3 : Title ID
+         *      1: Media type
+         *    2-3: Title ID
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void DeleteProgram(Kernel::HLERequestContext& ctx);
 
@@ -472,10 +473,10 @@ public:
          * AM::GetMetaSizeFromCia service function
          * Returns the size of a given CIA's meta section
          *  Inputs:
-         *      1-2 : File handle CIA data can be read from
+         *    1-2: File handle CIA data can be read from
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
-         *      2 : Meta section size
+         *      1: Result, 0 on success, otherwise error code
+         *      2: Meta section size
          */
         void GetMetaSizeFromCia(Kernel::HLERequestContext& ctx);
 
@@ -483,10 +484,10 @@ public:
          * AM::GetMetaDataFromCia service function
          * Loads meta section data from a CIA file into a given buffer
          *  Inputs:
-         *      1-2 : File handle CIA data can be read from
-         *      3-4 : Output buffer
+         *    1-2: File handle CIA data can be read from
+         *    3-4: Output buffer
          *  Outputs:
-         *      1 : Result, 0 on success, otherwise error code
+         *      1: Result, 0 on success, otherwise error code
          */
         void GetMetaDataFromCia(Kernel::HLERequestContext& ctx);
 

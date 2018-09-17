@@ -17,21 +17,21 @@ private:
     /**
      * NIM::CheckForSysUpdateEvent service function
      *  Inputs:
-     *      1 : None
+     *      1: None
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
-     *      2 : Copy handle descriptor
-     *      3 : System Update event handle
+     *      1: Result of function, 0 on success, otherwise error code
+     *      2: Copy handle descriptor
+     *      3: System Update event handle
      */
     void CheckForSysUpdateEvent(Kernel::HLERequestContext& ctx);
 
     /**
      * NIM::CheckSysUpdateAvailable service function
      *  Inputs:
-     *      1 : None
+     *      1: None
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
-     *      2 : u8 flag, 0 = no system update available, 1 = system update available.
+     *      1: Result of function, 0 on success, otherwise error code
+     *      2: u8 flag, 0 = no system update available, 1 = system update available.
      */
     void CheckSysUpdateAvailable(Kernel::HLERequestContext& ctx);
 

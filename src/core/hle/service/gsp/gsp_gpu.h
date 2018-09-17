@@ -228,9 +228,9 @@ private:
      * Writes sequential GSP GPU hardware registers
      *
      *  Inputs:
-     *      1 : address of first GPU register
-     *      2 : number of registers to write sequentially
-     *      4 : pointer to source data array
+     *      1: address of first GPU register
+     *      2: number of registers to write sequentially
+     *      4: pointer to source data array
      */
     void WriteHWRegs(Kernel::HLERequestContext& ctx);
 
@@ -240,10 +240,10 @@ private:
      * Updates sequential GSP GPU hardware registers using masks
      *
      *  Inputs:
-     *      1 : address of first GPU register
-     *      2 : number of registers to update sequentially
-     *      4 : pointer to source data array
-     *      6 : pointer to mask array
+     *      1: address of first GPU register
+     *      2: number of registers to update sequentially
+     *      4: pointer to source data array
+     *      6: pointer to mask array
      */
     void WriteHWRegsWithMask(Kernel::HLERequestContext& ctx);
 
@@ -256,8 +256,8 @@ private:
      * Updates GPU display framebuffer configuration using the specified parameters.
      *
      *  Inputs:
-     *      1 : Screen ID (0 = top screen, 1 = bottom screen)
-     *      2-7 : FrameBufferInfo structure
+     *      1: Screen ID (0 = top screen, 1 = bottom screen)
+     *    2-7: FrameBufferInfo structure
      *  Outputs:
      *      1: Result code
      */
@@ -266,15 +266,15 @@ private:
     /**
      * GSP_GPU::FlushDataCache service function
      *
-     * This Function is a no-op, We aren't emulating the CPU cache any time soon.
+     * This function is a no-op.
      *
      *  Inputs:
-     *      1 : Address
-     *      2 : Size
-     *      3 : Value 0, some descriptor for the KProcess Handle
-     *      4 : KProcess handle
+     *      1: Address
+     *      2: Size
+     *      3: Value 0, some descriptor for the KProcess Handle
+     *      4: KProcess handle
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void FlushDataCache(Kernel::HLERequestContext& ctx);
 
@@ -296,28 +296,28 @@ private:
     /**
      * GSP_GPU::SetAxiConfigQoSMode service function
      *  Inputs:
-     *      1 : Mode, unused in emulator
+     *      1: Mode, unused in emulator
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void SetAxiConfigQoSMode(Kernel::HLERequestContext& ctx);
 
     /**
      * GSP_GPU::RegisterInterruptRelayQueue service function
      *  Inputs:
-     *      1 : "Flags" field, purpose is unknown
-     *      3 : Handle to GSP synchronization event
+     *      1: "Flags" field, purpose is unknown
+     *      3: Handle to GSP synchronization event
      *  Outputs:
-     *      1 : Result of function, 0x2A07 on success, otherwise error code
-     *      2 : Thread index into GSP command buffer
-     *      4 : Handle to GSP shared memory
+     *      1: Result of function, 0x2A07 on success, otherwise error code
+     *      2: Thread index into GSP command buffer
+     *      4: Handle to GSP shared memory
      */
     void RegisterInterruptRelayQueue(Kernel::HLERequestContext& ctx);
 
     /**
      * GSP_GPU::UnregisterInterruptRelayQueue service function
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void UnregisterInterruptRelayQueue(Kernel::HLERequestContext& ctx);
 
@@ -365,15 +365,15 @@ private:
     /**
      * GSP_GPU::StoreDataCache service function
      *
-     * This Function is a no-op, We aren't emulating the CPU cache any time soon.
+     * This function is a no-op
      *
      *  Inputs:
-     *      1 : Address
-     *      2 : Size
-     *      3 : Value 0, some descriptor for the KProcess Handle
-     *      4 : KProcess handle
+     *      1: Address
+     *      2: Size
+     *      3: Value 0, some descriptor for the KProcess Handle
+     *      4: KProcess handle
      *  Outputs:
-     *      1 : Result of function, 0 on success, otherwise error code
+     *      1: Result of function, 0 on success, otherwise error code
      */
     void StoreDataCache(Kernel::HLERequestContext& ctx);
 

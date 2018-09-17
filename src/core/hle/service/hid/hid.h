@@ -210,14 +210,14 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : IPC Command Structure translate-header
-         *      3 : Handle to HID shared memory
-         *      4 : Event signaled by HID
-         *      5 : Event signaled by HID
-         *      6 : Event signaled by HID
-         *      7 : Gyroscope event
-         *      8 : Event signaled by HID
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: IPC Command Structure translate-header
+         *      3: Handle to HID shared memory
+         *      4: Event signaled by HID
+         *      5: Event signaled by HID
+         *      6: Event signaled by HID
+         *      7: Gyroscope event
+         *      8: Event signaled by HID
          */
         void GetIPCHandles(Kernel::HLERequestContext& ctx);
 
@@ -226,7 +226,7 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void EnableAccelerometer(Kernel::HLERequestContext& ctx);
 
@@ -235,7 +235,7 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void DisableAccelerometer(Kernel::HLERequestContext& ctx);
 
@@ -244,7 +244,7 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void EnableGyroscopeLow(Kernel::HLERequestContext& ctx);
 
@@ -253,7 +253,7 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void DisableGyroscopeLow(Kernel::HLERequestContext& ctx);
 
@@ -262,8 +262,8 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : u8 output value
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: u8 output value
          */
         void GetSoundVolume(Kernel::HLERequestContext& ctx);
 
@@ -272,8 +272,8 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : float output value
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: float output value
          */
         void GetGyroscopeLowRawToDpsCoefficient(Kernel::HLERequestContext& ctx);
 
@@ -282,8 +282,8 @@ public:
          *  Inputs:
          *      None
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2~6 (18 bytes) : struct GyroscopeCalibrateParam
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2-6 (18 bytes): struct GyroscopeCalibrateParam
          */
         void GetGyroscopeLowCalibrateParam(Kernel::HLERequestContext& ctx);
 

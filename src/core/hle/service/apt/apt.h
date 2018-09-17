@@ -72,116 +72,116 @@ public:
          * APT::Initialize service function
          * Service function that initializes the APT process for the running application
          *  Outputs:
-         *      1 : Result of the function, 0 on success, otherwise error code
-         *      3 : Handle to the notification event
-         *      4 : Handle to the pause event
+         *      1: Result of the function, 0 on success, otherwise error code
+         *      3: Handle to the notification event
+         *      4: Handle to the pause event
          */
         void Initialize(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetSharedFont service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Virtual address of where shared font will be loaded in memory
-         *      4 : Handle to shared font memory
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Virtual address of where shared font will be loaded in memory
+         *      4: Handle to shared font memory
          */
         void GetSharedFont(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::Wrap service function
          *  Inputs:
-         *      1 : Output buffer size
-         *      2 : Input buffer size
-         *      3 : Nonce offset to the input buffer
-         *      4 : Nonce size
-         *      5 : Buffer mapping descriptor ((input_buffer_size << 4) | 0xA)
-         *      6 : Input buffer address
-         *      7 : Buffer mapping descriptor ((input_buffer_size << 4) | 0xC)
-         *      8 : Output buffer address
+         *      1: Output buffer size
+         *      2: Input buffer size
+         *      3: Nonce offset to the input buffer
+         *      4: Nonce size
+         *      5: Buffer mapping descriptor ((input_buffer_size << 4) | 0xA)
+         *      6: Input buffer address
+         *      7: Buffer mapping descriptor ((input_buffer_size << 4) | 0xC)
+         *      8: Output buffer address
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Buffer unmapping descriptor ((input_buffer_size << 4) | 0xA)
-         *      3 : Input buffer address
-         *      4 : Buffer unmapping descriptor ((input_buffer_size << 4) | 0xC)
-         *      5 : Output buffer address
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Buffer unmapping descriptor ((input_buffer_size << 4) | 0xA)
+         *      3: Input buffer address
+         *      4: Buffer unmapping descriptor ((input_buffer_size << 4) | 0xC)
+         *      5: Output buffer address
          */
         void Wrap(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::Unwrap service function
          *  Inputs:
-         *      1 : Output buffer size
-         *      2 : Input buffer size
-         *      3 : Nonce offset to the output buffer
-         *      4 : Nonce size
-         *      5 : Buffer mapping descriptor ((input_buffer_size << 4) | 0xA)
-         *      6 : Input buffer address
-         *      7 : Buffer mapping descriptor ((input_buffer_size << 4) | 0xC)
-         *      8 : Output buffer address
+         *      1: Output buffer size
+         *      2: Input buffer size
+         *      3: Nonce offset to the output buffer
+         *      4: Nonce size
+         *      5: Buffer mapping descriptor ((input_buffer_size << 4) | 0xA)
+         *      6: Input buffer address
+         *      7: Buffer mapping descriptor ((input_buffer_size << 4) | 0xC)
+         *      8: Output buffer address
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Buffer unmapping descriptor ((input_buffer_size << 4) | 0xA)
-         *      3 : Input buffer address
-         *      4 : Buffer unmapping descriptor ((input_buffer_size << 4) | 0xC)
-         *      5 : Output buffer address
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Buffer unmapping descriptor ((input_buffer_size << 4) | 0xA)
+         *      3: Input buffer address
+         *      4: Buffer unmapping descriptor ((input_buffer_size << 4) | 0xC)
+         *      5: Output buffer address
          */
         void Unwrap(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::NotifyToWait service function
          *  Inputs:
-         *      1 : AppID
+         *      1: AppID
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void NotifyToWait(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetLockHandle service function
          *  Inputs:
-         *      1 : Applet attributes
+         *      1: Applet attributes
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Applet attributes
-         *      3 : Power button state
-         *      4 : IPC handle descriptor
-         *      5 : APT mutex handle
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Applet attributes
+         *      3: Power button state
+         *      4: IPC handle descriptor
+         *      5: APT mutex handle
          */
         void GetLockHandle(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::Enable service function
          *  Inputs:
-         *      1 : Applet attributes
+         *      1: Applet attributes
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void Enable(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetAppletManInfo service function.
          *  Inputs:
-         *      1 : Unknown
+         *      1: Unknown
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Unknown u32 value
-         *      3 : Unknown u8 value
-         *      4 : Home Menu AppId
-         *      5 : AppID of currently active app
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Unknown u32 value
+         *      3: Unknown u8 value
+         *      4: Home Menu AppId
+         *      5: AppID of currently active app
          */
         void GetAppletManInfo(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetAppletInfo service function.
          *  Inputs:
-         *      1 : AppId
+         *      1: AppId
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2-3 : Title ID
-         *      4 : Media Type
-         *      5 : Registered
-         *      6 : Loaded
-         *      7 : Attributes
+         *      1: Result of function, 0 on success, otherwise error code
+         *    2-3: Title ID
+         *      4: Media Type
+         *      5: Registered
+         *      6: Loaded
+         *      7: Attributes
          */
         void GetAppletInfo(Kernel::HLERequestContext& ctx);
 
@@ -193,29 +193,37 @@ public:
          * 3DS" loading screen.
          *
          *  Inputs:
-         *      1 : AppID
+         *      1: AppID
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Output, 0 = not registered, 1 = registered.
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Output, 0 = not registered, 1 = registered.
          */
         void IsRegistered(Kernel::HLERequestContext& ctx);
 
+        /**
+         * APT::InquireNotification service function
+         *  Inputs:
+         *      1: AppID
+         *  Outputs:
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Notification
+         */
         void InquireNotification(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SendParameter service function. This sets the parameter data state.
          * Inputs:
-         *     1 : Source AppID
-         *     2 : Destination AppID
-         *     3 : Signal type
-         *     4 : Parameter buffer size, max size is 0x1000 (this can be zero)
-         *     5 : Value
-         *     6 : Handle to the destination process, likely used for shared memory (this can be
+         *     1: Source AppID
+         *     2: Destination AppID
+         *     3: Signal type
+         *     4: Parameter buffer size, max size is 0x1000 (this can be zero)
+         *     5: Value
+         *     6: Handle to the destination process, likely used for shared memory (this can be
          * zero)
-         *     7 : (Size<<14) | 2
-         *     8 : Input parameter buffer ptr
+         *     7: (Size<<14) | 2
+         *     8: Input parameter buffer ptr
          * Outputs:
-         *     1 : Result of function, 0 on success, otherwise error code
+         *     1: Result of function, 0 on success, otherwise error code
          */
         void SendParameter(Kernel::HLERequestContext& ctx);
 
@@ -226,18 +234,18 @@ public:
          * again if parameters were not set again. This is called when the second Initialize event
          * is triggered. It returns a signal type indicating why it was triggered.
          *  Inputs:
-         *      1 : AppID
-         *      2 : Parameter buffer size, max size is 0x1000
+         *      1: AppID
+         *      2: Parameter buffer size, max size is 0x1000
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : AppID of the process which sent these parameters
-         *      3 : Signal type
-         *      4 : Actual parameter buffer size, this is <= to the the input size
-         *      5 : Value
-         *      6 : Handle from the source process which set the parameters, likely used for shared
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: AppID of the process which sent these parameters
+         *      3: Signal type
+         *      4: Actual parameter buffer size, this is <= to the the input size
+         *      5: Value
+         *      6: Handle from the source process which set the parameters, likely used for shared
          * memory
-         *      7 : Size
-         *      8 : Output parameter buffer ptr
+         *      7: Size
+         *      8: Output parameter buffer ptr
          */
         void ReceiveParameter(Kernel::HLERequestContext& ctx);
 
@@ -247,18 +255,18 @@ public:
          * this will not clear the flag (except when responseword[3]==8 || responseword[3]==9) in NS
          * state.
          *  Inputs:
-         *      1 : AppID
-         *      2 : Parameter buffer size, max size is 0x1000
+         *      1: AppID
+         *      2: Parameter buffer size, max size is 0x1000
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Unknown, for now assume AppID of the process which sent these parameters
-         *      3 : Unknown, for now assume Signal type
-         *      4 : Actual parameter buffer size, this is <= to the the input size
-         *      5 : Value
-         *      6 : Handle from the source process which set the parameters, likely used for shared
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Unknown, for now assume AppID of the process which sent these parameters
+         *      3: Unknown, for now assume Signal type
+         *      4: Actual parameter buffer size, this is <= to the the input size
+         *      5: Value
+         *      6: Handle from the source process which set the parameters, likely used for shared
          * memory
-         *      7 : Size
-         *      8 : Output parameter buffer ptr
+         *      7: Size
+         *      8: Output parameter buffer ptr
          */
         void GlanceParameter(Kernel::HLERequestContext& ctx);
 
@@ -268,20 +276,17 @@ public:
          * enabled), this clears the flag which indicates that parameter data is available (same
          * flag cleared by APT:ReceiveParameter).
          *  Inputs:
-         *      1 : Flag, when non-zero NS will compare the word after this one with a field in the
-         * NS
-         *          state.
-         *      2 : Unknown, this is the same as the first unknown field returned by
+         *      1: Flag, when non-zero NS will compare the word after this one with a field in the
+         * NS state.
+         *      2: Unknown, this is the same as the first unknown field returned by
          * APT:ReceiveParameter.
-         *      3 : Flag, when non-zero NS will compare the word after this one with a field in the
-         * NS
-         *          state.
-         *      4 : AppID
+         *      3: Flag, when non-zero NS will compare the word after this one with a field in the
+         * NS state.
+         *      4: AppID
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : Status flag, 0 = failure due to no parameter data being available, or the above
-         * enabled
-         *          fields don't match the fields in NS state. 1 = success.
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: Status flag, 0 = failure due to no parameter data being available, or the above
+         * enabled fields don't match the fields in NS state. 1 = success.
          */
         void CancelParameter(Kernel::HLERequestContext& ctx);
 
@@ -294,10 +299,10 @@ public:
          * value (other state fields are set at this point as well). With 8.0.0-18, NS will set an
          * u8 NS state field to value 1 when input flags bit8 is set.
          *  Inputs:
-         *    1-4 : 0x10-byte title-info struct
-         *      4 : Flags
+         *    1-4: 0x10-byte title-info struct
+         *      4: Flags
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void PrepareToStartApplication(Kernel::HLERequestContext& ctx);
 
@@ -305,251 +310,251 @@ public:
          * APT::StartApplication service function. Buf0 is copied to NS FIRMparams+0x0, then Buf1 is
          * copied to the NS FIRMparams+0x480. Then the application is launched.
          * Inputs:
-         *     1 : Buffer 0 size, max size is 0x300
-         *     2 : Buffer 1 size, max size is 0x20 (this can be zero)
-         *     3 : u8 flag
-         *     4 : (Size0<<14) | 2
-         *     5 : Buffer 0 pointer
-         *     6 : (Size1<<14) | 0x802
-         *     7 : Buffer 1 pointer
+         *     1: Buffer 0 size, max size is 0x300
+         *     2: Buffer 1 size, max size is 0x20 (this can be zero)
+         *     3: u8 flag
+         *     4: (Size0<<14) | 2
+         *     5: Buffer 0 pointer
+         *     6: (Size1<<14) | 0x802
+         *     7: Buffer 1 pointer
          * Outputs:
-         *     1 : Result of function, 0 on success, otherwise error code
+         *     1: Result of function, 0 on success, otherwise error code
          */
         void StartApplication(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::AppletUtility service function
          *  Inputs:
-         *      1 : Unknown, but clearly used for something
-         *      2 : Buffer 1 size (purpose is unknown)
-         *      3 : Buffer 2 size (purpose is unknown)
-         *      5 : Buffer 1 address (purpose is unknown)
-         *      65 : Buffer 2 address (purpose is unknown)
+         *      1: Unknown, but clearly used for something
+         *      2: Buffer 1 size (purpose is unknown)
+         *      3: Buffer 2 size (purpose is unknown)
+         *      5: Buffer 1 address (purpose is unknown)
+         *     65: Buffer 2 address (purpose is unknown)
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void AppletUtility(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SetAppCpuTimeLimit service function
          *  Inputs:
-         *      1 : Value, must be one
-         *      2 : Percentage of CPU time from 5 to 80
+         *      1: Value, must be one
+         *      2: Percentage of CPU time from 5 to 80
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void SetAppCpuTimeLimit(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetAppCpuTimeLimit service function
          *  Inputs:
-         *      1 : Value, must be one
+         *      1: Value, must be one
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : System core CPU time percentage
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: System core CPU time percentage
          */
         void GetAppCpuTimeLimit(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PrepareToStartLibraryApplet service function
          *  Inputs:
-         *      1 : Id of the applet to start
+         *      1: Id of the applet to start
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void PrepareToStartLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PrepareToStartNewestHomeMenu service function
          *  Outputs:
-         *      1 : Result of function
+         *      1: Result of function
          */
         void PrepareToStartNewestHomeMenu(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PreloadLibraryApplet service function
          *  Inputs:
-         *      1 : Id of the applet to start
+         *      1: Id of the applet to start
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void PreloadLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::FinishPreloadingLibraryApplet service function
          *  Inputs:
-         *      1 : Id of the applet
+         *      1: Id of the applet
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void FinishPreloadingLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::StartLibraryApplet service function
          *  Inputs:
-         *      1 : Id of the applet to start
-         *      2 : Buffer size
-         *      3 : Always 0?
-         *      4 : Handle passed to the applet
-         *      5 : (Size << 14) | 2
-         *      6 : Input buffer virtual address
+         *      1: Id of the applet to start
+         *      2: Buffer size
+         *      3: Always 0?
+         *      4: Handle passed to the applet
+         *      5: (Size << 14) | 2
+         *      6: Input buffer virtual address
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void StartLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::CloseApplication service function
          *  Inputs:
-         *      1 : Parameters Size
-         *      2 : 0x0
-         *      3 : Handle Parameter
-         *      4 : (Parameters Size << 14) | 2
-         *      5 : void*, Parameters
+         *      1: Parameters Size
+         *      2: 0x0
+         *      3: Handle Parameter
+         *      4: (Parameters Size << 14) | 2
+         *      5: void*, Parameters
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void CloseApplication(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PrepareToDoApplicationJump service function
          *  Inputs:
-         *      1 : Flags
-         *      2 : Program ID low
-         *      3 : Program ID high
-         *      4 : Media type
+         *      1: Flags
+         *      2: Program ID low
+         *      3: Program ID high
+         *      4: Media type
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void PrepareToDoApplicationJump(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::DoApplicationJump service function
          *  Inputs:
-         *      1 : Parameter Size (capped to 0x300)
-         *      2 : HMAC Size (capped to 0x20)
-         *      3 : (Parameter Size << 14) | 2
-         *      4 : void*, Parameter
-         *      5 : (HMAC Size << 14) | 0x802
-         *      6 : void*, HMAC
+         *      1: Parameter Size (capped to 0x300)
+         *      2: HMAC Size (capped to 0x20)
+         *      3: (Parameter Size << 14) | 2
+         *      4: void*, Parameter
+         *      5: (HMAC Size << 14) | 0x802
+         *      6: void*, HMAC
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void DoApplicationJump(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::CancelLibraryApplet service function
          *  Inputs:
-         *      1 : u8, Application exiting (0 = not exiting, 1 = exiting)
+         *      1: u8, Application exiting (0 = not exiting, 1 = exiting)
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void CancelLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::PrepareToCloseLibraryApplet service function
          *  Inputs:
-         *      1 : bool, Not pause
-         *      2 : bool, Caller exiting
-         *      3 : bool, Jump to home
+         *      1: bool, Not pause
+         *      2: bool, Caller exiting
+         *      3: bool, Jump to home
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void PrepareToCloseLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::CloseLibraryApplet service function
          *  Inputs:
-         *      1 : Buffer size
-         *      2 : 0x0
-         *      3 : Object handle
-         *      4 : (Size << 14) | 2
-         *      5 : Input buffer virtual address
+         *      1: Buffer size
+         *      2: 0x0
+         *      3: Object handle
+         *      4: (Size << 14) | 2
+         *      5: Input buffer virtual address
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void CloseLibraryApplet(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SendDspSleep service function
          *  Inputs:
-         *      1 : Unknown
-         *		2 : 0x0
-         *		3 : Handle
+         *      1: Unknown
+         *		2: 0x0
+         *		3: Handle
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void SendDspSleep(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SendDspWakeUp service function
          *  Inputs:
-         *      1 : Unknown
-         *		2 : 0x0
-         *		3 : Handle
+         *      1: Unknown
+         *		2: 0x0
+         *		3: Handle
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void SendDspWakeUp(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SendCaptureBufferInfo service function
          *  Inputs:
-         *      1 : Size
-         *      2 : (Size << 14) | 2
-         *      3 : void*, CaptureBufferInfo
+         *      1: Size
+         *      2: (Size << 14) | 2
+         *      3: void*, CaptureBufferInfo
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void SendCaptureBufferInfo(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::ReceiveCaptureBufferInfo service function
          *  Inputs:
-         *      1 : Size
-         *      64 : Size << 14 | 2
-         *      65 : void*, CaptureBufferInfo
+         *      1: Size
+         *     64: Size << 14 | 2
+         *     65: void*, CaptureBufferInfo
          *  Outputs:
-         *      1 : Result code
-         *      2 : Actual Size
+         *      1: Result code
+         *      2: Actual Size
          */
         void ReceiveCaptureBufferInfo(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SleepSystem service function
          *  Inputs:
-         *    1-2 : Time
+         *    1-2: Time
          *  Outputs:
-         *      1 : Result code
+         *      1: Result code
          */
         void SleepSystem(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetStartupArgument service function
          *  Inputs:
-         *      1 : Parameter Size (capped to 0x300)
-         *      2 : StartupArgumentType
-         *     65 : Output buffer for startup argument
+         *      1: Parameter Size (capped to 0x300)
+         *      2: StartupArgumentType
+         *     65: Output buffer for startup argument
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : u8, Exists (0 = does not exist, 1 = exists)
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: u8, Exists (0 = does not exist, 1 = exists)
          */
         void GetStartupArgument(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::SetScreenCapPostPermission service function
          *  Inputs:
-         *      1 : u8 The screenshot posting permission
+         *      1: u8 The screenshot posting permission
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
+         *      1: Result of function, 0 on success, otherwise error code
          */
         void SetScreenCapPostPermission(Kernel::HLERequestContext& ctx);
 
         /**
          * APT::GetScreenCapPostPermission service function
          *  Outputs:
-         *      1 : Result of function, 0 on success, otherwise error code
-         *      2 : u8 The screenshot posting permission
+         *      1: Result of function, 0 on success, otherwise error code
+         *      2: u8 The screenshot posting permission
          */
         void GetScreenCapPostPermission(Kernel::HLERequestContext& ctx);
 
@@ -591,7 +596,15 @@ public:
          */
         void ReplySleepQuery(Kernel::HLERequestContext& ctx);
 
-        // TODO: add documentation for this function
+        /**
+         * APT::ReceiveDeliverArg service function
+         *  Inputs:
+         *      1: Parameter Size (capped to 0x300)
+         *      2: HMAC Size (capped to 0x20)
+         *  Outputs:
+         *      1: Result code
+         *    2-3: u64, Source Program ID
+         */
         void ReceiveDeliverArg(Kernel::HLERequestContext& ctx);
 
     private:
@@ -601,7 +614,7 @@ public:
 private:
     bool LoadSharedFont();
 
-    /// Handle to shared memory region designated to for shared system font
+    /// Handle to shared memory region for shared system font
     Kernel::SharedPtr<Kernel::SharedMemory> shared_font_mem;
     bool shared_font_loaded{};
     bool shared_font_relocated{};
