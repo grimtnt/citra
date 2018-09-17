@@ -123,7 +123,7 @@ struct MIC_U::Impl {
             LOG_ERROR(Service_MIC, "Failed to open device: {}", SDL_GetError());
         } else {
             if (have.format != want.format) {
-                LOG_WARNING(Service_MIC, "Format not supported");
+                LOG_ERROR(Service_MIC, "Format not supported");
             } else {
                 SDL_PauseAudioDevice(dev, 0);
                 is_sampling = true;
