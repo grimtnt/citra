@@ -315,7 +315,7 @@ static ResultCode ConnectToPort(Handle* out_handle, VAddr port_name_address) {
     CASCADE_RESULT(client_session, client_port->Connect());
 
     // Return the client session
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(client_session));
+    *out_handle = g_handle_table.Create(client_session);
     return RESULT_SUCCESS;
 }
 
@@ -712,7 +712,7 @@ static ResultCode ReplyAndReceive(s32* index, VAddr handles_address, s32 handle_
 /// Create an address arbiter (to allocate access to shared resources)
 static ResultCode CreateAddressArbiter(Handle* out_handle) {
     SharedPtr<AddressArbiter> arbiter{AddressArbiter::Create()};
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(arbiter)));
+    *out_handle = g_handle_table.Create(std::move(arbiter));
     LOG_TRACE(Kernel_SVC, "returned handle=0x{:08X}", *out_handle);
     return RESULT_SUCCESS;
 }
@@ -771,7 +771,7 @@ static ResultCode GetResourceLimit(Handle* resource_limit, Handle process_handle
     if (process == nullptr)
         return ERR_INVALID_HANDLE;
 
-    CASCADE_RESULT(*resource_limit, g_handle_table.Create(process->resource_limit));
+    *resource_limit = g_handle_table.Create(process->resource_limit);
 
     return RESULT_SUCCESS;
 }
@@ -864,7 +864,7 @@ static ResultCode CreateThread(Handle* out_handle, u32 priority, u32 entry_point
     thread->context->SetFpscr(FPSCR_DEFAULT_NAN | FPSCR_FLUSH_TO_ZERO |
                               FPSCR_ROUND_TOZERO); // 0x03C00000
 
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(thread)));
+    *out_handle = g_handle_table.Create(std::move(thread));
 
     Core::System::GetInstance().PrepareReschedule();
 
@@ -926,7 +926,7 @@ static ResultCode SetThreadPriority(Handle handle, u32 priority) {
 static ResultCode CreateMutex(Handle* out_handle, u32 initial_locked) {
     SharedPtr<Mutex> mutex{Mutex::Create(initial_locked != 0)};
     mutex->name = fmt::format("mutex-{:08x}", Core::GetCPU().GetReg(14));
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(mutex)));
+    *out_handle = g_handle_table.Create(std::move(mutex));
 
     LOG_TRACE(Kernel_SVC, "called initial_locked={} : created handle=0x{:08X}", initial_locked,
               *out_handle);
@@ -989,7 +989,7 @@ static ResultCode GetThreadId(u32* thread_id, Handle handle) {
 static ResultCode CreateSemaphore(Handle* out_handle, s32 initial_count, s32 max_count) {
     CASCADE_RESULT(SharedPtr<Semaphore> semaphore, Semaphore::Create(initial_count, max_count));
     semaphore->name = fmt::format("semaphore-{:08x}", Core::GetCPU().GetReg(14));
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(semaphore)));
+    *out_handle = g_handle_table.Create(std::move(semaphore));
 
     LOG_TRACE(Kernel_SVC, "called initial_count={}, max_count={}, created handle=0x{:08X}",
               initial_count, max_count, *out_handle);
@@ -1040,7 +1040,7 @@ static ResultCode QueryMemory(MemoryInfo* memory_info, PageInfo* page_info, u32 
 static ResultCode CreateEvent(Handle* out_handle, u32 reset_type) {
     SharedPtr<Event> evt{Event::Create(static_cast<ResetType>(reset_type),
                                        fmt::format("event-{:08x}", Core::GetCPU().GetReg(14)))};
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(evt)));
+    *out_handle = g_handle_table.Create(std::move(evt));
 
     LOG_TRACE(Kernel_SVC, "called reset_type=0x{:08X} : created handle=0x{:08X}", reset_type,
               *out_handle);
@@ -1083,7 +1083,7 @@ static ResultCode ClearEvent(Handle handle) {
 static ResultCode CreateTimer(Handle* out_handle, u32 reset_type) {
     SharedPtr<Timer> timer{Timer::Create(static_cast<ResetType>(reset_type),
                                          fmt::format("timer-{:08x}", Core::GetCPU().GetReg(14)))};
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(timer)));
+    *out_handle = g_handle_table.Create(std::move(timer));
 
     LOG_TRACE(Kernel_SVC, "called reset_type=0x{:08X} : created handle=0x{:08X}", reset_type,
               *out_handle);
@@ -1200,7 +1200,7 @@ static ResultCode CreateMemoryBlock(Handle* out_handle, u32 addr, u32 size, u32 
     shared_memory =
         SharedMemory::Create(g_current_process, size, static_cast<MemoryPermission>(my_permission),
                              static_cast<MemoryPermission>(other_permission), addr, region);
-    CASCADE_RESULT(*out_handle, g_handle_table.Create(std::move(shared_memory)));
+    *out_handle = g_handle_table.Create(std::move(shared_memory));
 
     LOG_WARNING(Kernel_SVC, "called addr=0x{:08X}", addr);
     return RESULT_SUCCESS;
@@ -1212,12 +1212,8 @@ static ResultCode CreatePort(Handle* server_port, Handle* client_port, VAddr nam
     ASSERT_MSG(name_address == 0, "Named ports are currently unimplemented");
 
     auto ports{ServerPort::CreatePortPair(max_sessions)};
-    CASCADE_RESULT(*client_port,
-                   g_handle_table.Create(std::move(std::get<SharedPtr<ClientPort>>(ports))));
-    // Note: The 3DS kernel also leaks the client port handle if the server port handle fails to be
-    // created.
-    CASCADE_RESULT(*server_port,
-                   g_handle_table.Create(std::move(std::get<SharedPtr<ServerPort>>(ports))));
+    *client_port = g_handle_table.Create(std::move(std::get<SharedPtr<ClientPort>>(ports)));
+    *server_port = g_handle_table.Create(std::move(std::get<SharedPtr<ServerPort>>(ports)));
 
     LOG_TRACE(Kernel_SVC, "called max_sessions={}", max_sessions);
     return RESULT_SUCCESS;
@@ -1229,7 +1225,7 @@ static ResultCode CreateSessionToPort(Handle* out_client_session, Handle client_
         return ERR_INVALID_HANDLE;
 
     CASCADE_RESULT(auto session, client_port->Connect());
-    CASCADE_RESULT(*out_client_session, g_handle_table.Create(std::move(session)));
+    *out_client_session = g_handle_table.Create(std::move(session));
     return RESULT_SUCCESS;
 }
 
@@ -1237,10 +1233,10 @@ static ResultCode CreateSession(Handle* server_session, Handle* client_session) 
     auto sessions{ServerSession::CreateSessionPair()};
 
     auto& server{std::get<SharedPtr<ServerSession>>(sessions)};
-    CASCADE_RESULT(*server_session, g_handle_table.Create(std::move(server)));
+    *server_session = g_handle_table.Create(std::move(server));
 
     auto& client{std::get<SharedPtr<ClientSession>>(sessions)};
-    CASCADE_RESULT(*client_session, g_handle_table.Create(std::move(client)));
+    *client_session = g_handle_table.Create(std::move(client));
 
     LOG_TRACE(Kernel_SVC, "called");
     return RESULT_SUCCESS;
@@ -1252,7 +1248,7 @@ static ResultCode AcceptSession(Handle* out_server_session, Handle server_port_h
         return ERR_INVALID_HANDLE;
 
     CASCADE_RESULT(auto session, server_port->Accept());
-    CASCADE_RESULT(*out_server_session, g_handle_table.Create(std::move(session)));
+    *out_server_session = g_handle_table.Create(std::move(session));
     return RESULT_SUCCESS;
 }
 

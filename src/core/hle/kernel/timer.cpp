@@ -14,7 +14,8 @@
 namespace Kernel {
 
 /// The event type of the generic timer callback event
-static CoreTiming::EventType* timer_callback_event_type = nullptr;
+static CoreTiming::EventType* timer_callback_event_type{};
+
 // TODO(yuriks): This can be removed if Timer objects are explicitly pooled in the future, allowing
 //               us to simply use a pool index or similar.
 static Kernel::HandleTable timer_callback_handle_table;
@@ -30,7 +31,7 @@ SharedPtr<Timer> Timer::Create(ResetType reset_type, std::string name) {
     timer->name = std::move(name);
     timer->initial_delay = 0;
     timer->interval_delay = 0;
-    timer->callback_handle = timer_callback_handle_table.Create(timer).Unwrap();
+    timer->callback_handle = timer_callback_handle_table.Create(timer);
 
     return timer;
 }

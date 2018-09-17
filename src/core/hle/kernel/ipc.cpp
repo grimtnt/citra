@@ -50,7 +50,7 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
             }
 
             for (u32 j{}; j < num_handles; ++j) {
-                Handle handle = cmd_buf[i];
+                Handle handle{cmd_buf[i]};
                 SharedPtr<Object> object{}; // Perform pseudo-handle detection here because by the
                                             // time this function is called, the current thread and
                                             // process are no longer the ones which created this IPC
@@ -73,8 +73,7 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
                     continue;
                 }
 
-                auto result = g_handle_table.Create(std::move(object));
-                cmd_buf[i++] = result.ValueOr(0);
+                cmd_buf[i++] = g_handle_table.Create(std::move(object));
             }
             break;
         }
@@ -177,7 +176,8 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
                     Common::AlignUp(source_address, Memory::PAGE_SIZE) - source_address;
                 // If the data fits in one page we can just copy the required size instead of the
                 // entire page.
-                std::size_t read_size = num_pages == 1 ? static_cast<std::size_t>(size) : difference_to_page;
+                std::size_t read_size =
+                    num_pages == 1 ? static_cast<std::size_t>(size) : difference_to_page;
 
                 Memory::ReadBlock(*src_process, source_address, buffer->data() + page_offset,
                                   read_size);

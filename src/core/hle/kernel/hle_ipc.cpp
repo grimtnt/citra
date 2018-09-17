@@ -188,8 +188,7 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
                 SharedPtr<Object> object{GetIncomingHandle(cmd_buf[i])};
                 Handle handle{};
                 if (object != nullptr) {
-                    // TODO(yuriks): Figure out the proper error handling for if this fails
-                    handle = dst_table.Create(object).Unwrap();
+                    handle = dst_table.Create(object);
                 }
                 dst_cmdbuf[i++] = handle;
             }

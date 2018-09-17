@@ -357,7 +357,7 @@ ResultVal<SharedPtr<Thread>> Thread::Create(std::string name, VAddr entry_point,
     thread->wait_objects.clear();
     thread->wait_address = 0;
     thread->name = std::move(name);
-    thread->callback_handle = wakeup_callback_handle_table.Create(thread).Unwrap();
+    thread->callback_handle = wakeup_callback_handle_table.Create(thread);
     thread->owner_process = owner_process;
 
     // Find the next available TLS index, and mark it as used
