@@ -622,19 +622,10 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
     // Set up all paths and files on the first run
     if (paths[D_USER_IDX].empty()) {
 #ifdef _WIN32
-        paths[D_USER_IDX] = GetExeDirectory() + DIR_SEP USERDATA_DIR DIR_SEP;
-        if (!FileUtil::IsDirectory(paths[D_USER_IDX])) {
-            paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP EMU_DATA_DIR DIR_SEP;
-        } else {
-            LOG_INFO(Common_Filesystem, "Using the local user directory");
-        }
+        paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP DATA_DIR DIR_SEP;
 #else
-        if (FileUtil::Exists(ROOT_DIR DIR_SEP USERDATA_DIR)) {
-            paths[D_USER_IDX] = ROOT_DIR DIR_SEP USERDATA_DIR DIR_SEP;
-        } else {
-            std::string data_dir{GetDataDirectory()};
-            paths[D_USER_IDX] = data_dir + DIR_SEP EMU_DATA_DIR DIR_SEP;
-        }
+        std::string data_dir{GetDataDirectory()};
+        paths[D_USER_IDX] = data_dir + DIR_SEP DATA_DIR DIR_SEP;
 #endif
 
         paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;

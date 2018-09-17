@@ -8,16 +8,14 @@
 #define DIR_SEP "/"
 #define DIR_SEP_CHR '/'
 
-// The user data dir
-#define ROOT_DIR "."
-#define USERDATA_DIR "user"
+// The user directory
 #ifdef _WIN32
-#define EMU_DATA_DIR "Citra"
+#define DATA_DIR "Citra"
 #else
-#define EMU_DATA_DIR "citra-emu"
+#define DATA_DIR "citra-emu"
 #endif
 
-// Subdirs in the User dir returned by GetUserPath(D_USER_IDX)
+// Subdirs in the user directory returned by GetUserPath(D_USER_IDX)
 #define CONFIG_DIR "config"
 #define SDMC_DIR "sdmc"
 #define NAND_DIR "nand"
@@ -29,5 +27,5 @@
 // Files in the directory returned by GetUserPath(D_LOGS_IDX)
 #define LOG_FILE "citra_log.txt"
 
-// Sys files
+// System files
 #define AES_KEYS "aes_keys.txt"
