@@ -25,14 +25,15 @@ namespace GPU {
 Regs g_regs;
 
 /// 268MHz CPU clocks / 60Hz frames per second
-const u64 frame_ticks = static_cast<u64>(BASE_CLOCK_RATE_ARM11 / SCREEN_REFRESH_RATE);
+const u64 frame_ticks{static_cast<u64>(BASE_CLOCK_RATE_ARM11 / SCREEN_REFRESH_RATE)};
+
 /// Event id for CoreTiming
 static CoreTiming::EventType* vblank_event;
 
 template <typename T>
 inline void Read(T& var, const u32 raw_addr) {
-    u32 addr = raw_addr - HW::VADDR_GPU;
-    u32 index = addr / 4;
+    u32 addr{raw_addr - HW::VADDR_GPU};
+    u32 index{addr / 4};
 
     // Reads other than u32 are untested, so I'd rather have them abort than silently fail
     if (index >= Regs::NumIds() || !std::is_same<T, u32>::value) {
@@ -98,7 +99,7 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
 
     if (config.fill_24bit) {
         // fill with 24-bit values
-        for (u8* ptr = start; ptr < end; ptr += 3) {
+        for (u8* ptr{start}; ptr < end; ptr += 3) {
             ptr[0] = config.value_24bit_r;
             ptr[1] = config.value_24bit_g;
             ptr[2] = config.value_24bit_b;
@@ -107,21 +108,21 @@ static void MemoryFill(const Regs::MemoryFillConfig& config) {
         // fill with 32-bit values
         if (end > start) {
             u32 value = config.value_32bit;
-            std::size_t len = (end - start) / sizeof(u32);
+            std::size_t len{(end - start) / sizeof(u32)};
             for (std::size_t i{}; i < len; ++i)
                 memcpy(&start[i * sizeof(u32)], &value, sizeof(u32));
         }
     } else {
         // fill with 16-bit values
-        u16 value_16bit = config.value_16bit.Value();
-        for (u8* ptr = start; ptr < end; ptr += sizeof(u16))
+        u16 value_16bit{config.value_16bit.Value()};
+        for (u8* ptr{start}; ptr < end; ptr += sizeof(u16))
             memcpy(ptr, &value_16bit, sizeof(u16));
     }
 }
 
 static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
-    const PAddr src_addr = config.GetPhysicalInputAddress();
-    const PAddr dst_addr = config.GetPhysicalOutputAddress();
+    const PAddr src_addr{config.GetPhysicalInputAddress()};
+    const PAddr dst_addr{config.GetPhysicalOutputAddress()};
 
     // TODO: do hwtest with these cases
     if (!Memory::IsValidPhysicalAddress(src_addr)) {
@@ -157,8 +158,8 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
     if (VideoCore::g_renderer->GetRasterizer()->AccelerateDisplayTransfer(config))
         return;
 
-    u8* src_pointer = Memory::GetPhysicalPointer(src_addr);
-    u8* dst_pointer = Memory::GetPhysicalPointer(dst_addr);
+    u8* src_pointer{Memory::GetPhysicalPointer(src_addr)};
+    u8* dst_pointer{Memory::GetPhysicalPointer(dst_addr)};
 
     if (config.scaling > config.ScaleXY) {
         LOG_CRITICAL(HW_GPU, "Unimplemented display transfer scaling mode {}",
@@ -173,15 +174,15 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
         return;
     }
 
-    int horizontal_scale = config.scaling != config.NoScale ? 1 : 0;
-    int vertical_scale = config.scaling == config.ScaleXY ? 1 : 0;
+    int horizontal_scale{config.scaling != config.NoScale ? 1 : 0};
+    int vertical_scale{config.scaling == config.ScaleXY ? 1 : 0};
 
-    u32 output_width = config.output_width >> horizontal_scale;
-    u32 output_height = config.output_height >> vertical_scale;
+    u32 output_width{config.output_width >> horizontal_scale};
+    u32 output_height{config.output_height >> vertical_scale};
 
-    u32 input_size =
-        config.input_width * config.input_height * GPU::Regs::BytesPerPixel(config.input_format);
-    u32 output_size = output_width * output_height * GPU::Regs::BytesPerPixel(config.output_format);
+    u32 input_size{config.input_width * config.input_height *
+                   GPU::Regs::BytesPerPixel(config.input_format)};
+    u32 output_size{output_width * output_height * GPU::Regs::BytesPerPixel(config.output_format)};
 
     Memory::RasterizerFlushRegion(config.GetPhysicalInputAddress(), input_size);
     Memory::RasterizerInvalidateRegion(config.GetPhysicalOutputAddress(), output_size);
@@ -192,29 +193,21 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
 
             // Calculate the [x,y] position of the input image
             // based on the current output position and the scale
-            u32 input_x = x << horizontal_scale;
-            u32 input_y = y << vertical_scale;
+            u32 input_x{x << horizontal_scale};
+            u32 input_y{y << vertical_scale};
 
-            u32 output_y;
-            if (config.flip_vertically) {
-                // Flip the y value of the output data,
-                // we do this after calculating the [x,y] position of the input image
-                // to account for the scaling options.
-                output_y = output_height - y - 1;
-            } else {
-                output_y = y;
-            }
+            u32 output_y{config.flip_vertically ? output_height - y - 1 : y};
 
-            u32 dst_bytes_per_pixel = GPU::Regs::BytesPerPixel(config.output_format);
-            u32 src_bytes_per_pixel = GPU::Regs::BytesPerPixel(config.input_format);
+            u32 dst_bytes_per_pixel{GPU::Regs::BytesPerPixel(config.output_format)};
+            u32 src_bytes_per_pixel{GPU::Regs::BytesPerPixel(config.input_format)};
             u32 src_offset;
             u32 dst_offset;
 
             if (config.input_linear) {
                 if (!config.dont_swizzle) {
                     // Interpret the input as linear and the output as tiled
-                    u32 coarse_y = output_y & ~7;
-                    u32 stride = output_width * dst_bytes_per_pixel;
+                    u32 coarse_y{output_y & ~7};
+                    u32 stride{output_width * dst_bytes_per_pixel};
 
                     src_offset = (input_x + input_y * config.input_width) * src_bytes_per_pixel;
                     dst_offset = VideoCore::GetMortonOffset(x, output_y, dst_bytes_per_pixel) +
@@ -251,23 +244,23 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
             if (!dst_pointer)
                 break;
 
-            const u8* src_pixel = src_pointer + src_offset;
+            const u8* src_pixel{src_pointer + src_offset};
             src_color = DecodePixel(config.input_format, src_pixel);
             if (config.scaling == config.ScaleX) {
-                Math::Vec4<u8> pixel =
-                    DecodePixel(config.input_format, src_pixel + src_bytes_per_pixel);
+                Math::Vec4<u8> pixel{
+                    DecodePixel(config.input_format, src_pixel + src_bytes_per_pixel)};
                 src_color = ((src_color + pixel) / 2).Cast<u8>();
             } else if (config.scaling == config.ScaleXY) {
-                Math::Vec4<u8> pixel1 =
-                    DecodePixel(config.input_format, src_pixel + 1 * src_bytes_per_pixel);
-                Math::Vec4<u8> pixel2 =
-                    DecodePixel(config.input_format, src_pixel + 2 * src_bytes_per_pixel);
-                Math::Vec4<u8> pixel3 =
-                    DecodePixel(config.input_format, src_pixel + 3 * src_bytes_per_pixel);
+                Math::Vec4<u8> pixel1{
+                    DecodePixel(config.input_format, src_pixel + 1 * src_bytes_per_pixel)};
+                Math::Vec4<u8> pixel2{
+                    DecodePixel(config.input_format, src_pixel + 2 * src_bytes_per_pixel)};
+                Math::Vec4<u8> pixel3{
+                    DecodePixel(config.input_format, src_pixel + 3 * src_bytes_per_pixel)};
                 src_color = (((src_color + pixel1) + (pixel2 + pixel3)) / 4).Cast<u8>();
             }
 
-            u8* dst_pixel = dst_pointer + dst_offset;
+            u8* dst_pixel{dst_pointer + dst_offset};
             switch (config.output_format) {
             case Regs::PixelFormat::RGBA8:
                 Color::EncodeRGBA8(src_color, dst_pixel);
@@ -299,8 +292,8 @@ static void DisplayTransfer(const Regs::DisplayTransferConfig& config) {
 }
 
 static void TextureCopy(const Regs::DisplayTransferConfig& config) {
-    const PAddr src_addr = config.GetPhysicalInputAddress();
-    const PAddr dst_addr = config.GetPhysicalOutputAddress();
+    const PAddr src_addr{config.GetPhysicalInputAddress()};
+    const PAddr dst_addr{config.GetPhysicalOutputAddress()};
 
     // TODO: do hwtest with invalid addresses
     if (!Memory::IsValidPhysicalAddress(src_addr)) {
@@ -316,23 +309,23 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
     if (VideoCore::g_renderer->GetRasterizer()->AccelerateTextureCopy(config))
         return;
 
-    u8* src_pointer = Memory::GetPhysicalPointer(src_addr);
-    u8* dst_pointer = Memory::GetPhysicalPointer(dst_addr);
+    u8* src_pointer{Memory::GetPhysicalPointer(src_addr)};
+    u8* dst_pointer{Memory::GetPhysicalPointer(dst_addr)};
 
-    u32 remaining_size = Common::AlignDown(config.texture_copy.size, 16);
+    u32 remaining_size{Common::AlignDown(config.texture_copy.size, 16)};
 
     if (remaining_size == 0) {
         LOG_CRITICAL(HW_GPU, "zero size. Real hardware freezes on this.");
         return;
     }
 
-    u32 input_gap = config.texture_copy.input_gap * 16;
-    u32 output_gap = config.texture_copy.output_gap * 16;
+    u32 input_gap{config.texture_copy.input_gap * 16};
+    u32 output_gap{config.texture_copy.output_gap * 16};
 
-    // Zero gap means contiguous input/output even if width = 0. To avoid infinite loop below, width
-    // is assigned with the total size if gap = 0.
-    u32 input_width = input_gap == 0 ? remaining_size : config.texture_copy.input_width * 16;
-    u32 output_width = output_gap == 0 ? remaining_size : config.texture_copy.output_width * 16;
+    // Zero gap means contiguous input/output even if width = 0. To avoid infinite loop below,
+    // width is assigned with the total size if gap = 0.
+    u32 input_width{input_gap == 0 ? remaining_size : config.texture_copy.input_width * 16};
+    u32 output_width{output_gap == 0 ? remaining_size : config.texture_copy.output_width * 16};
 
     if (input_width == 0) {
         LOG_CRITICAL(HW_GPU, "zero input width. Real hardware freezes on this.");
@@ -344,22 +337,22 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
         return;
     }
 
-    std::size_t contiguous_input_size =
-        config.texture_copy.size / input_width * (input_width + input_gap);
+    std::size_t contiguous_input_size{config.texture_copy.size / input_width *
+                                      (input_width + input_gap)};
     Memory::RasterizerFlushRegion(config.GetPhysicalInputAddress(),
                                   static_cast<u32>(contiguous_input_size));
 
-    std::size_t contiguous_output_size =
-        config.texture_copy.size / output_width * (output_width + output_gap);
+    std::size_t contiguous_output_size{config.texture_copy.size / output_width *
+                                       (output_width + output_gap)};
     // Only need to flush output if it has a gap
-    const auto FlushInvalidate_fn = (output_gap != 0) ? Memory::RasterizerFlushAndInvalidateRegion
-                                                      : Memory::RasterizerInvalidateRegion;
+    const auto FlushInvalidate_fn{(output_gap != 0) ? Memory::RasterizerFlushAndInvalidateRegion
+                                                    : Memory::RasterizerInvalidateRegion};
     FlushInvalidate_fn(config.GetPhysicalOutputAddress(), static_cast<u32>(contiguous_output_size));
 
-    u32 remaining_input = input_width;
-    u32 remaining_output = output_width;
+    u32 remaining_input{input_width};
+    u32 remaining_output{output_width};
     while (remaining_size > 0) {
-        u32 copy_size = std::min({remaining_input, remaining_output, remaining_size});
+        u32 copy_size{std::min({remaining_input, remaining_output, remaining_size})};
 
         std::memcpy(dst_pointer, src_pointer, copy_size);
         src_pointer += copy_size;
@@ -383,7 +376,7 @@ static void TextureCopy(const Regs::DisplayTransferConfig& config) {
 template <typename T>
 inline void Write(u32 addr, const T data) {
     addr -= HW::VADDR_GPU;
-    u32 index = addr / 4;
+    u32 index{addr / 4};
 
     // Writes other than u32 are untested, so I'd rather have them abort than silently fail
     if (index >= Regs::NumIds() || !std::is_same<T, u32>::value) {
@@ -398,8 +391,8 @@ inline void Write(u32 addr, const T data) {
     // Memory fills are triggered once the fill value is written.
     case GPU_REG_INDEX_WORKAROUND(memory_fill_config[0].trigger, 0x00004 + 0x3):
     case GPU_REG_INDEX_WORKAROUND(memory_fill_config[1].trigger, 0x00008 + 0x3): {
-        const bool is_second_filler = (index != GPU_REG_INDEX(memory_fill_config[0].trigger));
-        auto& config = g_regs.memory_fill_config[is_second_filler];
+        const bool is_second_filler{(index != GPU_REG_INDEX(memory_fill_config[0].trigger))};
+        auto& config{g_regs.memory_fill_config[is_second_filler]};
 
         if (config.trigger) {
             MemoryFill(config);
@@ -425,7 +418,7 @@ inline void Write(u32 addr, const T data) {
     }
 
     case GPU_REG_INDEX(display_transfer_config.trigger): {
-        const auto& config = g_regs.display_transfer_config;
+        const auto& config{g_regs.display_transfer_config};
         if (config.trigger & 1) {
             if (config.is_texture_copy) {
                 TextureCopy(config);
@@ -455,9 +448,9 @@ inline void Write(u32 addr, const T data) {
 
     // Seems like writing to this register triggers processing
     case GPU_REG_INDEX(command_processor_config.trigger): {
-        const auto& config = g_regs.command_processor_config;
+        const auto& config{g_regs.command_processor_config};
         if (config.trigger & 1) {
-            u32* buffer = (u32*)Memory::GetPhysicalPointer(config.GetPhysicalAddress());
+            u32* buffer{(u32*)Memory::GetPhysicalPointer(config.GetPhysicalAddress())};
             Pica::CommandProcessor::ProcessCommandList(buffer, config.size);
             g_regs.command_processor_config.trigger = 0;
         }
@@ -501,8 +494,8 @@ static void VBlankCallback(u64 userdata, s64 cycles_late) {
 void Init() {
     memset(&g_regs, 0, sizeof(g_regs));
 
-    auto& framebuffer_top = g_regs.framebuffer_config[0];
-    auto& framebuffer_sub = g_regs.framebuffer_config[1];
+    auto& framebuffer_top{g_regs.framebuffer_config[0]};
+    auto& framebuffer_sub{g_regs.framebuffer_config[1]};
 
     // Setup default framebuffer addresses (located in VRAM)
     // .. or at least these are the ones used by system applets.

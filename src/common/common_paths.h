@@ -23,6 +23,7 @@
 #define NAND_DIR "nand"
 #define SYSDATA_DIR "sysdata"
 #define LOG_DIR "log"
+#define SEEDS_DIR "seeds"
 
 // Filenames
 // Files in the directory returned by GetUserPath(D_LOGS_IDX)

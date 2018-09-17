@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <cinttypes>
+#include <fmt/format.h>
 #include "common/assert.h"
 #include "common/common_types.h"
 #include "common/file_util.h"
@@ -29,6 +30,24 @@ using Kernel::ServerSession;
 using Kernel::SharedPtr;
 
 namespace Service::FS {
+
+u32 FS_USER::GetSeedCounter() {
+    FileUtil::IOFile file{fmt::format("{}/counter", FileUtil::GetUserPath(D_SEEDS_IDX)), "rb"};
+    u32 counter;
+    file.ReadBytes(&counter, sizeof(counter));
+    return counter;
+}
+
+u32 FS_USER::IncreaseSeedCounter() {
+    FileUtil::IOFile file{fmt::format("{}/counter", FileUtil::GetUserPath(D_SEEDS_IDX)), "rb"};
+    u32 counter;
+    file.ReadBytes(&counter, sizeof(counter));
+    file.Close();
+    file.Open(fmt::format("{}/counter", FileUtil::GetUserPath(D_SEEDS_IDX)), "wb");
+    ++counter;
+    file.WriteBytes(&counter, sizeof(counter));
+    return counter;
+}
 
 void FS_USER::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0801, 0, 2};
@@ -690,14 +709,24 @@ void FS_USER::ObsoletedDeleteExtSaveData(Kernel::HLERequestContext& ctx) {
 }
 
 void FS_USER::GetNumSeeds(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x87D, 0, 0};
-
-    LOG_WARNING(Service_FS, "(STUBBED) called");
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
-
+    IPC::ResponseBuilder rb{ctx, 0x87D, 2, 0};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(0);
+    rb.Push<u32>(GetSeedCounter());
+}
+
+void FS_USER::AddSeed(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x87A, 6, 0};
+    u64 title_id{rp.Pop<u64>()};
+    std::array<u8, 16> seed{rp.PopRaw<std::array<u8, 16>>()};
+
+    const std::string seed_path{fmt::format(
+        "{}/{:016X}/seed_{}", FileUtil::GetUserPath(D_SEEDS_IDX), title_id, IncreaseSeedCounter())};
+    FileUtil::CreateFullPath(seed_path);
+    FileUtil::IOFile file{seed_path, "wb"};
+    file.WriteBytes(seed.data(), seed.size());
+
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    rb.Push(RESULT_SUCCESS);
 }
 
 void FS_USER::SetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
@@ -869,11 +898,22 @@ FS_USER::FS_USER() : ServiceFramework("fs:USER", 30) {
         {0x08690000, nullptr, "GetNandEraseCount"},
         {0x086A0082, nullptr, "ReadNandReport"},
         {0x086F0040, &FS_USER::GetThisSaveDataSecureValue, "GetThisSaveDataSecureValue"},
-        {0x087A0180, nullptr, "AddSeed"},
+        {0x087A0180, &FS_USER::AddSeed, "AddSeed"},
         {0x087D0000, &FS_USER::GetNumSeeds, "GetNumSeeds"},
         {0x088600C0, nullptr, "CheckUpdatedDat"},
     };
     RegisterHandlers(functions);
+    const std::string seeds_dir{FileUtil::GetUserPath(D_SEEDS_IDX)};
+    const std::string counter_path{fmt::format("{}/counter", seeds_dir)};
+    if (!FileUtil::Exists(seeds_dir)) {
+        FileUtil::CreateFullPath(seeds_dir);
+    }
+    if (!FileUtil::Exists(counter_path)) {
+        FileUtil::CreateFullPath(counter_path);
+        FileUtil::IOFile file{counter_path, "wb"};
+        u32 counter{0};
+        file.WriteBytes(&counter, sizeof(counter));
+    }
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {

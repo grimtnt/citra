@@ -14,6 +14,9 @@ public:
     FS_USER();
 
 private:
+    u32 GetSeedCounter();
+    u32 IncreaseSeedCounter();
+
     void Initialize(Kernel::HLERequestContext& ctx);
 
     /**
@@ -456,6 +459,16 @@ private:
      *      2: Number of seeds in the SEEDDB
      */
     void GetNumSeeds(Kernel::HLERequestContext& ctx);
+
+    /**
+     * FS_User::AddSeed service function.
+     *  Inputs:
+     *      1-2: u64, Title ID
+     *      3-6: Seed
+     *  Outputs:
+     *      1: Result of function, 0 on success, otherwise error code
+     */
+    void AddSeed(Kernel::HLERequestContext& ctx);
 
     /**
      * FS_User::SetSaveDataSecureValue service function.
