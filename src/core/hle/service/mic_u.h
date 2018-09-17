@@ -5,10 +5,14 @@
 #pragma once
 
 #include <memory>
-
 #include "core/hle/service/service.h"
 
 namespace Service::MIC {
+
+struct SharedMemory {
+    std::vector<u8> samples;
+    u32 last_sample_offset;
+};
 
 class MIC_U final : public ServiceFramework<MIC_U> {
 public:
