@@ -172,23 +172,6 @@ static QPixmap GetDefaultIcon(bool large) {
 }
 
 /**
- * Creates a circle pixmap from a specified color
- * @param color The color the pixmap shall have
- * @return QPixmap circle pixmap
- */
-static QPixmap CreateCirclePixmapFromColor(const QColor& color) {
-    QPixmap circle_pixmap{16, 16};
-    circle_pixmap.fill(Qt::transparent);
-
-    QPainter painter{&circle_pixmap};
-    painter.setPen(color);
-    painter.setBrush(color);
-    painter.drawEllipse(0, 0, 15, 15);
-
-    return circle_pixmap;
-}
-
-/**
  * Gets the short game title from SMDH data.
  * @param smdh SMDH data
  * @param language title language
