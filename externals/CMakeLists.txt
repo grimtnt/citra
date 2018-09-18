@@ -69,15 +69,9 @@ add_subdirectory(cubeb EXCLUDE_FROM_ALL)
 # clang-format in Citra if libzmq is added as a subdirectory.
 # An external project gets around this issue.
 if(MINGW)
-    if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-        set(LIBZMQ_MAKE mingw32-make)
-        set(LIBZMQ_COMPILER "")
-        set(LIBZMQ_TOOLCHAIN_FILE "")
-    else()
-        set(LIBZMQ_MAKE make)
-        set(LIBZMQ_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
-        set(LIBZMQ_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${PROJECT_SOURCE_DIR}/CMakeModules/MinGWCross.cmake)
-    endif()
+    set(LIBZMQ_MAKE mingw32-make)
+    set(LIBZMQ_COMPILER "")
+    set(LIBZMQ_TOOLCHAIN_FILE "")
     ExternalProject_Add(libzmq-external
         SOURCE_DIR ./libzmq
         CMAKE_ARGS -DWITH_PERF_TOOL=OFF;-DZMQ_BUILD_TESTS=OFF;-DENABLE_CPACK=OFF;-DCMAKE_MAKE_PROGRAM=${LIBZMQ_MAKE};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};${LIBZMQ_TOOLCHAIN_FILE};${LIBZMQ_COMPILER}
