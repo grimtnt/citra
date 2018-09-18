@@ -7,7 +7,6 @@
 namespace Service::CDC {
 
 CDC_DSP::CDC_DSP() : ServiceFramework("cdc:DSP") {}
-
 CDC_DSP::~CDC_DSP() = default;
 
 } // namespace Service::CDC

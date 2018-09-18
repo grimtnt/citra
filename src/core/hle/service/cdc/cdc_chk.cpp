@@ -7,7 +7,6 @@
 namespace Service::CDC {
 
 CDC_CHK::CDC_CHK() : ServiceFramework("cdc:CHK") {}
-
 CDC_CHK::~CDC_CHK() = default;
 
 } // namespace Service::CDC

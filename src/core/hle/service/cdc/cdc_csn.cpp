@@ -7,7 +7,6 @@
 namespace Service::CDC {
 
 CDC_CSN::CDC_CSN() : ServiceFramework("cdc:CSN") {}
-
 CDC_CSN::~CDC_CSN() = default;
 
 } // namespace Service::CDC

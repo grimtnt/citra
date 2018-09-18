@@ -7,7 +7,6 @@
 namespace Service::CDC {
 
 CDC_HID::CDC_HID() : ServiceFramework("cdc:HID") {}
-
 CDC_HID::~CDC_HID() = default;
 
 } // namespace Service::CDC
