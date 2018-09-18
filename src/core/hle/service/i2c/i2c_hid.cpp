@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_HID::I2C_HID() : ServiceFramework("i2c::HID") {}
+I2C_HID::I2C_HID() : ServiceFramework{"i2c::HID"} {}
 I2C_HID::~I2C_HID() = default;
 
 } // namespace Service::I2C

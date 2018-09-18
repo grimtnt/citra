@@ -528,7 +528,7 @@ void Module::ScanForAllTitles() {
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> am, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), am(std::move(am)) {}
+    : ServiceFramework{name, max_session}, am{std::move(am)} {}
 
 Module::Interface::~Interface() = default;
 

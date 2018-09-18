@@ -13,7 +13,7 @@ namespace FileSys {
 
 ArchiveFactory_SaveData::ArchiveFactory_SaveData(
     std::shared_ptr<ArchiveSource_SDSaveData> sd_savedata)
-    : sd_savedata_source(std::move(sd_savedata)) {}
+    : sd_savedata_source{std::move(sd_savedata)} {}
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_SaveData::Open(const Path& path) {
     return sd_savedata_source->Open(Kernel::g_current_process->codeset->program_id);

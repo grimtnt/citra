@@ -242,7 +242,7 @@ public:
 
     class Interface : public ServiceFramework<Interface, SessionData> {
     public:
-        Interface(std::shared_ptr<Module> cecd, const char* name, u32 max_session);
+        Interface(std::shared_ptr<Module> cecd, const char* name);
         ~Interface() = default;
 
     protected:

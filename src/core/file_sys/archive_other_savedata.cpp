@@ -61,7 +61,7 @@ ResultVal<std::tuple<MediaType, u64>> ParsePathGeneral(const Path& path) {
 
 ArchiveFactory_OtherSaveDataPermitted::ArchiveFactory_OtherSaveDataPermitted(
     std::shared_ptr<ArchiveSource_SDSaveData> sd_savedata)
-    : sd_savedata_source(std::move(sd_savedata)) {}
+    : sd_savedata_source{std::move(sd_savedata)} {}
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_OtherSaveDataPermitted::Open(
     const Path& path) {
@@ -99,7 +99,7 @@ ResultVal<ArchiveFormatInfo> ArchiveFactory_OtherSaveDataPermitted::GetFormatInf
 
 ArchiveFactory_OtherSaveDataGeneral::ArchiveFactory_OtherSaveDataGeneral(
     std::shared_ptr<ArchiveSource_SDSaveData> sd_savedata)
-    : sd_savedata_source(std::move(sd_savedata)) {}
+    : sd_savedata_source{std::move(sd_savedata)} {}
 
 ResultVal<std::unique_ptr<ArchiveBackend>> ArchiveFactory_OtherSaveDataGeneral::Open(
     const Path& path) {

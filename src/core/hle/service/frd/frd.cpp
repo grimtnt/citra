@@ -15,8 +15,8 @@
 
 namespace Service::FRD {
 
-Module::Interface::Interface(std::shared_ptr<Module> frd, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), frd(std::move(frd)) {}
+Module::Interface::Interface(std::shared_ptr<Module> frd, const char* name)
+    : ServiceFramework{name, 8}, frd{std::move(frd)} {}
 
 Module::Interface::~Interface() = default;
 

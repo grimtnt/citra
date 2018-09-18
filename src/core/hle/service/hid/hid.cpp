@@ -382,8 +382,8 @@ void Module::Interface::GetSoundVolume(Kernel::HLERequestContext& ctx) {
     rb.Push<u8>(static_cast<u8>(0x3F * Settings::values.volume));
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> hid, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), hid(std::move(hid)) {}
+Module::Interface::Interface(std::shared_ptr<Module> hid, const char* name)
+    : ServiceFramework{name, 6}, hid{std::move(hid)} {}
 
 Module::Module() {
     using namespace Kernel;

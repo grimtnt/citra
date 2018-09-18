@@ -221,7 +221,7 @@ u64 NCCHArchive::GetFreeBytes() const {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NCCHFile::NCCHFile(std::vector<u8> buffer, std::unique_ptr<DelayGenerator> delay_generator_)
-    : file_buffer(std::move(buffer)) {
+    : file_buffer{std::move(buffer)} {
     delay_generator = std::move(delay_generator_);
 }
 

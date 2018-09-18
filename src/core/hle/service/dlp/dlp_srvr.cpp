@@ -21,7 +21,7 @@ void DLP_SRVR::IsChild(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_DLP, "(STUBBED) called");
 }
 
-DLP_SRVR::DLP_SRVR() : ServiceFramework("dlp:SRVR", 1) {
+DLP_SRVR::DLP_SRVR() : ServiceFramework{"dlp:SRVR", 1} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010183, nullptr, "Initialize"},

@@ -6,7 +6,7 @@
 
 namespace Service::IR {
 
-IR_U::IR_U() : ServiceFramework("ir:u", 1) {
+IR_U::IR_U() : ServiceFramework{"ir:u", 1} {
     static const FunctionInfo functions[] = {
         {0x00010000, nullptr, "Initialize"},
         {0x00020000, nullptr, "Shutdown"},

@@ -6,7 +6,7 @@
 
 namespace Service::CDC {
 
-CDC_LGY::CDC_LGY() : ServiceFramework("cdc:LGY") {}
+CDC_LGY::CDC_LGY() : ServiceFramework{"cdc:LGY"} {}
 CDC_LGY::~CDC_LGY() = default;
 
 } // namespace Service::CDC

@@ -7,7 +7,7 @@
 namespace Service::CECD {
 
 CECD_S::CECD_S(std::shared_ptr<Module> cecd)
-    : Module::Interface(std::move(cecd), "cecd:s", DefaultMaxSessions) {
+    : Module::Interface{std::move(cecd), "cecd:s"} {
     static const FunctionInfo functions[] = {
         // cecd:u shared commands
         // clang-format off

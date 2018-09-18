@@ -6,7 +6,7 @@
 
 namespace Service::NFC {
 
-NFC_U::NFC_U(std::shared_ptr<Module> nfc) : Module::Interface(std::move(nfc), "nfc:u", 1) {
+NFC_U::NFC_U(std::shared_ptr<Module> nfc) : Module::Interface{std::move(nfc), "nfc:u"} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010040, &NFC_U::Initialize, "Initialize"},

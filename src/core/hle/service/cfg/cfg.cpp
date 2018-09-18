@@ -124,7 +124,7 @@ std::shared_ptr<Module> GetCurrentModule() {
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> cfg, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), cfg(std::move(cfg)) {}
+    : ServiceFramework{name, max_session}, cfg{std::move(cfg)} {}
 
 Module::Interface::~Interface() = default;
 

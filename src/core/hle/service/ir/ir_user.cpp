@@ -380,7 +380,7 @@ void IR_USER::ReleaseReceivedData(Kernel::HLERequestContext& ctx) {
     LOG_TRACE(Service_IR, "called, count={}", count);
 }
 
-IR_USER::IR_USER() : ServiceFramework("ir:USER", 1) {
+IR_USER::IR_USER() : ServiceFramework{"ir:USER", 1} {
     const FunctionInfo functions[] = {
         {0x00010182, nullptr, "InitializeIrNop"},
         {0x00020000, &IR_USER::FinalizeIrNop, "FinalizeIrNop"},

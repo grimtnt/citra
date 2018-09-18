@@ -914,8 +914,8 @@ void Module::Interface::GetNsDataNewFlagPrivileged(Kernel::HLERequestContext& ct
                 programID, unk_param1, ns_data_new_flag_privileged);
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> boss, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), boss(std::move(boss)) {}
+Module::Interface::Interface(std::shared_ptr<Module> boss, const char* name)
+    : ServiceFramework{name}, boss{std::move(boss)} {}
 
 Module::Module() {
     using namespace Kernel;

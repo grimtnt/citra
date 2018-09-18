@@ -7,7 +7,7 @@
 
 namespace Service::PM {
 
-PM_DBG::PM_DBG() : ServiceFramework("pm:dbg", 3) {
+PM_DBG::PM_DBG() : ServiceFramework{"pm:dbg", 3} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010140, nullptr, "LaunchAppDebug"},

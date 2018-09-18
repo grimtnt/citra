@@ -71,8 +71,8 @@ void Module::Interface::GetSoundVolume(Kernel::HLERequestContext& ctx) {
     rb.Push<u8>(static_cast<u8>(0x3F * Settings::values.volume));
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> mcu, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), mcu(std::move(mcu)) {}
+Module::Interface::Interface(std::shared_ptr<Module> mcu, const char* name)
+    : ServiceFramework{name, 1}, mcu{std::move(mcu)} {}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
 #ifndef _WIN32

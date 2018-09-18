@@ -7,7 +7,7 @@
 
 namespace Service::QTM {
 
-QTM_S::QTM_S() : ServiceFramework("qtm:s", 2) {
+QTM_S::QTM_S() : ServiceFramework{"qtm:s", 2} {
     static const FunctionInfo functions[] = {
         // clang-format off
         // qtm common commands

@@ -6,6 +6,6 @@
 
 namespace Service::MCU {
 
-CDC::CDC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::CDC", 1) {}
+CDC::CDC(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::CDC"} {}
 
 } // namespace Service::MCU

@@ -11,7 +11,7 @@
 namespace Camera {
 
 StillImageCamera::StillImageCamera(QImage image_, const Service::CAM::Flip& flip)
-    : QtCameraInterface(flip), image(std::move(image_)) {}
+    : QtCameraInterface{flip}, image{std::move(image_)} {}
 
 StillImageCamera::~StillImageCamera() {
     StillImageCameraFactory::last_path.clear();

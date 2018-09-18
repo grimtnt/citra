@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_DEB::I2C_DEB() : ServiceFramework("i2c::DEB") {}
+I2C_DEB::I2C_DEB() : ServiceFramework{"i2c::DEB"} {}
 I2C_DEB::~I2C_DEB() = default;
 
 } // namespace Service::I2C

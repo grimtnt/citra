@@ -7,7 +7,7 @@
 
 namespace Service::PM {
 
-PM_APP::PM_APP() : ServiceFramework("pm:app", 3) {
+PM_APP::PM_APP() : ServiceFramework{"pm:app", 3} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010140, nullptr, "LaunchTitle"},

@@ -373,7 +373,7 @@ bool DSP_DSP::HasTooManyEventsRegistered() const {
     return number >= max_number_of_interrupt_events;
 }
 
-DSP_DSP::DSP_DSP() : ServiceFramework("dsp::DSP", DefaultMaxSessions) {
+DSP_DSP::DSP_DSP() : ServiceFramework{"dsp::DSP"} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010040, &DSP_DSP::RecvData, "RecvData"},

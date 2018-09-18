@@ -14,7 +14,7 @@ namespace InputCommon {
 class KeyButton final : public Input::ButtonDevice {
 public:
     explicit KeyButton(std::shared_ptr<KeyButtonList> key_button_list_)
-        : key_button_list(std::move(key_button_list_)) {}
+        : key_button_list{std::move(key_button_list_)} {}
 
     ~KeyButton() override;
 

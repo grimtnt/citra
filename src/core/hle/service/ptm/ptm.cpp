@@ -188,7 +188,7 @@ void SetPlayCoins(u16 play_coins) {
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> ptm, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), ptm(std::move(ptm)) {}
+    : ServiceFramework{name, max_session}, ptm{std::move(ptm)} {}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     auto ptm{std::make_shared<Module>()};

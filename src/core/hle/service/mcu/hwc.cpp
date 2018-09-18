@@ -6,7 +6,7 @@
 
 namespace Service::MCU {
 
-HWC::HWC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::HWC", 1) {
+HWC::HWC(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::HWC"} {
     static const FunctionInfo functions[] = {
         {0x00010082, nullptr, "ReadRegister"},
         {0x00020082, nullptr, "WriteRegister"},

@@ -6,7 +6,7 @@
 
 namespace Service::FRD {
 
-FRD_U::FRD_U(std::shared_ptr<Module> frd) : Module::Interface(std::move(frd), "frd:u", 8) {
+FRD_U::FRD_U(std::shared_ptr<Module> frd) : Module::Interface{std::move(frd), "frd:u"} {
     static const FunctionInfo functions[] = {
         {0x00010000, nullptr, "HasLoggedIn"},
         {0x00020000, nullptr, "IsOnline"},

@@ -62,7 +62,7 @@ void GSP_LCD::GetBrightness(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(static_cast<u32>(brightness * MAX_BRIGHTNESS_RAW));
 }
 
-GSP_LCD::GSP_LCD() : ServiceFramework("gsp::Lcd") {
+GSP_LCD::GSP_LCD() : ServiceFramework{"gsp::Lcd"} {
     static const FunctionInfo functions[] = {
         {0x000A0080, &GSP_LCD::SetBrightnessRaw, "SetBrightnessRaw"},
         {0x000B0080, &GSP_LCD::SetBrightness, "SetBrightness"},

@@ -7,7 +7,7 @@
 
 namespace Service::PS {
 
-PS_PS::PS_PS() : ServiceFramework("ps:ps", DefaultMaxSessions) {
+PS_PS::PS_PS() : ServiceFramework{"ps:ps"} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010244, nullptr, "SignRsaSha256"},

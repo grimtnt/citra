@@ -26,7 +26,7 @@ struct Sink::Impl {
     static void LogCallback(char const* fmt, ...);
 };
 
-Sink::Sink(std::string target_device_name) : impl(std::make_unique<Impl>()) {
+Sink::Sink(std::string target_device_name) : impl{std::make_unique<Impl>()} {
     if (cubeb_init(&impl->ctx, "Citra", nullptr) != CUBEB_OK) {
         LOG_CRITICAL(Audio, "cubeb_init failed");
         return;
@@ -35,7 +35,7 @@ Sink::Sink(std::string target_device_name) : impl(std::make_unique<Impl>()) {
 
     impl->sample_rate = native_sample_rate;
 
-    cubeb_stream_params params;
+    cubeb_stream_params params{};
     params.rate = impl->sample_rate;
     params.channels = 2;
     params.layout = CUBEB_LAYOUT_STEREO;

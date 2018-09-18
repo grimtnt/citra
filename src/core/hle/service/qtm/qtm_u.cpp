@@ -2,12 +2,11 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include "core/hle/ipc_helpers.h"
 #include "core/hle/service/qtm/qtm_u.h"
 
 namespace Service::QTM {
 
-QTM_U::QTM_U() : ServiceFramework("qtm:u", 2) {
+QTM_U::QTM_U() : ServiceFramework{"qtm:u", 2} {
     static const FunctionInfo functions[] = {
         // clang-format off
         // qtm common commands

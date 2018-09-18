@@ -16,7 +16,7 @@ namespace Kernel {
 
 SessionRequestHandler::SessionInfo::SessionInfo(SharedPtr<ServerSession> session,
                                                 std::unique_ptr<SessionDataBase> data)
-    : session(std::move(session)), data(std::move(data)) {}
+    : session{std::move(session)}, data{std::move(data)} {}
 
 void SessionRequestHandler::ClientConnected(SharedPtr<ServerSession> server_session) {
     server_session->SetHleHandler(shared_from_this());
@@ -69,7 +69,7 @@ SharedPtr<Event> HLERequestContext::SleepClientThread(SharedPtr<Thread> thread,
 }
 
 HLERequestContext::HLERequestContext(SharedPtr<ServerSession> session)
-    : session(std::move(session)) {
+    : session{std::move(session)} {
     cmd_buf[0] = 0;
 }
 

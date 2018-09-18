@@ -195,7 +195,7 @@ using ContextSet = CommandParamBitSet<2>;
 using CameraSet = CommandParamBitSet<3>;
 
 Module::Interface::Interface(std::shared_ptr<Module> cam, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), cam(std::move(cam)) {}
+    : ServiceFramework{name, max_session}, cam{std::move(cam)} {}
 
 Module::Interface::~Interface() = default;
 

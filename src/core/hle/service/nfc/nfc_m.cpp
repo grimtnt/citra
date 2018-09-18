@@ -6,7 +6,7 @@
 
 namespace Service::NFC {
 
-NFC_M::NFC_M(std::shared_ptr<Module> nfc) : Module::Interface(std::move(nfc), "nfc:m", 1) {
+NFC_M::NFC_M(std::shared_ptr<Module> nfc) : Module::Interface{std::move(nfc), "nfc:m"}{
     static const FunctionInfo functions[] = {
         // clang-format off
         // nfc:u shared commands

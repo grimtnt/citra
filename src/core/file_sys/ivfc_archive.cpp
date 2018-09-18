@@ -14,7 +14,7 @@
 
 namespace FileSys {
 
-IVFCArchive::IVFCArchive(std::shared_ptr<RomFSReader> file) : romfs_file(std::move(file)) {}
+IVFCArchive::IVFCArchive(std::shared_ptr<RomFSReader> file) : romfs_file{std::move(file)} {}
 
 std::string IVFCArchive::GetName() const {
     return "IVFC";
@@ -86,7 +86,7 @@ u64 IVFCArchive::GetFreeBytes() const {
 
 IVFCFile::IVFCFile(std::shared_ptr<RomFSReader> file,
                    std::unique_ptr<DelayGenerator> delay_generator_)
-    : romfs_file(std::move(file)) {
+    : romfs_file{std::move(file)} {
     delay_generator = std::move(delay_generator_);
 }
 
@@ -115,7 +115,7 @@ bool IVFCFile::SetSize(const u64 size) const {
 
 IVFCFileInMemory::IVFCFileInMemory(std::vector<u8> bytes, u64 offset, u64 size,
                                    std::unique_ptr<DelayGenerator> delay_generator_)
-    : romfs_file(std::move(bytes)), data_offset(offset), data_size(size) {
+    : romfs_file{std::move(bytes)}, data_offset(offset), data_size(size) {
     delay_generator = std::move(delay_generator_);
 }
 

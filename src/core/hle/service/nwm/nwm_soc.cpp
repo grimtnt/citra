@@ -6,7 +6,7 @@
 
 namespace Service::NWM {
 
-NWM_SOC::NWM_SOC() : ServiceFramework("nwm::SOC") {
+NWM_SOC::NWM_SOC() : ServiceFramework{"nwm::SOC"} {
     /*
     static const FunctionInfo functions[] = {
     };

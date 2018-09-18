@@ -7,7 +7,7 @@
 
 namespace Service::DLP {
 
-DLP_FKCL::DLP_FKCL() : ServiceFramework("dlp:FKCL", 1) {
+DLP_FKCL::DLP_FKCL() : ServiceFramework{"dlp:FKCL", 1} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010083, nullptr, "Initialize"},

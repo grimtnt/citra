@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_IR::I2C_IR() : ServiceFramework("i2c::IR") {}
+I2C_IR::I2C_IR() : ServiceFramework{"i2c::IR"} {}
 I2C_IR::~I2C_IR() = default;
 
 } // namespace Service::I2C

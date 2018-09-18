@@ -213,7 +213,7 @@ void NDM_U::ClearHalfAwakeMacFilter(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_NDM, "(STUBBED) called");
 }
 
-NDM_U::NDM_U() : ServiceFramework("ndm:u", 6) {
+NDM_U::NDM_U() : ServiceFramework{"ndm:u", 6} {
     static const FunctionInfo functions[] = {
         {0x00010042, &NDM_U::EnterExclusiveState, "EnterExclusiveState"},
         {0x00020002, &NDM_U::LeaveExclusiveState, "LeaveExclusiveState"},

@@ -6,7 +6,7 @@
 
 namespace Service::NWM {
 
-NWM_SAP::NWM_SAP() : ServiceFramework("nwm::SAP") {
+NWM_SAP::NWM_SAP() : ServiceFramework{"nwm::SAP"} {
     /*
     static const FunctionInfo functions[] = {
     };

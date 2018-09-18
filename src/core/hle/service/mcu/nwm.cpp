@@ -6,6 +6,6 @@
 
 namespace Service::MCU {
 
-NWM::NWM(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::NWM", 1) {}
+NWM::NWM(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::NWM"} {}
 
 } // namespace Service::MCU

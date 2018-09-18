@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_QTM::I2C_QTM() : ServiceFramework("i2c::QTM") {}
+I2C_QTM::I2C_QTM() : ServiceFramework{"i2c::QTM"} {}
 I2C_QTM::~I2C_QTM() = default;
 
 } // namespace Service::I2C

@@ -6,7 +6,7 @@
 
 namespace Service::PDN {
 
-PDN_D::PDN_D() : ServiceFramework("pdn:d") {}
+PDN_D::PDN_D() : ServiceFramework{"pdn:d"} {}
 PDN_D::~PDN_D() = default;
 
 } // namespace Service::PDN

@@ -52,7 +52,7 @@ enum class DirectoryCommand : u32 {
 };
 
 File::File(std::unique_ptr<FileSys::FileBackend>&& backend, const FileSys::Path& path)
-    : ServiceFramework("", 1), path(path), backend(std::move(backend)) {
+    : ServiceFramework{"", 1}, path{path}, backend{std::move(backend)} {
     static const FunctionInfo functions[] = {
         {0x08010100, &File::OpenSubFile, "OpenSubFile"},
         {0x080200C2, &File::Read, "Read"},
@@ -311,7 +311,7 @@ Kernel::SharedPtr<Kernel::ClientSession> File::Connect() {
 
 Directory::Directory(std::unique_ptr<FileSys::DirectoryBackend>&& backend,
                      const FileSys::Path& path)
-    : ServiceFramework("", 1), path(path), backend(std::move(backend)) {
+    : ServiceFramework{"", 1}, path{path}, backend{std::move(backend)} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x08010042, &Directory::Read, "Read"},

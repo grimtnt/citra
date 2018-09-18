@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_EEP::I2C_EEP() : ServiceFramework("i2c::EEP") {}
+I2C_EEP::I2C_EEP() : ServiceFramework{"i2c::EEP"} {}
 I2C_EEP::~I2C_EEP() = default;
 
 } // namespace Service::I2C

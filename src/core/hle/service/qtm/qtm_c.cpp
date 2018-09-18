@@ -7,7 +7,7 @@
 
 namespace Service::QTM {
 
-QTM_C::QTM_C() : ServiceFramework("qtm:c", 2) {
+QTM_C::QTM_C() : ServiceFramework{"qtm:c", 2} {
     static const FunctionInfo functions[] = {
         // clang-format off
         // qtm calibration commands

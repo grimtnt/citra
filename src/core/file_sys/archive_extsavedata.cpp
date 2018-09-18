@@ -28,7 +28,7 @@ class FixSizeDiskFile : public DiskFile {
 public:
     FixSizeDiskFile(FileUtil::IOFile&& file, const Mode& mode,
                     std::unique_ptr<DelayGenerator> delay_generator_)
-        : DiskFile(std::move(file), mode, std::move(delay_generator_)) {
+        : DiskFile{std::move(file), mode, std::move(delay_generator_)} {
         size = GetSize();
     }
 

@@ -261,7 +261,7 @@ struct SurfaceParams {
  */
 struct SurfaceWatcher {
 public:
-    explicit SurfaceWatcher(std::weak_ptr<CachedSurface>&& surface) : surface(std::move(surface)) {}
+    explicit SurfaceWatcher(std::weak_ptr<CachedSurface>&& surface) : surface{std::move(surface)} {}
 
     /**
      * Checks whether the surface has been changed.

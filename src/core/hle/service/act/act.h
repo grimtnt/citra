@@ -68,7 +68,7 @@ class Module final {
 public:
     class Interface : public ServiceFramework<Interface> {
     public:
-        Interface(std::shared_ptr<Module> act, const char* name, u32 max_session);
+        Interface(std::shared_ptr<Module> act, const char* name);
 
     protected:
         /**

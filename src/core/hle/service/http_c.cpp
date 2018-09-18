@@ -445,7 +445,7 @@ void HTTP_C::Finalize(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 }
 
-HTTP_C::HTTP_C() : ServiceFramework("http:C", 32) {
+HTTP_C::HTTP_C() : ServiceFramework{"http:C", 32} {
     static const FunctionInfo functions[] = {
         {0x00010044, &HTTP_C::Initialize, "Initialize"},
         {0x00020082, &HTTP_C::CreateContext, "CreateContext"},

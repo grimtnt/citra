@@ -108,8 +108,8 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
                 static_cast<u32>(id));
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> act, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), act(std::move(act)) {}
+Module::Interface::Interface(std::shared_ptr<Module> act, const char* name)
+    : ServiceFramework{name}, act{std::move(act)} {}
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     auto act{std::make_shared<Module>()};

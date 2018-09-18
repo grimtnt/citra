@@ -6,7 +6,7 @@
 
 namespace Service::AM {
 
-AM_SYS::AM_SYS(std::shared_ptr<Module> am) : Module::Interface(std::move(am), "am:sys", 5) {
+AM_SYS::AM_SYS(std::shared_ptr<Module> am) : Module::Interface{std::move(am), "am:sys", 5} {
     static const FunctionInfo functions[] = {
         {0x00010040, &AM_SYS::GetNumPrograms, "GetNumPrograms"},
         {0x00020082, &AM_SYS::GetProgramList, "GetProgramList"},

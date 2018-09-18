@@ -7,7 +7,7 @@
 
 namespace Service::MVD {
 
-MVD_STD::MVD_STD() : ServiceFramework("mvd:std", 1) {
+MVD_STD::MVD_STD() : ServiceFramework{"mvd:std", 1} {
     static const FunctionInfo functions[] = {
         // clang-format off
         {0x00010082, nullptr, "Initialize"},

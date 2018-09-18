@@ -6,7 +6,7 @@
 
 namespace Service::MCU {
 
-RTC::RTC(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::RTC", 1) {
+RTC::RTC(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::RTC"} {
     static const FunctionInfo functions[] = {
         {0x00010080, nullptr, "SetRTC"},
         {0x00020000, nullptr, "GetRTC"},

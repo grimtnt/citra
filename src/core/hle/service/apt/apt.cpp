@@ -885,7 +885,7 @@ void Module::Interface::ReceiveDeliverArg(Kernel::HLERequestContext& ctx) {
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> apt, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), apt(std::move(apt)) {}
+    : ServiceFramework{name, max_session}, apt{std::move(apt)} {}
 
 Module::Interface::~Interface() = default;
 

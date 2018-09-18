@@ -6,7 +6,7 @@
 
 namespace Service::MCU {
 
-HID::HID(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::HID", 1) {
+HID::HID(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::HID"} {
     static const FunctionInfo functions[] = {
         {0x00060000, nullptr, "ReadGyroscopeValues"},
         {0x00070000, nullptr, "GetRaw3DSliderPosition"},

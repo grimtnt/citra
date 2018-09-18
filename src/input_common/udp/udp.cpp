@@ -14,7 +14,8 @@ namespace InputCommon::CemuhookUDP {
 
 class UDPTouchDevice final : public Input::TouchDevice {
 public:
-    explicit UDPTouchDevice(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
+    explicit UDPTouchDevice(std::shared_ptr<DeviceStatus> status_) : status{std::move(status_)} {}
+
     std::tuple<float, float, bool> GetStatus() const {
         if (!Core::System::GetInstance().IsShellOpen())
             return std::make_tuple(0.0f, 0.0f, false);
@@ -28,7 +29,8 @@ private:
 
 class UDPMotionDevice final : public Input::MotionDevice {
 public:
-    explicit UDPMotionDevice(std::shared_ptr<DeviceStatus> status_) : status(std::move(status_)) {}
+    explicit UDPMotionDevice(std::shared_ptr<DeviceStatus> status_) : status{std::move(status_)} {}
+
     std::tuple<Math::Vec3<float>, Math::Vec3<float>> GetStatus() const {
         if (!Core::System::GetInstance().IsShellOpen())
             return std::make_tuple(Math::Vec3<float>(), Math::Vec3<float>());

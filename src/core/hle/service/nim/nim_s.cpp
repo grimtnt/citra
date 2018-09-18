@@ -6,7 +6,7 @@
 
 namespace Service::NIM {
 
-NIM_S::NIM_S() : ServiceFramework("nim:s", 1) {
+NIM_S::NIM_S() : ServiceFramework{"nim:s", 1} {
     const FunctionInfo functions[] = {
         {0x000A0000, nullptr, "CheckSysupdateAvailableSOAP"},
         {0x0016020A, nullptr, "ListTitles"},

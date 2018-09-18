@@ -6,7 +6,7 @@
 
 namespace Service::NWM {
 
-NWM_INF::NWM_INF() : ServiceFramework("nwm::INF") {
+NWM_INF::NWM_INF() : ServiceFramework{"nwm::INF"} {
     static const FunctionInfo functions[] = {
         {0x000603C4, nullptr, "RecvBeaconBroadcastData"},
         {0x00070742, nullptr, "ConnectToEncryptedAP"},

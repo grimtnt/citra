@@ -6,7 +6,7 @@
 
 namespace Service::AC {
 
-AC_I::AC_I(std::shared_ptr<Module> ac) : Module::Interface(std::move(ac), "ac:i", 10) {
+AC_I::AC_I(std::shared_ptr<Module> ac) : Module::Interface{std::move(ac), "ac:i"} {
     static const FunctionInfo functions[] = {
         {0x00010000, &AC_I::CreateDefaultConfig, "CreateDefaultConfig"},
         {0x00015004, nullptr, "ExclusiveAsync"},

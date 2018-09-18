@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_CAM::I2C_CAM() : ServiceFramework("i2c::CAM") {}
+I2C_CAM::I2C_CAM() : ServiceFramework{"i2c::CAM"} {}
 I2C_CAM::~I2C_CAM() = default;
 
 } // namespace Service::I2C

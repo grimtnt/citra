@@ -7,7 +7,7 @@
 namespace Service::BOSS {
 
 BOSS_P::BOSS_P(std::shared_ptr<Module> boss)
-    : Module::Interface(std::move(boss), "boss:P", DefaultMaxSessions) {
+    : Module::Interface{std::move(boss), "boss:P"}{
     static const FunctionInfo functions[] = {
         // boss:u shared commands
         // clang-format off

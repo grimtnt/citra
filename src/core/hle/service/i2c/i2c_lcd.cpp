@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_LCD::I2C_LCD() : ServiceFramework("i2c::LCD") {}
+I2C_LCD::I2C_LCD() : ServiceFramework{"i2c::LCD"} {}
 I2C_LCD::~I2C_LCD() = default;
 
 } // namespace Service::I2C

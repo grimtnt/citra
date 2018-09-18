@@ -1371,8 +1371,8 @@ Module::SessionData::~SessionData() {
         file->backend->Close();
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> cecd, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), cecd(std::move(cecd)) {}
+Module::Interface::Interface(std::shared_ptr<Module> cecd, const char* name)
+    : ServiceFramework{name}, cecd{std::move(cecd)} {}
 
 Module::Module() {
     cecinfo_event = Kernel::Event::Create(Kernel::ResetType::OneShot, "CECD::cecinfo_event");

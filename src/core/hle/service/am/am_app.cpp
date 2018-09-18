@@ -6,7 +6,7 @@
 
 namespace Service::AM {
 
-AM_APP::AM_APP(std::shared_ptr<Module> am) : Module::Interface(std::move(am), "am:app", 5) {
+AM_APP::AM_APP(std::shared_ptr<Module> am) : Module::Interface{std::move(am), "am:app", 5} {
     static const FunctionInfo functions[] = {
         {0x100100C0, &AM_APP::GetDLCContentInfoCount, "GetDLCContentInfoCount"},
         {0x10020104, &AM_APP::FindDLCContentInfos, "FindDLCContentInfos"},

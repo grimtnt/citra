@@ -632,7 +632,7 @@ void Y2R_U::GetPackageParameter(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_Y2R, "called");
 }
 
-Y2R_U::Y2R_U() : ServiceFramework("y2r:u", 1) {
+Y2R_U::Y2R_U() : ServiceFramework{"y2r:u", 1} {
     static const FunctionInfo functions[] = {
         {0x00010040, &Y2R_U::SetInputFormat, "SetInputFormat"},
         {0x00020000, &Y2R_U::GetInputFormat, "GetInputFormat"},

@@ -144,7 +144,7 @@ protected:
      * connected to this service at the same time.
      */
     explicit ServiceFramework(const char* service_name, u32 max_sessions = DefaultMaxSessions)
-        : ServiceFrameworkBase(service_name, max_sessions, Invoker) {}
+        : ServiceFrameworkBase{service_name, max_sessions, Invoker} {}
 
     /// Registers handlers in the service.
     template <std::size_t N>

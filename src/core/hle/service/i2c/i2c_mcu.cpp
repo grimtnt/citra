@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_MCU::I2C_MCU() : ServiceFramework("i2c::MCU") {}
+I2C_MCU::I2C_MCU() : ServiceFramework{"i2c::MCU"} {}
 I2C_MCU::~I2C_MCU() = default;
 
 } // namespace Service::I2C

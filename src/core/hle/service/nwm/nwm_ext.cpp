@@ -11,7 +11,7 @@
 
 namespace Service::NWM {
 
-NWM_EXT::NWM_EXT() : ServiceFramework("nwm::EXT") {
+NWM_EXT::NWM_EXT() : ServiceFramework{"nwm::EXT"} {
     static const FunctionInfo functions[] = {
         {0x00080040, &NWM_EXT::ControlWirelessEnabled, "ControlWirelessEnabled"},
     };
@@ -24,7 +24,7 @@ void NWM_EXT::ControlWirelessEnabled(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0008, 1, 0};
     u8 enabled{rp.Pop<u8>()};
 
-    ResultCode result = RESULT_SUCCESS;
+    ResultCode result{RESULT_SUCCESS};
 
     switch (enabled) {
     case 0: { // Enable

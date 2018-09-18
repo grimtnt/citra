@@ -14,7 +14,7 @@ void NEWS_S::GetTotalNotifications(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(0);
 
-    LOG_WARNING(Service, "(STUBBED) called");
+    LOG_WARNING(Service_NEWS, "(STUBBED) called");
 }
 
 void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
@@ -24,10 +24,10 @@ void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service, "LEDs are not implemented!");
+    LOG_WARNING(Service_NEWS, "LEDs are not implemented!");
 }
 
-NEWS_S::NEWS_S() : ServiceFramework("news:s", 2) {
+NEWS_S::NEWS_S() : ServiceFramework{"news:s", 2} {
     const FunctionInfo functions[] = {
         {0x000100C6, nullptr, "AddNotification"},
         {0x00050000, &NEWS_S::GetTotalNotifications, "GetTotalNotifications"},

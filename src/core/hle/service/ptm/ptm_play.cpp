@@ -7,7 +7,7 @@
 namespace Service::PTM {
 
 PTM_Play::PTM_Play(std::shared_ptr<Module> ptm)
-    : Module::Interface(std::move(ptm), "ptm:play", 26) {
+    : Module::Interface{std::move(ptm), "ptm:play", 26} {
     static const FunctionInfo functions[] = {
         // ptm:u common commands
         {0x00010002, nullptr, "RegisterAlarmClient"},

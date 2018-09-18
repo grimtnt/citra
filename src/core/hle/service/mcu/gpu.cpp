@@ -6,7 +6,7 @@
 
 namespace Service::MCU {
 
-GPU::GPU(std::shared_ptr<Module> mcu) : Module::Interface(std::move(mcu), "mcu::GPU", 1) {
+GPU::GPU(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::GPU"} {
     static const FunctionInfo functions[] = {
         {0x00010000, nullptr, "GetLcdPowerState"},
         {0x00020080, nullptr, "SetLcdPowerState"},

@@ -572,7 +572,7 @@ void RO::Shutdown(Kernel::HLERequestContext& ctx) {
     rb.Push(result);
 }
 
-RO::RO() : ServiceFramework("ldr:ro", 2) {
+RO::RO() : ServiceFramework{"ldr:ro", 2} {
     static const FunctionInfo functions[] = {
         {0x000100C2, &RO::Initialize, "Initialize"},
         {0x00020082, &RO::LoadCRR, "LoadCRR"},

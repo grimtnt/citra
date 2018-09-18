@@ -6,7 +6,7 @@
 
 namespace Service::I2C {
 
-I2C_NFC::I2C_NFC() : ServiceFramework("i2c::NFC") {}
+I2C_NFC::I2C_NFC() : ServiceFramework{"i2c::NFC"} {}
 I2C_NFC::~I2C_NFC() = default;
 
 } // namespace Service::I2C

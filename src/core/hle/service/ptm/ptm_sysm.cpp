@@ -7,7 +7,7 @@
 namespace Service::PTM {
 
 PTM_S_Common::PTM_S_Common(std::shared_ptr<Module> ptm, const char* name)
-    : Module::Interface(std::move(ptm), name, 26) {
+    : Module::Interface{std::move(ptm), name, 26} {
     static const FunctionInfo functions[] = {
         // ptm:u common commands
         {0x00010002, nullptr, "RegisterAlarmClient"},
@@ -61,8 +61,8 @@ PTM_S_Common::PTM_S_Common(std::shared_ptr<Module> ptm, const char* name)
     RegisterHandlers(functions);
 }
 
-PTM_S::PTM_S(std::shared_ptr<Module> ptm) : PTM_S_Common(std::move(ptm), "ptm:s") {}
+PTM_S::PTM_S(std::shared_ptr<Module> ptm) : PTM_S_Common{std::move(ptm), "ptm:s"} {}
 
-PTM_Sysm::PTM_Sysm(std::shared_ptr<Module> ptm) : PTM_S_Common(std::move(ptm), "ptm:sysm") {}
+PTM_Sysm::PTM_Sysm(std::shared_ptr<Module> ptm) : PTM_S_Common{std::move(ptm), "ptm:sysm"} {}
 
 } // namespace Service::PTM

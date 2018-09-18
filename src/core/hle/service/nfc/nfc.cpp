@@ -134,8 +134,8 @@ void Module::Interface::CommunicationGetStatus(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_NFC, "(STUBBED) called");
 }
 
-Module::Interface::Interface(std::shared_ptr<Module> nfc, const char* name, u32 max_session)
-    : ServiceFramework(name, max_session), nfc(std::move(nfc)) {}
+Module::Interface::Interface(std::shared_ptr<Module> nfc, const char* name)
+    : ServiceFramework{name, 1}, nfc{std::move(nfc)} {}
 
 Module::Interface::~Interface() = default;
 

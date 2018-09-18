@@ -6,7 +6,7 @@
 
 namespace Service::CDC {
 
-CDC_MIC::CDC_MIC() : ServiceFramework("cdc:MIC") {}
+CDC_MIC::CDC_MIC() : ServiceFramework{"cdc:MIC"} {}
 CDC_MIC::~CDC_MIC() = default;
 
 } // namespace Service::CDC

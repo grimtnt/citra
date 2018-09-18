@@ -35,7 +35,7 @@ public:
 
     class Interface : public ServiceFramework<Interface> {
     public:
-        Interface(std::shared_ptr<Module> frd, const char* name, u32 max_session);
+        Interface(std::shared_ptr<Module> frd, const char* name);
         ~Interface();
 
     protected:

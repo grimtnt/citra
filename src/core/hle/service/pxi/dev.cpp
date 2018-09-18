@@ -6,7 +6,7 @@
 
 namespace Service::PXI {
 
-DEV::DEV() : ServiceFramework("pxi:dev", 1) {
+DEV::DEV() : ServiceFramework{"pxi:dev", 1} {
     static const FunctionInfo functions[] = {
         {0x000101C2, nullptr, "ReadHostIO"},        {0x000201C2, nullptr, "WriteHostIO"},
         {0x00030102, nullptr, "ReadHostEx"},        {0x00040102, nullptr, "WriteHostEx"},
