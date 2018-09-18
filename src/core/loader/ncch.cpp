@@ -8,6 +8,7 @@
 #include <cstring>
 #include <locale>
 #include <memory>
+#include <vector>
 #include <fmt/format.h>
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -133,15 +134,16 @@ void AppLoader_NCCH::ParseRegionLockoutInfo() {
     if (ReadIcon(smdh_buffer) == ResultStatus::Success && smdh_buffer.size() >= sizeof(SMDH)) {
         SMDH smdh{};
         memcpy(&smdh, smdh_buffer.data(), sizeof(SMDH));
-        u32 region_lockout = smdh.region_lockout;
-        constexpr u32 REGION_COUNT = 7;
+        u32 region_lockout{smdh.region_lockout};
+        constexpr u32 REGION_COUNT{7};
+        std::vector<u32> regions{};
         for (u32 region{}; region < REGION_COUNT; ++region) {
             if (region_lockout & 1) {
-                Service::CFG::GetCurrentModule()->SetPreferredRegionCode(region);
-                break;
+                regions.push_back(region);
             }
             region_lockout >>= 1;
         }
+        Service::CFG::GetCurrentModule()->SetPreferredRegionCodes(regions);
     }
 }
 
