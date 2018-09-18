@@ -414,8 +414,8 @@ void Module::Interface::Fcntl(Kernel::HLERequestContext& ctx) {
     if (ctr_cmd == 3) { // F_GETFL
 #ifdef _WIN32
         posix_ret = 0;
-        auto iter{open_sockets.find(socket_handle)};
-        if (iter != open_sockets.end() && iter->second.blocking == false)
+        auto iter{soc->open_sockets.find(socket_handle)};
+        if (iter != soc->open_sockets.end() && iter->second.blocking == false)
             posix_ret |= 4; // O_NONBLOCK
 #else
         int ret{::fcntl(socket_handle, F_GETFL, 0)};
@@ -435,8 +435,8 @@ void Module::Interface::Fcntl(Kernel::HLERequestContext& ctx) {
             posix_ret = TranslateError(GET_ERRNO);
             return;
         }
-        auto iter = open_sockets.find(socket_handle);
-        if (iter != open_sockets.end())
+        auto iter = soc->open_sockets.find(socket_handle);
+        if (iter != soc->open_sockets.end())
             iter->second.blocking = (tmp == 0);
 #else
         int flags{::fcntl(socket_handle, F_GETFL, 0)};
