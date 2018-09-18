@@ -61,10 +61,8 @@ add_library(httplib INTERFACE)
 target_include_directories(httplib INTERFACE ./httplib)
 
 # Cubeb
-if(ENABLE_CUBEB)
-    set(BUILD_TESTS OFF CACHE BOOL "")
-    add_subdirectory(cubeb EXCLUDE_FROM_ALL)
-endif()
+set(BUILD_TESTS OFF CACHE BOOL "")
+add_subdirectory(cubeb EXCLUDE_FROM_ALL)
 
 # ZeroMQ
 # libzmq includes its own clang-format target, which conflicts with the
