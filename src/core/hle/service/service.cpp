@@ -19,6 +19,7 @@
 #include "core/hle/service/apt/apt.h"
 #include "core/hle/service/boss/boss.h"
 #include "core/hle/service/cam/cam.h"
+#include "core/hle/service/cdc/cdc.h"
 #include "core/hle/service/cecd/cecd.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/csnd/csnd_snd.h"
@@ -28,10 +29,12 @@
 #include "core/hle/service/frd/frd.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/fs/fs_user.h"
+#include "core/hle/service/gpio/gpio.h"
 #include "core/hle/service/gsp/gsp.h"
 #include "core/hle/service/gsp/gsp_lcd.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/http_c.h"
+#include "core/hle/service/i2c/i2c.h"
 #include "core/hle/service/ir/ir.h"
 #include "core/hle/service/ldr_ro/ldr_ro.h"
 #include "core/hle/service/mcu/mcu.h"
@@ -44,6 +47,7 @@
 #include "core/hle/service/nim/nim.h"
 #include "core/hle/service/ns/ns.h"
 #include "core/hle/service/nwm/nwm.h"
+#include "core/hle/service/pdn/pdn.h"
 #include "core/hle/service/pm/pm.h"
 #include "core/hle/service/ps/ps_ps.h"
 #include "core/hle/service/ptm/ptm.h"
@@ -52,7 +56,8 @@
 #include "core/hle/service/service.h"
 #include "core/hle/service/sm/sm.h"
 #include "core/hle/service/sm/srv.h"
-#include "core/hle/service/soc_u.h"
+#include "core/hle/service/soc/soc.h"
+#include "core/hle/service/spi/spi.h"
 #include "core/hle/service/ssl_c.h"
 #include "core/hle/service/y2r_u.h"
 
@@ -107,12 +112,11 @@ const std::array<ServiceModuleInfo, 38> service_module_map{
      {"MCU", 0x00040130'00001F02, MCU::InstallInterfaces},
      {"PS", 0x00040130'00003102, PS::InstallInterfaces},
      {"MP", 0x00040130'00002A02, MP::InstallInterfaces},
-     // no HLE implementation
-     {"CDC", 0x00040130'00001802, nullptr},
-     {"GPIO", 0x00040130'00001B02, nullptr},
-     {"I2C", 0x00040130'00001E02, nullptr},
-     {"PDN", 0x00040130'00002102, nullptr},
-     {"SPI", 0x00040130'00002302, nullptr}}};
+     {"CDC", 0x00040130'00001802, CDC::InstallInterfaces},
+     {"GPIO", 0x00040130'00001B02, GPIO::InstallInterfaces},
+     {"I2C", 0x00040130'00001E02, I2C::InstallInterfaces},
+     {"PDN", 0x00040130'00002102, PDN::InstallInterfaces},
+     {"SPI", 0x00040130'00002302, SPI::InstallInterfaces}}};
 
 /**
  * Creates a function string for logging, complete with the name (or header code, depending
@@ -172,9 +176,7 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
     }
     buf.push_back('}');
 
-    LOG_ERROR(Service, "unknown / unimplemented {}", fmt::to_string(buf));
-    // TODO(bunnei): Hack - ignore error
-    cmd_buf[1] = 0;
+    LOG_ERROR(Service, "unimplemented {}", fmt::to_string(buf));
 }
 
 void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_session) {

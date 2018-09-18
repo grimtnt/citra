@@ -182,6 +182,20 @@ add_library(core STATIC
     hle/service/cam/cam_s.h
     hle/service/cam/cam_u.cpp
     hle/service/cam/cam_u.h
+    hle/service/cdc/cdc_chk.cpp
+    hle/service/cdc/cdc_chk.h
+    hle/service/cdc/cdc_csn.cpp
+    hle/service/cdc/cdc_csn.h
+    hle/service/cdc/cdc_dsp.cpp
+    hle/service/cdc/cdc_dsp.h
+    hle/service/cdc/cdc_hid.cpp
+    hle/service/cdc/cdc_hid.h
+    hle/service/cdc/cdc_lgy.cpp
+    hle/service/cdc/cdc_lgy.h
+    hle/service/cdc/cdc_mic.cpp
+    hle/service/cdc/cdc_mic.h
+    hle/service/cdc/cdc.cpp
+    hle/service/cdc/cdc.h
     hle/service/cecd/cecd.cpp
     hle/service/cecd/cecd.h
     hle/service/cecd/cecd_ndm.cpp
@@ -224,6 +238,22 @@ add_library(core STATIC
     hle/service/fs/archive.h
     hle/service/fs/fs_user.cpp
     hle/service/fs/fs_user.h
+    hle/service/gpio/gpio_cdc.cpp
+    hle/service/gpio/gpio_cdc.h
+    hle/service/gpio/gpio_hid.cpp
+    hle/service/gpio/gpio_hid.h
+    hle/service/gpio/gpio_ir.cpp
+    hle/service/gpio/gpio_ir.h
+    hle/service/gpio/gpio_mcu.cpp
+    hle/service/gpio/gpio_mcu.h
+    hle/service/gpio/gpio_nfc.cpp
+    hle/service/gpio/gpio_nfc.h
+    hle/service/gpio/gpio_nwm.cpp
+    hle/service/gpio/gpio_nwm.h
+    hle/service/gpio/gpio_qtm.cpp
+    hle/service/gpio/gpio_qtm.h
+    hle/service/gpio/gpio.cpp
+    hle/service/gpio/gpio.h
     hle/service/gsp/gsp.cpp
     hle/service/gsp/gsp.h
     hle/service/gsp/gsp_gpu.cpp
@@ -236,6 +266,26 @@ add_library(core STATIC
     hle/service/hid/hid_spvr.h
     hle/service/hid/hid_user.cpp
     hle/service/hid/hid_user.h
+    hle/service/i2c/i2c_cam.cpp
+    hle/service/i2c/i2c_cam.h
+    hle/service/i2c/i2c_deb.cpp
+    hle/service/i2c/i2c_deb.h
+    hle/service/i2c/i2c_eep.cpp
+    hle/service/i2c/i2c_eep.h
+    hle/service/i2c/i2c_hid.cpp
+    hle/service/i2c/i2c_hid.h
+    hle/service/i2c/i2c_ir.cpp
+    hle/service/i2c/i2c_ir.h
+    hle/service/i2c/i2c_lcd.cpp
+    hle/service/i2c/i2c_lcd.h
+    hle/service/i2c/i2c_mcu.cpp
+    hle/service/i2c/i2c_mcu.h
+    hle/service/i2c/i2c_nfc.cpp
+    hle/service/i2c/i2c_nfc.h
+    hle/service/i2c/i2c_qtm.cpp
+    hle/service/i2c/i2c_qtm.h
+    hle/service/i2c/i2c.cpp
+    hle/service/i2c/i2c.h
     hle/service/http_c.cpp
     hle/service/http_c.h
     hle/service/ir/extra_hid.cpp
@@ -332,6 +382,18 @@ add_library(core STATIC
     hle/service/nwm/uds_connection.h
     hle/service/nwm/uds_data.cpp
     hle/service/nwm/uds_data.h
+    hle/service/pdn/pdn.cpp
+    hle/service/pdn/pdn.h
+    hle/service/pdn/pdn_c.cpp
+    hle/service/pdn/pdn_c.h
+    hle/service/pdn/pdn_d.cpp
+    hle/service/pdn/pdn_d.h
+    hle/service/pdn/pdn_g.cpp
+    hle/service/pdn/pdn_g.h
+    hle/service/pdn/pdn_i.cpp
+    hle/service/pdn/pdn_i.h
+    hle/service/pdn/pdn_s.cpp
+    hle/service/pdn/pdn_s.h
     hle/service/pm/pm.cpp
     hle/service/pm/pm.h
     hle/service/pm/pm_app.cpp
@@ -372,8 +434,24 @@ add_library(core STATIC
     hle/service/sm/sm.h
     hle/service/sm/srv.cpp
     hle/service/sm/srv.h
-    hle/service/soc_u.cpp
-    hle/service/soc_u.h
+    hle/service/soc/soc.cpp
+    hle/service/soc/soc.h
+    hle/service/soc/soc_u.cpp
+    hle/service/soc/soc_u.h
+    hle/service/soc/soc_p.cpp
+    hle/service/soc/soc_p.h
+    hle/service/spi/spi_cd2.cpp
+    hle/service/spi/spi_cd2.h
+    hle/service/spi/spi_cs2.cpp
+    hle/service/spi/spi_cs2.h
+    hle/service/spi/spi_cs3.cpp
+    hle/service/spi/spi_cs3.h
+    hle/service/spi/spi_def.cpp
+    hle/service/spi/spi_def.h
+    hle/service/spi/spi_nor.cpp
+    hle/service/spi/spi_nor.h
+    hle/service/spi/spi.cpp
+    hle/service/spi/spi.h
     hle/service/ssl_c.cpp
     hle/service/ssl_c.h
     hle/service/y2r_u.cpp

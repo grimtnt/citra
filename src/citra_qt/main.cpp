@@ -5,6 +5,9 @@
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
+#ifdef _WIN32
+#include <winsock2.h>
+#endif
 #include <clocale>
 #include <memory>
 #include <thread>
@@ -1558,8 +1561,15 @@ int main(int argc, char* argv[]) {
     Camera::QtMultimediaCameraHandler::Init();
     LOG_INFO(Frontend, "Citra version: {}", Common::g_build_version);
     SDL_InitSubSystem(SDL_INIT_AUDIO);
+#ifdef _WIN32
+    WSADATA data;
+    WSAStartup(MAKEWORD(2, 2), &data);
+#endif
     main_window.show();
     int result{app.exec()};
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
+#ifdef _WIN32
+    WSACleanup();
+#endif
     return result;
 }
