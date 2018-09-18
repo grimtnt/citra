@@ -6,7 +6,7 @@
 #include "core/core.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/ir.h"
-#include "core/hle/service/mic_u.h"
+#include "core/hle/service/mic/mic_u.h"
 #include "core/settings.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"

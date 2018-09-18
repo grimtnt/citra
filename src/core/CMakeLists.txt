@@ -226,8 +226,8 @@ add_library(core STATIC
     hle/service/dlp/dlp_srvr.h
     hle/service/dsp/dsp_dsp.cpp
     hle/service/dsp/dsp_dsp.h
-    hle/service/err_f.cpp
-    hle/service/err_f.h
+    hle/service/err/err_f.cpp
+    hle/service/err/err_f.h
     hle/service/frd/frd.cpp
     hle/service/frd/frd.h
     hle/service/frd/frd_a.cpp
@@ -286,8 +286,8 @@ add_library(core STATIC
     hle/service/i2c/i2c_qtm.h
     hle/service/i2c/i2c.cpp
     hle/service/i2c/i2c.h
-    hle/service/http_c.cpp
-    hle/service/http_c.h
+    hle/service/http/http_c.cpp
+    hle/service/http/http_c.h
     hle/service/ir/extra_hid.cpp
     hle/service/ir/extra_hid.h
     hle/service/ir/ir.cpp
@@ -328,8 +328,8 @@ add_library(core STATIC
     hle/service/mp/mp.h
     hle/service/mp/mp_u.cpp
     hle/service/mp/mp_u.h
-    hle/service/mic_u.cpp
-    hle/service/mic_u.h
+    hle/service/mic/mic_u.cpp
+    hle/service/mic/mic_u.h
     hle/service/mvd/mvd.cpp
     hle/service/mvd/mvd.h
     hle/service/mvd/mvd_std.cpp
@@ -452,10 +452,10 @@ add_library(core STATIC
     hle/service/spi/spi_nor.h
     hle/service/spi/spi.cpp
     hle/service/spi/spi.h
-    hle/service/ssl_c.cpp
-    hle/service/ssl_c.h
-    hle/service/y2r_u.cpp
-    hle/service/y2r_u.h
+    hle/service/ssl/ssl_c.cpp
+    hle/service/ssl/ssl_c.h
+    hle/service/y2r/y2r_u.cpp
+    hle/service/y2r/y2r_u.h
     hle/shared_page.cpp
     hle/shared_page.h
     hw/aes/arithmetic128.cpp

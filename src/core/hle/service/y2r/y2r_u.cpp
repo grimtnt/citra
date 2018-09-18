@@ -8,7 +8,7 @@
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/event.h"
 #include "core/hle/kernel/process.h"
-#include "core/hle/service/y2r_u.h"
+#include "core/hle/service/y2r/y2r_u.h"
 #include "core/hw/y2r.h"
 
 namespace Service::Y2R {

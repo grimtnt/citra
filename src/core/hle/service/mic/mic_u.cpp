@@ -10,7 +10,7 @@
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
-#include "core/hle/service/mic_u.h"
+#include "core/hle/service/mic/mic_u.h"
 #include "core/settings.h"
 
 namespace Service::MIC {

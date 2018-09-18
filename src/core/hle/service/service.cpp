@@ -25,7 +25,7 @@
 #include "core/hle/service/csnd/csnd_snd.h"
 #include "core/hle/service/dlp/dlp.h"
 #include "core/hle/service/dsp/dsp_dsp.h"
-#include "core/hle/service/err_f.h"
+#include "core/hle/service/err/err_f.h"
 #include "core/hle/service/frd/frd.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/fs/fs_user.h"
@@ -33,12 +33,12 @@
 #include "core/hle/service/gsp/gsp.h"
 #include "core/hle/service/gsp/gsp_lcd.h"
 #include "core/hle/service/hid/hid.h"
-#include "core/hle/service/http_c.h"
+#include "core/hle/service/http/http_c.h"
 #include "core/hle/service/i2c/i2c.h"
 #include "core/hle/service/ir/ir.h"
 #include "core/hle/service/ldr_ro/ldr_ro.h"
 #include "core/hle/service/mcu/mcu.h"
-#include "core/hle/service/mic_u.h"
+#include "core/hle/service/mic/mic_u.h"
 #include "core/hle/service/mp/mp.h"
 #include "core/hle/service/mvd/mvd.h"
 #include "core/hle/service/ndm/ndm_u.h"
@@ -58,8 +58,8 @@
 #include "core/hle/service/sm/srv.h"
 #include "core/hle/service/soc/soc.h"
 #include "core/hle/service/spi/spi.h"
-#include "core/hle/service/ssl_c.h"
-#include "core/hle/service/y2r_u.h"
+#include "core/hle/service/ssl/ssl_c.h"
+#include "core/hle/service/y2r/y2r_u.h"
 
 using Kernel::ClientPort;
 using Kernel::ServerPort;
@@ -67,8 +67,6 @@ using Kernel::ServerSession;
 using Kernel::SharedPtr;
 
 namespace Service {
-
-std::unordered_map<std::string, SharedPtr<ClientPort>> g_kernel_named_ports;
 
 const std::array<ServiceModuleInfo, 38> service_module_map{
     {{"PM", 0x00040130'00001202, PM::InstallInterfaces},
@@ -168,7 +166,7 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
     int num_params{static_cast<int>(header.normal_params_size + header.translate_params_size)};
     std::string function_name{info == nullptr ? fmt::format("{:#08x}", cmd_buf[0]) : info->name};
 
-    fmt::memory_buffer buf{};
+    fmt::memory_buffer buf;
     fmt::format_to(buf, "function '{}': port='{}' cmd_buf={{[0]={:#x}", function_name, service_name,
                    cmd_buf[0]);
     for (int i{1}; i <= num_params; ++i) {
@@ -180,7 +178,7 @@ void ServiceFrameworkBase::ReportUnimplementedFunction(u32* cmd_buf, const Funct
 }
 
 void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_session) {
-    u32* cmd_buf = Kernel::GetCommandBuffer();
+    u32* cmd_buf{Kernel::GetCommandBuffer()};
 
     u32 header_code{cmd_buf[0]};
     auto itr{handlers.find(header_code)};
@@ -209,14 +207,6 @@ void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_ses
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Module interface
-
-// TODO(yuriks): Move to kernel
-void AddNamedPort(std::string name, SharedPtr<ClientPort> port) {
-    g_kernel_named_ports.emplace(std::move(name), std::move(port));
-}
-
 static bool AttemptLLE(const ServiceModuleInfo& service_module) {
     if (!Settings::values.lle_modules.at(service_module.name))
         return false;
@@ -237,7 +227,6 @@ static bool AttemptLLE(const ServiceModuleInfo& service_module) {
 /// Initialize ServiceManager
 void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     SM::ServiceManager::InstallInterfaces(sm);
-
     for (const auto& service_module : service_module_map) {
         if (!AttemptLLE(service_module) && service_module.init_function != nullptr)
             service_module.init_function(*sm);
@@ -249,7 +238,7 @@ void Init(std::shared_ptr<SM::ServiceManager>& sm) {
 void Shutdown() {
     FS::ArchiveShutdown();
 
-    g_kernel_named_ports.clear();
+    Kernel::g_named_ports.clear();
     LOG_DEBUG(Service, "shutdown OK");
 }
 } // namespace Service

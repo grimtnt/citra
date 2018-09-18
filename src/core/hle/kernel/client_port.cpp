@@ -13,6 +13,8 @@
 
 namespace Kernel {
 
+std::unordered_map<std::string, SharedPtr<ClientPort>> g_named_ports;
+
 ClientPort::ClientPort() = default;
 ClientPort::~ClientPort() = default;
 
@@ -43,6 +45,10 @@ void ClientPort::ConnectionClosed() {
     ASSERT(active_sessions > 0);
 
     --active_sessions;
+}
+
+void AddNamedPort(std::string name, SharedPtr<ClientPort> port) {
+    g_named_ports.emplace(std::move(name), std::move(port));
 }
 
 } // namespace Kernel

@@ -78,7 +78,7 @@ static void HandleDiscordError(int error_code, const char* message) {
 
 const int GMainWindow::max_recent_files_item;
 
-GMainWindow::GMainWindow() : config(new Config()), emu_thread(nullptr) {
+GMainWindow::GMainWindow() : config{new Config()}, emu_thread{nullptr} {
     Log::Filter log_filter{};
     log_filter.ParseFilterString(Settings::values.log_filter);
     Log::SetGlobalFilter(log_filter);

@@ -13,7 +13,7 @@
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/result.h"
-#include "core/hle/service/err_f.h"
+#include "core/hle/service/err/err_f.h"
 
 namespace Service::ERR {
 

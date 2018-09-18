@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include "common/common_types.h"
 #include "core/hle/kernel/object.h"
 #include "core/hle/result.h"
@@ -52,5 +53,11 @@ private:
     u32 active_sessions{}; ///< Number of currently open sessions to this port
     std::string name;      ///< Name of client port (optional)
 };
+
+/// Map of named ports managed by the kernel, which can be retrieved using the ConnectToPort SVC.
+extern std::unordered_map<std::string, SharedPtr<ClientPort>> g_named_ports;
+
+/// Adds a port to the named port table
+void AddNamedPort(std::string name, Kernel::SharedPtr<Kernel::ClientPort> port);
 
 } // namespace Kernel

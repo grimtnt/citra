@@ -6,7 +6,7 @@
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/ipc.h"
 #include "core/hle/kernel/shared_memory.h"
-#include "core/hle/service/http_c.h"
+#include "core/hle/service/http/http_c.h"
 
 namespace Service::HTTP {
 

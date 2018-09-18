@@ -303,8 +303,8 @@ static ResultCode ConnectToPort(Handle* out_handle, VAddr port_name_address) {
 
     LOG_TRACE(Kernel_SVC, "called port_name={}", port_name);
 
-    auto it{Service::g_kernel_named_ports.find(port_name)};
-    if (it == Service::g_kernel_named_ports.end()) {
+    auto it{g_named_ports.find(port_name)};
+    if (it == g_named_ports.end()) {
         LOG_WARNING(Kernel_SVC, "tried to connect to unknown port: {}", port_name);
         return ERR_NOT_FOUND;
     }

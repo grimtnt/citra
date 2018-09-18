@@ -10,7 +10,7 @@
 #include "common/color.h"
 #include "common/common_types.h"
 #include "common/vector_math.h"
-#include "core/hle/service/y2r_u.h"
+#include "core/hle/service/y2r/y2r_u.h"
 #include "core/hw/y2r.h"
 #include "core/memory.h"
 
@@ -18,8 +18,8 @@ namespace HW::Y2R {
 
 using namespace Service::Y2R;
 
-static const std::size_t MAX_TILES = 1024 / 8;
-static const std::size_t TILE_SIZE = 8 * 8;
+static const std::size_t MAX_TILES{1024 / 8};
+static const std::size_t TILE_SIZE{8 * 8};
 using ImageTile = std::array<u32, TILE_SIZE>;
 
 /// Converts a image strip from the source YUV format into individual 8x8 RGB32 tiles.
@@ -53,21 +53,21 @@ static void ConvertYUVToRGB(InputFormat input_format, const u8* input_Y, const u
             }
 
             // This conversion process is bit-exact with hardware, as far as could be tested.
-            auto& c = coefficients;
-            s32 cY = c[0] * Y;
+            auto& c{coefficients};
+            s32 cY{c[0] * Y};
 
-            s32 r = cY + c[1] * V;
-            s32 g = cY - c[2] * V - c[3] * U;
-            s32 b = cY + c[4] * U;
+            s32 r{cY + c[1] * V};
+            s32 g{cY - c[2] * V - c[3] * U};
+            s32 b{cY + c[4] * U};
 
-            const s32 rounding_offset = 0x18;
+            const s32 rounding_offset{0x18};
             r = (r >> 3) + c[5] + rounding_offset;
             g = (g >> 3) + c[6] + rounding_offset;
             b = (b >> 3) + c[7] + rounding_offset;
 
-            unsigned int tile = x / 8;
-            unsigned int tile_x = x % 8;
-            u32* out = &output[tile][y * 8 + tile_x];
+            unsigned int tile{x / 8};
+            unsigned int tile_x{x % 8};
+            u32* out{&output[tile][y * 8 + tile_x]};
             *out = ((u32)std::clamp(r >> 5, 0, 0xFF) << 24) |
                    ((u32)std::clamp(g >> 5, 0, 0xFF) << 16) |
                    ((u32)std::clamp(b >> 5, 0, 0xFF) << 8);
@@ -79,9 +79,9 @@ static void ConvertYUVToRGB(InputFormat input_format, const u8* input_Y, const u
 /// formats to 8-bit.
 template <std::size_t N>
 static void ReceiveData(u8* output, ConversionBuffer& buf, std::size_t amount_of_data) {
-    const u8* input = Memory::GetPointer(buf.address);
+    const u8* input{Memory::GetPointer(buf.address)};
 
-    std::size_t output_unit = buf.transfer_unit / N;
+    std::size_t output_unit{buf.transfer_unit / N};
     ASSERT(amount_of_data % output_unit == 0);
 
     while (amount_of_data > 0) {
@@ -102,13 +102,12 @@ static void ReceiveData(u8* output, ConversionBuffer& buf, std::size_t amount_of
 /// transfer.
 static void SendData(const u32* input, ConversionBuffer& buf, int amount_of_data,
                      OutputFormat output_format, u8 alpha) {
-
-    u8* output = Memory::GetPointer(buf.address);
+    u8* output{Memory::GetPointer(buf.address)};
 
     while (amount_of_data > 0) {
         u8* unit_end = output + buf.transfer_unit;
         while (output < unit_end) {
-            u32 color = *input++;
+            u32 color{*input++};
             Math::Vec4<u8> col_vec{(u8)(color >> 24), (u8)(color >> 16), (u8)(color >> 8), alpha};
 
             switch (output_format) {
@@ -266,9 +265,10 @@ void PerformConversion(ConversionConfiguration& cvt) {
     ASSERT(num_tiles <= MAX_TILES);
 
     // Buffer used as a CDMA source/target.
-    std::unique_ptr<u8[]> data_buffer(new u8[cvt.input_line_width * 8 * 4]);
+    std::unique_ptr<u8[]> data_buffer{new u8[cvt.input_line_width * 8 * 4]};
+
     // Intermediate storage for decoded 8x8 image tiles. Always stored as RGB32.
-    std::unique_ptr<ImageTile[]> tiles(new ImageTile[num_tiles]);
+    std::unique_ptr<ImageTile[]> tiles{new ImageTile[num_tiles]};
     ImageTile tmp_tile;
 
     // LUT used to remap writes to a tile. Used to allow linear or swizzled output without
@@ -289,9 +289,9 @@ void PerformConversion(ConversionConfiguration& cvt) {
         // Total size in pixels of incoming data required for this strip.
         const std::size_t row_data_size = row_height * cvt.input_line_width;
 
-        u8* input_Y = data_buffer.get();
-        u8* input_U = input_Y + 8 * cvt.input_line_width;
-        u8* input_V = input_U + 8 * cvt.input_line_width / 2;
+        u8* input_Y{data_buffer.get()};
+        u8* input_U{input_Y + 8 * cvt.input_line_width};
+        u8* input_V{input_U + 8 * cvt.input_line_width / 2};
 
         switch (cvt.input_format) {
         case InputFormat::YUV422_Indiv8:
@@ -326,7 +326,7 @@ void PerformConversion(ConversionConfiguration& cvt) {
         ConvertYUVToRGB(cvt.input_format, input_Y, input_U, input_V, tiles.get(),
                         cvt.input_line_width, row_height, cvt.coefficients);
 
-        u32* output_buffer = reinterpret_cast<u32*>(data_buffer.get());
+        u32* output_buffer{reinterpret_cast<u32*>(data_buffer.get())};
 
         for (std::size_t i{}; i < num_tiles; ++i) {
             int image_strip_width{};

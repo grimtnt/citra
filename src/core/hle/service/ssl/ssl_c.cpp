@@ -5,7 +5,7 @@
 #include "common/common_types.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
-#include "core/hle/service/ssl_c.h"
+#include "core/hle/service/ssl/ssl_c.h"
 
 namespace Service::SSL {
 

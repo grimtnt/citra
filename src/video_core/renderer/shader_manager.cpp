@@ -145,8 +145,8 @@ class ShaderCache {
 public:
     explicit ShaderCache(bool separable) : separable(separable) {}
     GLuint Get(const KeyConfigType& config) {
-        auto [iter, new_shader] = shaders.emplace(config, ShaderStage{separable});
-        ShaderStage& cached_shader = iter->second;
+        auto [iter, new_shader]{shaders.emplace(config, ShaderStage{separable})};
+        ShaderStage& cached_shader{iter->second};
         if (new_shader) {
             cached_shader.Create(CodeGenerator(config, separable).c_str(), ShaderType);
         }
