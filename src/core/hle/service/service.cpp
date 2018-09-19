@@ -207,29 +207,11 @@ void ServiceFrameworkBase::HandleSyncRequest(SharedPtr<ServerSession> server_ses
     }
 }
 
-static bool AttemptLLE(const ServiceModuleInfo& service_module) {
-    if (!Settings::values.lle_modules.at(service_module.name))
-        return false;
-    std::unique_ptr<Loader::AppLoader> loader{
-        Loader::GetLoader(AM::GetTitleContentPath(FS::MediaType::NAND, service_module.title_id))};
-    if (!loader) {
-        LOG_ERROR(Service,
-                  "Service module \"{}\" could not be loaded; Defaulting to HLE implementation.",
-                  service_module.name);
-        return false;
-    }
-    SharedPtr<Kernel::Process> process;
-    loader->Load(process);
-    LOG_DEBUG(Service, "Service module \"{}\" has been successfully loaded.", service_module.name);
-    return true;
-}
-
 /// Initialize ServiceManager
 void Init(std::shared_ptr<SM::ServiceManager>& sm) {
     SM::ServiceManager::InstallInterfaces(sm);
     for (const auto& service_module : service_module_map) {
-        if (!AttemptLLE(service_module) && service_module.init_function != nullptr)
-            service_module.init_function(*sm);
+        service_module.init_function(*sm);
     }
     LOG_DEBUG(Service, "initialized OK");
 }

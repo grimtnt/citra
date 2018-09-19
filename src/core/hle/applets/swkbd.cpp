@@ -20,8 +20,6 @@
 #include "core/memory.h"
 #include "video_core/video_core.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace HLE::Applets {
 
 ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input) {
@@ -200,158 +198,13 @@ ResultCode SoftwareKeyboard::StartImpl(Service::APT::AppletStartupParameter cons
 }
 
 void SoftwareKeyboard::Update() {
-    switch (Settings::values.keyboard_mode) {
-    case Settings::KeyboardMode::StdIn: {
-        std::string input{};
-        std::cout << "Software Keyboard" << std::endl;
-        // Display hint text
-        std::u16string hint{reinterpret_cast<char16_t*>(config.hint_text)};
-        if (!hint.empty()) {
-            std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
-        }
-        ValidationError error{ValidationError::ButtonOutOfRange};
-        auto ValidateInputString = [&]() -> bool {
-            ValidationError error{ValidateInput(config, input)};
-            if (error != ValidationError::None) {
-                switch (error) {
-                case ValidationError::AtSignNotAllowed:
-                    std::cout << "Input must not contain the @ symbol" << std::endl;
-                    break;
-                case ValidationError::BackslashNotAllowed:
-                    std::cout << "Input must not contain the \\ symbol" << std::endl;
-                    break;
-                case ValidationError::BlankInputNotAllowed:
-                    std::cout << "Input must not be blank." << std::endl;
-                    break;
-                case ValidationError::CallbackFailed:
-                    std::cout << "Callbak failed." << std::endl;
-                    break;
-                case ValidationError::DigitNotAllowed:
-                    std::cout << "Input must not contain any digits" << std::endl;
-                    break;
-                case ValidationError::EmptyInputNotAllowed:
-                    std::cout << "Input must not be empty." << std::endl;
-                    break;
-                case ValidationError::FixedLengthRequired:
-                    std::cout << fmt::format("Input must be exactly {} characters.",
-                                             config.max_text_length)
-                              << std::endl;
-                    break;
-                case ValidationError::InputNotNumber:
-                    std::cout << "All characters must be numbers." << std::endl;
-                    break;
-                case ValidationError::MaxLengthExceeded:
-                    std::cout << fmt::format("Input is longer than the maximum length. Max: {}",
-                                             config.max_text_length)
-                              << std::endl;
-                    break;
-                case ValidationError::PercentNotAllowed:
-                    std::cout << "Input must not contain the % symbol" << std::endl;
-                    break;
-                default:
-                    UNREACHABLE();
-                }
-            }
-            return error == ValidationError::None;
-        };
-        do {
-            std::cout << "Enter the text you will send to the application:" << std::endl;
-            std::getline(std::cin, input);
-        } while (!ValidateInputString());
-
-        std::string option_text{};
-        // convert all of the button texts into something we can output
-        // num_buttons is in the range of 0-2 so use <= instead of <
-        u32 num_buttons{static_cast<u32>(config.num_buttons_m1)};
-        for (u32 i{}; i <= num_buttons; ++i) {
-            std::string button_text{};
-            // apps are allowed to set custom text to display on the button
-            std::u16string custom_button_text{reinterpret_cast<char16_t*>(config.button_text[i])};
-            if (custom_button_text.empty()) {
-                // Use the system default text for that button
-                button_text = default_button_text[num_buttons][i];
-            } else {
-                button_text = Common::UTF16ToUTF8(custom_button_text);
-            }
-            option_text += "\t(" + std::to_string(i) + ") " + button_text + "\t";
-        }
-        std::string option{};
-        error = ValidationError::ButtonOutOfRange;
-        auto ValidateButtonString{[&]() -> bool {
-            bool valid{};
-            try {
-                u32 num{static_cast<u32>(std::stoul(option))};
-                valid = ValidateButton(config, static_cast<u8>(num)) == ValidationError::None;
-                if (!valid) {
-                    std::cout << fmt::format("Please choose a number between 0 and {}",
-                                             static_cast<u32>(config.num_buttons_m1))
-                              << std::endl;
-                }
-            } catch (const std::invalid_argument&) {
-                std::cout << "Unable to parse input as a number." << std::endl;
-            } catch (const std::out_of_range&) {
-                std::cout << "Input number is not valid." << std::endl;
-            }
-            return valid;
-        }};
-        do {
-            std::cout << "\nPlease type the number of the button you will press: \n"
-                      << option_text << std::endl;
-            std::getline(std::cin, option);
-        } while (!ValidateButtonString());
-
-        s32 button{static_cast<s32>(std::stol(option))};
-        switch (config.num_buttons_m1) {
-        case SwkbdButtonConfig::SingleButton:
-            config.return_code = SwkbdResult::D0Click;
-            break;
-        case SwkbdButtonConfig::DualButton:
-            if (button == 0) {
-                config.return_code = SwkbdResult::D1Click0;
-            } else {
-                config.return_code = SwkbdResult::D1Click1;
-            }
-            break;
-        case SwkbdButtonConfig::TripleButton:
-            if (button == 0) {
-                config.return_code = SwkbdResult::D2Click0;
-            } else if (button == 1) {
-                config.return_code = SwkbdResult::D2Click1;
-            } else {
-                config.return_code = SwkbdResult::D2Click2;
-            }
-            break;
-        default:
-            // TODO: what does the hardware do
-            LOG_WARNING(Applet_Swkbd, "Unknown option for num_buttons_m1: {}",
-                        static_cast<u32>(config.num_buttons_m1));
-            config.return_code = SwkbdResult::None;
-            break;
-        }
-
-        std::u16string utf16_input = Common::UTF8ToUTF16(input);
-        memcpy(text_memory->GetPointer(), utf16_input.c_str(),
-               utf16_input.length() * sizeof(char16_t));
-        config.text_length = static_cast<u16>(utf16_input.size());
-        config.text_offset = 0;
-        Finalize();
-        break;
-    }
-    case Settings::KeyboardMode::Qt: {
-        auto cb{Core::System::GetInstance().GetQtCallbacks().swkbd};
-        if (!cb)
-            UNREACHABLE_MSG("Qt keyboard callback is nullptr");
-        std::u16string text{};
-        cb(config, text);
-        memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
-        Finalize();
-        break;
-    }
-    default:
-        UNREACHABLE_MSG("Unimplemented keyboard mode {}",
-                        static_cast<int>(Settings::values.keyboard_mode));
-        break;
-    }
+    auto cb{Core::System::GetInstance().GetQtCallbacks().swkbd};
+    if (!cb)
+        UNREACHABLE_MSG("Qt keyboard callback is nullptr");
+    std::u16string text{};
+    cb(config, text);
+    memcpy(text_memory->GetPointer(), text.c_str(), text.length() * sizeof(char16_t));
+    Finalize();
 }
 
 void SoftwareKeyboard::Finalize() {

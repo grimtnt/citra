@@ -129,30 +129,6 @@ void GRenderWindow::OnFramebufferSizeChanged() {
     UpdateCurrentFramebufferLayout(width, height);
 }
 
-void GRenderWindow::BackupGeometry() {
-    geometry = ((QGLWidget*)this)->saveGeometry();
-}
-
-void GRenderWindow::RestoreGeometry() {
-    // We don't want to back up the geometry here (obviously)
-    QWidget::restoreGeometry(geometry);
-}
-
-void GRenderWindow::restoreGeometry(const QByteArray& geometry) {
-    // Make sure users of this class don't need to deal with backing up the geometry themselves
-    QWidget::restoreGeometry(geometry);
-    BackupGeometry();
-}
-
-QByteArray GRenderWindow::saveGeometry() {
-    // If we are a top-level widget, store the current geometry
-    // otherwise, store the last backup
-    if (parent() == nullptr)
-        return ((QGLWidget*)this)->saveGeometry();
-    else
-        return geometry;
-}
-
 qreal GRenderWindow::windowPixelRatio() {
     // windowHandle() might not be accessible until the window is displayed to screen.
     return windowHandle() ? windowHandle()->screen()->devicePixelRatio() : 1.0f;
@@ -228,7 +204,7 @@ void GRenderWindow::InitRenderTarget() {
     child = new GGLWidgetInternal(fmt, this);
     QBoxLayout* layout{new QHBoxLayout(this)};
 
-    resize(Core::kScreenTopWidth, Core::kScreenTopHeight + Core::kScreenBottomHeight);
+    resize(Core::kScreensWidth, Core::kScreensHeight);
     layout->addWidget(child);
     layout->setMargin(0);
     setLayout(layout);
@@ -237,21 +213,14 @@ void GRenderWindow::InitRenderTarget() {
 
     OnFramebufferSizeChanged();
     NotifyClientAreaSizeChanged(std::pair<unsigned, unsigned>(child->width(), child->height()));
-
-    BackupGeometry();
 }
 
-void GRenderWindow::CaptureScreenshot(u16 res_scale, const QString& screenshot_path) {
-    if (!res_scale)
-        res_scale = VideoCore::GetResolutionScaleFactor();
-    const Layout::FramebufferLayout layout{Layout::FrameLayoutFromResolutionScale(res_scale)};
-    screenshot_image = QImage(QSize(layout.width, layout.height), QImage::Format_RGB32);
-    VideoCore::RequestScreenshot(screenshot_image.bits(),
-                                 [=] {
-                                     screenshot_image.mirrored(false, true).save(screenshot_path);
-                                     LOG_INFO(Frontend, "The screenshot is saved.");
-                                 },
-                                 layout);
+void GRenderWindow::CaptureScreenshot(const QString& screenshot_path) {
+    screenshot_image = QImage(QSize(400, 480), QImage::Format_RGB32);
+    VideoCore::RequestScreenshot(screenshot_image.bits(), [=] {
+        screenshot_image.mirrored(false, true).save(screenshot_path);
+        LOG_INFO(Frontend, "The screenshot is saved.");
+    });
 }
 
 void GRenderWindow::OnMinimalClientAreaChangeRequest(

@@ -69,12 +69,6 @@ void RPCServer::HandleCircleState(Packet& packet, s16 x, s16 y) {
     packet.SendReply();
 }
 
-void RPCServer::HandleSetResolution(Packet& packet, u16 resolution) {
-    Settings::values.resolution_factor = resolution;
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
-}
-
 void RPCServer::HandleSetGame(Packet& packet, const std::string& path) {
     Core::System::GetInstance().SetGame(path);
     packet.SetPacketDataSize(0);
@@ -106,22 +100,6 @@ void RPCServer::HandleRestart(Packet& packet) {
     packet.SendReply();
 }
 
-void RPCServer::HandleSetSpeedLimit(Packet& packet, u16 speed_limit) {
-    Settings::values.use_frame_limit = true;
-    Settings::values.frame_limit = speed_limit;
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
-}
-
-void RPCServer::HandleSetBackgroundColor(Packet& packet, float r, float g, float b) {
-    Settings::values.bg_red = r;
-    Settings::values.bg_green = g;
-    Settings::values.bg_blue = b;
-    Settings::Apply();
-    packet.SetPacketDataSize(0);
-    packet.SendReply();
-}
-
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
@@ -131,14 +109,11 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::TouchState:
         case PacketType::MotionState:
         case PacketType::CircleState:
-        case PacketType::SetResolution:
         case PacketType::SetGame:
         case PacketType::SetOverrideControls:
         case PacketType::Pause:
         case PacketType::Resume:
         case PacketType::Restart:
-        case PacketType::SetSpeedLimit:
-        case PacketType::SetBackgroundColor:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -226,14 +201,6 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             success = true;
             break;
         }
-        case PacketType::SetResolution: {
-            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            u16 resolution{};
-            std::memcpy(&resolution, data, sizeof(u16));
-            HandleSetResolution(*request_packet, resolution);
-            success = true;
-            break;
-        }
         case PacketType::SetGame: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
             std::string path{};
@@ -270,27 +237,6 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         }
         case PacketType::Restart: {
             HandleRestart(*request_packet);
-            success = true;
-            break;
-        }
-        case PacketType::SetSpeedLimit: {
-            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            u16 speed_limit{};
-            std::memcpy(&speed_limit, data, sizeof(u16));
-            HandleSetSpeedLimit(*request_packet, speed_limit);
-            success = true;
-            break;
-        }
-        case PacketType::SetBackgroundColor: {
-            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            struct Color {
-                float r;
-                float g;
-                float b;
-            };
-            Color color{};
-            std::memcpy(&color, data, sizeof(Color));
-            HandleSetBackgroundColor(*request_packet, color.r, color.g, color.b);
             success = true;
             break;
         }

@@ -67,9 +67,6 @@ public:
     /// Creates a new sink to change the audio device
     void UpdateSink();
 
-    /// Enable/Disable audio stretching.
-    void EnableStretching(bool enable);
-
     void OutputFrame(StereoFrame16& frame);
 
 private:
@@ -77,8 +74,6 @@ private:
     void OutputCallback(s16* buffer, std::size_t num_frames);
 
     std::unique_ptr<Sink> sink;
-    std::atomic<bool> perform_time_stretching = false;
-    std::atomic<bool> flushing_time_stretcher = false;
     Common::RingBuffer<s16, 0x2000, 2> fifo;
     std::array<s16, 2> last_frame{};
     TimeStretcher time_stretcher;

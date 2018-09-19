@@ -123,28 +123,5 @@ void EmuWindow::TouchMoved(unsigned framebuffer_x, unsigned framebuffer_y) {
 }
 
 void EmuWindow::UpdateCurrentFramebufferLayout(unsigned width, unsigned height) {
-    Layout::FramebufferLayout layout{};
-    if (Settings::values.custom_layout) {
-        layout = Layout::CustomFrameLayout(width, height, Settings::values.swap_screen);
-    } else {
-        switch (Settings::values.layout_option) {
-        case Settings::LayoutOption::SingleScreen:
-            layout = Layout::SingleFrameLayout(width, height, Settings::values.swap_screen);
-            break;
-        case Settings::LayoutOption::MediumScreen:
-            layout = Layout::MediumFrameLayout(width, height, Settings::values.swap_screen);
-            break;
-        case Settings::LayoutOption::LargeScreen:
-            layout = Layout::LargeFrameLayout(width, height, Settings::values.swap_screen);
-            break;
-        case Settings::LayoutOption::SideScreen:
-            layout = Layout::SideFrameLayout(width, height, Settings::values.swap_screen);
-            break;
-        case Settings::LayoutOption::Default:
-        default:
-            layout = Layout::DefaultFrameLayout(width, height, Settings::values.swap_screen);
-            break;
-        }
-    }
-    NotifyFramebufferLayoutChanged(layout);
+    NotifyFramebufferLayoutChanged(Layout::GetLayout(width, height));
 }

@@ -16,22 +16,20 @@ namespace VideoCore {
 
 std::unique_ptr<Renderer> g_renderer; ///< Renderer plugin
 
-std::atomic<bool> g_hw_shader_enabled;
-std::atomic<bool> g_hw_shader_accurate_gs;
-std::atomic<bool> g_hw_shader_accurate_mul;
-std::atomic<bool> g_renderer_bg_color_update_requested;
+std::atomic<bool> g_hw_shaders_enabled;
+std::atomic<bool> g_accurate_shaders_enabled;
+
 // Screenshot
 std::atomic<bool> g_renderer_screenshot_requested;
 void* g_screenshot_bits;
 std::function<void()> g_screenshot_complete_callback;
-Layout::FramebufferLayout g_screenshot_framebuffer_layout;
 
 /// Initialize the video core
 Core::System::ResultStatus Init(EmuWindow& emu_window) {
     Pica::Init();
 
     g_renderer = std::make_unique<Renderer>(emu_window);
-    Core::System::ResultStatus result = g_renderer->Init();
+    Core::System::ResultStatus result{g_renderer->Init()};
 
     if (result != Core::System::ResultStatus::Success) {
         LOG_ERROR(Render, "initialization failed !");
@@ -51,22 +49,14 @@ void Shutdown() {
     LOG_DEBUG(Render, "shutdown OK");
 }
 
-void RequestScreenshot(void* data, std::function<void()> callback,
-                       const Layout::FramebufferLayout& layout) {
+void RequestScreenshot(void* data, std::function<void()> callback) {
     if (g_renderer_screenshot_requested) {
         LOG_ERROR(Render, "A screenshot is already requested or in progress, ignoring the request");
         return;
     }
     g_screenshot_bits = data;
     g_screenshot_complete_callback = std::move(callback);
-    g_screenshot_framebuffer_layout = layout;
     g_renderer_screenshot_requested = true;
-}
-
-u16 GetResolutionScaleFactor() {
-    return !Settings::values.resolution_factor
-               ? g_renderer->GetRenderWindow().GetFramebufferLayout().GetScalingRatio()
-               : Settings::values.resolution_factor;
 }
 
 } // namespace VideoCore

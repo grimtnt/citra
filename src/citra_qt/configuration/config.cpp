@@ -100,59 +100,12 @@ void Config::ReadValues() {
     Settings::values.udp_pad_index = static_cast<u8>(qt_config->value("udp_pad_index", 0).toUInt());
     qt_config->endGroup();
 
-    qt_config->beginGroup("Core");
-    Settings::values.keyboard_mode =
-        static_cast<Settings::KeyboardMode>(qt_config->value("keyboard_mode", 1).toInt());
-    qt_config->endGroup();
-
-    qt_config->beginGroup("LLE");
-    for (const auto& service_module : Service::service_module_map) {
-        bool use_lle{qt_config->value(QString::fromStdString(service_module.name), false).toBool()};
-        Settings::values.lle_modules.emplace(service_module.name, use_lle);
-    }
-    qt_config->endGroup();
-
     qt_config->beginGroup("Renderer");
-#ifdef __APPLE__
-    // Hardware shader is broken on macos thanks to poor drivers.
-    // We still want to provide this option for test/development purposes, but disable it by
-    // default.
-    Settings::values.use_hw_shader = qt_config->value("use_hw_shader", false).toBool();
-#else
-    Settings::values.use_hw_shader = qt_config->value("use_hw_shader", true).toBool();
-#endif
-    Settings::values.shaders_accurate_gs = qt_config->value("shaders_accurate_gs", true).toBool();
-    Settings::values.shaders_accurate_mul =
-        qt_config->value("shaders_accurate_mul", false).toBool();
-    Settings::values.resolution_factor =
-        static_cast<u16>(qt_config->value("resolution_factor", 1).toInt());
-    Settings::values.use_frame_limit = qt_config->value("use_frame_limit", true).toBool();
-    Settings::values.frame_limit = qt_config->value("frame_limit", 100).toInt();
-    Settings::values.bg_red = qt_config->value("bg_red", 0.0).toFloat();
-    Settings::values.bg_green = qt_config->value("bg_green", 0.0).toFloat();
-    Settings::values.bg_blue = qt_config->value("bg_blue", 0.0).toFloat();
-    Settings::values.enable_shadows = qt_config->value("enable_shadows", true).toBool();
-    Settings::values.clear_cache_secs = qt_config->value("clear_cache_secs", 30).toInt();
-    qt_config->endGroup();
-
-    qt_config->beginGroup("Layout");
-    Settings::values.layout_option =
-        static_cast<Settings::LayoutOption>(qt_config->value("layout_option").toInt());
-    Settings::values.swap_screen = qt_config->value("swap_screen", false).toBool();
-    Settings::values.custom_layout = qt_config->value("custom_layout", false).toBool();
-    Settings::values.custom_top_left = qt_config->value("custom_top_left", 0).toInt();
-    Settings::values.custom_top_top = qt_config->value("custom_top_top", 0).toInt();
-    Settings::values.custom_top_right = qt_config->value("custom_top_right", 400).toInt();
-    Settings::values.custom_top_bottom = qt_config->value("custom_top_bottom", 240).toInt();
-    Settings::values.custom_bottom_left = qt_config->value("custom_bottom_left", 40).toInt();
-    Settings::values.custom_bottom_top = qt_config->value("custom_bottom_top", 240).toInt();
-    Settings::values.custom_bottom_right = qt_config->value("custom_bottom_right", 360).toInt();
-    Settings::values.custom_bottom_bottom = qt_config->value("custom_bottom_bottom", 480).toInt();
+    Settings::values.use_hw_shaders = qt_config->value("use_hw_shaders", true).toBool();
+    Settings::values.accurate_shaders = qt_config->value("accurate_shaders", true).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");
-    Settings::values.enable_audio_stretching =
-        qt_config->value("enable_audio_stretching", true).toBool();
     Settings::values.output_device =
         qt_config->value("output_device", "auto").toString().toStdString();
     Settings::values.input_device =
@@ -181,7 +134,6 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Data Storage");
-    Settings::values.use_virtual_sd = qt_config->value("use_virtual_sd", true).toBool();
     Settings::values.sdmc_dir = qt_config->value("sdmc_dir", "").toString().toStdString();
     qt_config->endGroup();
 
@@ -209,15 +161,6 @@ void Config::ReadValues() {
 
     qt_config->beginGroup("UI");
     UISettings::values.theme = qt_config->value("theme", UISettings::themes[0].second).toString();
-
-    qt_config->beginGroup("UILayout");
-    UISettings::values.geometry = qt_config->value("geometry").toByteArray();
-    UISettings::values.state = qt_config->value("state").toByteArray();
-    UISettings::values.renderwindow_geometry =
-        qt_config->value("geometryRenderWindow").toByteArray();
-    UISettings::values.gamelist_header_state =
-        qt_config->value("gameListHeaderState").toByteArray();
-    qt_config->endGroup();
 
     qt_config->beginGroup("Paths");
     int size{qt_config->beginReadArray("gamedirs")};
@@ -261,11 +204,6 @@ void Config::ReadValues() {
     }
     qt_config->endGroup();
 
-    UISettings::values.single_window_mode = qt_config->value("singleWindowMode", true).toBool();
-    UISettings::values.fullscreen = qt_config->value("fullscreen", false).toBool();
-    UISettings::values.display_titlebar = qt_config->value("displayTitleBars", true).toBool();
-    UISettings::values.show_filter_bar = qt_config->value("showFilterBar", true).toBool();
-    UISettings::values.show_status_bar = qt_config->value("showStatusBar", true).toBool();
     UISettings::values.show_console = qt_config->value("showConsole", false).toBool();
 
     qt_config->beginGroup("Multiplayer");
@@ -308,47 +246,12 @@ void Config::SaveValues() {
     qt_config->setValue("udp_pad_index", Settings::values.udp_pad_index);
     qt_config->endGroup();
 
-    qt_config->beginGroup("Core");
-    qt_config->setValue("keyboard_mode", static_cast<int>(Settings::values.keyboard_mode));
-    qt_config->endGroup();
-
-    qt_config->beginGroup("LLE");
-    for (const auto& service_module : Settings::values.lle_modules) {
-        qt_config->setValue(QString::fromStdString(service_module.first), service_module.second);
-    }
-    qt_config->endGroup();
-
     qt_config->beginGroup("Renderer");
-    qt_config->setValue("use_hw_shader", Settings::values.use_hw_shader);
-    qt_config->setValue("shaders_accurate_gs", Settings::values.shaders_accurate_gs);
-    qt_config->setValue("shaders_accurate_mul", Settings::values.shaders_accurate_mul);
-    qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
-    qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
-    qt_config->setValue("frame_limit", Settings::values.frame_limit);
-    qt_config->setValue("clear_cache_secs", Settings::values.clear_cache_secs);
-    // Cast to double because Qt's written float values are not human-readable
-    qt_config->setValue("bg_red", (double)Settings::values.bg_red);
-    qt_config->setValue("bg_green", (double)Settings::values.bg_green);
-    qt_config->setValue("bg_blue", (double)Settings::values.bg_blue);
-    qt_config->setValue("enable_shadows", Settings::values.enable_shadows);
-    qt_config->endGroup();
-
-    qt_config->beginGroup("Layout");
-    qt_config->setValue("layout_option", static_cast<int>(Settings::values.layout_option));
-    qt_config->setValue("swap_screen", Settings::values.swap_screen);
-    qt_config->setValue("custom_layout", Settings::values.custom_layout);
-    qt_config->setValue("custom_top_left", Settings::values.custom_top_left);
-    qt_config->setValue("custom_top_top", Settings::values.custom_top_top);
-    qt_config->setValue("custom_top_right", Settings::values.custom_top_right);
-    qt_config->setValue("custom_top_bottom", Settings::values.custom_top_bottom);
-    qt_config->setValue("custom_bottom_left", Settings::values.custom_bottom_left);
-    qt_config->setValue("custom_bottom_top", Settings::values.custom_bottom_top);
-    qt_config->setValue("custom_bottom_right", Settings::values.custom_bottom_right);
-    qt_config->setValue("custom_bottom_bottom", Settings::values.custom_bottom_bottom);
+    qt_config->setValue("use_hw_shaders", Settings::values.use_hw_shaders);
+    qt_config->setValue("accurate_shaders", Settings::values.accurate_shaders);
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");
-    qt_config->setValue("enable_audio_stretching", Settings::values.enable_audio_stretching);
     qt_config->setValue("output_device", QString::fromStdString(Settings::values.output_device));
     qt_config->setValue("input_device", QString::fromStdString(Settings::values.input_device));
     qt_config->endGroup();
@@ -370,7 +273,6 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Data Storage");
-    qt_config->setValue("use_virtual_sd", Settings::values.use_virtual_sd);
     qt_config->setValue("sdmc_dir", QString::fromStdString(Settings::values.sdmc_dir));
     qt_config->endGroup();
 
@@ -394,15 +296,6 @@ void Config::SaveValues() {
 
     qt_config->beginGroup("UI");
     qt_config->setValue("theme", UISettings::values.theme);
-    qt_config->setValue("screenshot_resolution_factor",
-                        UISettings::values.screenshot_resolution_factor);
-
-    qt_config->beginGroup("UILayout");
-    qt_config->setValue("geometry", UISettings::values.geometry);
-    qt_config->setValue("state", UISettings::values.state);
-    qt_config->setValue("geometryRenderWindow", UISettings::values.renderwindow_geometry);
-    qt_config->setValue("gameListHeaderState", UISettings::values.gamelist_header_state);
-    qt_config->endGroup();
 
     qt_config->beginGroup("Paths");
     qt_config->beginWriteArray("gamedirs");
@@ -424,11 +317,6 @@ void Config::SaveValues() {
     }
     qt_config->endGroup();
 
-    qt_config->setValue("singleWindowMode", UISettings::values.single_window_mode);
-    qt_config->setValue("fullscreen", UISettings::values.fullscreen);
-    qt_config->setValue("displayTitleBars", UISettings::values.display_titlebar);
-    qt_config->setValue("showFilterBar", UISettings::values.show_filter_bar);
-    qt_config->setValue("showStatusBar", UISettings::values.show_status_bar);
     qt_config->setValue("showConsole", UISettings::values.show_console);
 
     qt_config->beginGroup("Multiplayer");

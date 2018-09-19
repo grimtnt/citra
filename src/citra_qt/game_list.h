@@ -23,7 +23,6 @@ class QModelIndex;
 class QStandardItem;
 class QStandardItemModel;
 class QTreeView;
-class QToolButton;
 class QVBoxLayout;
 
 enum class GameListOpenTarget { SAVE_DATA = 0, EXT_DATA = 1, APPLICATION = 2, UPDATE_DATA = 3 };
@@ -45,15 +44,9 @@ public:
     ~GameList() override;
 
     QString getLastFilterResultItem();
-    void clearFilter();
-    void setFilterFocus();
-    void setFilterVisible(bool visibility);
     bool isEmpty();
 
     void PopulateAsync(QList<UISettings::GameDir>& game_dirs);
-
-    void SaveInterfaceLayout();
-    void LoadInterfaceLayout();
 
     QStandardItemModel* GetModel() const;
 
@@ -72,7 +65,6 @@ signals:
 private slots:
     void onItemExpanded(const QModelIndex& item);
     void onTextChanged(const QString& newText);
-    void onFilterCloseClicked();
     void onUpdateThemedIcons();
 
 private:

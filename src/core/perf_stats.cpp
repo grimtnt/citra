@@ -75,12 +75,8 @@ double PerfStats::GetLastFrameTimeScale() {
 }
 
 void FrameLimiter::DoFrameLimiting(u64 current_system_time_us) {
-    if (!Settings::values.use_frame_limit) {
-        return;
-    }
-
     auto now{Clock::now()};
-    double sleep_scale{Settings::values.frame_limit / 100.0};
+    double sleep_scale{100 / 100.0};
 
     // Max lag caused by slow frames. Shouldn't be more than the length of a frame at the current
     // speed percent or it will clamp too much and prevent this from properly limiting to that

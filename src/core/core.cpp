@@ -153,12 +153,8 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     CoreTiming::Init();
 
     cpu_core = std::make_unique<CPU>();
-
     qt_callbacks = std::make_unique<QtCallbacks>();
-
     dsp_core = std::make_unique<AudioCore::DspHle>();
-    dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
-
     rpc_server = std::make_unique<RPC::RPCServer>();
     service_manager = std::make_shared<Service::SM::ServiceManager>();
     shared_page_handler = std::make_shared<SharedPage::Handler>();

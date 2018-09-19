@@ -48,7 +48,6 @@ public:
     bool AccelerateDisplay(const GPU::Regs::FramebufferConfig& config, PAddr framebuffer_addr,
                            u32 pixel_stride, ScreenInfo& screen_info);
     bool AccelerateDrawBatch(bool is_indexed);
-    void SyncSettings();
 
 private:
     struct SamplerInfo {
