@@ -97,8 +97,8 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x0004000000116700, Compatibility::Great},   // Cut the Rope: Triple Treat
 
     // EUR (System)
-    {0x0004001000022A00, Compatibility::IntroMenu}, // ???
-    {0x0004001000022700, Compatibility::Great},     // Mii Maker
+    {0x0004001000022A00, Compatibility::WontBoot}, // ???
+    {0x0004001000022700, Compatibility::Great},    // Mii Maker
 
     // EUR (Demos)
     {0x00040002001CB201, Compatibility::Perfect}, // Captain Toad Demo

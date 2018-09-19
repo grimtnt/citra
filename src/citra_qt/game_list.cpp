@@ -282,6 +282,10 @@ GameList::GameList(GMainWindow* parent) : QWidget{parent} {
     item_model->setHeaderData(COLUMN_REGION, Qt::Horizontal, "Region");
     item_model->setHeaderData(COLUMN_FILE_TYPE, Qt::Horizontal, "File type");
     item_model->setHeaderData(COLUMN_SIZE, Qt::Horizontal, "Size");
+
+    tree_view->setColumnWidth(COLUMN_NAME, 500);
+    tree_view->setColumnWidth(COLUMN_COMPATIBILITY, 115);
+
     item_model->setSortRole(GameListItemPath::TitleRole);
 
     connect(main_window, &GMainWindow::UpdateThemedIcons, this, &GameList::onUpdateThemedIcons);
@@ -361,6 +365,7 @@ void GameList::DonePopulating(QStringList watch_list) {
     if (isEmpty()) {
         emit ShowList(false);
     } else {
+        item_model->sort(COLUMN_NAME);
         item_model->invisibleRootItem()->appendRow(new GameListAddDir());
         emit ShowList(true);
     }
