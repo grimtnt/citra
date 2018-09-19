@@ -45,6 +45,7 @@
 #include "common/logging/text_formatter.h"
 #include "common/scm_rev.h"
 #include "common/scope_exit.h"
+#include "core/3ds.h"
 #include "core/core.h"
 #include "core/file_sys/archive_extsavedata.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
@@ -513,6 +514,9 @@ void GMainWindow::BootGame(const QString& filename) {
 
     render_window->show();
     render_window->setFocus();
+
+    showNormal();
+    resize(Core::kScreensWidth, Core::kScreensHeight);
 
     emulation_running = true;
     OnStartGame();
