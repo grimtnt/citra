@@ -380,7 +380,7 @@ void GameList::DonePopulating(QStringList watch_list) {
     // Also artificially caps the watcher to a certain number of directories
     constexpr int LIMIT_WATCH_DIRECTORIES{5000};
     constexpr int SLICE_SIZE{25};
-    int len = std::min(watch_list.length(), LIMIT_WATCH_DIRECTORIES);
+    int len{std::min(watch_list.length(), LIMIT_WATCH_DIRECTORIES)};
     for (int i{}; i < len; i += SLICE_SIZE) {
         watcher->addPaths(watch_list.mid(i, i + SLICE_SIZE));
         QCoreApplication::processEvents();

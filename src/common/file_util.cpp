@@ -615,8 +615,8 @@ static const std::string GetDataDirectory() {
 #endif
 
 // Returns a string with a Citra data dir or file in the user's home
-// directory. To be used in "multi-user" mode (that is, installed).
-const std::string& GetUserPath(const unsigned int DirIDX, const std::string& newPath) {
+// directory.
+const std::string& GetUserPath(const unsigned int DirIDX) {
     static std::string paths[NUM_PATH_INDICES];
 
     // Set up all paths and files on the first run
@@ -634,28 +634,6 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
         paths[D_SYSDATA_IDX] = paths[D_USER_IDX] + SYSDATA_DIR DIR_SEP;
         paths[D_LOGS_IDX] = paths[D_USER_IDX] + LOG_DIR DIR_SEP;
         paths[D_SEEDS_IDX] = paths[D_USER_IDX] + SEEDS_DIR DIR_SEP;
-    }
-
-    if (!newPath.empty()) {
-        if (!FileUtil::IsDirectory(newPath)) {
-            LOG_ERROR(Common_Filesystem, "Invalid path specified {}", newPath);
-            return paths[DirIDX];
-        } else {
-            paths[DirIDX] = newPath;
-        }
-
-        switch (DirIDX) {
-        case D_ROOT_IDX:
-            paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
-            break;
-
-        case D_USER_IDX:
-            paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
-            paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
-            paths[D_SDMC_IDX] = paths[D_USER_IDX] + SDMC_DIR DIR_SEP;
-            paths[D_NAND_IDX] = paths[D_USER_IDX] + NAND_DIR DIR_SEP;
-            break;
-        }
     }
 
     return paths[DirIDX];
