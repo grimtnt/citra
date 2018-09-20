@@ -52,7 +52,7 @@ void Module::Interface::StartTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 1, 0}; // 0x00050040
     u16 in_val{rp.Pop<u16>()};
 
-    ResultCode result = RESULT_SUCCESS;
+    ResultCode result{RESULT_SUCCESS};
 
     // TODO(shinyquagsire23): Implement NFC tag detection, for now stub result
     result = ResultCode(ErrCodes::CommandInvalidForState, ErrorModule::NFC,
