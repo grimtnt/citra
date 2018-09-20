@@ -16,6 +16,7 @@
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QThreadPool>
+#include <QToolButton>
 #include <QTreeView>
 #include "citra_qt/game_list.h"
 #include "citra_qt/game_list_p.h"
@@ -138,10 +139,19 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
     edit_filter->setClearButtonEnabled(true);
     connect(edit_filter, &QLineEdit::textChanged, parent, &GameList::onTextChanged);
     label_filter_result = new QLabel;
+    button_filter_close = new QToolButton(this);
+    button_filter_close->setText("X");
+    button_filter_close->setCursor(Qt::ArrowCursor);
+    button_filter_close->setStyleSheet("QToolButton{ border: none; padding: 0px; color: "
+                                       "#000000; font-weight: bold; background: #F0F0F0; }"
+                                       "QToolButton:hover{ border: none; padding: 0px; color: "
+                                       "#EEEEEE; font-weight: bold; background: #E81123}");
+    connect(button_filter_close, &QToolButton::clicked, parent, &GameList::onFilterCloseClicked);
     layout_filter->setSpacing(10);
     layout_filter->addWidget(label_filter);
     layout_filter->addWidget(edit_filter);
     layout_filter->addWidget(label_filter_result);
+    layout_filter->addWidget(button_filter_close);
     setLayout(layout_filter);
 }
 
@@ -166,9 +176,9 @@ static bool ContainsAllWords(const QString& haystack, const QString& userinput) 
 void GameList::onItemExpanded(const QModelIndex& item) {
     // The click should still register in the GameListItemPath item no matter which column was
     // clicked
-    int row{item_model->itemFromIndex(item)->row()};
-    QStandardItem* child{item_model->invisibleRootItem()->child(row, COLUMN_NAME)};
-    GameListItemType type{static_cast<GameListItemType>(child->type())};
+    int row = item_model->itemFromIndex(item)->row();
+    QStandardItem* child = item_model->invisibleRootItem()->child(row, COLUMN_NAME);
+    GameListItemType type = static_cast<GameListItemType>(child->type());
     if (type == GameListItemType::CustomDir || type == GameListItemType::InstalledDir ||
         type == GameListItemType::SystemDir)
         child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()->expanded =
@@ -177,9 +187,9 @@ void GameList::onItemExpanded(const QModelIndex& item) {
 
 // Event in order to filter the gamelist after editing the searchfield
 void GameList::onTextChanged(const QString& newText) {
-    int folderCount{tree_view->model()->rowCount()};
-    QString edit_filter_text{newText.toLower()};
-    QStandardItem* folder{};
+    int folderCount = tree_view->model()->rowCount();
+    QString edit_filter_text = newText.toLower();
+    QStandardItem* folder;
     int childrenTotal{};
 
     // If the searchfield is empty every item is visible
@@ -187,8 +197,8 @@ void GameList::onTextChanged(const QString& newText) {
     if (edit_filter_text.isEmpty()) {
         for (int i{}; i < folderCount; ++i) {
             folder = item_model->item(i, 0);
-            QModelIndex folder_index{folder->index()};
-            int childrenCount{folder->rowCount()};
+            QModelIndex folder_index = folder->index();
+            int childrenCount = folder->rowCount();
             for (int j{}; j < childrenCount; ++j) {
                 ++childrenTotal;
                 tree_view->setRowHidden(j, folder_index, false);
@@ -255,6 +265,10 @@ void GameList::onUpdateThemedIcons() {
     }
 }
 
+void GameList::onFilterCloseClicked() {
+    main_window->filterBarSetChecked(false);
+}
+
 GameList::GameList(GMainWindow* parent) : QWidget{parent} {
     watcher = new QFileSystemWatcher(this);
     connect(watcher, &QFileSystemWatcher::directoryChanged, this, &GameList::RefreshGameDirectory);
@@ -307,6 +321,20 @@ GameList::GameList(GMainWindow* parent) : QWidget{parent} {
 
 GameList::~GameList() {
     emit ShouldCancelWorker();
+}
+
+void GameList::setFilterFocus() {
+    if (tree_view->model()->rowCount() > 0) {
+        search_field->setFocus();
+    }
+}
+
+void GameList::setFilterVisible(bool visibility) {
+    search_field->setVisible(visibility);
+}
+
+void GameList::clearFilter() {
+    search_field->clear();
 }
 
 void GameList::AddDirEntry(GameListDir* entry_items) {
@@ -568,6 +596,21 @@ void GameList::PopulateAsync(QList<UISettings::GameDir>& game_dirs) {
 
     QThreadPool::globalInstance()->start(worker);
     current_worker = std::move(worker);
+}
+
+void GameList::SaveInterfaceLayout() {
+    UISettings::values.gamelist_header_state = tree_view->header()->saveState();
+}
+
+void GameList::LoadInterfaceLayout() {
+    auto header = tree_view->header();
+    if (!header->restoreState(UISettings::values.gamelist_header_state)) {
+        // We are using the name column to display icons and titles
+        // so make it as large as possible as default.
+        header->resizeSection(COLUMN_NAME, header->width());
+    }
+
+    item_model->sort(header->sortIndicatorSection(), header->sortIndicatorOrder());
 }
 
 const QStringList GameList::supported_file_extensions = {"3ds", "3dsx", "elf", "axf",

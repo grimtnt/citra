@@ -505,6 +505,7 @@ class QHBoxLayout;
 class QTreeView;
 class QLabel;
 class QLineEdit;
+class QToolButton;
 
 class GameListSearchField : public QWidget {
     Q_OBJECT
@@ -538,4 +539,5 @@ private:
     QLabel* label_filter{};
     QLineEdit* edit_filter{};
     QLabel* label_filter_result{};
+    QToolButton* button_filter_close{};
 };

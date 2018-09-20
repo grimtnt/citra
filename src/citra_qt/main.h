@@ -40,6 +40,7 @@ class GMainWindow : public QMainWindow {
     static const int max_recent_files_item{10};
 
 public:
+    void filterBarSetChecked(bool state);
     void UpdateUITheme();
 
     GMainWindow();
@@ -81,6 +82,7 @@ private:
     Q_INVOKABLE void SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
                                    std::u16string& text);
     Q_INVOKABLE void Update3D();
+    void SyncMenuUISettings();
     void RestoreUIState();
 
     void ConnectWidgetEvents();
@@ -124,7 +126,6 @@ private slots:
     void OnStartGame();
     void OnPauseGame();
     void OnStopGame();
-
     /// Called whenever a user selects a game in the game list widget.
     void OnGameListLoadFile(QString game_path);
     void OnGameListOpenFolder(u64 program_id, GameListOpenTarget target);
@@ -141,12 +142,20 @@ private slots:
     void OnSetPlayCoins();
     void OnCheats();
     void OnControlPanel();
+    void OnToggleFilterBar();
+    void OnDisplayTitleBars(bool);
+    void ToggleFullscreen();
+    void ChangeScreenLayout();
+    void ToggleScreenLayout();
+    void OnSwapScreens();
+    void ShowFullscreen();
+    void HideFullscreen();
+    void ToggleWindowMode();
     void OnRecordMovie();
     void OnPlayMovie();
     void OnStopRecordingPlayback();
     void OnCaptureScreenshot();
     void OnCoreError(Core::System::ResultStatus, const std::string&);
-
     /// Called whenever a user selects Help->About Citra
     void OnMenuAboutCitra();
 

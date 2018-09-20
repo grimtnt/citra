@@ -145,7 +145,7 @@ void Renderer::SwapBuffers() {
         state.draw.read_framebuffer = state.draw.draw_framebuffer = screenshot_framebuffer.handle;
         state.Apply();
 
-        Layout::FramebufferLayout layout{Layout::GetLayout(400, 480)};
+        Layout::FramebufferLayout layout{VideoCore::g_screenshot_framebuffer_layout};
 
         GLuint renderbuffer;
         glGenRenderbuffers(1, &renderbuffer);
@@ -407,6 +407,12 @@ void Renderer::DrawSingleScreenRotated(const ScreenInfo& screen_info, float x, f
  * Draws the emulated screens to the emulator window.
  */
 void Renderer::DrawScreens(const Layout::FramebufferLayout& layout) {
+    if (VideoCore::g_renderer_bg_color_update_requested.exchange(false)) {
+        // Update background color before drawing
+        glClearColor(Settings::values.bg_red, Settings::values.bg_green, Settings::values.bg_blue,
+                     0.0f);
+    }
+
     const auto& top_screen{layout.top_screen};
     const auto& bottom_screen{layout.bottom_screen};
 

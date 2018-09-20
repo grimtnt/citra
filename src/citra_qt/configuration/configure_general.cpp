@@ -40,12 +40,15 @@ ConfigureGeneral::~ConfigureGeneral() {}
 
 void ConfigureGeneral::setConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
+    ui->combobox_keyboard_mode->setCurrentIndex(static_cast<int>(Settings::values.keyboard_mode));
     ui->toggle_console->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_console->setChecked(UISettings::values.show_console);
     ui->log_filter_edit->setText(QString::fromStdString(Settings::values.log_filter));
 }
 
 void ConfigureGeneral::applyConfiguration() {
+    Settings::values.keyboard_mode =
+        static_cast<Settings::KeyboardMode>(ui->combobox_keyboard_mode->currentIndex());
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     UISettings::values.show_console = ui->toggle_console->isChecked();

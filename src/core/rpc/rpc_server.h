@@ -34,6 +34,8 @@ private:
     void HandlePause(Packet& packet);
     void HandleResume(Packet& packet);
     void HandleRestart(Packet& packet);
+    void HandleSetSpeedLimit(Packet& packet, u16 speed_limit);
+    void HandleSetBackgroundColor(Packet& packet, float r, float g, float b);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
     void HandleRequestsLoop();

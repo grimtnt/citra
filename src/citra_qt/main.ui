@@ -79,6 +79,30 @@
     <addaction name="action_Control_Panel"/>
     <addaction name="action_Cheats"/>
    </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="menu_Screen_Layout">
+     <property name="title">
+      <string>Screen Layout</string>
+     </property>
+     <addaction name="action_Screen_Layout_Default"/>
+     <addaction name="action_Screen_Layout_Single_Screen"/>
+     <addaction name="action_Screen_Layout_Medium_Screen"/>
+     <addaction name="action_Screen_Layout_Large_Screen"/>
+     <addaction name="action_Screen_Layout_Side_by_Side"/>
+     <addaction name="separator"/>
+     <addaction name="action_Screen_Layout_Swap_Screens"/>
+    </widget>
+    <addaction name="action_Fullscreen"/>
+    <addaction name="action_Single_Window_Mode"/>
+    <addaction name="menu_Screen_Layout"/>
+    <addaction name="separator"/>
+    <addaction name="action_Display_Dock_Widget_Headers"/>
+    <addaction name="action_Show_Filter_Bar"/>
+    <addaction name="action_Show_Status_Bar"/>
+   </widget>
    <widget class="QMenu" name="menu_Multiplayer">
     <property name="enabled">
      <bool>true</bool>
@@ -115,6 +139,7 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Emulation"/>
+   <addaction name="menu_View"/>
    <addaction name="menu_Multiplayer"/>
    <addaction name="menu_Tools"/>
    <addaction name="menu_Help"/>
@@ -163,6 +188,14 @@
     <string>About Citra</string>
    </property>
   </action>
+  <action name="action_Single_Window_Mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single Window Mode</string>
+   </property>
+  </action>
   <action name="action_Configuration">
    <property name="text">
     <string>Configuration</string>
@@ -174,6 +207,38 @@
    </property>
    <property name="text">
     <string>Cheats</string>
+   </property>
+  </action>
+  <action name="action_Display_Dock_Widget_Headers">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Dock Widget Headers</string>
+   </property>
+  </action>
+  <action name="action_Show_Filter_Bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Filter Bar</string>
+   </property>
+  </action>
+  <action name="action_Show_Status_Bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Status Bar</string>
+   </property>
+  </action>
+  <action name="action_View_Lobby">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Browse Public Game Lobby</string>
    </property>
   </action>
   <action name="action_Start_Room">
@@ -195,6 +260,70 @@
   <action name="action_Connect_To_Room">
    <property name="text">
     <string>Connect To Room</string>
+   </property>
+  </action>
+  <action name="action_Show_Room">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show Current Room</string>
+   </property>
+  </action>
+  <action name="action_Fullscreen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Fullscreen</string>
+   </property>
+  </action>
+  <action name="action_Screen_Layout_Default">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Default</string>
+   </property>
+  </action>
+  <action name="action_Screen_Layout_Single_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single Screen</string>
+   </property>
+  </action>
+  <action name="action_Screen_Layout_Medium_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Medium Screen</string>
+   </property>
+  </action>
+  <action name="action_Screen_Layout_Large_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Large Screen</string>
+   </property>
+  </action>
+  <action name="action_Screen_Layout_Side_by_Side">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Side by Side</string>
+   </property>
+  </action>
+  <action name="action_Screen_Layout_Swap_Screens">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Swap Screens</string>
    </property>
   </action>
   <action name="action_Control_Panel">

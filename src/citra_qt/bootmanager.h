@@ -61,6 +61,11 @@ public:
     void DoneCurrent() override;
     void PollEvents() override;
 
+    void BackupGeometry();
+    void RestoreGeometry();
+    void restoreGeometry(const QByteArray& geometry); // overridden
+    QByteArray saveGeometry();                        // overridden
+
     qreal windowPixelRatio();
 
     void closeEvent(QCloseEvent* event) override;
@@ -78,7 +83,7 @@ public:
 
     void InitRenderTarget();
 
-    void CaptureScreenshot(const QString& screenshot_path);
+    void CaptureScreenshot(u16 res_scale, const QString& screenshot_path);
 
 public slots:
     void moveContext(); // overridden
@@ -96,6 +101,8 @@ private:
         const std::pair<unsigned, unsigned>& minimal_size) override;
 
     GGLWidgetInternal* child{};
+
+    QByteArray geometry;
 
     EmuThread* emu_thread{};
 

@@ -1003,9 +1003,11 @@ void main() {
     cache_clear_event = CoreTiming::RegisterEvent(
         "RasterizerCache::cache_clear_event", [](u64 userdata, s64 cycles_late) {
             g_rasterizer_cache->Clear();
-            CoreTiming::ScheduleEvent(msToCycles(1000 * 30), cache_clear_event);
+            CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
+                                      cache_clear_event);
         });
-    CoreTiming::ScheduleEvent(msToCycles(1000 * 30), cache_clear_event);
+    CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
+                              cache_clear_event);
 }
 
 RasterizerCache::~RasterizerCache() {
@@ -1339,6 +1341,16 @@ SurfaceSurfaceRect_Tuple RasterizerCache::GetFramebufferSurfaces(
     const auto& regs{Pica::g_state.regs};
     const auto& config{regs.framebuffer.framebuffer};
 
+    // update resolution_scale_factor and reset cache if changed
+    static u16 resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
+    if (resolution_scale_factor != VideoCore::GetResolutionScaleFactor()) {
+        resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
+        FlushAll();
+        while (!surface_cache.empty())
+            UnregisterSurface(*surface_cache.begin()->second.begin());
+        texture_cube_cache.clear();
+    }
+
     MathUtil::Rectangle<u32> viewport_clamped{
         static_cast<u32>(std::clamp(viewport_rect.left, 0, static_cast<s32>(config.GetWidth()))),
         static_cast<u32>(std::clamp(viewport_rect.top, 0, static_cast<s32>(config.GetHeight()))),
@@ -1349,7 +1361,7 @@ SurfaceSurfaceRect_Tuple RasterizerCache::GetFramebufferSurfaces(
     // get color and depth surfaces
     SurfaceParams color_params{};
     color_params.is_tiled = true;
-    color_params.res_scale = 1;
+    color_params.res_scale = resolution_scale_factor;
     color_params.width = config.GetWidth();
     color_params.height = config.GetHeight();
     SurfaceParams depth_params{color_params};

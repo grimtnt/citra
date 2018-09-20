@@ -25,12 +25,60 @@ struct FramebufferLayout {
 };
 
 /**
- * Factory method for constructing a FramebufferLayout
+ * Factory method for constructing a default FramebufferLayout
  * @param width Window framebuffer width in pixels
  * @param height Window framebuffer height in pixels
  * @param is_swapped if true, the bottom screen will be displayed above the top screen
  * @return Newly created FramebufferLayout object with default screen regions initialized
  */
-FramebufferLayout GetLayout(unsigned width, unsigned height);
+FramebufferLayout DefaultFrameLayout(unsigned width, unsigned height, bool is_swapped);
+
+/**
+ * Factory method for constructing a FramebufferLayout with only the top or bottom screen
+ * @param width Window framebuffer width in pixels
+ * @param height Window framebuffer height in pixels
+ * @param is_swapped if true, the bottom screen will be displayed (and the top won't be displayed)
+ * @return Newly created FramebufferLayout object with default screen regions initialized
+ */
+FramebufferLayout SingleFrameLayout(unsigned width, unsigned height, bool is_swapped);
+
+/**
+ * Factory method for constructing a Frame with the a 4x size Top screen with a 1x size bottom
+ * screen on the right
+ * This is useful in particular because it matches well with a 1920x1080 resolution monitor
+ * @param width Window framebuffer width in pixels
+ * @param height Window framebuffer height in pixels
+ * @param is_swapped if true, the bottom screen will be the large display
+ * @return Newly created FramebufferLayout object with default screen regions initialized
+ */
+FramebufferLayout LargeFrameLayout(unsigned width, unsigned height, bool is_swapped);
+
+FramebufferLayout MediumFrameLayout(unsigned width, unsigned height, bool is_swapped);
+
+/**
+ * Factory method for constructing a Frame with the Top screen and bottom
+ * screen side by side
+ * This is useful for devices with small screens, like the GPDWin
+ * @param width Window framebuffer width in pixels
+ * @param height Window framebuffer height in pixels
+ * @param is_swapped if true, the bottom screen will be the left display
+ * @return Newly created FramebufferLayout object with default screen regions initialized
+ */
+FramebufferLayout SideFrameLayout(unsigned width, unsigned height, bool is_swapped);
+
+/**
+ * Factory method for constructing a custom FramebufferLayout
+ * @param width Window framebuffer width in pixels
+ * @param height Window framebuffer height in pixels
+ * @return Newly created FramebufferLayout object with default screen regions initialized
+ */
+FramebufferLayout CustomFrameLayout(unsigned width, unsigned height, bool swapped);
+
+/**
+ * Convenience method to get frame layout by resolution scale
+ * Read from the current settings to determine which layout to use.
+ * @param res_scale resolution scale factor
+ */
+FramebufferLayout FrameLayoutFromResolutionScale(u16 res_scale);
 
 } // namespace Layout

@@ -21,6 +21,14 @@ enum class InitClock {
     FixedTime = 1,
 };
 
+enum class LayoutOption {
+    Default,
+    SingleScreen,
+    MediumScreen,
+    LargeScreen,
+    SideScreen,
+};
+
 namespace NativeButton {
 enum Values {
     A,
@@ -110,7 +118,14 @@ struct Values {
     u16 udp_input_port;
     u8 udp_pad_index;
 
+    // Core
+    KeyboardMode keyboard_mode;
+
+    // LLE
+    std::unordered_map<std::string, bool> lle_modules;
+
     // Data Storage
+    bool use_virtual_sd;
     std::string sdmc_dir;
 
     // System
@@ -120,13 +135,36 @@ struct Values {
     bool memory_developer_mode;
 
     // Renderer
-    bool use_hw_shaders;
-    bool accurate_shaders;
+    bool use_hw_shader;
+    bool shaders_accurate_gs;
+    bool shaders_accurate_mul;
+    u16 resolution_factor;
+    bool use_frame_limit;
+    u16 frame_limit;
+    bool enable_shadows;
+    int clear_cache_secs;
+
+    LayoutOption layout_option;
+    bool swap_screen;
+    bool custom_layout;
+    u16 custom_top_left;
+    u16 custom_top_top;
+    u16 custom_top_right;
+    u16 custom_top_bottom;
+    u16 custom_bottom_left;
+    u16 custom_bottom_top;
+    u16 custom_bottom_right;
+    u16 custom_bottom_bottom;
+
+    float bg_red;
+    float bg_green;
+    float bg_blue;
 
     // Logging
     std::string log_filter;
 
     // Audio
+    bool enable_audio_stretching;
     std::string output_device;
     std::string input_device;
 

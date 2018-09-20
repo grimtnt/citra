@@ -22,5 +22,6 @@ public:
 
 private:
     void setConfiguration();
+    QColor bg_color;
     std::unique_ptr<Ui::ConfigureGraphics> ui;
 };

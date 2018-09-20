@@ -399,6 +399,16 @@ void DspHle::UpdateSink() {
         [this](s16* buffer, std::size_t num_frames) { OutputCallback(buffer, num_frames); });
 }
 
+void DspHle::EnableStretching(bool enable) {
+    if (perform_time_stretching == enable)
+        return;
+
+    if (!enable) {
+        flushing_time_stretcher = true;
+    }
+    perform_time_stretching = enable;
+}
+
 void DspHle::OutputFrame(StereoFrame16& frame) {
     if (!sink)
         return;
@@ -408,9 +418,18 @@ void DspHle::OutputFrame(StereoFrame16& frame) {
 
 void DspHle::OutputCallback(s16* buffer, size_t num_frames) {
     size_t frames_written{};
-    const std::vector<s16> in{fifo.Pop()};
-    const size_t num_in{in.size() / 2};
-    frames_written = time_stretcher.Process(in.data(), num_in, buffer, num_frames);
+    if (perform_time_stretching) {
+        const std::vector<s16> in{fifo.Pop()};
+        const size_t num_in{in.size() / 2};
+        frames_written = time_stretcher.Process(in.data(), num_in, buffer, num_frames);
+    } else if (flushing_time_stretcher) {
+        time_stretcher.Flush();
+        frames_written = time_stretcher.Process(nullptr, 0, buffer, num_frames);
+        frames_written += fifo.Pop(buffer, num_frames - frames_written);
+        flushing_time_stretcher = false;
+    } else {
+        frames_written = fifo.Pop(buffer, num_frames);
+    }
 
     if (frames_written > 0) {
         std::memcpy(&last_frame[0], buffer + 2 * (frames_written - 1), 2 * sizeof(s16));

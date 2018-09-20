@@ -36,6 +36,21 @@ struct GameDir {
 };
 
 struct Values {
+    QByteArray geometry;
+    QByteArray state;
+
+    QByteArray renderwindow_geometry;
+
+    QByteArray gamelist_header_state;
+
+    bool single_window_mode;
+    bool fullscreen;
+    bool display_titlebar;
+    bool show_filter_bar;
+    bool show_status_bar;
+
+    u16 screenshot_resolution_factor;
+
     QList<UISettings::GameDir> game_dirs;
     QStringList recent_files;
 
