@@ -633,9 +633,6 @@ void GMainWindow::BootGame(const QString& filename) {
     render_window->show();
     render_window->setFocus();
 
-    showNormal();
-    resize(Core::kScreensWidth, Core::kScreensHeight);
-
     emulation_running = true;
     if (ui.action_Fullscreen->isChecked()) {
         ShowFullscreen();

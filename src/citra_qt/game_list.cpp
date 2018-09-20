@@ -86,8 +86,8 @@ void GameListSearchField::setFilterResult(int visible, int total) {
     this->visible = visible;
     this->total = total;
 
-    QString result_of_text = "of";
-    QString result_text;
+    QString result_of_text{"of"};
+    QString result_text{};
     if (total == 1) {
         result_text = "result";
     } else {
@@ -101,11 +101,11 @@ QString GameList::getLastFilterResultItem() {
     QStandardItem* folder;
     QStandardItem* child;
     QString file_path;
-    int folderCount = item_model->rowCount();
+    int folderCount{item_model->rowCount()};
     for (int i{}; i < folderCount; ++i) {
         folder = item_model->item(i, 0);
-        QModelIndex folder_index = folder->index();
-        int childrenCount = folder->rowCount();
+        QModelIndex folder_index{folder->index()};
+        int childrenCount{folder->rowCount()};
         for (int j{}; j < childrenCount; ++j) {
             if (!tree_view->isRowHidden(j, folder_index)) {
                 child = folder->child(j, 0);
