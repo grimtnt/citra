@@ -14,11 +14,14 @@ class RequestType(enum.IntEnum):
     TouchState = 4,
     MotionState = 5,
     CircleState = 6,
-    SetGame = 7,
-    SetOverrideControls = 8,
-    Pause = 9,
-    Resume = 10,
-    Restart = 11,
+    SetResolution = 7,
+    SetGame = 8,
+    SetOverrideControls = 9,
+    Pause = 10,
+    Resume = 11,
+    Restart = 12,
+    SetSpeedLimit = 13,
+    SetBackgroundColor = 14
 
 
 CITRA_PORT = "45987"
@@ -122,6 +125,14 @@ class Citra:
         self.socket.send(request)
         self.socket.recv()
 
+    def set_resolution(self, resolution):
+        request_data = struct.pack("IIh", 0, 0, resolution)
+        request, request_id = self._generate_header(
+            RequestType.SetResolution, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
     def set_game(self, path):
         request_data = struct.pack("II", 0, 0)
         request_data += str.encode(path)
@@ -159,6 +170,22 @@ class Citra:
         request_data = struct.pack("II", 0, 0)
         request, request_id = self._generate_header(
             RequestType.Restart, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_speed_limit(self, speed_limit):
+        request_data = struct.pack("IIh", 0, 0, speed_limit)
+        request, request_id = self._generate_header(
+            RequestType.SetSpeedLimit, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def set_background_color(self, r, g, b):
+        request_data = struct.pack("IIfff", 0, 0, r, g, b)
+        request, request_id = self._generate_header(
+            RequestType.SetBackgroundColor, len(request_data))
         request += request_data
         self.socket.send(request)
         self.socket.recv()
