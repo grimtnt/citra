@@ -11,12 +11,10 @@
 #include "core/file_sys/disk_archive.h"
 #include "core/file_sys/errors.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
-ResultVal<std::size_t> DiskFile::Read(const u64 offset, const std::size_t length, u8* buffer) const {
+ResultVal<std::size_t> DiskFile::Read(const u64 offset, const std::size_t length,
+                                      u8* buffer) const {
     if (!mode.read_flag)
         return ERROR_INVALID_OPEN_FLAGS;
 
@@ -25,7 +23,7 @@ ResultVal<std::size_t> DiskFile::Read(const u64 offset, const std::size_t length
 }
 
 ResultVal<std::size_t> DiskFile::Write(const u64 offset, const std::size_t length, const bool flush,
-                                  const u8* buffer) {
+                                       const u8* buffer) {
     if (!mode.write_flag)
         return ERROR_INVALID_OPEN_FLAGS;
 

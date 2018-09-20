@@ -27,7 +27,6 @@ enum {
     D_NAND_IDX,
     D_SYSDATA_IDX,
     D_LOGS_IDX,
-    D_SEEDS_IDX,
     NUM_PATH_INDICES
 };
 

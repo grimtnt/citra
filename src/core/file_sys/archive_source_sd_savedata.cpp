@@ -10,9 +10,6 @@
 #include "core/file_sys/savedata_archive.h"
 #include "core/hle/service/fs/archive.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 namespace {

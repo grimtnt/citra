@@ -179,9 +179,6 @@ struct ExHeader_Header {
 
 static_assert(sizeof(ExHeader_Header) == 0x800, "ExHeader structure size is wrong");
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 /**

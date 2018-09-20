@@ -11,9 +11,6 @@
 #include "core/file_sys/file_backend.h"
 #include "core/loader/loader.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 constexpr u32 CIA_SECTION_ALIGNMENT{0x40};
@@ -114,7 +111,8 @@ Loader::ResultStatus CIAContainer::Load(const std::vector<u8>& file_data) {
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data, std::size_t offset) {
+Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data,
+                                              std::size_t offset) {
     if (header_data.size() - offset < sizeof(Header))
         return Loader::ResultStatus::Error;
 
@@ -123,7 +121,8 @@ Loader::ResultStatus CIAContainer::LoadHeader(const std::vector<u8>& header_data
     return Loader::ResultStatus::Success;
 }
 
-Loader::ResultStatus CIAContainer::LoadTicket(const std::vector<u8>& ticket_data, std::size_t offset) {
+Loader::ResultStatus CIAContainer::LoadTicket(const std::vector<u8>& ticket_data,
+                                              std::size_t offset) {
     return cia_ticket.Load(ticket_data, offset);
 }
 
@@ -132,7 +131,8 @@ Loader::ResultStatus CIAContainer::LoadTitleMetadata(const std::vector<u8>& tmd_
     return cia_tmd.Load(tmd_data, offset);
 }
 
-Loader::ResultStatus CIAContainer::LoadMetadata(const std::vector<u8>& meta_data, std::size_t offset) {
+Loader::ResultStatus CIAContainer::LoadMetadata(const std::vector<u8>& meta_data,
+                                                std::size_t offset) {
     if (meta_data.size() - offset < sizeof(Metadata))
         return Loader::ResultStatus::Error;
 

@@ -9,9 +9,6 @@
 #include "common/logging/log.h"
 #include "core/file_sys/ivfc_archive.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 IVFCArchive::IVFCArchive(std::shared_ptr<RomFSReader> file) : romfs_file{std::move(file)} {}
@@ -90,13 +87,14 @@ IVFCFile::IVFCFile(std::shared_ptr<RomFSReader> file,
     delay_generator = std::move(delay_generator_);
 }
 
-ResultVal<std::size_t> IVFCFile::Read(const u64 offset, const std::size_t length, u8* buffer) const {
+ResultVal<std::size_t> IVFCFile::Read(const u64 offset, const std::size_t length,
+                                      u8* buffer) const {
     LOG_TRACE(Service_FS, "called offset={}, length={}", offset, length);
     return MakeResult<std::size_t>(romfs_file->ReadFile(offset, length, buffer));
 }
 
 ResultVal<std::size_t> IVFCFile::Write(const u64 offset, const std::size_t length, const bool flush,
-                                  const u8* buffer) {
+                                       const u8* buffer) {
     LOG_ERROR(Service_FS, "Attempted to write to IVFC file");
     // TODO(Subv): Find error code
     return MakeResult<std::size_t>(0);
@@ -119,7 +117,8 @@ IVFCFileInMemory::IVFCFileInMemory(std::vector<u8> bytes, u64 offset, u64 size,
     delay_generator = std::move(delay_generator_);
 }
 
-ResultVal<std::size_t> IVFCFileInMemory::Read(const u64 offset, const std::size_t length, u8* buffer) const {
+ResultVal<std::size_t> IVFCFileInMemory::Read(const u64 offset, const std::size_t length,
+                                              u8* buffer) const {
     LOG_TRACE(Service_FS, "called offset={}, length={}", offset, length);
     std::size_t read_length{(std::size_t)std::min((u64)length, data_size - offset)};
 
@@ -127,8 +126,8 @@ ResultVal<std::size_t> IVFCFileInMemory::Read(const u64 offset, const std::size_
     return MakeResult<std::size_t>(read_length);
 }
 
-ResultVal<std::size_t> IVFCFileInMemory::Write(const u64 offset, const std::size_t length, const bool flush,
-                                          const u8* buffer) {
+ResultVal<std::size_t> IVFCFileInMemory::Write(const u64 offset, const std::size_t length,
+                                               const bool flush, const u8* buffer) {
     LOG_ERROR(Service_FS, "Attempted to write to IVFC file");
     // TODO(Subv): Find error code
     return MakeResult<std::size_t>(0);

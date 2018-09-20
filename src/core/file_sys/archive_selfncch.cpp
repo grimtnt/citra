@@ -12,9 +12,6 @@
 #include "core/file_sys/ivfc_archive.h"
 #include "core/hle/kernel/process.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 enum class SelfNCCHFilePathType : u32 {
@@ -51,7 +48,8 @@ public:
         return MakeResult<std::size_t>(data->size());
     }
 
-    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush, const u8* buffer) override {
+    ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush,
+                                 const u8* buffer) override {
         LOG_ERROR(Service_FS, "The file is read-only!");
         return ERROR_UNSUPPORTED_OPEN_FLAGS;
     }

@@ -11,9 +11,6 @@
 #include "core/hle/result.h"
 #include "delay_generator.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 class FileBackend : NonCopyable {
@@ -38,7 +35,8 @@ public:
      * @param buffer Buffer to read data from
      * @return Number of bytes written, or error code
      */
-    virtual ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush, const u8* buffer) = 0;
+    virtual ResultVal<std::size_t> Write(u64 offset, std::size_t length, bool flush,
+                                         const u8* buffer) = 0;
 
     /**
      * Get the amount of time a 3ds needs to read those data

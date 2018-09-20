@@ -31,23 +31,47 @@ using Kernel::SharedPtr;
 
 namespace Service::FS {
 
-u32 FS_USER::GetSeedCounter() {
-    FileUtil::IOFile file{fmt::format("{}/counter", FileUtil::GetUserPath(D_SEEDS_IDX)), "rb"};
-    u32 counter;
-    file.ReadBytes(&counter, sizeof(counter));
-    return counter;
-}
+struct SeedsFile {
+    u32 count;
 
-u32 FS_USER::IncreaseSeedCounter() {
-    FileUtil::IOFile file{fmt::format("{}/counter", FileUtil::GetUserPath(D_SEEDS_IDX)), "rb"};
-    u32 counter;
-    file.ReadBytes(&counter, sizeof(counter));
-    file.Close();
-    file.Open(fmt::format("{}/counter", FileUtil::GetUserPath(D_SEEDS_IDX)), "wb");
-    ++counter;
-    file.WriteBytes(&counter, sizeof(counter));
-    return counter;
-}
+    struct Seed {
+        u64 title_id;
+        std::array<u8, 16> seed;
+    };
+    std::vector<Seed> seeds;
+
+    static SeedsFile Load() {
+        if (!FileUtil::Exists(fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)))) {
+            FileUtil::CreateFullPath(
+                fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)));
+            SeedsFile seeds_file{};
+            seeds_file.Save();
+            return seeds_file;
+        }
+        SeedsFile seeds_file{};
+        FileUtil::IOFile file{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)),
+                              "rb"};
+        file.ReadBytes(&seeds_file.count, sizeof(seeds_file.count));
+        for (u32 i{}; i < seeds_file.count; ++i) {
+            Seed seed{};
+            file.ReadBytes(&seed.title_id, sizeof(seed.title_id));
+            file.ReadBytes(seed.seed.data(), seed.seed.size());
+            seeds_file.seeds.push_back(seed);
+        }
+        return seeds_file;
+    }
+
+    void Save() {
+        FileUtil::CreateFullPath(fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)));
+        FileUtil::IOFile file{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)),
+                              "wb"};
+        file.WriteBytes(&count, sizeof(count));
+        for (std::size_t i{}; i < count; ++i) {
+            file.WriteBytes(&seeds[i].title_id, sizeof(seeds[i].title_id));
+            file.WriteBytes(seeds[i].seed.data(), seeds[i].seed.size());
+        }
+    }
+};
 
 void FS_USER::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0801, 0, 2};
@@ -543,8 +567,9 @@ void FS_USER::CreateLegacySystemSaveData(Kernel::HLERequestContext& ctx) {
     bool duplicate{rp.Pop<bool>()};
 
     LOG_WARNING(Service_FS,
-                "(STUBBED) savedata_id={:08X} total_size={:08X} block_size={:08X} directories={} "
-                "files={} directory_buckets={} file_buckets={} duplicate={}",
+                "(STUBBED) called, savedata_id={:08X}, total_size={:08X}, block_size={:08X}, "
+                "directories={}, "
+                "files={}, directory_buckets={}, file_buckets={}, duplicate={}",
                 savedata_id, total_size, block_size, directories, files, directory_buckets,
                 file_buckets, duplicate);
 
@@ -709,7 +734,7 @@ void FS_USER::ObsoletedDeleteExtSaveData(Kernel::HLERequestContext& ctx) {
 void FS_USER::GetNumSeeds(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{ctx, 0x87D, 2, 0};
     rb.Push(RESULT_SUCCESS);
-    rb.Push<u32>(GetSeedCounter());
+    rb.Push<u32>(SeedsFile::Load().count);
 }
 
 void FS_USER::AddSeed(Kernel::HLERequestContext& ctx) {
@@ -717,11 +742,10 @@ void FS_USER::AddSeed(Kernel::HLERequestContext& ctx) {
     u64 title_id{rp.Pop<u64>()};
     std::array<u8, 16> seed{rp.PopRaw<std::array<u8, 16>>()};
 
-    const std::string seed_path{fmt::format(
-        "{}/{:016X}/seed_{}", FileUtil::GetUserPath(D_SEEDS_IDX), title_id, IncreaseSeedCounter())};
-    FileUtil::CreateFullPath(seed_path);
-    FileUtil::IOFile file{seed_path, "wb"};
-    file.WriteBytes(seed.data(), seed.size());
+    SeedsFile file{SeedsFile::Load()};
+    ++file.count;
+    file.seeds.push_back({title_id, seed});
+    file.Save();
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -734,16 +758,16 @@ void FS_USER::SetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
     u32 unique_id{rp.Pop<u32>()};
     u8 title_variation{rp.Pop<u8>()};
 
-    // TODO: Generate and Save the Secure Value
+    // TODO: Save the secure value
+
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+
+    rb.Push(RESULT_SUCCESS);
 
     LOG_WARNING(Service_FS,
                 "(STUBBED) called, value=0x{:016X}, secure_value_slot=0x{:08X} "
                 "unique_id=0x{:08X}, title_variation=0x{:02X}",
                 value, secure_value_slot, unique_id, title_variation);
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
-
-    rb.Push(RESULT_SUCCESS);
 }
 
 void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
@@ -762,7 +786,7 @@ void FS_USER::GetSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
 
     rb.Push(RESULT_SUCCESS);
 
-    // TODO: Implement Secure Value Lookup & Generation
+    // TODO: Implement secure value lookup
 
     rb.Push<bool>(false); // indicates that the secure value doesn't exist
     rb.Push<u64>(0);      // the secure value
@@ -773,16 +797,16 @@ void FS_USER::GetThisSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
 
     u32 secure_value_slot{rp.Pop<u32>()};
 
-    LOG_WARNING(Service_FS, "(STUBBED) called, secure_value_slot={}", secure_value_slot);
-
     IPC::ResponseBuilder rb{rp.MakeBuilder(4, 0)};
 
     rb.Push(RESULT_SUCCESS);
 
-    // TODO: Implement Secure Value Lookup & Generation
+    // TODO: Implement secure value lookup
 
     rb.Push<bool>(false); // indicates that the secure value doesn't exist
     rb.Push<u64>(0);      // the secure value
+
+    LOG_WARNING(Service_FS, "(STUBBED) called, secure_value_slot={}", secure_value_slot);
 }
 
 FS_USER::FS_USER() : ServiceFramework{"fs:USER", 30} {
@@ -901,20 +925,20 @@ FS_USER::FS_USER() : ServiceFramework{"fs:USER", 30} {
         {0x088600C0, nullptr, "CheckUpdatedDat"},
     };
     RegisterHandlers(functions);
-    const std::string seeds_dir{FileUtil::GetUserPath(D_SEEDS_IDX)};
-    const std::string counter_path{fmt::format("{}/counter", seeds_dir)};
-    if (!FileUtil::Exists(seeds_dir)) {
-        FileUtil::CreateFullPath(seeds_dir);
-    }
-    if (!FileUtil::Exists(counter_path)) {
-        FileUtil::CreateFullPath(counter_path);
-        FileUtil::IOFile file{counter_path, "wb"};
-        u32 counter{0};
-        file.WriteBytes(&counter, sizeof(counter));
-    }
 }
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<FS_USER>()->InstallAsService(service_manager);
+}
+
+bool GetSeed(u64 title_id, std::array<u8, 16>& output) {
+    SeedsFile seeds{SeedsFile::Load()};
+    for (const auto& seed : seeds.seeds) {
+        if (seed.title_id == title_id) {
+            output = seed.seed;
+            return true;
+        }
+    }
+    return false;
 }
 } // namespace Service::FS

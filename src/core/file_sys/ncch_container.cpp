@@ -14,9 +14,6 @@
 #include "core/hw/aes/key.h"
 #include "core/loader/loader.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 static const int kMaxSections{8};   ///< Maximum number of sections (files) in an ExeFs

@@ -6,9 +6,6 @@
 #include "core/file_sys/archive_savedata.h"
 #include "core/hle/kernel/process.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 ArchiveFactory_SaveData::ArchiveFactory_SaveData(

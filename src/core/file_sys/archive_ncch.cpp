@@ -22,9 +22,6 @@
 #include "core/loader/loader.h"
 #include "shared_font.app.romfs.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 enum class NCCHFilePathType : u32 {
@@ -225,7 +222,8 @@ NCCHFile::NCCHFile(std::vector<u8> buffer, std::unique_ptr<DelayGenerator> delay
     delay_generator = std::move(delay_generator_);
 }
 
-ResultVal<std::size_t> NCCHFile::Read(const u64 offset, const std::size_t length, u8* buffer) const {
+ResultVal<std::size_t> NCCHFile::Read(const u64 offset, const std::size_t length,
+                                      u8* buffer) const {
     LOG_TRACE(Service_FS, "called offset={}, length={}", offset, length);
     std::size_t length_left{static_cast<std::size_t>(data_size - offset)};
     std::size_t read_length{static_cast<std::size_t>(std::min(length, length_left))};
@@ -238,7 +236,7 @@ ResultVal<std::size_t> NCCHFile::Read(const u64 offset, const std::size_t length
 }
 
 ResultVal<std::size_t> NCCHFile::Write(const u64 offset, const std::size_t length, const bool flush,
-                                  const u8* buffer) {
+                                       const u8* buffer) {
     LOG_ERROR(Service_FS, "Attempted to write to NCCH file");
     // TODO(shinyquagsire23): Find error code
     return MakeResult<std::size_t>(0);

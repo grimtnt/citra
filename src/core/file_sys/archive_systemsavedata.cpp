@@ -14,9 +14,6 @@
 #include "core/file_sys/savedata_archive.h"
 #include "core/hle/service/fs/archive.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 std::string GetSystemSaveDataPath(const std::string& mount_point, const Path& path) {

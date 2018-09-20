@@ -14,9 +14,6 @@ public:
     FS_USER();
 
 private:
-    u32 GetSeedCounter();
-    u32 IncreaseSeedCounter();
-
     void Initialize(Kernel::HLERequestContext& ctx);
 
     /**
@@ -510,5 +507,6 @@ private:
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
+bool GetSeed(u64 title_id, std::array<u8, 16>& output);
 
 } // namespace Service::FS

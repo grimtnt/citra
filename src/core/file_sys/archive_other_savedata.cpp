@@ -9,9 +9,6 @@
 #include "core/hle/kernel/process.h"
 #include "core/hle/service/fs/archive.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// FileSys namespace
-
 namespace FileSys {
 
 // TODO(wwylele): The storage info in exheader should be checked before accessing these archives
