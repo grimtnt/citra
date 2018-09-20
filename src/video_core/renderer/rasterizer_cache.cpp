@@ -1342,7 +1342,7 @@ SurfaceSurfaceRect_Tuple RasterizerCache::GetFramebufferSurfaces(
     const auto& config{regs.framebuffer.framebuffer};
 
     // update resolution_scale_factor and reset cache if changed
-    static u16 resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
+    static u16 resolution_scale_factor{VideoCore::GetResolutionScaleFactor()};
     if (resolution_scale_factor != VideoCore::GetResolutionScaleFactor()) {
         resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
         FlushAll();

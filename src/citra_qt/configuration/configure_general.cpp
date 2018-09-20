@@ -31,6 +31,7 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 
 #ifndef _WIN32
     ui->toggle_console->setText("Enable logging to console");
+    ui->toggle_console->setToolTip(QString());
 #endif
 
     setConfiguration();
