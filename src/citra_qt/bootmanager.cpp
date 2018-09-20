@@ -76,7 +76,6 @@ GRenderWindow::GRenderWindow(QWidget* parent, EmuThread* emu_thread)
     setWindowTitle("Render Window");
 
     InputCommon::Init();
-    InputCommon::StartJoystickEventHandler();
 }
 
 GRenderWindow::~GRenderWindow() {
