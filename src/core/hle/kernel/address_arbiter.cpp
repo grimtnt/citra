@@ -10,9 +10,6 @@
 #include "core/hle/kernel/thread.h"
 #include "core/memory.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Kernel namespace
-
 namespace Kernel {
 
 void AddressArbiter::WaitThread(SharedPtr<Thread> thread, VAddr wait_address) {

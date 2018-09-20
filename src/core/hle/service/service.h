@@ -14,9 +14,6 @@
 #include "core/hle/kernel/object.h"
 #include "core/hle/service/sm/sm.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Namespace Service
-
 namespace Kernel {
 class ClientPort;
 class ServerPort;

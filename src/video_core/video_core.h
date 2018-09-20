@@ -12,9 +12,6 @@
 class EmuWindow;
 class Renderer;
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Video Core namespace
-
 namespace VideoCore {
 
 extern std::unique_ptr<Renderer> g_renderer; ///< Renderer plugin
@@ -25,6 +22,7 @@ extern std::atomic<bool> g_hw_shader_enabled;
 extern std::atomic<bool> g_hw_shader_accurate_gs;
 extern std::atomic<bool> g_hw_shader_accurate_mul;
 extern std::atomic<bool> g_renderer_bg_color_update_requested;
+
 // Screenshot
 extern std::atomic<bool> g_renderer_screenshot_requested;
 extern void* g_screenshot_bits;

@@ -16,8 +16,6 @@
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/result.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // Specializes std::hash for AppletId, so that we can use it in std::unordered_map.
 // Workaround for libstdc++ bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60970
 namespace std {

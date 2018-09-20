@@ -9,9 +9,6 @@
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Video Core namespace
-
 namespace VideoCore {
 
 std::unique_ptr<Renderer> g_renderer; ///< Renderer plugin
@@ -20,6 +17,7 @@ std::atomic<bool> g_hw_shader_enabled;
 std::atomic<bool> g_hw_shader_accurate_gs;
 std::atomic<bool> g_hw_shader_accurate_mul;
 std::atomic<bool> g_renderer_bg_color_update_requested;
+
 // Screenshot
 std::atomic<bool> g_renderer_screenshot_requested;
 void* g_screenshot_bits;

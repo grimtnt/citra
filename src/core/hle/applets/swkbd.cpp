@@ -20,8 +20,6 @@
 #include "core/memory.h"
 #include "video_core/video_core.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace HLE::Applets {
 
 ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input) {

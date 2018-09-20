@@ -10,17 +10,14 @@
 #include "core/file_sys/ncch_container.h"
 #include "core/loader/loader.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Loader namespace
-
 namespace Loader {
 
 /// Loads an NCCH file (e.g. from a CCI, or the first NCCH in a CXI)
 class AppLoader_NCCH final : public AppLoader {
 public:
     AppLoader_NCCH(FileUtil::IOFile&& file, const std::string& filepath)
-        : AppLoader{std::move(file)}, base_ncch{filepath}, overlay_ncch{&base_ncch},
-          filepath{filepath} {}
+        : AppLoader{std::move(file)}, base_ncch{filepath},
+          overlay_ncch{&base_ncch}, filepath{filepath} {}
 
     /**
      * Returns the type of the file

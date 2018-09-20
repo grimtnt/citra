@@ -173,9 +173,7 @@ public:
      */
     void Run(s32 main_thread_priority, u32 stack_size);
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
     // Memory Management
-
     VMManager vm_manager;
 
     // Memory used to back the allocations in the regular heap. A single vector is used to cover
@@ -183,6 +181,7 @@ public:
     // This makes deallocation and reallocation of holes fast and keeps process memory contiguous
     // in the emulator address space, allowing Memory::GetPointer to be reasonably safe.
     std::shared_ptr<std::vector<u8>> heap_memory;
+
     // The left/right bounds of the address space covered by heap_memory.
     VAddr heap_start{}, heap_end{};
 

@@ -11,8 +11,6 @@
 #include "core/loader/elf.h"
 #include "core/loader/ncch.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace Loader {
 
 const std::initializer_list<Kernel::AddressMapping> default_address_mappings = {

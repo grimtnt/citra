@@ -215,8 +215,6 @@ u64 NCCHArchive::GetFreeBytes() const {
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 NCCHFile::NCCHFile(std::vector<u8> buffer, std::unique_ptr<DelayGenerator> delay_generator_)
     : file_buffer{std::move(buffer)} {
     delay_generator = std::move(delay_generator_);
@@ -250,8 +248,6 @@ bool NCCHFile::SetSize(const u64 size) const {
     LOG_ERROR(Service_FS, "Attempted to set the size of an NCCH file");
     return false;
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ArchiveFactory_NCCH::ArchiveFactory_NCCH() {}
 

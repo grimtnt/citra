@@ -34,7 +34,6 @@ static inline void FuncReturn64(u64 res) {
     Core::GetCPU().SetReg(1, (u32)((res >> 32) & 0xFFFFFFFF));
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function wrappers that return type ResultCode
 
 template <ResultCode func(u32, u32, u32, u32)>
@@ -246,7 +245,6 @@ void Wrap() {
     FuncReturn(retval);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function wrappers that return type u32
 
 template <u32 func()>
@@ -254,7 +252,6 @@ void Wrap() {
     FuncReturn(func());
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // Function wrappers that return type s64
 
 template <s64 func()>
@@ -262,7 +259,6 @@ void Wrap() {
     FuncReturn64(func());
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Function wrappers that return type void
 
 template <void func(s64)>

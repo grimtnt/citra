@@ -498,8 +498,6 @@ VAddr Thread::GetCommandBufferAddress() const {
     return GetTLSAddress() + CommandHeaderOffset;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void ThreadingInit() {
     ThreadWakeupEventType = CoreTiming::RegisterEvent("ThreadWakeupCallback", ThreadWakeupCallback);
 

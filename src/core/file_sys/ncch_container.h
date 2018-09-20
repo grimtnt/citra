@@ -15,7 +15,6 @@
 #include "core/core.h"
 #include "core/file_sys/romfs_reader.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 /// NCCH header (Note: "NCCH" appears to be a publicly unknown acronym)
 
 struct NCCH_Header {
@@ -73,9 +72,7 @@ struct NCCH_Header {
 
 static_assert(sizeof(NCCH_Header) == 0x200, "NCCH header structure size is wrong");
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // ExeFS (executable file system) headers
-
 struct ExeFs_SectionHeader {
     char name[8];
     u32 offset;
@@ -88,9 +85,7 @@ struct ExeFs_Header {
     u8 hashes[8][0x20];
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 // ExHeader (executable file system header) headers
-
 struct ExHeader_SystemInfoFlags {
     u8 reserved[5];
     u8 flag;

@@ -48,8 +48,6 @@ bool DiskFile::Close() const {
     return file->Close();
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 DiskDirectory::DiskDirectory(const std::string& path) {
     u64 size{FileUtil::ScanDirectoryTree(path, directory)};
     directory.size = size;

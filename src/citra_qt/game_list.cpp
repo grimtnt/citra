@@ -165,8 +165,7 @@ GameListSearchField::GameListSearchField(GameList* parent) : QWidget{parent} {
  */
 
 static bool ContainsAllWords(const QString& haystack, const QString& userinput) {
-    const QStringList userinput_split =
-        userinput.split(' ', QString::SplitBehavior::SkipEmptyParts);
+    const QStringList userinput_split{userinput.split(' ', QString::SplitBehavior::SkipEmptyParts)};
 
     return std::all_of(userinput_split.begin(), userinput_split.end(),
                        [&haystack](const QString& s) { return haystack.contains(s); });
@@ -176,9 +175,9 @@ static bool ContainsAllWords(const QString& haystack, const QString& userinput) 
 void GameList::onItemExpanded(const QModelIndex& item) {
     // The click should still register in the GameListItemPath item no matter which column was
     // clicked
-    int row = item_model->itemFromIndex(item)->row();
-    QStandardItem* child = item_model->invisibleRootItem()->child(row, COLUMN_NAME);
-    GameListItemType type = static_cast<GameListItemType>(child->type());
+    int row{item_model->itemFromIndex(item)->row()};
+    QStandardItem* child{item_model->invisibleRootItem()->child(row, COLUMN_NAME)};
+    GameListItemType type{static_cast<GameListItemType>(child->type())};
     if (type == GameListItemType::CustomDir || type == GameListItemType::InstalledDir ||
         type == GameListItemType::SystemDir)
         child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()->expanded =
@@ -187,8 +186,8 @@ void GameList::onItemExpanded(const QModelIndex& item) {
 
 // Event in order to filter the gamelist after editing the searchfield
 void GameList::onTextChanged(const QString& newText) {
-    int folderCount = tree_view->model()->rowCount();
-    QString edit_filter_text = newText.toLower();
+    int folderCount{tree_view->model()->rowCount()};
+    QString edit_filter_text{newText.toLower()};
     QStandardItem* folder;
     int childrenTotal{};
 
@@ -197,8 +196,8 @@ void GameList::onTextChanged(const QString& newText) {
     if (edit_filter_text.isEmpty()) {
         for (int i{}; i < folderCount; ++i) {
             folder = item_model->item(i, 0);
-            QModelIndex folder_index = folder->index();
-            int childrenCount = folder->rowCount();
+            QModelIndex folder_index{folder->index()};
+            int childrenCount{folder->rowCount()};
             for (int j{}; j < childrenCount; ++j) {
                 ++childrenTotal;
                 tree_view->setRowHidden(j, folder_index, false);
@@ -603,7 +602,7 @@ void GameList::SaveInterfaceLayout() {
 }
 
 void GameList::LoadInterfaceLayout() {
-    auto header = tree_view->header();
+    auto header{tree_view->header()};
     if (!header->restoreState(UISettings::values.gamelist_header_state)) {
         // We are using the name column to display icons and titles
         // so make it as large as possible as default.

@@ -348,8 +348,6 @@ void Directory::Close(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 using FileSys::ArchiveBackend;
 using FileSys::ArchiveFactory;
 

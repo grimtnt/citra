@@ -12,8 +12,6 @@
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/result.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
 namespace HLE::Applets {
 
 static const std::array<u8, 132> mii = {
