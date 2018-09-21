@@ -462,7 +462,7 @@ void GameList::AddGamePopup(QMenu& context_menu, QStandardItem* child) {
     QString path{child->data(GameListItemPath::FullPathRole).toString()};
 
     QAction* open_save_location{context_menu.addAction("Open Save Data Location")};
-    QAction* open_extdata_location{context_menu.addAction(tr("Open Extra Data Location"))};
+    QAction* open_extdata_location{context_menu.addAction("Open Extra Data Location")};
     QAction* open_application_location{context_menu.addAction("Open Application Location")};
     QAction* open_update_location{context_menu.addAction("Open Update Data Location")};
 
