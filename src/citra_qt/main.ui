@@ -381,7 +381,7 @@
   </action>
   <action name="action_Select_SDMC_Directory">
    <property name="text">
-    <string>Select SDMC Directory</string>
+    <string>Select SD Card Directory</string>
    </property>
   </action>
  </widget>
