@@ -939,6 +939,13 @@ bool GetSeed(u64 title_id, std::array<u8, 16>& output) {
             return true;
         }
     }
+    const std::string seed_path{
+        fmt::format("{}/seeds/{:016X}.bin", FileUtil::GetUserPath(D_SYSDATA_IDX), title_id)};
+    if (FileUtil::Exists(seed_path)) {
+        FileUtil::IOFile seed{seed_path, "rb"};
+        seed.ReadBytes(output.data(), output.size());
+        return true;
+    }
     return false;
 }
 } // namespace Service::FS
