@@ -384,7 +384,7 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Install_CIA, &QAction::triggered, this, &GMainWindow::OnMenuInstallCIA);
     connect(ui.action_Exit, &QAction::triggered, this, &QMainWindow::close);
     connect(ui.action_Select_SDMC_Directory, &QAction::triggered, this, [&] {
-        QString dir{QFileDialog::getExistingDirectory(this, "Set SDMC Directory", ".")};
+        QString dir{QFileDialog::getExistingDirectory(this, "Set SD Card Directory", ".")};
         if (dir.isEmpty())
             return;
         Settings::values.sdmc_dir = dir.toStdString();
