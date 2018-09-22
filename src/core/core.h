@@ -6,7 +6,6 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -35,12 +34,6 @@ class ServiceManager;
 } // namespace Service::SM
 
 namespace Core {
-
-struct QtCallbacks {
-    std::function<void(HLE::Applets::ErrEulaConfig&)> erreula;
-    std::function<void(HLE::Applets::SoftwareKeyboardConfig&, std::u16string&)> swkbd;
-    std::function<void()> update_3d;
-};
 
 class System {
 public:
@@ -177,10 +170,6 @@ public:
         return *app_loader;
     }
 
-    QtCallbacks& GetQtCallbacks() const {
-        return *qt_callbacks;
-    }
-
     std::shared_ptr<SharedPage::Handler> GetSharedPageHandler() const {
         return shared_page_handler;
     }
@@ -220,9 +209,6 @@ private:
 
     /// AppLoader used to load the current executing application
     std::unique_ptr<Loader::AppLoader> app_loader;
-
-    /// Applet factories
-    std::unique_ptr<QtCallbacks> qt_callbacks;
 
     /// ARM11 CPU core
     std::unique_ptr<CPU> cpu_core;

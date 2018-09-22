@@ -340,7 +340,6 @@ void SoftwareKeyboard::Update() {
         break;
     }
     case Settings::KeyboardMode::Qt: {
-        auto cb{Core::System::GetInstance().GetQtCallbacks().swkbd};
         if (!cb)
             UNREACHABLE_MSG("Qt keyboard callback is nullptr");
         std::u16string text{};

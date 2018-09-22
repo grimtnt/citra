@@ -12,6 +12,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <functional>
 #include <memory>
 #include "common/bit_field.h"
 #include "common/common_funcs.h"
@@ -106,6 +107,8 @@ public:
     SharedPageDef& GetSharedPage();
 
     void Update3DSettings(bool called_by_control_panel = false);
+
+    static inline std::function<void()> update_3d;
 
 private:
     u64 GetSystemTime() const;

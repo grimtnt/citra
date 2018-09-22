@@ -139,8 +139,9 @@ void Handler::Update3DSettings(bool called_by_control_panel) {
                                                       : 0.0f};
     shared_page.sliderstate_3d = sliderstate;
     if (!called_by_control_panel) {
-        if (Core::System::GetInstance().GetQtCallbacks().update_3d)
-            Core::System::GetInstance().GetQtCallbacks().update_3d();
+        if (update_3d) {
+            update_3d();
+        }
     }
 }
 

@@ -55,7 +55,7 @@ ResultCode ErrEula::StartImpl(const Service::APT::AppletStartupParameter& parame
 }
 
 void ErrEula::Update() {
-    if (auto cb{Core::System::GetInstance().GetQtCallbacks().erreula}) {
+    if (cb) {
         cb(config);
         Finalize();
         return;

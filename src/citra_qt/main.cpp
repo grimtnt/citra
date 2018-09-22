@@ -639,23 +639,22 @@ void GMainWindow::BootGame(const QString& filename) {
     }
     OnStartGame();
 
-    auto& qt_callbacks{Core::System::GetInstance().GetQtCallbacks()};
-    qt_callbacks.erreula = [this](HLE::Applets::ErrEulaConfig& config) {
+    HLE::Applets::ErrEula::cb = [this](HLE::Applets::ErrEulaConfig& config) {
         applet_open = true;
         ErrEulaCallback(config);
         std::unique_lock<std::mutex> lock{applet_mutex};
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
-    qt_callbacks.swkbd = [this](HLE::Applets::SoftwareKeyboardConfig& config,
-                                std::u16string& text) {
+    HLE::Applets::SoftwareKeyboard::cb = [this](HLE::Applets::SoftwareKeyboardConfig& config,
+                                                std::u16string& text) {
         applet_open = true;
         SwkbdCallback(config, text);
         std::unique_lock<std::mutex> lock{applet_mutex};
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
-    qt_callbacks.update_3d = [this] { Update3D(); };
+    SharedPage::Handler::update_3d = [this] { Update3D(); };
 }
 
 void GMainWindow::ShutdownGame() {

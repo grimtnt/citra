@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
@@ -17,10 +18,13 @@ namespace HLE::Applets {
 
 /// Maximum number of buttons that can be in the keyboard.
 #define SWKBD_MAX_BUTTON 3
+
 /// Maximum button text length, in UTF-16 code units.
 #define SWKBD_MAX_BUTTON_TEXT_LEN 16
+
 /// Maximum hint text length, in UTF-16 code units.
 #define SWKBD_MAX_HINT_TEXT_LEN 64
+
 /// Maximum filter callback error message length, in UTF-16 code units.
 #define SWKBD_MAX_CALLBACK_MSG_LEN 256
 
@@ -240,6 +244,8 @@ public:
      * along with the relevant data buffers.
      */
     void Finalize();
+
+    static inline std::function<void(HLE::Applets::SoftwareKeyboardConfig&, std::u16string&)> cb;
 
 private:
     /// This SharedMemory will be created when we receive the LibAppJustStarted message.

@@ -154,8 +154,6 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
 
     cpu_core = std::make_unique<CPU>();
 
-    qt_callbacks = std::make_unique<QtCallbacks>();
-
     dsp_core = std::make_unique<AudioCore::DspHle>();
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
@@ -212,7 +210,6 @@ void System::Shutdown() {
     cpu_core.reset();
     CoreTiming::Shutdown();
     app_loader.reset();
-    qt_callbacks.reset();
     rpc_server.reset();
 
     LOG_DEBUG(Core, "Shutdown OK");
