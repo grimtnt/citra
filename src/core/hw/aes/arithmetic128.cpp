@@ -27,7 +27,7 @@ AESKey Add128(const AESKey& a, const AESKey& b) {
     u32 carry{};
     u32 sum{};
 
-    for (int i = 15; i >= 0; i--) {
+    for (int i{15}; i >= 0; i--) {
         sum = a[i] + b[i] + carry;
         carry = sum >> 8;
         out[i] = static_cast<u8>(sum & 0xff);

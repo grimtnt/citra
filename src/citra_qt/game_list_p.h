@@ -44,7 +44,10 @@ enum class Compatibility {
 
 static const std::unordered_map<u64, Compatibility> compatibility_database = {
     // Homebrew
-    {0x000400000F800100, Compatibility::Okay}, // FBI
+    {0x000400000F800100, Compatibility::Okay},      // FBI
+    {0x0004000004395500, Compatibility::IntroMenu}, // DSiMenuPlusPlus
+    {0x000400000D5CDB00, Compatibility::IntroMenu}, // White Haired Cat Girl
+    {0x000400000EB00000, Compatibility::IntroMenu}, // Boot NTR Selector
 
     // ALL
     {0x00040000001C1E00, Compatibility::Great},     // Detective Pikachu™
@@ -95,6 +98,11 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x00040000001B2900, Compatibility::Great},   // YO-KAI WATCH™ 2: Psychic Specters
     {0x00040000001CB200, Compatibility::Great},   // Captain Toad™: Treasure Tracker
     {0x0004000000116700, Compatibility::Great},   // Cut the Rope: Triple Treat
+    {0x0004000000030200, Compatibility::Great},   // Kid Icarus Uprising
+    {0x00040000000A5F00, Compatibility::Great},   // Paper Mario Sticker Star
+    {0x0004000000031600, Compatibility::Bad},     // nintendogs + cats (Toy Poodle & New Friends)
+    {0x0004000000170B00,
+     Compatibility::IntroMenu}, // Teenage Mutant Ninja Turtles: Master Splinter's Training Pack
 
     // EUR (System)
     {0x0004001000022A00, Compatibility::WontBoot}, // ???
@@ -104,25 +112,27 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x00040002001CB201, Compatibility::Perfect}, // Captain Toad Demo
 
     // USA
-    {0x00040000000E5D00, Compatibility::Perfect}, // PICROSS e
-    {0x00040000000CD400, Compatibility::Perfect}, // PICROSS e2
-    {0x0004000000101D00, Compatibility::Perfect}, // PICROSS e3
-    {0x0004000000127300, Compatibility::Perfect}, // PICROSS e4
-    {0x0004000000149800, Compatibility::Perfect}, // PICROSS e5
-    {0x000400000016EF00, Compatibility::Perfect}, // PICROSS e6
-    {0x00040000001ADB00, Compatibility::Perfect}, // PICROSS e7
-    {0x00040000001CF700, Compatibility::Perfect}, // PICROSS e8
-    {0x00040000001A0400, Compatibility::Great},   // Super Mario Maker™ for Nintendo 3DS
-    {0x000400000014F100, Compatibility::Great},   // Animal Crossing™: Happy Home Designer
-    {0x000400000017F200, Compatibility::Perfect}, // Moco Moco Friends
-    {0x00040000001B4E00, Compatibility::Great},   // Miitopia™
-    {0x0004000000130500, Compatibility::Bad},     // Photos with Mario™
-    {0x0004000000086300, Compatibility::Great},   // Animal Crossing™: New Leaf
-    {0x000400000008C300, Compatibility::Great},   // Tomodachi Life™
-    {0x0004000000030800, Compatibility::Great},   // Mario Kart™ 7
-    {0x0004000000139000, Compatibility::Perfect}, // 2048
-    {0x00040000001B2700, Compatibility::Great},   // YO-KAI WATCH™ 2: Psychic Specters
-    {0x0004000000112600, Compatibility::Great},   // Cut the Rope: Triple Treat
+    {0x00040000000E5D00, Compatibility::Perfect},   // PICROSS e
+    {0x00040000000CD400, Compatibility::Perfect},   // PICROSS e2
+    {0x0004000000101D00, Compatibility::Perfect},   // PICROSS e3
+    {0x0004000000127300, Compatibility::Perfect},   // PICROSS e4
+    {0x0004000000149800, Compatibility::Perfect},   // PICROSS e5
+    {0x000400000016EF00, Compatibility::Perfect},   // PICROSS e6
+    {0x00040000001ADB00, Compatibility::Perfect},   // PICROSS e7
+    {0x00040000001CF700, Compatibility::Perfect},   // PICROSS e8
+    {0x00040000001A0400, Compatibility::Great},     // Super Mario Maker™ for Nintendo 3DS
+    {0x000400000014F100, Compatibility::Great},     // Animal Crossing™: Happy Home Designer
+    {0x000400000017F200, Compatibility::Perfect},   // Moco Moco Friends
+    {0x00040000001B4E00, Compatibility::Great},     // Miitopia™
+    {0x0004000000130500, Compatibility::Bad},       // Photos with Mario™
+    {0x0004000000086300, Compatibility::Great},     // Animal Crossing™: New Leaf
+    {0x000400000008C300, Compatibility::Great},     // Tomodachi Life™
+    {0x0004000000030800, Compatibility::Great},     // Mario Kart™ 7
+    {0x0004000000139000, Compatibility::Perfect},   // 2048
+    {0x00040000001B2700, Compatibility::Great},     // YO-KAI WATCH™ 2: Psychic Specters
+    {0x0004000000112600, Compatibility::Great},     // Cut the Rope: Triple Treat
+    {0x00040000001B8700, Compatibility::IntroMenu}, // Minecraft
+    {0x0004000000062300, Compatibility::Great},
 
     // USA (Demos)
     {0x00040002001CB101, Compatibility::Perfect}, // Captain Toad Demo
@@ -334,18 +344,18 @@ public:
 
 class GameListItemCompat : public GameListItem {
 public:
-    static const int CompatNumberRole = Qt::UserRole + 1;
+    static const int CompatNumberRole{Qt::UserRole + 1};
 
     GameListItemCompat() = default;
-    explicit GameListItemCompat(Compatibility compatiblity) {
-        auto it{status_data.find(compatiblity)};
+    explicit GameListItemCompat(Compatibility compatibility) {
+        auto it{status_data.find(compatibility)};
         if (it == status_data.end()) {
             LOG_WARNING(Frontend, "Invalid compatibility number {}",
-                        static_cast<int>(compatiblity));
+                        static_cast<int>(compatibility));
             return;
         }
         CompatStatus status{it->second};
-        setData(QString::number(static_cast<int>(compatiblity)), CompatNumberRole);
+        setData(QString::number(static_cast<int>(compatibility)), CompatNumberRole);
         setText(status.text);
         setToolTip(status.tooltip);
         setData(CreateCirclePixmapFromColor(status.color), Qt::DecorationRole);
@@ -382,7 +392,7 @@ public:
  */
 class GameListItemSize : public GameListItem {
 public:
-    static const int SizeRole = Qt::UserRole + 1;
+    static const int SizeRole{Qt::UserRole + 1};
 
     GameListItemSize() : GameListItem() {}
     GameListItemSize(const qulonglong size_bytes) : GameListItem() {
@@ -420,6 +430,7 @@ public:
     int type() const override {
         return static_cast<int>(dir_type);
     }
+
     explicit GameListDir(UISettings::GameDir& directory,
                          GameListItemType type = GameListItemType::CustomDir)
         : dir_type{type} {
@@ -441,6 +452,7 @@ public:
             break;
         };
     };
+
     static const int GameDirRole{Qt::UserRole + 1};
 
 private:
@@ -452,6 +464,7 @@ public:
     int type() const override {
         return static_cast<int>(GameListItemType::AddDir);
     }
+
     explicit GameListAddDir() {
         setData(QIcon::fromTheme("plus").pixmap(48), Qt::DecorationRole);
         setData("Add New Game Directory", Qt::DisplayRole);
@@ -467,11 +480,12 @@ class GameListWorker : public QObject, public QRunnable {
 
 public:
     explicit GameListWorker(QList<UISettings::GameDir>& game_dirs)
-        : QObject(), QRunnable(), game_dirs(game_dirs) {}
+        : QObject{}, QRunnable{}, game_dirs{game_dirs} {}
 
 public slots:
     /// Starts the processing of directory tree information.
     void run() override;
+
     /// Tells the worker that it should no longer continue processing. Thread-safe.
     void Cancel();
 
@@ -492,9 +506,9 @@ signals:
     void Finished(QStringList watch_list);
 
 private:
-    QStringList watch_list;
+    QStringList watch_list{};
     QList<UISettings::GameDir>& game_dirs;
-    std::atomic_bool stop_processing;
+    std::atomic_bool stop_processing{false};
 
     void AddFstEntriesToGameList(const std::string& dir_path, unsigned int recursion,
                                  GameListDir* parent_dir);
@@ -528,12 +542,13 @@ private:
 
     private:
         GameList* gamelist{};
-        QString edit_filter_text_old;
+        QString edit_filter_text_old{};
 
     protected:
         // EventFilter in order to process systemkeys while editing the searchfield
         bool eventFilter(QObject* obj, QEvent* event) override;
     };
+
     QHBoxLayout* layout_filter{};
     QTreeView* tree_view{};
     QLabel* label_filter{};

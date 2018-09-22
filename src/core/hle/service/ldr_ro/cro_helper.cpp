@@ -237,9 +237,9 @@ ResultCode CROHelper::RebaseHeader(u32 cro_size) {
         FileSize,
     }};
 
-    u32 prev_offset = GetField(OFFSET_ORDER[0]);
+    u32 prev_offset{GetField(OFFSET_ORDER[0])};
     u32 cur_offset;
-    for (std::size_t i = 1; i < OFFSET_ORDER.size(); ++i) {
+    for (std::size_t i{1}; i < OFFSET_ORDER.size(); ++i) {
         cur_offset = GetField(OFFSET_ORDER[i]);
         if (cur_offset < prev_offset)
             return error;
@@ -1452,8 +1452,8 @@ u32 CROHelper::GetFixEnd(u32 fix_level) const {
     u32 end = CRO_HEADER_SIZE;
     end = std::max<u32>(end, GetField(CodeOffset) + GetField(CodeSize));
 
-    u32 entry_size_i = 2;
-    int field = ModuleNameOffset;
+    u32 entry_size_i{2};
+    int field{ModuleNameOffset};
     while (true) {
         end = std::max<u32>(end, GetField(static_cast<HeaderField>(field)) +
                                      GetField(static_cast<HeaderField>(field + 1)) *
@@ -1468,12 +1468,12 @@ u32 CROHelper::GetFixEnd(u32 fix_level) const {
 }
 
 u32 CROHelper::Fix(u32 fix_level) {
-    u32 fix_end = GetFixEnd(fix_level);
+    u32 fix_end{GetFixEnd(fix_level)};
 
     if (fix_level != 0) {
         SetField(Magic, MAGIC_FIXD);
 
-        for (int field = FIX_BARRIERS[fix_level]; field < Fix0Barrier; field += 2) {
+        for (int field{FIX_BARRIERS[fix_level]}; field < Fix0Barrier; field += 2) {
             SetField(static_cast<HeaderField>(field), fix_end);
             SetField(static_cast<HeaderField>(field + 1), 0);
         }
@@ -1481,13 +1481,13 @@ u32 CROHelper::Fix(u32 fix_level) {
 
     fix_end = Common::AlignUp(fix_end, Memory::PAGE_SIZE);
 
-    u32 fixed_size = fix_end - module_address;
+    u32 fixed_size{fix_end - module_address};
     SetField(FixedSize, fixed_size);
     return fixed_size;
 }
 
 bool CROHelper::IsLoaded() const {
-    u32 magic = GetField(Magic);
+    u32 magic{GetField(Magic)};
     if (magic != MAGIC_CRO0 && magic != MAGIC_FIXD)
         return false;
 
@@ -1497,13 +1497,13 @@ bool CROHelper::IsLoaded() const {
 }
 
 std::tuple<VAddr, u32> CROHelper::GetExecutablePages() const {
-    u32 segment_num = GetField(SegmentNum);
+    u32 segment_num{GetField(SegmentNum)};
     for (u32 i{}; i < segment_num; ++i) {
         SegmentEntry entry;
         GetEntry(i, entry);
         if (entry.type == SegmentType::Code && entry.size != 0) {
-            VAddr begin = Common::AlignDown(entry.offset, Memory::PAGE_SIZE);
-            VAddr end = Common::AlignUp(entry.offset + entry.size, Memory::PAGE_SIZE);
+            VAddr begin{Common::AlignDown(entry.offset, Memory::PAGE_SIZE)};
+            VAddr end{Common::AlignUp(entry.offset + entry.size, Memory::PAGE_SIZE)};
             return std::make_tuple(begin, end - begin);
         }
     }

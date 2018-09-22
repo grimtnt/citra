@@ -378,7 +378,7 @@ void ConfigureSystem::updateBirthdayComboBox(int birthmonth_index) {
 
     // update the day combo box
     ui->combo_birthday->clear();
-    for (int i = 1; i <= days; ++i) {
+    for (int i{1}; i <= days; ++i) {
         ui->combo_birthday->addItem(QString::number(i));
     }
 

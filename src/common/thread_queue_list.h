@@ -140,7 +140,7 @@ private:
     void link(Priority priority) {
         Queue* cur = &queues[priority];
 
-        for (int i = priority - 1; i >= 0; --i) {
+        for (int i{priority - 1}; i >= 0; --i) {
             if (queues[i].next_nonempty != UnlinkedTag()) {
                 cur->next_nonempty = queues[i].next_nonempty;
                 queues[i].next_nonempty = cur;

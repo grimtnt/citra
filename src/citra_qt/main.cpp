@@ -908,7 +908,7 @@ void GMainWindow::OnMenuLoadFile() {
     for (const auto& piece : game_list->supported_file_extensions)
         extensions += "*." + piece + " ";
 
-    QString file_filter{QString("3DS Executable (%1);All Files (*.*)").arg(extensions)};
+    QString file_filter{QString("3DS Executable (%1);;All Files (*.*)").arg(extensions)};
 
     QString filename{QFileDialog::getOpenFileName(this, "Load File", ".", file_filter)};
     if (!filename.isEmpty()) {
@@ -918,7 +918,7 @@ void GMainWindow::OnMenuLoadFile() {
 
 void GMainWindow::OnMenuInstallCIA() {
     QStringList filepaths{QFileDialog::getOpenFileNames(
-        this, "Install CIA", ".", "CTR Importable Archive (*.cia);All Files (*.*)")};
+        this, "Install CIA", ".", "CTR Importable Archive (*.cia);;All Files (*.*)")};
     if (filepaths.isEmpty())
         return;
 
@@ -927,9 +927,8 @@ void GMainWindow::OnMenuInstallCIA() {
 
     QtConcurrent::run([&, filepaths] {
         Service::AM::InstallStatus status;
-        const auto cia_progress = [&](std::size_t written, std::size_t total) {
-            emit UpdateProgress(written, total);
-        };
+        const auto cia_progress{
+            [&](std::size_t written, std::size_t total) { emit UpdateProgress(written, total); }};
         for (const auto current_path : filepaths) {
             status = Service::AM::InstallCIA(current_path.toStdString(), cia_progress);
             emit CIAInstallReport(status, current_path);

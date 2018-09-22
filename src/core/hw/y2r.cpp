@@ -184,7 +184,7 @@ static void RotateTile90(const ImageTile& input, ImageTile& output, int height,
 static void RotateTile180(const ImageTile& input, ImageTile& output, int height,
                           const u8 out_map[64]) {
     int out_i{};
-    for (int i = height * 8 - 1; i >= 0; --i) {
+    for (int i{height * 8 - 1}; i >= 0; --i) {
         output[out_map[out_i++]] = input[i];
     }
 }

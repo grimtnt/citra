@@ -346,7 +346,7 @@ SharedPtr<CodeSet> ElfReader::LoadInto(u32 vaddr) {
 }
 
 SectionID ElfReader::GetSectionByName(const char* name, int firstSection) const {
-    for (int i = firstSection; i < header->e_shnum; i++) {
+    for (int i{firstSection}; i < header->e_shnum; i++) {
         const char* secname{GetSectionName(i)};
 
         if (secname != nullptr && strcmp(name, secname) == 0)

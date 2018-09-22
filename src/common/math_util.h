@@ -10,7 +10,7 @@
 
 namespace MathUtil {
 
-static constexpr float PI = 3.14159265f;
+static constexpr float PI{3.14159265f};
 
 inline bool IntervalsIntersect(unsigned start0, unsigned length0, unsigned start1,
                                unsigned length1) {

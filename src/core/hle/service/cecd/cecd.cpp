@@ -1216,7 +1216,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         std::string file_name{};
         std::u16string u16_filename{};
 
-        for (auto i = 0; i < entry_count; i++) {
+        for (u32 i{}; i < entry_count; i++) {
             u16_filename = std::u16string(entries[i].filename);
             file_name = Common::UTF16ToUTF8(u16_filename);
 
@@ -1291,11 +1291,11 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         /// We need to read the /CEC/<id>/OutBox directory to find out which messages, if any,
         /// are present. The num_of_messages = (total_read_count) - 2, to adjust for
         /// the BoxInfo____ and OBIndex_____files that are present in the directory as well.
-        FileSys::Path outbox_path(
-            GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id).data());
+        FileSys::Path outbox_path{
+            GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id).data()};
 
-        auto dir_result =
-            Service::FS::OpenDirectoryFromArchive(cecd_system_save_data_archive, outbox_path);
+        auto dir_result{
+            Service::FS::OpenDirectoryFromArchive(cecd_system_save_data_archive, outbox_path)};
 
         auto outbox_dir{dir_result.Unwrap()};
         std::vector<FileSys::Entry> entries(8);
@@ -1310,15 +1310,15 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         std::string file_name;
         std::u16string u16_filename;
 
-        for (auto i = 0; i < entry_count; i++) {
+        for (u32 i{}; i < entry_count; i++) {
             u16_filename = std::u16string(entries[i].filename);
             file_name = Common::UTF16ToUTF8(u16_filename);
 
             if (boxinfo_name.compare(file_name) != 0 && obindex_name.compare(file_name) != 0) {
-                FileSys::Path message_path(
+                FileSys::Path message_path{
                     (GetCecDataPathTypeAsString(CecDataPathType::OutboxDir, ncch_program_id) + "/" +
                      file_name)
-                        .data());
+                        .data()};
 
                 FileSys::Mode mode;
                 mode.read_flag.Assign(1);
@@ -1339,7 +1339,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         }
 
         if (obindex_header.message_num > 0) {
-            const u32 message_ids_size = obindex_header.message_num * 8;
+            const u32 message_ids_size{obindex_header.message_num * 8};
             file_buffer.resize(sizeof(CecOBIndexHeader) + message_ids_size);
             std::memcpy(file_buffer.data() + sizeof(CecOBIndexHeader), &message_ids,
                         message_ids_size);

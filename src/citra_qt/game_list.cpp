@@ -4,6 +4,7 @@
 
 #include <cinttypes>
 #include <QApplication>
+#include <QClipboard>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QHBoxLayout>
@@ -465,6 +466,7 @@ void GameList::AddGamePopup(QMenu& context_menu, QStandardItem* child) {
     QAction* open_extdata_location{context_menu.addAction("Open Extra Data Location")};
     QAction* open_application_location{context_menu.addAction("Open Application Location")};
     QAction* open_update_location{context_menu.addAction("Open Update Data Location")};
+    QAction* copy_program_id{context_menu.addAction("Copy Program ID")};
 
     open_save_location->setVisible(0x0004000000000000 <= program_id &&
                                    program_id <= 0x00040000FFFFFFFF);
@@ -502,6 +504,10 @@ void GameList::AddGamePopup(QMenu& context_menu, QStandardItem* child) {
     });
     connect(open_update_location, &QAction::triggered, [&, program_id]() {
         emit OpenFolderRequested(program_id, GameListOpenTarget::UPDATE_DATA);
+    });
+    connect(copy_program_id, &QAction::triggered, [&, program_id]() {
+        QClipboard* clipboard{QApplication::clipboard()};
+        clipboard->setText(QString::fromStdString(fmt::format("{:016X}", program_id)));
     });
 };
 
@@ -655,16 +661,16 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
         if (stop_processing)
             return false; // Breaks the callback loop.
 
-        bool is_dir = FileUtil::IsDirectory(physical_name);
+        bool is_dir{FileUtil::IsDirectory(physical_name)};
         if (!is_dir && HasSupportedFileExtension(physical_name)) {
-            std::unique_ptr<Loader::AppLoader> loader = Loader::GetLoader(physical_name);
+            std::unique_ptr<Loader::AppLoader> loader{Loader::GetLoader(physical_name)};
             if (!loader)
                 return true;
 
-            u64 program_id{};
+            u64 program_id;
             loader->ReadProgramId(program_id);
 
-            u64 extdata_id{};
+            u64 extdata_id;
             loader->ReadExtdataId(extdata_id);
 
             std::vector<u8> smdh{[program_id, &loader]() -> std::vector<u8> {
@@ -674,13 +680,13 @@ void GameListWorker::AddFstEntriesToGameList(const std::string& dir_path, unsign
                 if (program_id < 0x0004000000000000 || program_id > 0x00040000FFFFFFFF)
                     return original_smdh;
 
-                std::string update_path = Service::AM::GetTitleContentPath(
-                    Service::FS::MediaType::SDMC, program_id + 0x0000000E00000000);
+                std::string update_path{Service::AM::GetTitleContentPath(
+                    Service::FS::MediaType::SDMC, program_id + 0x0000000E00000000)};
 
                 if (!FileUtil::Exists(update_path))
                     return original_smdh;
 
-                std::unique_ptr<Loader::AppLoader> update_loader = Loader::GetLoader(update_path);
+                std::unique_ptr<Loader::AppLoader> update_loader{Loader::GetLoader(update_path)};
 
                 if (!update_loader)
                     return original_smdh;
@@ -754,8 +760,8 @@ void GameListWorker::run() {
                 AddFstEntriesToGameList(path.toStdString(), 2, game_list_dir);
             }
         } else if (game_dir.path == "SYSTEM") {
-            QString path = QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX)) +
-                           "00000000000000000000000000000000/title/00040010";
+            QString path{QString::fromStdString(FileUtil::GetUserPath(D_NAND_IDX)) +
+                         "00000000000000000000000000000000/title/00040010"};
             watch_list.append(path);
             GameListDir* game_list_dir{new GameListDir(game_dir, GameListItemType::SystemDir)};
             emit DirEntryReady({game_list_dir});

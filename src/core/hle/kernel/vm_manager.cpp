@@ -169,7 +169,7 @@ ResultCode VMManager::ChangeMemoryState(VAddr target, u32 size, MemoryState expe
     if (begin_vma == vma_map.end())
         return ERR_INVALID_ADDRESS;
 
-    for (auto i = begin_vma; i != i_end; ++i) {
+    for (auto i{begin_vma}; i != i_end; ++i) {
         auto& vma{i->second};
         if (vma.meminfo_state != expected_state) {
             return ERR_INVALID_ADDRESS_STATE;
