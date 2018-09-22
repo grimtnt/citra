@@ -135,13 +135,10 @@ SharedPageDef& Handler::GetSharedPage() {
 
 void Handler::Update3DSettings(bool called_by_control_panel) {
     shared_page.ledstate_3d = Settings::values.factor_3d == 0 ? 1 : 0;
-    float sliderstate{Settings::values.factor_3d != 0 ? (float_le)Settings::values.factor_3d / 100
-                                                      : 0.0f};
-    shared_page.sliderstate_3d = sliderstate;
-    if (!called_by_control_panel) {
-        if (update_3d) {
-            update_3d();
-        }
+    shared_page.sliderstate_3d =
+        Settings::values.factor_3d != 0 ? (float_le)Settings::values.factor_3d / 100 : 0.0f;
+    if (!called_by_control_panel && update_3d) {
+        update_3d();
     }
 }
 
