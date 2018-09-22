@@ -127,7 +127,8 @@ struct ThreadQueueList {
 private:
     struct Queue {
         // Points to the next active priority, skipping over ones that have never been used.
-        Queue* next_nonempty = UnlinkedTag();
+        Queue* next_nonempty{UnlinkedTag()};
+
         // Double-ended queue of threads in this priority level
         std::deque<T> data;
     };
@@ -138,9 +139,9 @@ private:
     }
 
     void link(Priority priority) {
-        Queue* cur = &queues[priority];
+        Queue* cur{&queues[priority]};
 
-        for (int i{priority - 1}; i >= 0; --i) {
+        for (int i{static_cast<int>(priority - 1)}; i >= 0; --i) {
             if (queues[i].next_nonempty != UnlinkedTag()) {
                 cur->next_nonempty = queues[i].next_nonempty;
                 queues[i].next_nonempty = cur;

@@ -60,7 +60,7 @@ inline static u32 const NewThreadId() {
     return next_thread_id++;
 }
 
-Thread::Thread() : context(Core::GetCPU().NewContext()) {}
+Thread::Thread() : context{Core::GetCPU().NewContext()} {}
 Thread::~Thread() {}
 
 Thread* GetCurrentThread() {
