@@ -132,7 +132,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x00040000001B2700, Compatibility::Great},     // YO-KAI WATCH™ 2: Psychic Specters
     {0x0004000000112600, Compatibility::Great},     // Cut the Rope: Triple Treat
     {0x00040000001B8700, Compatibility::IntroMenu}, // Minecraft
-    {0x0004000000062300, Compatibility::Great},
+    {0x0004000000062300, Compatibility::Great},     // Sonic Generations
 
     // USA (Demos)
     {0x00040002001CB101, Compatibility::Perfect}, // Captain Toad Demo
