@@ -369,7 +369,7 @@ private:
 
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory{};
     std::unordered_map<u32, Context> contexts;
-    u32 context_counter{0};
+    u32 context_counter{};
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);

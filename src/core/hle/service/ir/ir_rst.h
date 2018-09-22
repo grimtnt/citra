@@ -79,14 +79,14 @@ private:
 
     Kernel::SharedPtr<Kernel::Event> update_event;
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory;
-    u32 next_pad_index{0};
+    u32 next_pad_index{};
     CoreTiming::EventType* update_callback_id;
     std::unique_ptr<Input::ButtonDevice> zl_button;
     std::unique_ptr<Input::ButtonDevice> zr_button;
     std::unique_ptr<Input::AnalogDevice> c_stick;
     std::atomic<bool> is_device_reload_pending{false};
-    bool raw_c_stick{false};
-    int update_period{0};
+    bool raw_c_stick{};
+    int update_period{};
 };
 
 } // namespace Service::IR

@@ -174,7 +174,7 @@ static constexpr int V(int r, int g, int b) {
 std::vector<u16> Rgb2Yuv(const QImage& source, int width, int height) {
     auto buffer{std::vector<u16>(width * height)};
     auto dest{buffer.begin()};
-    bool write{false};
+    bool write{};
     int py{}, pu{}, pv{};
     for (int y{}; y < height; ++y) {
         for (int x{}; x < width; ++x) {
