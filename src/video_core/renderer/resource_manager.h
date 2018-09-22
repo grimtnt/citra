@@ -14,7 +14,7 @@ class Texture : private NonCopyable {
 public:
     Texture() = default;
 
-    Texture(Texture&& o) : handle(std::exchange(o.handle, 0)) {}
+    Texture(Texture&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~Texture() {
         Release();
@@ -49,7 +49,7 @@ class Sampler : private NonCopyable {
 public:
     Sampler() = default;
 
-    Sampler(Sampler&& o) : handle(std::exchange(o.handle, 0)) {}
+    Sampler(Sampler&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~Sampler() {
         Release();
@@ -84,7 +84,7 @@ class Shader : private NonCopyable {
 public:
     Shader() = default;
 
-    Shader(Shader&& o) : handle(std::exchange(o.handle, 0)) {}
+    Shader(Shader&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~Shader() {
         Release();
@@ -118,7 +118,7 @@ class Program : private NonCopyable {
 public:
     Program() = default;
 
-    Program(Program&& o) : handle(std::exchange(o.handle, 0)) {}
+    Program(Program&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~Program() {
         Release();
@@ -137,7 +137,7 @@ public:
         handle = GLShader::LoadProgram(separable_program, shaders);
     }
 
-    /// Creates a new program from given shader soruce code
+    /// Creates a new program from given shader source code
     void Create(const char* vert_shader, const char* frag_shader) {
         Shader vert, frag;
         vert.Create(vert_shader, GL_VERTEX_SHADER);
@@ -160,12 +160,15 @@ public:
 class Pipeline : private NonCopyable {
 public:
     Pipeline() = default;
+
     Pipeline(Pipeline&& o) {
         handle = std::exchange<GLuint>(o.handle, 0);
     }
+
     ~Pipeline() {
         Release();
     }
+
     Pipeline& operator=(Pipeline&& o) {
         Release();
         handle = std::exchange<GLuint>(o.handle, 0);
@@ -193,7 +196,7 @@ class Buffer : private NonCopyable {
 public:
     Buffer() = default;
 
-    Buffer(Buffer&& o) : handle(std::exchange(o.handle, 0)) {}
+    Buffer(Buffer&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~Buffer() {
         Release();
@@ -228,11 +231,12 @@ class Sync : private NonCopyable {
 public:
     Sync() = default;
 
-    Sync(Sync&& o) : handle(std::exchange(o.handle, nullptr)) {}
+    Sync(Sync&& o) : handle{std::exchange(o.handle, nullptr)} {}
 
     ~Sync() {
         Release();
     }
+
     Sync& operator=(Sync&& o) {
         Release();
         handle = std::exchange(o.handle, nullptr);
@@ -261,7 +265,7 @@ class VertexArray : private NonCopyable {
 public:
     VertexArray() = default;
 
-    VertexArray(VertexArray&& o) : handle(std::exchange(o.handle, 0)) {}
+    VertexArray(VertexArray&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~VertexArray() {
         Release();
@@ -296,7 +300,7 @@ class Framebuffer : private NonCopyable {
 public:
     Framebuffer() = default;
 
-    Framebuffer(Framebuffer&& o) : handle(std::exchange(o.handle, 0)) {}
+    Framebuffer(Framebuffer&& o) : handle{std::exchange(o.handle, 0)} {}
 
     ~Framebuffer() {
         Release();

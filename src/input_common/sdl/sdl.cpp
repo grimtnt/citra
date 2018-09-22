@@ -316,7 +316,7 @@ void PollLoop() {
 class SDLButton final : public Input::ButtonDevice {
 public:
     explicit SDLButton(std::shared_ptr<SDLJoystick> joystick_, int button_)
-        : joystick(std::move(joystick_)), button(button_) {}
+        : joystick{std::move(joystick_)}, button{button_} {}
 
     bool GetStatus() const override {
         return joystick->GetButton(button);

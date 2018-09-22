@@ -56,7 +56,7 @@ public:
 
 protected:
     Applet(Service::APT::AppletId id, std::weak_ptr<Service::APT::AppletManager> manager)
-        : id(id), manager(std::move(manager)) {}
+        : id{id}, manager{std::move(manager)} {}
 
     /**
      * Handles the Applet start event, triggered from the application.
@@ -69,7 +69,7 @@ protected:
     std::shared_ptr<std::vector<u8>> heap_memory; ///< Heap memory for this Applet
 
     /// Whether this applet is currently running instead of the host application or not.
-    bool is_running = false;
+    bool is_running{};
 
     void SendParameter(const Service::APT::MessageParameter& parameter);
 

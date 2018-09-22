@@ -12,7 +12,7 @@
 
 namespace FileSys {
 
-Path::Path(LowPathType type, const std::vector<u8>& data) : type(type) {
+Path::Path(LowPathType type, const std::vector<u8>& data) : type{type} {
     switch (type) {
     case LowPathType::Binary: {
         binary = data;
@@ -99,7 +99,7 @@ std::vector<u8> Path::AsBinary() const {
         // use two u8 for each character of u16str
         std::vector<u8> to_return(u16str.size() * 2);
         for (std::size_t i{}; i < u16str.size(); ++i) {
-            u16 tmp_char = u16str.at(i);
+            u16 tmp_char{u16str.at(i)};
             to_return[i * 2] = (tmp_char & 0xFF00) >> 8;
             to_return[i * 2 + 1] = (tmp_char & 0x00FF);
         }

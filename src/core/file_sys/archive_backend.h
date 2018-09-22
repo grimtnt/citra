@@ -36,9 +36,9 @@ union Mode {
 
 class Path {
 public:
-    Path() : type(LowPathType::Invalid) {}
-    Path(const char* path) : type(LowPathType::Char), string(path) {}
-    Path(std::vector<u8> binary_data) : type(LowPathType::Binary), binary(std::move(binary_data)) {}
+    Path() : type{LowPathType::Invalid} {}
+    Path(const char* path) : type{LowPathType::Char}, string{path} {}
+    Path(std::vector<u8> binary_data) : type{LowPathType::Binary}, binary{std::move(binary_data)} {}
     Path(LowPathType type, const std::vector<u8>& data);
 
     LowPathType GetType() const {
