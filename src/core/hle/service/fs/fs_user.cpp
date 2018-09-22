@@ -41,16 +41,15 @@ struct SeedsFile {
     std::vector<Seed> seeds;
 
     static SeedsFile Load() {
-        if (!FileUtil::Exists(fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)))) {
-            FileUtil::CreateFullPath(
-                fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)));
+        const std::string path{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+        if (!FileUtil::Exists(path)) {
+            FileUtil::CreateFullPath(path);
             SeedsFile seeds_file{};
             seeds_file.Save();
             return seeds_file;
         }
         SeedsFile seeds_file{};
-        FileUtil::IOFile file{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)),
-                              "rb"};
+        FileUtil::IOFile file{path, "rb"};
         file.ReadBytes(&seeds_file.count, sizeof(seeds_file.count));
         for (u32 i{}; i < seeds_file.count; ++i) {
             Seed seed{};
@@ -62,9 +61,9 @@ struct SeedsFile {
     }
 
     void Save() {
-        FileUtil::CreateFullPath(fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)));
-        FileUtil::IOFile file{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX)),
-                              "wb"};
+        const std::string path{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+        FileUtil::CreateFullPath(path);
+        FileUtil::IOFile file{path, "wb"};
         file.WriteBytes(&count, sizeof(count));
         for (std::size_t i{}; i < count; ++i) {
             file.WriteBytes(&seeds[i].title_id, sizeof(seeds[i].title_id));
