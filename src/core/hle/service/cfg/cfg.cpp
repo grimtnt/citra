@@ -20,6 +20,7 @@
 #include "core/hle/service/cfg/cfg_nor.h"
 #include "core/hle/service/cfg/cfg_s.h"
 #include "core/hle/service/cfg/cfg_u.h"
+#include "core/hle/service/ps/ps_ps.h"
 #include "core/settings.h"
 
 namespace Service::CFG {
@@ -315,13 +316,103 @@ void Module::Interface::FormatConfig(Kernel::HLERequestContext& ctx) {
     rb.Push(cfg->FormatConfig());
 }
 
+void Module::Interface::IsFangateSupported(Kernel::HLERequestContext& ctx) {
+    IPC::ResponseBuilder rb{ctx, 0xB, 2, 0};
+    rb.Push(RESULT_SUCCESS);
+    rb.Push(true);
+}
+
+void Module::Interface::DeleteConfigNANDSavefile(Kernel::HLERequestContext& ctx) {
+    IPC::ResponseBuilder rb{ctx, 0x0805, 1, 0};
+    cfg->DeleteConfigNANDSaveFile();
+    rb.Push(RESULT_SUCCESS);
+}
+
+void Module::Interface::GetLocalFriendCodeSeedData(Kernel::HLERequestContext& ctx, u16 id) {
+    IPC::RequestParser rp{ctx, id, 1, 2};
+    rp.Skip(1, false);
+    auto buffer{rp.PopMappedBuffer()};
+    auto [exists, lfcs]{PS::GetLocalFriendCodeSeedTuple()};
+    buffer.Write(&lfcs, 0, sizeof(PS::LocalFriendCodeSeed));
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
+    rb.Push(RESULT_SUCCESS);
+    rb.PushMappedBuffer(buffer);
+}
+
+void Module::Interface::GetLocalFriendCodeSeed(Kernel::HLERequestContext& ctx, u16 id) {
+    IPC::ResponseBuilder rb{ctx, id, 3, 0};
+    rb.Push(RESULT_SUCCESS);
+    auto [exists, lfcs]{PS::GetLocalFriendCodeSeedTuple()};
+    rb.Push<u64>(lfcs.seed);
+}
+
+void Module::Interface::CreateConfigInfoBlk(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x0804, 3, 2};
+    u32 block_id{rp.Pop<u32>()};
+    u16 size{rp.Pop<u16>()};
+    u16 flags{rp.Pop<u16>()};
+    auto buffer{rp.PopMappedBuffer()};
+    std::vector<u8> data(buffer.GetSize());
+    buffer.Read(data.data(), 0, buffer.GetSize());
+    cfg->CreateConfigInfoBlk(block_id, size, flags, data.data());
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
+    rb.Push(RESULT_SUCCESS);
+    rb.PushMappedBuffer(buffer);
+}
+
+void Module::Interface::SetGetLocalFriendCodeSeedData(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x080B, 2, 2};
+    u32 size{rp.Pop<u32>()};
+    u8 flag{rp.Pop<u8>()};
+    auto buffer{rp.PopMappedBuffer()};
+    auto [exists, lfcs]{PS::GetLocalFriendCodeSeedTuple()};
+    if (flag != 0) {
+        buffer.Write(&lfcs, 0, sizeof(PS::LocalFriendCodeSeed));
+    } else {
+        buffer.Read(&lfcs, 0, sizeof(PS::LocalFriendCodeSeed));
+        const std::string path{
+            fmt::format("{}/LocalFriendCodeSeed_B", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+        FileUtil::CreateFullPath(path);
+        FileUtil::IOFile file{path, "rb"};
+        file.WriteBytes(&lfcs, sizeof(PS::LocalFriendCodeSeed));
+    }
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
+    rb.Push(RESULT_SUCCESS);
+    rb.PushMappedBuffer(buffer);
+}
+
+void Module::Interface::SetLocalFriendCodeSeedSignature(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x080C, 1, 2};
+    u32 buffer_size{rp.Pop<u32>()};
+    auto buffer{rp.PopMappedBuffer()};
+    auto [exists, lfcs]{PS::GetLocalFriendCodeSeedTuple()};
+    buffer.Read(lfcs.signature, 0, buffer_size);
+    const std::string path{
+        fmt::format("{}/LocalFriendCodeSeed_B", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    FileUtil::CreateFullPath(path);
+    FileUtil::IOFile file{path, "rb"};
+    file.WriteBytes(&lfcs, sizeof(PS::LocalFriendCodeSeed));
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    rb.Push(RESULT_SUCCESS);
+}
+
+void Module::Interface::DeleteCreateNANDLocalFriendCodeSeed(Kernel::HLERequestContext& ctx) {
+    IPC::ResponseBuilder rb{ctx, 0x080D, 1, 0};
+    const std::string path{
+        fmt::format("{}/LocalFriendCodeSeed_B", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    if (FileUtil::Exists(path)) {
+        FileUtil::Delete(path);
+    }
+    rb.Push(RESULT_SUCCESS);
+}
+
 ResultVal<void*> Module::GetConfigInfoBlockPointer(u32 block_id, u32 size, u32 flag) {
     // Read the header
-    SaveFileConfig* config = reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data());
+    SaveFileConfig* config{reinterpret_cast<SaveFileConfig*>(cfg_config_file_buffer.data())};
 
-    auto itr =
-        std::find_if(std::begin(config->block_entries), std::end(config->block_entries),
-                     [&](const SaveConfigBlockEntry& entry) { return entry.block_id == block_id; });
+    auto itr{std::find_if(
+        std::begin(config->block_entries), std::end(config->block_entries),
+        [&](const SaveConfigBlockEntry& entry) { return entry.block_id == block_id; })};
 
     if (itr == std::end(config->block_entries)) {
         LOG_ERROR(Service_CFG, "Config block 0x{:X} with flags {} and size {} was not found",

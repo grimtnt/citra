@@ -14,184 +14,26 @@ public:
     NDM_U();
 
 private:
-    /**
-     *  NDM::EnterExclusiveState service function
-     *  Inputs:
-     *      1: Exclusive State
-     *      2: 0x20
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void EnterExclusiveState(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::LeaveExclusiveState service function
-     *  Inputs:
-     *      1: 0x20
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void LeaveExclusiveState(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::QueryExclusiveMode service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Current Exclusive State
-     */
     void QueryExclusiveMode(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::LockState service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void LockState(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::UnlockState service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void UnlockState(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::SuspendDaemons service function
-     *  Inputs:
-     *      1: Daemon bit mask
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void SuspendDaemons(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::ResumeDaemons service function
-     *  Inputs:
-     *      1: Daemon bit mask
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void ResumeDaemons(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::SuspendScheduler service function
-     *  Inputs:
-     *      1: (u8/bool) 0 = Wait for completion, 1 = Perform in background
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void SuspendScheduler(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::ResumeScheduler service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void ResumeScheduler(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::Stubbed_0x000C0000 service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void Stubbed_0x000C0000(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::QueryStatus service function
-     *  Inputs:
-     *      1: Daemon
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Daemon status
-     */
     void QueryStatus(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::GetDaemonDisableCount service function
-     *  Inputs:
-     *      1: Daemon
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Current process disable count
-     *      3: Total disable count
-     */
     void GetDaemonDisableCount(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::GetSchedulerDisableCount service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Current process disable count
-     *      3: Total disable count
-     */
     void GetSchedulerDisableCount(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::SetScanInterval service function
-     *  Inputs:
-     *      1: Interval (default = 30)
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void SetScanInterval(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::GetScanInterval service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Interval (default = 30)
-     */
     void GetScanInterval(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::SetRetryInterval service function
-     *  Inputs:
-     *      1: Interval (default = 10)
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void SetRetryInterval(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::GetRetryInterval service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Interval (default = 10)
-     */
     void GetRetryInterval(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::OverrideDefaultDaemons service function
-     *  Inputs:
-     *      1: Daemon bit mask
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void OverrideDefaultDaemons(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::ResetDefaultDaemons service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void ResetDefaultDaemons(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::GetDefaultDaemons service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     *      2: Daemon bit mask
-     *  Note:
-     *      Gets the current default daemon bit mask. The default value is (DAEMONMASK_CEC |
-     * DAEMONMASK_FRIENDS)
-     */
     void GetDefaultDaemons(Kernel::HLERequestContext& ctx);
-
-    /**
-     *  NDM::ClearHalfAwakeMacFilter service function
-     *  Outputs:
-     *      1: Result, 0 on success, otherwise error code
-     */
     void ClearHalfAwakeMacFilter(Kernel::HLERequestContext& ctx);
 
     enum class Daemon : u32 {
@@ -231,18 +73,18 @@ private:
         DEFAULT_SCAN_INTERVAL = 30,
     };
 
-    DaemonMask daemon_bit_mask = DaemonMask::Default;
-    DaemonMask default_daemon_bit_mask = DaemonMask::Default;
+    DaemonMask daemon_bit_mask{DaemonMask::Default};
+    DaemonMask default_daemon_bit_mask{DaemonMask::Default};
     std::array<DaemonStatus, 4> daemon_status = {
         DaemonStatus::Idle,
         DaemonStatus::Idle,
         DaemonStatus::Idle,
         DaemonStatus::Idle,
     };
-    ExclusiveState exclusive_state = ExclusiveState::None;
-    u32 scan_interval = DEFAULT_SCAN_INTERVAL;
-    u32 retry_interval = DEFAULT_RETRY_INTERVAL;
-    bool daemon_lock_enabled = false;
+    ExclusiveState exclusive_state{ExclusiveState::None};
+    u32 scan_interval{DEFAULT_SCAN_INTERVAL};
+    u32 retry_interval{DEFAULT_RETRY_INTERVAL};
+    bool daemon_lock_enabled{};
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);

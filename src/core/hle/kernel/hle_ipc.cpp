@@ -110,7 +110,7 @@ ResultCode HLERequestContext::PopulateFromIncomingCommandBuffer(const u32_le* sr
 
     std::size_t i{untranslated_size};
     while (i < command_size) {
-        u32 descriptor = cmd_buf[i] = src_cmdbuf[i];
+        u32 descriptor{cmd_buf[i] = src_cmdbuf[i]};
         i += 1;
 
         switch (IPC::GetDescriptorType(descriptor)) {
@@ -182,7 +182,7 @@ ResultCode HLERequestContext::WriteToOutgoingCommandBuffer(u32_le* dst_cmdbuf, P
         case IPC::DescriptorType::CopyHandle:
         case IPC::DescriptorType::MoveHandle: {
             // HLE services don't use handles, so we treat both CopyHandle and MoveHandle equally
-            u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
+            u32 num_handles{IPC::HandleNumberFromDesc(descriptor)};
             ASSERT(i + num_handles <= command_size);
             for (u32 j{}; j < num_handles; ++j) {
                 SharedPtr<Object> object{GetIncomingHandle(cmd_buf[i])};
@@ -231,7 +231,7 @@ MappedBuffer& HLERequestContext::GetMappedBuffer(u32 id_from_cmdbuf) {
 }
 
 MappedBuffer::MappedBuffer(const Process& process, u32 descriptor, VAddr address, u32 id)
-    : id(id), address(address), process(&process) {
+    : id{id}, address{address}, process{&process} {
     IPC::MappedBufferDescInfo desc{descriptor};
     size = desc.size;
     perms = desc.perms;

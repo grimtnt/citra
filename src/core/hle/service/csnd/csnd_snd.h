@@ -16,132 +16,17 @@ public:
     ~CSND_SND() = default;
 
 private:
-    /**
-     * CSND_SND::Initialize service function
-     *  Inputs:
-     *      1: Shared memory block size, for mem-block creation
-     *      2: Offset0 located in the shared-memory, region size=8
-     *      3: Offset1 located in the shared-memory, region size=12*num_channels
-     *      4: Offset2 located in the shared-memory, region size=8*num_capturedevices
-     *      5: Offset3 located in the shared-memory.
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     *      2: Handle-list header
-     *      3: Mutex handle
-     *      4: Shared memory block handle
-     */
     void Initialize(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::Shutdown service function
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void Shutdown(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::ExecuteCommands service function
-     *  Inputs:
-     *      1: Command offset in shared memory.
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void ExecuteCommands(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::ExecuteType1Commands service function
-     *  Inputs:
-     *      1: unknown
-     *      2: unknown
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void ExecuteType1Commands(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::AcquireSoundChannels service function
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     *      2: Available channel bit mask
-     */
     void AcquireSoundChannels(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::ReleaseSoundChannels service function
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void ReleaseSoundChannels(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::AcquireCapUnit service function
-     *     This function tries to acquire one capture device (max: 2).
-     *     Returns index of which capture device was acquired.
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     *      2: Capture Unit
-     */
     void AcquireCapUnit(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::ReleaseCapUnit service function
-     *  Inputs:
-     *      1: Capture Unit
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void ReleaseCapUnit(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::FlushDataCache service function
-     *
-     * This function is a no-op
-     *
-     *  Inputs:
-     *      1: Address
-     *      2: Size
-     *      3: Value 0, some descriptor for the KProcess Handle
-     *      4: KProcess handle
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void FlushDataCache(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::StoreDataCache service function
-     *
-     * This function is a no-op
-     *
-     *  Inputs:
-     *      1: Address
-     *      2: Size
-     *      3: Value 0, some descriptor for the KProcess Handle
-     *      4: KProcess handle
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void StoreDataCache(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::InvalidateDataCache service function
-     *
-     * This function is a no-op
-     *
-     *  Inputs:
-     *      1: Address
-     *      2: Size
-     *      3: Value 0, some descriptor for the KProcess Handle
-     *      4: KProcess handle
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void InvalidateDataCache(Kernel::HLERequestContext& ctx);
-
-    /**
-     * CSND_SND::Reset service function
-     *  Outputs:
-     *      1: Result of function, 0 on success, otherwise error code
-     */
     void Reset(Kernel::HLERequestContext& ctx);
 
     struct Type0Command {

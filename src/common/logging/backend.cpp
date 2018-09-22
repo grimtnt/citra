@@ -171,6 +171,7 @@ void FileBackend::Write(const Entry& entry) {
     SUB(Service, IR)                                                                               \
     SUB(Service, Y2R)                                                                              \
     SUB(Service, NEWS)                                                                             \
+    SUB(Service, PS)                                                                               \
     CLS(HW)                                                                                        \
     SUB(HW, Memory)                                                                                \
     SUB(HW, LCD)                                                                                   \

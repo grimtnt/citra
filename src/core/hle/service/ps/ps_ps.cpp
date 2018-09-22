@@ -2,10 +2,18 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include "common/file_util.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/service/ps/ps_ps.h"
 
 namespace Service::PS {
+
+void PS_PS::GetLocalFriendCodeSeed(Kernel::HLERequestContext& ctx) {
+    IPC::ResponseBuilder rb{ctx, 0xA, 3, 0};
+    rb.Push(RESULT_SUCCESS);
+    auto [exists, lfcs]{GetLocalFriendCodeSeedTuple()};
+    rb.Push<u64>(lfcs.seed);
+}
 
 PS_PS::PS_PS() : ServiceFramework{"ps:ps"} {
     static const FunctionInfo functions[] = {
@@ -18,7 +26,7 @@ PS_PS::PS_PS() : ServiceFramework{"ps:ps"} {
         {0x00070040, nullptr, "GetRomId2"},
         {0x00080040, nullptr, "GetRomMakerCode"},
         {0x00090000, nullptr, "GetCTRCardAutoStartupBit"},
-        {0x000A0000, nullptr, "GetLocalFriendCodeSeed"},
+        {0x000A0000, &PS_PS::GetLocalFriendCodeSeed, "GetLocalFriendCodeSeed"},
         {0x000B0000, nullptr, "GetDeviceId"},
         {0x000C0000, nullptr, "SeedRNG"},
         {0x000D0042, nullptr, "GenerateRandomBytes"},
@@ -34,6 +42,21 @@ PS_PS::PS_PS() : ServiceFramework{"ps:ps"} {
 
 void InstallInterfaces(SM::ServiceManager& service_manager) {
     std::make_shared<PS_PS>()->InstallAsService(service_manager);
+}
+
+std::tuple<bool, LocalFriendCodeSeed> GetLocalFriendCodeSeedTuple() {
+    const std::string path{
+        fmt::format("{}/LocalFriendCodeSeed_B", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    if (FileUtil::Exists(path)) {
+        LocalFriendCodeSeed lfcs{};
+        FileUtil::IOFile file{path, "rb"};
+        file.ReadBytes(&lfcs, sizeof(LocalFriendCodeSeed));
+        return std::make_tuple(true, lfcs);
+    } else {
+        LOG_WARNING(Service_PS, "LocalFriendCodeSeed_B not found");
+        LocalFriendCodeSeed lfcs{};
+        return std::make_tuple(false, lfcs);
+    }
 }
 
 } // namespace Service::PS
