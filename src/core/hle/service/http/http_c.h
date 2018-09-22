@@ -106,9 +106,7 @@ struct Context {
         if (methods_map_body.find(method)->second) {
             request.body = body;
         }
-        hl::Params params;
-        hl::detail::parse_query_text(parsedUrl.m_Query, params);
-        request.params = params;
+        hl::detail::parse_query_text(parsedUrl.m_Query, request.params);
         response = std::make_shared<hl::Response>();
         cli->send(request, *response);
     }
