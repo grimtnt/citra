@@ -23,32 +23,35 @@
 namespace HLE::Applets {
 
 ValidationError ValidateFilters(const SoftwareKeyboardConfig& config, const std::string& input) {
-    if ((config.filter_flags & SwkbdFilter_Digits) == SwkbdFilter_Digits) {
+    if ((config.filter_flags & SoftwareKeyboardFilter_Digits) == SoftwareKeyboardFilter_Digits) {
         if (std::any_of(input.begin(), input.end(),
                         [](unsigned char c) { return std::isdigit(c); })) {
             return ValidationError::DigitNotAllowed;
         }
     }
-    if ((config.filter_flags & SwkbdFilter_At) == SwkbdFilter_At) {
+    if ((config.filter_flags & SoftwareKeyboardFilter_At) == SoftwareKeyboardFilter_At) {
         if (input.find('@') != std::string::npos) {
             return ValidationError::AtSignNotAllowed;
         }
     }
-    if ((config.filter_flags & SwkbdFilter_Percent) == SwkbdFilter_Percent) {
+    if ((config.filter_flags & SoftwareKeyboardFilter_Percent) == SoftwareKeyboardFilter_Percent) {
         if (input.find('%') != std::string::npos) {
             return ValidationError::PercentNotAllowed;
         }
     }
-    if ((config.filter_flags & SwkbdFilter_Backslash) == SwkbdFilter_Backslash) {
+    if ((config.filter_flags & SoftwareKeyboardFilter_Backslash) ==
+        SoftwareKeyboardFilter_Backslash) {
         if (input.find('\\') != std::string::npos) {
             return ValidationError::BackslashNotAllowed;
         }
     }
-    if ((config.filter_flags & SwkbdFilter_Profanity) == SwkbdFilter_Profanity) {
+    if ((config.filter_flags & SoftwareKeyboardFilter_Profanity) ==
+        SoftwareKeyboardFilter_Profanity) {
         // TODO: check the profanity filter
         LOG_INFO(Applet_Swkbd, "App requested swkbd profanity filter, but its not implemented.");
     }
-    if ((config.filter_flags & SwkbdFilter_Callback) == SwkbdFilter_Callback) {
+    if ((config.filter_flags & SoftwareKeyboardFilter_Callback) ==
+        SoftwareKeyboardFilter_Callback) {
         // TODO: check the callback
         LOG_INFO(Applet_Swkbd, "App requested a swkbd callback, but its not implemented.");
     }
@@ -69,18 +72,18 @@ ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::s
     if (!config.multiline && (input.find('\n') != std::string::npos)) {
         return ValidationError::NewLineNotAllowed;
     }
-    auto is_blank = [&] {
+    auto is_blank{[&] {
         return std::all_of(input.begin(), input.end(),
                            [](unsigned char c) { return std::isspace(c); });
-    };
-    auto is_empty = [&] { return input.empty(); };
+    }};
+    auto is_empty{[&] { return input.empty(); }};
     switch (config.valid_input) {
-    case SwkbdValidInput::FixedLen:
+    case SoftwareKeyboardValidInput::FixedLen:
         if (input.size() != config.max_text_length) {
             return ValidationError::FixedLengthRequired;
         }
         break;
-    case SwkbdValidInput::NotEmptyNotBlank:
+    case SoftwareKeyboardValidInput::NotEmptyNotBlank:
         if (is_blank()) {
             return ValidationError::BlankInputNotAllowed;
         }
@@ -88,17 +91,17 @@ ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::s
             return ValidationError::EmptyInputNotAllowed;
         }
         break;
-    case SwkbdValidInput::NotBlank:
+    case SoftwareKeyboardValidInput::NotBlank:
         if (is_blank()) {
             return ValidationError::BlankInputNotAllowed;
         }
         break;
-    case SwkbdValidInput::NotEmpty:
+    case SoftwareKeyboardValidInput::NotEmpty:
         if (is_empty()) {
             return ValidationError::EmptyInputNotAllowed;
         }
         break;
-    case SwkbdValidInput::Anything:
+    case SoftwareKeyboardValidInput::Anything:
         break;
     default:
         // TODO(jroweboy): What does hardware do in this case?
@@ -108,11 +111,11 @@ ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::s
     }
 
     switch (config.type) {
-    case SwkbdType::QWERTY:
-    case SwkbdType::Western:
-    case SwkbdType::Normal:
+    case SoftwareKeyboardType::QWERTY:
+    case SoftwareKeyboardType::Western:
+    case SoftwareKeyboardType::Normal:
         return ValidationError::None;
-    case SwkbdType::Numpad:
+    case SoftwareKeyboardType::Numpad:
         return std::all_of(input.begin(), input.end(), [](const char c) { return std::isdigit(c); })
                    ? ValidationError::None
                    : ValidationError::InputNotNumber;
@@ -123,19 +126,19 @@ ValidationError ValidateInput(const SoftwareKeyboardConfig& config, const std::s
 
 ValidationError ValidateButton(const SoftwareKeyboardConfig& config, u8 button) {
     switch (config.num_buttons_m1) {
-    case SwkbdButtonConfig::NoButton:
+    case SoftwareKeyboardButtonConfig::NoButton:
         return ValidationError::None;
-    case SwkbdButtonConfig::SingleButton:
+    case SoftwareKeyboardButtonConfig::SingleButton:
         if (button != 0) {
             return ValidationError::ButtonOutOfRange;
         }
         break;
-    case SwkbdButtonConfig::DualButton:
+    case SoftwareKeyboardButtonConfig::DualButton:
         if (button > 1) {
             return ValidationError::ButtonOutOfRange;
         }
         break;
-    case SwkbdButtonConfig::TripleButton:
+    case SoftwareKeyboardButtonConfig::TripleButton:
         if (button > 2) {
             return ValidationError::ButtonOutOfRange;
         }
@@ -203,7 +206,7 @@ void SoftwareKeyboard::Update() {
         std::string input{};
         std::cout << "Software Keyboard" << std::endl;
         // Display hint text
-        std::u16string hint{reinterpret_cast<char16_t*>(config.hint_text)};
+        std::u16string hint{reinterpret_cast<char16_t*>(config.hint_text.data())};
         if (!hint.empty()) {
             std::cout << "Hint text: " << Common::UTF16ToUTF8(hint) << std::endl;
         }
@@ -264,7 +267,8 @@ void SoftwareKeyboard::Update() {
         for (u32 i{}; i <= num_buttons; ++i) {
             std::string button_text{};
             // apps are allowed to set custom text to display on the button
-            std::u16string custom_button_text{reinterpret_cast<char16_t*>(config.button_text[i])};
+            std::u16string custom_button_text{
+                reinterpret_cast<char16_t*>(config.button_text[i].data())};
             if (custom_button_text.empty()) {
                 // Use the system default text for that button
                 button_text = default_button_text[num_buttons][i];
@@ -300,34 +304,34 @@ void SoftwareKeyboard::Update() {
 
         s32 button{static_cast<s32>(std::stol(option))};
         switch (config.num_buttons_m1) {
-        case SwkbdButtonConfig::SingleButton:
-            config.return_code = SwkbdResult::D0Click;
+        case SoftwareKeyboardButtonConfig::SingleButton:
+            config.return_code = SoftwareKeyboardResult::D0Click;
             break;
-        case SwkbdButtonConfig::DualButton:
+        case SoftwareKeyboardButtonConfig::DualButton:
             if (button == 0) {
-                config.return_code = SwkbdResult::D1Click0;
+                config.return_code = SoftwareKeyboardResult::D1Click0;
             } else {
-                config.return_code = SwkbdResult::D1Click1;
+                config.return_code = SoftwareKeyboardResult::D1Click1;
             }
             break;
-        case SwkbdButtonConfig::TripleButton:
+        case SoftwareKeyboardButtonConfig::TripleButton:
             if (button == 0) {
-                config.return_code = SwkbdResult::D2Click0;
+                config.return_code = SoftwareKeyboardResult::D2Click0;
             } else if (button == 1) {
-                config.return_code = SwkbdResult::D2Click1;
+                config.return_code = SoftwareKeyboardResult::D2Click1;
             } else {
-                config.return_code = SwkbdResult::D2Click2;
+                config.return_code = SoftwareKeyboardResult::D2Click2;
             }
             break;
         default:
             // TODO: what does the hardware do
             LOG_WARNING(Applet_Swkbd, "Unknown option for num_buttons_m1: {}",
                         static_cast<u32>(config.num_buttons_m1));
-            config.return_code = SwkbdResult::None;
+            config.return_code = SoftwareKeyboardResult::None;
             break;
         }
 
-        std::u16string utf16_input = Common::UTF8ToUTF16(input);
+        std::u16string utf16_input{Common::UTF8ToUTF16(input)};
         memcpy(text_memory->GetPointer(), utf16_input.c_str(),
                utf16_input.length() * sizeof(char16_t));
         config.text_length = static_cast<u16>(utf16_input.size());
@@ -346,9 +350,9 @@ void SoftwareKeyboard::Update() {
         break;
     }
     default:
-        UNREACHABLE_MSG("Unimplemented keyboard mode {}",
-                        static_cast<int>(Settings::values.keyboard_mode));
-        break;
+        LOG_CRITICAL(Applet_Swkbd, "Unknown button config {}",
+                     static_cast<u32>(config.num_buttons_m1));
+        UNREACHABLE();
     }
 }
 

@@ -25,7 +25,7 @@ namespace HLE::Applets {
 #define SWKBD_MAX_CALLBACK_MSG_LEN 256
 
 /// Keyboard types
-enum class SwkbdType : u32 {
+enum class SoftwareKeyboardType : u32 {
     Normal,  ///< Normal keyboard with several pages (QWERTY/accents/symbol/mobile)
     QWERTY,  ///< QWERTY keyboard only.
     Numpad,  ///< Number pad.
@@ -34,7 +34,7 @@ enum class SwkbdType : u32 {
 };
 
 /// Keyboard dialog buttons.
-enum class SwkbdButtonConfig : u32 {
+enum class SoftwareKeyboardButtonConfig : u32 {
     SingleButton, ///< Ok button
     DualButton,   ///< Cancel | Ok buttons
     TripleButton, ///< Cancel | I Forgot | Ok buttons
@@ -42,7 +42,7 @@ enum class SwkbdButtonConfig : u32 {
 };
 
 /// Accepted input types.
-enum class SwkbdValidInput : u32 {
+enum class SoftwareKeyboardValidInput : u32 {
     Anything,         ///< All inputs are accepted.
     NotEmpty,         ///< Empty inputs are not accepted.
     NotEmptyNotBlank, ///< Empty or blank inputs (consisting solely of whitespace) are not
@@ -54,25 +54,26 @@ enum class SwkbdValidInput : u32 {
 };
 
 /// Keyboard password modes.
-enum class SwkbdPasswordMode : u32 {
+enum class SoftwareKeyboardPasswordMode : u32 {
     None = 0,  ///< Characters are not concealed.
     Hide,      ///< Characters are concealed immediately.
     HideDelay, ///< Characters are concealed a second after they've been typed.
 };
 
 /// Keyboard input filtering flags.
-enum SwkbdFilter {
-    SwkbdFilter_Digits =
+enum SoftwareKeyboardFilter {
+    SoftwareKeyboardFilter_Digits =
         1, ///< Disallow the use of more than a certain number of digits (0 or more)
-    SwkbdFilter_At = 1 << 1,        ///< Disallow the use of the @ sign.
-    SwkbdFilter_Percent = 1 << 2,   ///< Disallow the use of the % sign.
-    SwkbdFilter_Backslash = 1 << 3, ///< Disallow the use of the \ sign.
-    SwkbdFilter_Profanity = 1 << 4, ///< Disallow profanity using Nintendo's profanity filter.
-    SwkbdFilter_Callback = 1 << 5,  ///< Use a callback in order to check the input.
+    SoftwareKeyboardFilter_At = 1 << 1,        ///< Disallow the use of the @ sign.
+    SoftwareKeyboardFilter_Percent = 1 << 2,   ///< Disallow the use of the % sign.
+    SoftwareKeyboardFilter_Backslash = 1 << 3, ///< Disallow the use of the \ sign.
+    SoftwareKeyboardFilter_Profanity =
+        1 << 4, ///< Disallow profanity using Nintendo's profanity filter.
+    SoftwareKeyboardFilter_Callback = 1 << 5, ///< Use a callback in order to check the input.
 };
 
 /// Keyboard features.
-enum class SwkbdFeatures {
+enum class SoftwareKeyboardFeatures {
     Parental = 1,             ///< Parental PIN mode.
     DarkenTopScreen = 1 << 1, ///< Darken the top screen when the keyboard is shown.
     PredictiveInput =
@@ -86,14 +87,14 @@ enum class SwkbdFeatures {
 };
 
 /// Keyboard filter callback return values.
-enum class SwkbdCallbackResult : u32 {
+enum class SoftwareKeyboardCallbackResult : u32 {
     Ok,       ///< Specifies that the input is valid.
     Close,    ///< Displays an error message, then closes the keyboard.
     Continue, ///< Displays an error message and continues displaying the keyboard.
 };
 
 /// Keyboard return values.
-enum class SwkbdResult : s32 {
+enum class SoftwareKeyboardResult : s32 {
     None = -1,         ///< Dummy/unused.
     InvalidInput = -2, ///< Invalid parameters to swkbd.
     OutOfMem = -3,     ///< Out of memory.
@@ -136,20 +137,21 @@ enum class ValidationError {
 };
 
 struct SoftwareKeyboardConfig {
-    SwkbdType type;
-    SwkbdButtonConfig num_buttons_m1;
-    SwkbdValidInput valid_input;
-    SwkbdPasswordMode password_mode;
-    s32 is_parental_screen;
-    s32 darken_top_screen;
-    u32 filter_flags;
-    u32 save_state_flags;
-    u16 max_text_length; ///< Maximum length of the input text
-    u16 dict_word_count;
-    u16 max_digits;
-    u16 button_text[SWKBD_MAX_BUTTON][SWKBD_MAX_BUTTON_TEXT_LEN + 1];
-    u16 numpad_keys[2];
-    u16 hint_text[SWKBD_MAX_HINT_TEXT_LEN + 1]; ///< Text to display when asking the user for input
+    enum_le<SoftwareKeyboardType> type;
+    enum_le<SoftwareKeyboardButtonConfig> num_buttons_m1;
+    enum_le<SoftwareKeyboardValidInput> valid_input;
+    enum_le<SoftwareKeyboardPasswordMode> password_mode;
+    s32_le is_parental_screen;
+    s32_le darken_top_screen;
+    u32_le filter_flags;
+    u32_le save_state_flags;
+    u16_le max_text_length;
+    u16_le dict_word_count;
+    u16_le max_digits;
+    std::array<std::array<u16_le, SWKBD_MAX_BUTTON_TEXT_LEN + 1>, SWKBD_MAX_BUTTON> button_text;
+    std::array<u16_le, 2> numpad_keys;
+    std::array<u16_le, SWKBD_MAX_HINT_TEXT_LEN + 1>
+        hint_text; ///< Text to display when asking the user for input
     bool predictive_input;
     bool multiline;
     bool fixed_width;
@@ -158,26 +160,26 @@ struct SoftwareKeyboardConfig {
     bool allow_power;
     bool unknown;
     bool default_qwerty;
-    bool button_submits_text[4];
-    u16 language;
+    std::array<bool, 4> button_submits_text;
+    u16_le language;
 
-    u32 initial_text_offset; ///< Offset of the default text in the output SharedMemory
-    u32 dict_offset;
-    u32 initial_status_offset;
-    u32 initial_learning_offset;
-    u32 shared_memory_size; ///< Size of the SharedMemory
-    u32 version;
+    u32_le initial_text_offset; ///< Offset of the default text in the output SharedMemory
+    u32_le dict_offset;
+    u32_le initial_status_offset;
+    u32_le initial_learning_offset;
+    u32_le shared_memory_size; ///< Size of the SharedMemory
+    u32_le version;
 
-    SwkbdResult return_code;
+    enum_le<SoftwareKeyboardResult> return_code;
 
-    u32 status_offset;
-    u32 learning_offset;
+    u32_le status_offset;
+    u32_le learning_offset;
 
-    u32 text_offset; ///< Offset in the SharedMemory where the output text starts
-    u16 text_length; ///< Length in characters of the output text
+    u32_le text_offset; ///< Offset in the SharedMemory where the output text starts
+    u16_le text_length; ///< Length in characters of the output text
 
-    int callback_result;
-    u16 callback_msg[SWKBD_MAX_CALLBACK_MSG_LEN + 1];
+    s32_le callback_result;
+    std::array<u16_le, SWKBD_MAX_CALLBACK_MSG_LEN + 1> callback_msg;
     bool skip_at_check;
     INSERT_PADDING_BYTES(0xAB);
 };
@@ -203,18 +205,18 @@ const std::string default_button_text[][3]{
     },
 };
 
-const SwkbdResult results[][3]{
+const SoftwareKeyboardResult results[][3]{
     {
-        SwkbdResult::D0Click,
+        SoftwareKeyboardResult::D0Click,
     },
     {
-        SwkbdResult::D1Click0,
-        SwkbdResult::D1Click1,
+        SoftwareKeyboardResult::D1Click0,
+        SoftwareKeyboardResult::D1Click1,
     },
     {
-        SwkbdResult::D2Click0,
-        SwkbdResult::D2Click1,
-        SwkbdResult::D2Click2,
+        SoftwareKeyboardResult::D2Click0,
+        SoftwareKeyboardResult::D2Click1,
+        SoftwareKeyboardResult::D2Click2,
     },
 };
 

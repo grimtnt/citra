@@ -13,17 +13,17 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
     ui->setupUi(this);
     setWindowTitle("Software Keyboard");
     switch (config.num_buttons_m1) {
-    case HLE::Applets::SwkbdButtonConfig::SingleButton:
+    case HLE::Applets::SoftwareKeyboardButtonConfig::SingleButton:
         ui->button0->setEnabled(
             HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
             HLE::Applets::ValidationError::None);
         break;
-    case HLE::Applets::SwkbdButtonConfig::DualButton:
+    case HLE::Applets::SoftwareKeyboardButtonConfig::DualButton:
         ui->button1->setEnabled(
             HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
             HLE::Applets::ValidationError::None);
         break;
-    case HLE::Applets::SwkbdButtonConfig::TripleButton:
+    case HLE::Applets::SoftwareKeyboardButtonConfig::TripleButton:
         ui->button2->setEnabled(
             HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
             HLE::Applets::ValidationError::None);
@@ -32,13 +32,15 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
         UNREACHABLE();
         break;
     }
-    std::u16string button0_text(reinterpret_cast<char16_t*>(config.button_text[0]));
-    std::u16string button1_text(reinterpret_cast<char16_t*>(config.button_text[1]));
-    std::u16string button2_text(reinterpret_cast<char16_t*>(config.button_text[2]));
-    std::u16string hint_text(reinterpret_cast<char16_t*>(config.hint_text));
+    std::u16string button0_text{reinterpret_cast<char16_t*>(config.button_text[0].data())};
+    std::u16string button1_text{reinterpret_cast<char16_t*>(config.button_text[1].data())};
+    std::u16string button2_text{reinterpret_cast<char16_t*>(config.button_text[2].data())};
+    std::u16string hint_text{reinterpret_cast<char16_t*>(config.hint_text.data())};
     ui->text->setPlaceholderText(QString::fromStdU16String(hint_text));
-    ui->button1->setVisible(config.num_buttons_m1 >= HLE::Applets::SwkbdButtonConfig::DualButton);
-    ui->button2->setVisible(config.num_buttons_m1 == HLE::Applets::SwkbdButtonConfig::TripleButton);
+    ui->button1->setVisible(config.num_buttons_m1 >=
+                            HLE::Applets::SoftwareKeyboardButtonConfig::DualButton);
+    ui->button2->setVisible(config.num_buttons_m1 ==
+                            HLE::Applets::SoftwareKeyboardButtonConfig::TripleButton);
     ui->button0->setText(
         button0_text.empty()
             ? QString::fromStdString(
@@ -56,17 +58,17 @@ SoftwareKeyboardDialog::SoftwareKeyboardDialog(QWidget* parent,
             : QString::fromStdU16String(button2_text));
     connect(ui->text, &QTextEdit::textChanged, [&] {
         switch (config.num_buttons_m1) {
-        case HLE::Applets::SwkbdButtonConfig::SingleButton:
+        case HLE::Applets::SoftwareKeyboardButtonConfig::SingleButton:
             ui->button0->setEnabled(
                 HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
                 HLE::Applets::ValidationError::None);
             break;
-        case HLE::Applets::SwkbdButtonConfig::DualButton:
+        case HLE::Applets::SoftwareKeyboardButtonConfig::DualButton:
             ui->button1->setEnabled(
                 HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
                 HLE::Applets::ValidationError::None);
             break;
-        case HLE::Applets::SwkbdButtonConfig::TripleButton:
+        case HLE::Applets::SoftwareKeyboardButtonConfig::TripleButton:
             ui->button2->setEnabled(
                 HLE::Applets::ValidateInput(config, ui->text->toPlainText().toStdString()) ==
                 HLE::Applets::ValidationError::None);

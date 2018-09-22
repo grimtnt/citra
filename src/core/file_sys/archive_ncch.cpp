@@ -31,6 +31,11 @@ enum class NCCHFilePathType : u32 {
     ExeFS = 2,
 };
 
+enum class NCCHFileOpenType : u32 {
+    NCCHData = 0,
+    SaveData = 1,
+};
+
 struct NCCHArchivePath {
     u64_le tid;
     u32_le media_type;
