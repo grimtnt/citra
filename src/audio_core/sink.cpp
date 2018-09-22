@@ -54,10 +54,10 @@ Sink::Sink(std::string target_device_name) : impl{std::make_unique<Impl>()} {
             LOG_WARNING(Audio, "Audio output device enumeration not supported");
         } else {
             const auto collection_end{collection.device + collection.count};
-            const auto device{std::find_if(collection.device, collection_end,
-                                           [&](const cubeb_device_info& device) {
-                                               return target_device_name == device.friendly_name;
-                                           })};
+            const auto device{
+                std::find_if(collection.device, collection_end, [&](const cubeb_device_info& info) {
+                    return target_device_name == info.friendly_name;
+                })};
             if (device != collection_end) {
                 output_device = device->devid;
             }
