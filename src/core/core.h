@@ -27,9 +27,11 @@ namespace AudioCore {
 class DspHle;
 } // namespace AudioCore
 
+#ifdef ENABLE_SCRIPTING
 namespace RPC {
 class RPCServer;
 } // namespace RPC
+#endif
 
 namespace Service::SM {
 class ServiceManager;
@@ -242,8 +244,10 @@ private:
     /// Shared page
     std::shared_ptr<SharedPage::Handler> shared_page_handler;
 
-    /// RPC server for scripting
+#ifdef ENABLE_SCRIPTING
+    /// RPC Server for scripting support
     std::unique_ptr<RPC::RPCServer> rpc_server;
+#endif
 
     static System s_instance;
 

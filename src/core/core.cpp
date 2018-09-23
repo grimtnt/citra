@@ -23,7 +23,9 @@
 #include "core/loader/loader.h"
 #include "core/memory_setup.h"
 #include "core/movie.h"
+#ifdef ENABLE_SCRIPTING
 #include "core/rpc/rpc_server.h"
+#endif
 #include "core/settings.h"
 #include "network/network.h"
 #include "video_core/renderer/renderer.h"
@@ -179,7 +181,10 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
     dsp_core = std::make_unique<AudioCore::DspHle>();
     dsp_core->EnableStretching(Settings::values.enable_audio_stretching);
 
+#ifdef ENABLE_SCRIPTING
     rpc_server = std::make_unique<RPC::RPCServer>();
+#endif
+
     service_manager = std::make_shared<Service::SM::ServiceManager>();
     shared_page_handler = std::make_shared<SharedPage::Handler>();
 
@@ -229,12 +234,14 @@ void System::Shutdown() {
     Service::Shutdown();
     Kernel::Shutdown();
     HW::Shutdown();
+#ifdef ENABLE_SCRIPTING
+    rpc_server.reset();
+#endif
     service_manager.reset();
     dsp_core.reset();
     cpu_core.reset();
     CoreTiming::Shutdown();
     app_loader.reset();
-    rpc_server.reset();
     Memory::InvalidateAreaCache();
 
     if (auto room_member{Network::GetRoomMember().lock()}) {

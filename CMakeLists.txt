@@ -17,6 +17,8 @@ option(ENABLE_WEB_SERVICE "Enable web services" ON)
 
 option(ENABLE_DISCORD_RPC "Enable Discord Rich Presence integration" OFF)
 
+option(ENABLE_SCRIPTING ON)
+
 # Sanity check : Check that all submodules are present
 # =======================================================================
 
@@ -207,6 +209,10 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT}
 
 if (ENABLE_WEB_SERVICE)
     add_definitions(-DENABLE_WEB_SERVICE)
+endif()
+
+if (ENABLE_SCRIPTING)
+    add_definitions(-DENABLE_SCRIPTING)
 endif()
 
 # Platform-specific library requirements
