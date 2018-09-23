@@ -12,15 +12,13 @@
 namespace Service::NFC {
 
 struct TagInfo {
+    u16 size_or_offset;
+    u8 unk1;
+    u8 unk2;
     std::array<u8, 10> uuid;
-    u8 uuid_length; // TODO(ogniK): Figure out if this is actual the uuid length or does it mean
-                    // something else
-    INSERT_PADDING_BYTES(0x15);
-    u32_le protocol;
-    u32_le tag_type;
-    INSERT_PADDING_BYTES(0x30);
+    INSERT_PADDING_BYTES(0x1D);
 };
-static_assert(sizeof(TagInfo) == 0x58, "TagInfo is an invalid size");
+static_assert(sizeof(TagInfo) == 0x2C, "TagInfo is an invalid size");
 
 struct ModelInfo {
     std::array<u8, 0x8> amiibo_identification_block;
@@ -100,11 +98,11 @@ void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
     Core::System& system{Core::System::GetInstance()};
     FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
     size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
-    tag_info.uuid_length = static_cast<u8>(read_length);
-    tag_info.protocol = 1; // TODO(ogniK): Figure out actual values
-    tag_info.tag_type = 2;
+    tag_info.size_or_offset = static_cast<u8>(read_length);
+    tag_info.unk1 = 0x0;
+    tag_info.unk2 = 0x2;
 
-    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{rp.MakeBuilder(12, 0)};
     rb.Push(RESULT_SUCCESS);
 
     // TODO: Fix
