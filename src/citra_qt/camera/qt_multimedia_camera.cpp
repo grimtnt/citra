@@ -150,7 +150,7 @@ void QtMultimediaCameraHandler::ReleaseHandler(
             LOG_INFO(Service_CAM, "Successfully released handler {}", i);
             status[i] = false;
             handlers[i]->started = false;
-            for (auto it = loaded.begin(); it != loaded.end(); it++) {
+            for (auto it{loaded.begin()}; it != loaded.end(); it++) {
                 if (it->second == handlers[i]) {
                     loaded.erase(it);
                     break;
@@ -162,7 +162,7 @@ void QtMultimediaCameraHandler::ReleaseHandler(
 }
 
 void QtMultimediaCameraHandler::CreateCamera(const std::string& camera_name) {
-    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    QList<QCameraInfo> cameras{QCameraInfo::availableCameras()};
     for (const QCameraInfo& cameraInfo : cameras) {
         if (cameraInfo.deviceName().toStdString() == camera_name)
             camera = std::make_unique<QCamera>(cameraInfo);
