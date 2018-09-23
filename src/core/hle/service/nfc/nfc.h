@@ -75,7 +75,6 @@ public:
 
 private:
     Kernel::SharedPtr<Kernel::Event> tag_out_of_range_event;
-    TagState nfc_tag_state{TagState::NotInitialized};
     CommunicationStatus nfc_status{CommunicationStatus::NfcInitialized};
 };
 

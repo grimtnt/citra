@@ -15,8 +15,8 @@ struct TagInfo {
     u16 size_or_offset;
     u8 unk1;
     u8 unk2;
-    std::array<u8, 10> uuid;
-    INSERT_PADDING_BYTES(0x1D);
+    std::array<u8, 7> uuid;
+    INSERT_PADDING_BYTES(0x1D + 0x3);
 };
 static_assert(sizeof(TagInfo) == 0x2C, "TagInfo is an invalid size");
 
@@ -30,7 +30,8 @@ void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 1, 0};
     u8 param{rp.Pop<u8>()};
 
-    nfc->nfc_tag_state = TagState::NotScanning;
+    Core::System& system{Core::System::GetInstance()};
+    system.SetNFCTagState(TagState::NotScanning);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -41,7 +42,8 @@ void Module::Interface::Shutdown(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x02, 1, 0};
     u8 param{rp.Pop<u8>()};
 
-    nfc->nfc_tag_state = TagState::NotInitialized;
+    Core::System& system{Core::System::GetInstance()};
+    system.SetNFCTagState(TagState::NotInitialized);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -59,15 +61,16 @@ void Module::Interface::StartCommunication(Kernel::HLERequestContext& ctx) {
 void Module::Interface::StopCommunication(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x04, 0, 0};
 
-    switch (nfc->nfc_tag_state) {
+    Core::System& system{Core::System::GetInstance()};
+    switch (system.GetNFCTagState()) {
     case TagState::TagInRange:
     case TagState::TagDataLoaded:
         nfc->tag_out_of_range_event->Signal();
-        nfc->nfc_tag_state = TagState::NotScanning;
+        system.SetNFCTagState(TagState::NotScanning);
         break;
     case TagState::Scanning:
     case TagState::TagOutOfRange:
-        nfc->nfc_tag_state = TagState::NotScanning;
+        system.SetNFCTagState(TagState::NotScanning);
         break;
     }
 
@@ -80,9 +83,10 @@ void Module::Interface::StartTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 1, 0}; // 0x00050040
     u16 in_val{rp.Pop<u16>()};
 
+    Core::System& system{Core::System::GetInstance()};
     // this works
-    if (nfc->nfc_tag_state == TagState::NotScanning) {
-        nfc->nfc_tag_state = TagState::Scanning;
+    if (system.GetNFCTagState() == TagState::NotScanning) {
+        system.SetNFCTagState(TagState::Scanning);
     }
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -97,6 +101,7 @@ void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
     TagInfo tag_info{};
     Core::System& system{Core::System::GetInstance()};
     FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
+    ASSERT(sizeof(tag_info.uuid) == 0x7);
     size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
     tag_info.size_or_offset = static_cast<u8>(read_length);
     tag_info.unk1 = 0x0;
@@ -112,7 +117,8 @@ void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
 void Module::Interface::StopTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x06, 0, 0};
 
-    nfc->nfc_tag_state = TagState::NotScanning;
+    Core::System& system{Core::System::GetInstance()};
+    system.SetNFCTagState(TagState::NotScanning);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -122,7 +128,8 @@ void Module::Interface::StopTagScanning(Kernel::HLERequestContext& ctx) {
 void Module::Interface::LoadAmiiboData(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x07, 0, 0};
 
-    nfc->nfc_tag_state = TagState::TagDataLoaded;
+    Core::System& system{Core::System::GetInstance()};
+    system.SetNFCTagState(TagState::TagDataLoaded);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -132,7 +139,8 @@ void Module::Interface::LoadAmiiboData(Kernel::HLERequestContext& ctx) {
 void Module::Interface::ResetTagScanState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x08, 0, 0};
 
-    nfc->nfc_tag_state = TagState::NotScanning;
+    Core::System& system{Core::System::GetInstance()};
+    system.SetNFCTagState(TagState::NotScanning);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -164,7 +172,8 @@ void Module::Interface::GetTagState(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
-    rb.PushEnum(nfc->nfc_tag_state);
+    Core::System& system{Core::System::GetInstance()};
+    rb.PushEnum(system.GetNFCTagState());
     LOG_DEBUG(Service_NFC, "(STUBBED) called");
 }
 
