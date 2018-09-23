@@ -12,6 +12,7 @@
 #include "common/common_types.h"
 #include "core/hle/applets/erreula.h"
 #include "core/hle/applets/swkbd.h"
+#include "core/hle/kernel/event.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/shared_page.h"
 #include "core/loader/loader.h"
@@ -193,6 +194,16 @@ public:
     }
 
     std::string file_path;
+
+    const std::string& GetNFCFilename() const;
+
+    void LoadAmiibo(const std::string& path);
+
+    const Kernel::SharedPtr<Kernel::Event>& GetNFCEvent() const;
+
+    /// NFC Loading
+    Kernel::SharedPtr<Kernel::Event> nfc_tag_in_range_event;
+    std::string nfc_filename;
 
 private:
     /**

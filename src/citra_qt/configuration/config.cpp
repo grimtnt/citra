@@ -186,6 +186,7 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("System");
+    Settings::values.enable_nfc = qt_config->value("enable_nfc", true).toBool();
     Settings::values.region_value =
         qt_config->value("region_value", Settings::REGION_VALUE_AUTO_SELECT).toInt();
     Settings::values.init_clock = static_cast<Settings::InitClock>(
@@ -379,6 +380,7 @@ void Config::SaveValues() {
     qt_config->setValue("init_clock", static_cast<u32>(Settings::values.init_clock));
     qt_config->setValue("init_time", static_cast<unsigned long long>(Settings::values.init_time));
     qt_config->setValue("memory_developer_mode", Settings::values.memory_developer_mode);
+    qt_config->setValue("enable_nfc", Settings::values.enable_nfc);
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");

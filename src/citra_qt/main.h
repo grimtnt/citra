@@ -142,6 +142,7 @@ private slots:
     void OnSetPlayCoins();
     void OnCheats();
     void OnControlPanel();
+    void OnLoadAmiibo();
     void OnToggleFilterBar();
     void OnDisplayTitleBars(bool);
     void ToggleFullscreen();

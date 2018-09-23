@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include "core/core.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/event.h"
 #include "core/hle/service/nfc/nfc.h"
@@ -9,6 +10,23 @@
 #include "core/hle/service/nfc/nfc_u.h"
 
 namespace Service::NFC {
+
+struct TagInfo {
+    std::array<u8, 10> uuid;
+    u8 uuid_length; // TODO(ogniK): Figure out if this is actual the uuid length or does it mean
+                    // something else
+    INSERT_PADDING_BYTES(0x15);
+    u32_le protocol;
+    u32_le tag_type;
+    INSERT_PADDING_BYTES(0x30);
+};
+static_assert(sizeof(TagInfo) == 0x58, "TagInfo is an invalid size");
+
+struct ModelInfo {
+    std::array<u8, 0x8> amiibo_identification_block;
+    INSERT_PADDING_BYTES(0x38);
+};
+static_assert(sizeof(ModelInfo) == 0x40, "ModelInfo is an invalid size");
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 1, 0};
@@ -43,6 +61,18 @@ void Module::Interface::StartCommunication(Kernel::HLERequestContext& ctx) {
 void Module::Interface::StopCommunication(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x04, 0, 0};
 
+    switch (nfc->nfc_tag_state) {
+    case TagState::TagInRange:
+    case TagState::TagDataLoaded:
+        nfc->tag_out_of_range_event->Signal();
+        nfc->nfc_tag_state = TagState::NotScanning;
+        break;
+    case TagState::Scanning:
+    case TagState::TagOutOfRange:
+        nfc->nfc_tag_state = TagState::NotScanning;
+        break;
+    }
+
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_NFC, "(STUBBED) called");
@@ -52,20 +82,33 @@ void Module::Interface::StartTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x05, 1, 0}; // 0x00050040
     u16 in_val{rp.Pop<u16>()};
 
-    ResultCode result{RESULT_SUCCESS};
-
-    // TODO(shinyquagsire23): Implement NFC tag detection, for now stub result
-    result = ResultCode(ErrCodes::CommandInvalidForState, ErrorModule::NFC,
-                        ErrorSummary::InvalidState, ErrorLevel::Status);
-
-    if (result == RESULT_SUCCESS) {
-        nfc->nfc_tag_state = TagState::TagInRange;
-        nfc->tag_in_range_event->Signal();
+    // this works
+    if (nfc->nfc_tag_state == TagState::NotScanning) {
+        nfc->nfc_tag_state = TagState::Scanning;
     }
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
-    rb.Push(result);
+    rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_NFC, "(STUBBED) called, in_val={:04x}", in_val);
+}
+
+void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x11, 1, 0};
+
+    LOG_CRITICAL(Service_NFC, "called");
+    TagInfo tag_info{};
+    Core::System& system{Core::System::GetInstance()};
+    FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
+    size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
+    tag_info.uuid_length = static_cast<u8>(read_length);
+    tag_info.protocol = 1; // TODO(ogniK): Figure out actual values
+    tag_info.tag_type = 2;
+
+    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
+    rb.Push(RESULT_SUCCESS);
+
+    // TODO: Fix
+    rb.PushRaw<TagInfo>(tag_info);
 }
 
 void Module::Interface::StopTagScanning(Kernel::HLERequestContext& ctx) {
@@ -103,8 +146,10 @@ void Module::Interface::GetTagInRangeEvent(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
-    rb.PushCopyObjects(nfc->tag_in_range_event);
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
+
+    Core::System& system{Core::System::GetInstance()};
+    rb.PushCopyObjects(system.GetNFCEvent());
+    LOG_WARNING(Service_NFC, "called");
 }
 
 void Module::Interface::GetTagOutOfRangeEvent(Kernel::HLERequestContext& ctx) {
@@ -113,7 +158,7 @@ void Module::Interface::GetTagOutOfRangeEvent(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(nfc->tag_out_of_range_event);
-    LOG_WARNING(Service_NFC, "(STUBBED) called");
+    LOG_WARNING(Service_NFC, "called");
 }
 
 void Module::Interface::GetTagState(Kernel::HLERequestContext& ctx) {
@@ -140,8 +185,6 @@ Module::Interface::Interface(std::shared_ptr<Module> nfc, const char* name)
 Module::Interface::~Interface() = default;
 
 Module::Module() {
-    tag_in_range_event =
-        Kernel::Event::Create(Kernel::ResetType::OneShot, "NFC::tag_in_range_event");
     tag_out_of_range_event =
         Kernel::Event::Create(Kernel::ResetType::OneShot, "NFC::tag_out_range_event");
 }

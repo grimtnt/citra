@@ -59,12 +59,21 @@ public:
         void GetTagState(Kernel::HLERequestContext& ctx);
         void CommunicationGetStatus(Kernel::HLERequestContext& ctx);
 
+        /**
+         * NFC::CommunicationGetStatus service function
+         *  Inputs:
+         *      0 : Header code [0x000F0000]
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         *      2 : (u8) Communication state
+         */
+        void GetTagInfo(Kernel::HLERequestContext& ctx);
+
     private:
         std::shared_ptr<Module> nfc;
     };
 
 private:
-    Kernel::SharedPtr<Kernel::Event> tag_in_range_event;
     Kernel::SharedPtr<Kernel::Event> tag_out_of_range_event;
     TagState nfc_tag_state{TagState::NotInitialized};
     CommunicationStatus nfc_status{CommunicationStatus::NfcInitialized};

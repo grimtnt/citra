@@ -53,6 +53,7 @@ struct Values {
 
     QList<UISettings::GameDir> game_dirs;
     QStringList recent_files;
+    QString amiibo_path;
 
     QString theme;
 

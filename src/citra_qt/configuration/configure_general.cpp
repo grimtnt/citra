@@ -45,6 +45,7 @@ void ConfigureGeneral::setConfiguration() {
     ui->toggle_console->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_console->setChecked(UISettings::values.show_console);
     ui->log_filter_edit->setText(QString::fromStdString(Settings::values.log_filter));
+    ui->enable_nfc->setChecked(Settings::values.enable_nfc);
 }
 
 void ConfigureGeneral::applyConfiguration() {
@@ -54,6 +55,7 @@ void ConfigureGeneral::applyConfiguration() {
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     UISettings::values.show_console = ui->toggle_console->isChecked();
     Settings::values.log_filter = ui->log_filter_edit->text().toStdString();
+    Settings::values.enable_nfc = ui->enable_nfc->isChecked();
     Util::ToggleConsole();
     Log::Filter filter;
     filter.ParseFilterString(Settings::values.log_filter);

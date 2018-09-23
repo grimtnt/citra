@@ -63,6 +63,7 @@
     <addaction name="menu_recent_files"/>
     <addaction name="separator"/>
     <addaction name="action_Select_SDMC_Directory"/>
+    <addaction name="action_Load_Amiibo"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -382,6 +383,14 @@
   <action name="action_Select_SDMC_Directory">
    <property name="text">
     <string>Select SD Card Directory</string>
+   </property>
+  </action>
+  <action name="action_Load_Amiibo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Load Amiibo...</string>
    </property>
   </action>
  </widget>

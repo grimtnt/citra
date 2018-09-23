@@ -23,7 +23,7 @@ NFC_U::NFC_U(std::shared_ptr<Module> nfc) : Module::Interface{std::move(nfc), "n
         {0x000D0000, &NFC_U::GetTagState, "GetTagState"},
         {0x000F0000, &NFC_U::CommunicationGetStatus, "CommunicationGetStatus"},
         {0x00100000, nullptr, "GetTagInfo2"},
-        {0x00110000, nullptr, "GetTagInfo"},
+        {0x00110000, &NFC_U::GetTagInfo, "GetTagInfo"},
         {0x00120000, nullptr, "CommunicationGetResult"},
         {0x00130040, nullptr, "OpenAppData"},
         {0x00140384, nullptr, "InitializeWriteAppData"},

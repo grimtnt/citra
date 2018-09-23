@@ -390,6 +390,7 @@ void GMainWindow::ConnectMenuEvents() {
         Settings::values.sdmc_dir = dir.toStdString();
         game_list->PopulateAsync(UISettings::values.game_dirs);
     });
+    connect(ui.action_Load_Amiibo, &QAction::triggered, this, &GMainWindow::OnLoadAmiibo);
 
     // Emulation
     connect(ui.action_Start, &QAction::triggered, this, &GMainWindow::OnStartGame);
@@ -682,6 +683,7 @@ void GMainWindow::ShutdownGame() {
     ui.action_Select_SDMC_Directory->setEnabled(true);
     ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(false);
+    ui.action_Load_Amiibo->setEnabled(false);
     render_window->hide();
     if (game_list->isEmpty())
         game_list_placeholder->show();
@@ -1017,6 +1019,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Select_SDMC_Directory->setEnabled(false);
     ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(true);
+    ui.action_Load_Amiibo->setEnabled(true);
 }
 
 void GMainWindow::OnPauseGame() {
@@ -1177,6 +1180,18 @@ void GMainWindow::OnSetPlayCoins() {
                              Qt::WindowSystemMenuHint | Qt::WindowTitleHint))};
     if (ok)
         Service::PTM::SetPlayCoins(play_coins);
+}
+
+void GMainWindow::OnLoadAmiibo() {
+    const QString extensions{"*.bin"};
+    const QString file_filter{tr("Amiibo File") + " (" + extensions + ");;" +
+                              tr("All Files (*.*)")};
+    const QString filename{QFileDialog::getOpenFileName(
+        this, tr("Load Amiibo"), UISettings::values.amiibo_path, file_filter)};
+    if (!filename.isEmpty()) {
+        Core::System& system{Core::System::GetInstance()};
+        system.LoadAmiibo(filename.toStdString());
+    }
 }
 
 void GMainWindow::OnToggleFilterBar() {
