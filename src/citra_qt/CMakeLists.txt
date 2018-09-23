@@ -43,6 +43,8 @@ add_executable(citra-qt
     configuration/configure_system.h
     configuration/configure_web.cpp
     configuration/configure_web.h
+    configuration/configure_ui.cpp
+    configuration/configure_ui.h
     configuration/configure_hacks.cpp
     configuration/configure_hacks.h
     multiplayer/chat_room.cpp
@@ -94,6 +96,7 @@ set(UIS
     configuration/configure_motion_touch.ui
     configuration/configure_system.ui
     configuration/configure_web.ui
+    configuration/configure_ui.ui
     configuration/configure_hacks.ui
     swkbd.ui
     mii_selector.ui

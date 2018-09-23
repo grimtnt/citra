@@ -49,20 +49,6 @@
             </item>
            </layout>
           </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout_theme">
-            <item>
-             <widget class="QLabel" name="theme_label">
-              <property name="text">
-               <string>Theme</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="theme_combobox"/>
-            </item>
-           </layout>
-          </item>
          </layout>
         </item>
        </layout>

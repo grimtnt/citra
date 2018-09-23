@@ -49,6 +49,12 @@ struct Values {
     bool show_filter_bar;
     bool show_status_bar;
 
+    // Game List
+    int game_list_icon_size;
+    int game_list_row_1;
+    int game_list_row_2;
+    bool game_list_hide_no_icon;
+
     u16 screenshot_resolution_factor;
 
     QList<UISettings::GameDir> game_dirs;

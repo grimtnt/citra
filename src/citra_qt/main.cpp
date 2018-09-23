@@ -1200,6 +1200,7 @@ void GMainWindow::OnOpenConfiguration() {
             emit UpdateThemedIcons();
         }
         SyncMenuUISettings();
+        game_list->RefreshGameDirectory();
         config->Save();
     }
 }

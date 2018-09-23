@@ -230,6 +230,31 @@ void Config::ReadValues() {
         qt_config->value("gameListHeaderState").toByteArray();
     qt_config->endGroup();
 
+    qt_config->beginGroup("GameList");
+    UISettings::values.game_list_icon_size = qt_config->value("iconSize", 2).toInt();
+    if (UISettings::values.game_list_icon_size < 0 || UISettings::values.game_list_icon_size > 2) {
+        LOG_ERROR(Config, "Invalid value for game_list_icon_size: {}",
+                  UISettings::values.game_list_icon_size);
+        UISettings::values.game_list_icon_size = 2;
+    }
+
+    UISettings::values.game_list_row_1 = qt_config->value("row1", 2).toInt();
+    if (UISettings::values.game_list_row_1 < 0 || UISettings::values.game_list_row_1 > 3) {
+        LOG_ERROR(Config, "Invalid value for game_list_row_1: {}",
+                  UISettings::values.game_list_row_1);
+        UISettings::values.game_list_row_1 = 2;
+    }
+
+    UISettings::values.game_list_row_2 = qt_config->value("row2", 0).toInt();
+    if (UISettings::values.game_list_row_2 < -1 || UISettings::values.game_list_row_2 > 3) {
+        LOG_ERROR(Config, "Invalid value for game_list_row_2: {}",
+                  UISettings::values.game_list_row_2);
+        UISettings::values.game_list_row_2 = 0;
+    }
+
+    UISettings::values.game_list_hide_no_icon = qt_config->value("hideNoIcon", false).toBool();
+    qt_config->endGroup();
+
     qt_config->beginGroup("Paths");
     int size{qt_config->beginReadArray("gamedirs")};
     for (int i{}; i < size; ++i) {
@@ -243,7 +268,7 @@ void Config::ReadValues() {
     qt_config->endArray();
     // create NAND and SD card directories if empty, these are not removable through the UI
     if (UISettings::values.game_dirs.isEmpty()) {
-        UISettings::GameDir game_dir;
+        UISettings::GameDir game_dir{};
         game_dir.path = "INSTALLED";
         game_dir.expanded = true;
         UISettings::values.game_dirs.append(game_dir);
@@ -433,11 +458,18 @@ void Config::SaveValues() {
     qt_config->setValue("gameListHeaderState", UISettings::values.gamelist_header_state);
     qt_config->endGroup();
 
+    qt_config->beginGroup("GameList");
+    qt_config->setValue("iconSize", UISettings::values.game_list_icon_size);
+    qt_config->setValue("row1", UISettings::values.game_list_row_1);
+    qt_config->setValue("row2", UISettings::values.game_list_row_2);
+    qt_config->setValue("hideNoIcon", UISettings::values.game_list_hide_no_icon);
+    qt_config->endGroup();
+
     qt_config->beginGroup("Paths");
     qt_config->beginWriteArray("gamedirs");
     for (int i{}; i < UISettings::values.game_dirs.size(); ++i) {
         qt_config->setArrayIndex(i);
-        const auto& game_dir = UISettings::values.game_dirs.at(i);
+        const auto& game_dir{UISettings::values.game_dirs.at(i)};
         qt_config->setValue("path", game_dir.path);
         qt_config->setValue("deep_scan", game_dir.deep_scan);
         qt_config->setValue("expanded", game_dir.expanded);

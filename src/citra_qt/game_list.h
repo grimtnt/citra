@@ -59,6 +59,8 @@ public:
 
     QString FindGameByProgramID(u64 program_id);
 
+    void RefreshGameDirectory();
+
     static const QStringList supported_file_extensions;
 
 signals:
@@ -80,8 +82,6 @@ private:
     void AddEntry(const QList<QStandardItem*>& entry_items, GameListDir* parent);
     void ValidateEntry(const QModelIndex& item);
     void DonePopulating(QStringList watch_list);
-
-    void RefreshGameDirectory();
 
     void PopupContextMenu(const QPoint& menu_location);
     void AddGamePopup(QMenu& context_menu, QStandardItem* child);

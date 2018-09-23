@@ -23,6 +23,7 @@ void ConfigurationDialog::applyConfiguration() {
     ui->cameraTab->applyConfiguration();
     ui->webTab->applyConfiguration();
     ui->hacksTab->applyConfiguration();
+    ui->uiTab->applyConfiguration();
     Settings::Apply();
     Settings::LogSettings();
 }

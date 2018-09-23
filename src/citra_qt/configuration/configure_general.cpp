@@ -25,10 +25,6 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
         QDesktopServices::openUrl(QUrl::fromLocalFile(path));
     });
 
-    for (auto theme : UISettings::themes) {
-        ui->theme_combobox->addItem(theme.first, theme.second);
-    }
-
 #ifndef _WIN32
     ui->toggle_console->setText("Enable logging to console");
     ui->toggle_console->setToolTip(QString());
@@ -40,7 +36,6 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 ConfigureGeneral::~ConfigureGeneral() {}
 
 void ConfigureGeneral::setConfiguration() {
-    ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->combobox_keyboard_mode->setCurrentIndex(static_cast<int>(Settings::values.keyboard_mode));
     ui->toggle_console->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_console->setChecked(UISettings::values.show_console);
@@ -50,8 +45,6 @@ void ConfigureGeneral::setConfiguration() {
 void ConfigureGeneral::applyConfiguration() {
     Settings::values.keyboard_mode =
         static_cast<Settings::KeyboardMode>(ui->combobox_keyboard_mode->currentIndex());
-    UISettings::values.theme =
-        ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     UISettings::values.show_console = ui->toggle_console->isChecked();
     Settings::values.log_filter = ui->log_filter_edit->text().toStdString();
     Util::ToggleConsole();
