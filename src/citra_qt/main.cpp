@@ -498,11 +498,11 @@ bool GMainWindow::LoadROM(const QString& filename) {
                 this, "Invalid ROM Format",
                 "Your ROM format is not supported.<br/>Please follow the guides to redump your "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Game-Cartridges/'>game "
                 "cartridges</a> or "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Installed-Titles/'>installed "
                 "titles</a>.");
             break;
@@ -513,11 +513,11 @@ bool GMainWindow::LoadROM(const QString& filename) {
                 this, "ROM Corrupted",
                 "Your ROM is corrupted. <br/>Please follow the guides to redump your "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Game-Cartridges/'>game "
                 "cartridges</a> or "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Installed-Titles/'>installed "
                 "titles</a>.");
             break;
@@ -527,11 +527,11 @@ bool GMainWindow::LoadROM(const QString& filename) {
                 this, "ROM Encrypted",
                 "Your ROM is encrypted. <br/>Please follow the guides to redump your "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Game-Cartridges/'>game "
                 "cartridges</a> or "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Installed-Titles/'>installed "
                 "titles</a>.");
             break;
@@ -541,11 +541,11 @@ bool GMainWindow::LoadROM(const QString& filename) {
                 this, "Invalid ROM Format",
                 "Your ROM format is not supported.<br/>Please follow the guides to redump your "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Game-Cartridges/'>game "
                 "cartridges</a> or "
                 "<a "
-                "href='https://github.com/citra-valentincitra/wiki/"
+                "href='https://github.com/valentinvanelslande/citra/wiki/"
                 "Dumping-Installed-Titles/'>installed "
                 "titles</a>.");
             break;
@@ -1352,7 +1352,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     case Core::System::ResultStatus::ErrorSystemFiles: {
         const QString common_message{
             "%1 is missing. Please <a "
-            "href='https://github.com/citra-valentincitra/wiki/"
+            "href='https://github.com/valentinvanelslande/citra/wiki/"
             "Dumping-System-Archives-from-a-3DS-Console/'>dump your system "
             "archives</a>.<br/>Continuing emulation may result in crashes and bugs."};
 
