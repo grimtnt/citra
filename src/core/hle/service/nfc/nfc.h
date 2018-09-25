@@ -69,6 +69,26 @@ public:
          */
         void GetTagInfo(Kernel::HLERequestContext& ctx);
 
+        /**
+         * NFC::CommunicationGetStatus service function
+         *  Inputs:
+         *      0 : Header code [0x000F0000]
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         *      2 : (u8) Communication state
+         */
+        void GetAmiiboConfig(Kernel::HLERequestContext& ctx);
+
+        /**
+         * NFC::CommunicationGetStatus service function
+         *  Inputs:
+         *      0 : Header code [0x000F0000]
+         *  Outputs:
+         *      1 : Result of function, 0 on success, otherwise error code
+         *      2 : (u8) Communication state
+         */
+        void Unknown1(Kernel::HLERequestContext& ctx);
+
     private:
         std::shared_ptr<Module> nfc;
     };

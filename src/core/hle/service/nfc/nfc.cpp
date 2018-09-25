@@ -12,19 +12,33 @@
 namespace Service::NFC {
 
 struct TagInfo {
-    u16 size_or_offset;
+    u16 id_offset_size;
     u8 unk1;
     u8 unk2;
-    std::array<u8, 7> uuid;
-    INSERT_PADDING_BYTES(0x1D + 0x3);
+    std::array<u8, 10> uuid;
+    INSERT_PADDING_BYTES(0x1D);
 };
 static_assert(sizeof(TagInfo) == 0x2C, "TagInfo is an invalid size");
 
-struct ModelInfo {
-    std::array<u8, 0x8> amiibo_identification_block;
-    INSERT_PADDING_BYTES(0x38);
+struct AmiiboConfig {
+    u16 lastwritedate_year;
+    u8 lastwritedate_month;
+    u8 lastwritedate_day;
+    u16 write_counter;
+
+    std::array<u8, 3> characterID; /// the first element is the collection ID, the second the
+                                   /// character in this collection, the third the variant
+    u8 series;                     /// ID of the series
+    u16 amiiboID; /// ID shared by all exact same amiibo. Some amiibo are only distinguished by this
+                  /// one like regular SMB Series Mario and the gold one
+    u8 type;      /// Type of amiibo 0 = figure, 1 = card, 2 = plush
+    u8 pagex4_byte3;
+    u16 appdata_size; /// "NFC module writes hard-coded u8 value 0xD8 here. This is the size of the
+                      /// Amiibo AppData, apps can use this with the AppData R/W commands. ..."
+    INSERT_PADDING_BYTES(0x30); /// "Unused / reserved: this is cleared by NFC module but never
+                                /// written after that."
 };
-static_assert(sizeof(ModelInfo) == 0x40, "ModelInfo is an invalid size");
+static_assert(sizeof(AmiiboConfig) == 0x40, "AmiiboConfig is an invalid size");
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 1, 0};
@@ -101,24 +115,53 @@ void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
     TagInfo tag_info{};
     Core::System& system{Core::System::GetInstance()};
     FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
-    ASSERT(sizeof(tag_info.uuid) == 0x7);
     std::size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
-    tag_info.size_or_offset = static_cast<u8>(read_length);
+    tag_info.id_offset_size = static_cast<u8>(read_length);
     tag_info.unk1 = 0x0;
     tag_info.unk2 = 0x2;
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(12, 0)};
     rb.Push(RESULT_SUCCESS);
-
-    // TODO: Fix
     rb.PushRaw<TagInfo>(tag_info);
+}
+
+void Module::Interface::GetAmiiboConfig(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x18, 0, 0};
+
+    // TODO: FILL THE STRUCT!
+    AmiiboConfig amiibo_config{};
+    amiibo_config.lastwritedate_year = 2017;
+    amiibo_config.lastwritedate_month = 10;
+    amiibo_config.lastwritedate_day = 10;
+
+    amiibo_config.write_counter = 1;
+
+    amiibo_config.characterID[0] = 1; /// the first element is the collection ID, the second the
+    amiibo_config.characterID[1] = 2;
+    amiibo_config.characterID[2] = 3;
+
+    /// character in this collection, the third the variant
+    amiibo_config.series = 4; /// ID of the series
+
+    // TODO: Use
+    // auto nfc_file = FileUtil::IOFile(system.GetNFCFilename(), "rb");
+    // size_t read_length = nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()));
+    amiibo_config.amiiboID = 12345678; /// ID shared by all exact same amiibo. Some amiibo are only
+                                       /// distinguished by this
+                                       /// one like regular SMB Series Mario and the gold one
+    u8 type{0};                        /// Type of amiibo 0 = figure, 1 = card, 2 = plush
+    u8 pagex4_byte3{456};
+    u16 appdata_size{0xD8};
+
+    IPC::ResponseBuilder rb{rp.MakeBuilder(17, 0)};
+    rb.Push(RESULT_SUCCESS);
+    rb.PushRaw<AmiiboConfig>(amiibo_config);
+
+    LOG_CRITICAL(Service_NFC, "called");
 }
 
 void Module::Interface::StopTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x06, 0, 0};
-
-    Core::System& system{Core::System::GetInstance()};
-    system.SetNFCTagState(TagState::NotScanning);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -184,6 +227,14 @@ void Module::Interface::CommunicationGetStatus(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum(nfc->nfc_status);
     LOG_DEBUG(Service_NFC, "(STUBBED) called");
+}
+
+void Module::Interface::Unknown1(Kernel::HLERequestContext& ctx) {
+    IPC::RequestParser rp{ctx, 0x1A, 0, 0};
+
+    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    rb.Push(RESULT_SUCCESS);
+    LOG_WARNING(Service_NFC, "(STUBBED) called");
 }
 
 Module::Interface::Interface(std::shared_ptr<Module> nfc, const char* name)
