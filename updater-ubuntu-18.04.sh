@@ -33,7 +33,7 @@ else
 fi
 if $install; then
     echo "Cloning to $repo"
-    git clone --recursive https://github.com/valentinvanelslande/citra $repo
+    git clone --recursive https://github.com/citra-valentin/citra $repo
     echo "Entering $repo"
     cd "$repo"
     echo "Adding upstream remote"
@@ -65,7 +65,7 @@ RESULT=$?
 if [ $RESULT -eq 0 ]; then
     echo "Build succeeded"
     echo "Opening Citra"
-    ./src/citra_qt/citra-qt
+    ./bin/citra-qt
 else
     echo "Build failed"
 fi
