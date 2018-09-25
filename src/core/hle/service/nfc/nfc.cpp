@@ -75,19 +75,6 @@ void Module::Interface::StartCommunication(Kernel::HLERequestContext& ctx) {
 void Module::Interface::StopCommunication(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x04, 0, 0};
 
-    Core::System& system{Core::System::GetInstance()};
-    switch (system.GetNFCTagState()) {
-    case TagState::TagInRange:
-    case TagState::TagDataLoaded:
-        nfc->tag_out_of_range_event->Signal();
-        system.SetNFCTagState(TagState::NotScanning);
-        break;
-    case TagState::Scanning:
-    case TagState::TagOutOfRange:
-        system.SetNFCTagState(TagState::NotScanning);
-        break;
-    }
-
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
     LOG_WARNING(Service_NFC, "(STUBBED) called");
@@ -98,10 +85,7 @@ void Module::Interface::StartTagScanning(Kernel::HLERequestContext& ctx) {
     u16 in_val{rp.Pop<u16>()};
 
     Core::System& system{Core::System::GetInstance()};
-    // this works
-    if (system.GetNFCTagState() == TagState::NotScanning) {
-        system.SetNFCTagState(TagState::Scanning);
-    }
+    system.SetNFCTagState(TagState::Scanning);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -130,28 +114,31 @@ void Module::Interface::GetAmiiboConfig(Kernel::HLERequestContext& ctx) {
 
     // TODO: FILL THE STRUCT!
     AmiiboConfig amiibo_config{};
-    amiibo_config.lastwritedate_year = 2017;
-    amiibo_config.lastwritedate_month = 10;
-    amiibo_config.lastwritedate_day = 10;
 
-    amiibo_config.write_counter = 1;
+    // amiibo_config.lastwritedate_year = 2017;
+    // amiibo_config.lastwritedate_month = 10;
+    // amiibo_config.lastwritedate_day = 10;
 
-    amiibo_config.characterID[0] = 1; /// the first element is the collection ID, the second the
-    amiibo_config.characterID[1] = 2;
-    amiibo_config.characterID[2] = 3;
+    // amiibo_config.write_counter = 1;
+
+    // amiibo_config.characterID[0] = 1; /// the first element is the collection ID, the second the
+    // amiibo_config.characterID[1] = 2;
+    // amiibo_config.characterID[2] = 3;
 
     /// character in this collection, the third the variant
-    amiibo_config.series = 4; /// ID of the series
+    // amiibo_config.series = 4; /// ID of the series
 
     // TODO: Use
-    // auto nfc_file = FileUtil::IOFile(system.GetNFCFilename(), "rb");
-    // size_t read_length = nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()));
-    amiibo_config.amiiboID = 12345678; /// ID shared by all exact same amiibo. Some amiibo are only
-                                       /// distinguished by this
-                                       /// one like regular SMB Series Mario and the gold one
-    u8 type{0};                        /// Type of amiibo 0 = figure, 1 = card, 2 = plush
-    u8 pagex4_byte3{456};
-    u16 appdata_size{0xD8};
+    // FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
+    // std::size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(),
+    // sizeof(tag_info.uuid.size()))}; amiibo_config.amiiboID = 12345678; /// ID shared by all exact
+    // same amiibo. Some amiibo are
+    // only
+    /// distinguished by this
+    /// one like regular SMB Series Mario and the gold one
+    // u8 type{0};                       /// Type of amiibo 0 = figure, 1 = card, 2 = plush
+    // u8 pagex4_byte3{456};
+    // u16 appdata_size{0xD8};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(17, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -162,6 +149,9 @@ void Module::Interface::GetAmiiboConfig(Kernel::HLERequestContext& ctx) {
 
 void Module::Interface::StopTagScanning(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x06, 0, 0};
+
+    Core::System& system{Core::System::GetInstance()};
+    system.SetNFCTagState(TagState::NotScanning);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -183,7 +173,7 @@ void Module::Interface::ResetTagScanState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x08, 0, 0};
 
     Core::System& system{Core::System::GetInstance()};
-    system.SetNFCTagState(TagState::NotScanning);
+    system.SetNFCTagState(TagState::TagInRange);
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -217,7 +207,7 @@ void Module::Interface::GetTagState(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     Core::System& system{Core::System::GetInstance()};
     rb.PushEnum(system.GetNFCTagState());
-    LOG_DEBUG(Service_NFC, "(STUBBED) called");
+    LOG_WARNING(Service_NFC, "(STUBBED) called");
 }
 
 void Module::Interface::CommunicationGetStatus(Kernel::HLERequestContext& ctx) {
