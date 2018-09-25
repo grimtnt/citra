@@ -179,6 +179,7 @@ struct Values {
     TicksMode ticks_mode;
     u64 ticks;
     bool use_bos;
+    bool disable_mh4u_3d;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region

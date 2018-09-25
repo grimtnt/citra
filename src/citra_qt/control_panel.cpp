@@ -47,7 +47,10 @@ ControlPanel::ControlPanel(QWidget* parent)
       ui{std::make_unique<Ui::ControlPanel>()} {
     ui->setupUi(this);
     ui->volume_slider->setValue(Settings::values.volume * ui->volume_slider->maximum());
-    ui->slider_3d->setValue(Settings::values.factor_3d);
+    if (!Settings::values.disable_mh4u_3d) {
+        ui->slider_3d->setValue(Settings::values.factor_3d);
+    }
+    ui->slider_3d->setEnabled(!Settings::values.disable_mh4u_3d);
     ui->checkbox_headphones_connected->setChecked(Settings::values.headphones_connected);
     ui->power_adapter_connected->setChecked(Settings::values.p_adapter_connected);
     ui->power_battery_charging->setChecked(Settings::values.p_battery_charging);

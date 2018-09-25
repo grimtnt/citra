@@ -206,6 +206,7 @@ void Config::ReadValues() {
         static_cast<Settings::TicksMode>(qt_config->value("ticks_mode", 0).toInt());
     Settings::values.ticks = qt_config->value("ticks", 0).toULongLong();
     Settings::values.use_bos = qt_config->value("use_bos", false).toBool();
+    Settings::values.disable_mh4u_3d = qt_config->value("disable_mh4u_3d", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");
@@ -392,6 +393,7 @@ void Config::SaveValues() {
     qt_config->setValue("ticks_mode", static_cast<int>(Settings::values.ticks_mode));
     qt_config->setValue("ticks", static_cast<unsigned long long>(Settings::values.ticks));
     qt_config->setValue("use_bos", Settings::values.use_bos);
+    qt_config->setValue("disable_mh4u_3d", Settings::values.disable_mh4u_3d);
     qt_config->endGroup();
 
     qt_config->beginGroup("UI");

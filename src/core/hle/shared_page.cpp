@@ -134,6 +134,11 @@ SharedPageDef& Handler::GetSharedPage() {
 }
 
 void Handler::Update3DSettings(bool called_by_control_panel) {
+    if (Settings::values.disable_mh4u_3d) {
+        shared_page.sliderstate_3d = 0.01f;
+        shared_page.ledstate_3d = 0;
+        return;
+    }
     shared_page.ledstate_3d = Settings::values.factor_3d == 0 ? 1 : 0;
     shared_page.sliderstate_3d =
         Settings::values.factor_3d != 0 ? (float_le)Settings::values.factor_3d / 100 : 0.0f;
