@@ -102,7 +102,7 @@ void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
     Core::System& system{Core::System::GetInstance()};
     FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
     ASSERT(sizeof(tag_info.uuid) == 0x7);
-    size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
+    std::size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
     tag_info.size_or_offset = static_cast<u8>(read_length);
     tag_info.unk1 = 0x0;
     tag_info.unk2 = 0x2;
