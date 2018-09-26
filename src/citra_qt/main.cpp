@@ -613,6 +613,10 @@ void GMainWindow::BootGame(const QString& filename) {
     LOG_INFO(Frontend, "Citra starting...");
     StoreRecentFile(filename); // Put the filename on top of the list
 
+    if (movie_record_on_start) {
+        Core::Movie::GetInstance().PrepareForRecording();
+    }
+
     if (!LoadROM(filename))
         return;
 
@@ -1209,8 +1213,17 @@ void GMainWindow::OnToggleFilterBar() {
 }
 
 void GMainWindow::OnRecordMovie() {
+    if (emulation_running) {
+        QMessageBox::StandardButton answer{QMessageBox::warning(
+            this, "Record Movie",
+            "To keep consistency with the RNG, it is recommended to record the movie from game "
+            "start.<br>Are you sure you still want to record movies now?",
+            QMessageBox::Yes | QMessageBox::No)};
+        if (answer == QMessageBox::No)
+            return;
+    }
     const QString path{
-        QFileDialog::getSaveFileName(this, "Record Movie", "", "Citra TAS Movie (*.ctm)")};
+        QFileDialog::getSaveFileName(this, "Record Movie", ".", "Citra TAS Movie (*.ctm)")};
     if (path.isEmpty())
         return;
     if (emulation_running) {
@@ -1268,8 +1281,18 @@ bool GMainWindow::ValidateMovie(const QString& path, u64 program_id) {
 }
 
 void GMainWindow::OnPlayMovie() {
+    if (emulation_running) {
+        QMessageBox::StandardButton answer{QMessageBox::warning(
+            this, "Play Movie",
+            "To keep consistency with the RNG, it is recommended to play the movie from game "
+            "start.<br>Are you sure you still want to play movies now?",
+            QMessageBox::Yes | QMessageBox::No)};
+        if (answer == QMessageBox::No)
+            return;
+    }
+
     const QString path{
-        QFileDialog::getOpenFileName(this, "Play Movie", "", "Citra TAS Movie (*.ctm)")};
+        QFileDialog::getOpenFileName(this, "Play Movie", ".", "Citra TAS Movie (*.ctm)")};
     if (path.isEmpty())
         return;
 
@@ -1288,6 +1311,7 @@ void GMainWindow::OnPlayMovie() {
         }
         if (!ValidateMovie(path, program_id))
             return;
+        Core::Movie::GetInstance().PrepareForPlayback(path.toStdString());
         BootGame(game_path);
     }
     Core::Movie::GetInstance().StartPlayback(path.toStdString(), [this] {
