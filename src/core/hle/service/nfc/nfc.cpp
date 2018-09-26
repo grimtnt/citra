@@ -99,7 +99,7 @@ void Module::Interface::GetTagInfo(Kernel::HLERequestContext& ctx) {
     TagInfo tag_info{};
     Core::System& system{Core::System::GetInstance()};
     FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
-    std::size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), sizeof(tag_info.uuid.size()))};
+    std::size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(), tag_info.uuid.size())};
     tag_info.id_offset_size = static_cast<u8>(read_length);
     tag_info.unk1 = 0x0;
     tag_info.unk2 = 0x2;
@@ -131,7 +131,7 @@ void Module::Interface::GetAmiiboConfig(Kernel::HLERequestContext& ctx) {
     // TODO: Use
     // FileUtil::IOFile nfc_file{system.GetNFCFilename(), "rb"};
     // std::size_t read_length{nfc_file.ReadBytes(tag_info.uuid.data(),
-    // sizeof(tag_info.uuid.size()))}; amiibo_config.amiiboID = 12345678; /// ID shared by all exact
+    // tag_info.uuid.size())}; amiibo_config.amiiboID = 12345678; /// ID shared by all exact
     // same amiibo. Some amiibo are
     // only
     /// distinguished by this

@@ -110,7 +110,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
     ctx.SleepClientThread(Kernel::GetCurrentThread(), "fs::openfile",
                           std::chrono::nanoseconds{10000000},
                           [](Kernel::SharedPtr<Kernel::Thread> thread,
-                             Kernel::HLERequestContext& ctx, ThreadWakeupReason reason) {
+                             Kernel::HLERequestContext& ctx, Kernel::ThreadWakeupReason reason) {
                               // This is a fix for Super Mario Maker for Nintendo 3DS
                           });
 }

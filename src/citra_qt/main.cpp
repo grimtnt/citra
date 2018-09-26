@@ -1183,6 +1183,11 @@ void GMainWindow::OnSetPlayCoins() {
 }
 
 void GMainWindow::OnLoadAmiibo() {
+    auto answer{QMessageBox::question(
+        this, "Citra", "Amiibos doesn't work.\nDo you want to scan an amiibo anyway?")};
+    if (answer != QMessageBox::Yes) {
+        return;
+    }
     const QString extensions{"*.bin"};
     const QString file_filter{tr("Amiibo File") + " (" + extensions + ");;" +
                               tr("All Files (*.*)")};
