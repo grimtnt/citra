@@ -15,11 +15,11 @@
 namespace CheatCore {
 
 static CoreTiming::EventType* tick_event;
-static std::unique_ptr<CheatEngine::CheatEngine> cheat_engine;
+static std::unique_ptr<Engine> cheat_engine;
 
 static void CheatTickCallback(u64, int cycles_late) {
     if (cheat_engine == nullptr)
-        cheat_engine = std::make_unique<CheatEngine::CheatEngine>();
+        cheat_engine = std::make_unique<Engine>();
     cheat_engine->Run();
     CoreTiming::ScheduleEvent(BASE_CLOCK_RATE_ARM11 - cycles_late, tick_event);
 }
@@ -39,35 +39,32 @@ void Shutdown() {
 
 void RefreshCheats() {
     if (cheat_engine == nullptr)
-        cheat_engine = std::make_unique<CheatEngine::CheatEngine>();
+        cheat_engine = std::make_unique<Engine>();
     cheat_engine->RefreshCheats();
 }
-} // namespace CheatCore
 
-namespace CheatEngine {
 static std::string GetFilePath() {
     return FileUtil::GetUserPath(D_USER_IDX) + "cheats" + DIR_SEP +
            fmt::format("{:016X}", Kernel::g_current_process->codeset->program_id) + ".txt";
 }
 
-CheatEngine::CheatEngine() {
+Engine::Engine() {
     const auto file_path{GetFilePath()};
     if (!FileUtil::Exists(file_path))
         FileUtil::CreateEmptyFile(file_path);
     cheats_list = ReadFileContents();
 }
 
-std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
+std::vector<Cheat> Engine::ReadFileContents() {
     std::string file_path{GetFilePath()};
-    std::string contents{};
+    std::string contents;
     FileUtil::ReadFileToString(true, file_path.c_str(), contents);
-    std::vector<std::string> lines{};
+
+    std::vector<std::string> lines;
     Common::SplitString(contents, '\n', lines);
 
-    std::string code_type{
-        "Gateway"}; // If more cheat types added, need to specify which type in parsing.
     std::vector<CheatLine> cheat_lines{};
-    std::vector<std::shared_ptr<CheatBase>> cheats{};
+    std::vector<Cheat> cheats{};
     std::string name{};
     bool enabled{};
     for (std::size_t i{}; i < lines.size(); i++) {
@@ -76,9 +73,7 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
         if (!current_line.empty()) {
             if (current_line.compare(0, 2, "+[") == 0) { // Enabled code
                 if (!cheat_lines.empty()) {
-                    if (code_type == "Gateway")
-                        cheats.push_back(
-                            std::make_shared<GatewayCheat>(cheat_lines, enabled, name));
+                    cheats.push_back(Cheat(name, cheat_lines, enabled));
                 }
                 name = current_line.substr(2, current_line.length() - 3);
                 cheat_lines.clear();
@@ -86,9 +81,7 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
                 continue;
             } else if (current_line.front() == '[') { // Disabled code
                 if (!cheat_lines.empty()) {
-                    if (code_type == "Gateway")
-                        cheats.push_back(
-                            std::make_shared<GatewayCheat>(cheat_lines, enabled, name));
+                    cheats.push_back(Cheat(name, cheat_lines, enabled));
                 }
                 name = current_line.substr(1, current_line.length() - 2);
                 cheat_lines.clear();
@@ -100,37 +93,36 @@ std::vector<std::shared_ptr<CheatBase>> CheatEngine::ReadFileContents() {
         }
         if (i == lines.size() - 1) { // End of file
             if (!cheat_lines.empty()) {
-                if (code_type == "Gateway")
-                    cheats.push_back(std::make_shared<GatewayCheat>(cheat_lines, enabled, name));
+                cheats.push_back(Cheat(name, cheat_lines, enabled));
             }
         }
     }
     return cheats;
 }
 
-void CheatEngine::Save(std::vector<std::shared_ptr<CheatBase>> cheats) {
+void Engine::Save(std::vector<Cheat> cheats) {
     std::string file_path{GetFilePath()};
     FileUtil::IOFile file{file_path, "w+"};
     for (auto& cheat : cheats) {
-        std::string str{cheat->ToString()};
+        std::string str{cheat.ToString()};
         file.WriteBytes(str.c_str(), str.length());
     }
 }
 
-void CheatEngine::RefreshCheats() {
+void Engine::RefreshCheats() {
     std::string file_path{GetFilePath()};
     if (!FileUtil::Exists(file_path))
         FileUtil::CreateEmptyFile(file_path);
     cheats_list = ReadFileContents();
 }
 
-void CheatEngine::Run() {
+void Engine::Run() {
     for (auto& cheat : cheats_list) {
-        cheat->Execute();
+        cheat.Execute();
     }
 }
 
-void GatewayCheat::Execute() {
+void Cheat::Execute() {
     if (!enabled)
         return;
     u32 addr{};
@@ -426,7 +418,7 @@ void GatewayCheat::Execute() {
     }
 }
 
-std::string GatewayCheat::ToString() {
+std::string Cheat::ToString() {
     std::string result;
     if (cheat_lines.empty())
         return result;
@@ -438,4 +430,5 @@ std::string GatewayCheat::ToString() {
     result += '\n';
     return result;
 }
-} // namespace CheatEngine
+
+} // namespace CheatCore

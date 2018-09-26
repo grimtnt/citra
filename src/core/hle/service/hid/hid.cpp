@@ -41,7 +41,7 @@ DirectionState GetStickDirectionState(s16 circle_pad_x, s16 circle_pad_y) {
     DirectionState state{false, false, false, false};
 
     if (circle_pad_x * circle_pad_x + circle_pad_y * circle_pad_y > CIRCLE_PAD_THRESHOLD_SQUARE) {
-        float t = std::abs(static_cast<float>(circle_pad_y) / circle_pad_x);
+        float t{std::abs(static_cast<float>(circle_pad_y) / circle_pad_x)};
 
         if (circle_pad_x != 0 && t < TAN60) {
             if (circle_pad_x > 0)

@@ -36,9 +36,9 @@ public:
 
 private:
     std::unique_ptr<Ui::CheatDialog> ui;
-    int current_row = -1;
-    bool selection_changing = false;
-    std::vector<std::shared_ptr<CheatEngine::CheatBase>> cheats;
+    int current_row{-1};
+    bool selection_changing{};
+    std::vector<CheatCore::Cheat> cheats;
     std::vector<FoundItem> previous_found;
     void LoadCheats();
     void OnAddCheat();
@@ -70,14 +70,19 @@ public:
     explicit NewCheatDialog(QWidget* parent = nullptr);
     ~NewCheatDialog();
 
-    std::shared_ptr<CheatEngine::CheatBase> GetReturnValue() const {
+    CheatCore::Cheat GetReturnValue() const {
         return return_value;
     }
 
+    bool IsCheatValid() const {
+        return cheat_valid;
+    }
+
 private:
+    bool cheat_valid{};
     QLineEdit* name_block;
     QComboBox* type_select;
-    std::shared_ptr<CheatEngine::CheatBase> return_value;
+    CheatCore::Cheat return_value;
 };
 
 class ModifyAddressDialog : public QDialog {
@@ -91,8 +96,8 @@ public:
 
 private:
     QLineEdit* address_block;
-    QComboBox* type_select;
     QLineEdit* value_block;
+    QComboBox* type_select;
 
     void OnOkClicked();
 };

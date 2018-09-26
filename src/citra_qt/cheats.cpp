@@ -1,3 +1,7 @@
+// Copyright 2016 Citra Emulator Project
+// Licensed under GPLv2 or any later version
+// Refer to the license.txt file included.
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -26,10 +30,9 @@ CheatDialog::CheatDialog(QWidget* parent)
     ui->setupUi(this);
     ui->tableCheats->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableCheats->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->tableCheats->setColumnWidth(2, 85);
+    ui->tableCheats->setColumnWidth(0, 57);
+    ui->tableCheats->setColumnWidth(1, 250);
     ui->tableCheats->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-    ui->tableCheats->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->tableCheats->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->labelTitle->setText(QString("Title ID: %1")
                                 .arg(QString::fromStdString(fmt::format(
                                     "{:016X}", Kernel::g_current_process->codeset->program_id))));
@@ -88,20 +91,18 @@ void CheatDialog::UpdateTitleID() {
 }
 
 void CheatDialog::LoadCheats() {
-    cheats = CheatEngine::CheatEngine::ReadFileContents();
+    cheats = CheatCore::Engine::ReadFileContents();
 
     ui->tableCheats->setRowCount(static_cast<int>(cheats.size()));
 
     for (int i{}; i < static_cast<int>(cheats.size()); i++) {
         QCheckBox* enabled{new QCheckBox()};
-        enabled->setChecked(cheats[i]->GetEnabled());
+        enabled->setChecked(cheats[i].GetEnabled());
         enabled->setStyleSheet("margin-left:7px;");
         ui->tableCheats->setItem(i, 0, new QTableWidgetItem());
         ui->tableCheats->setCellWidget(i, 0, enabled);
-        ui->tableCheats->setItem(
-            i, 1, new QTableWidgetItem(QString::fromStdString(cheats[i]->GetName())));
-        ui->tableCheats->setItem(
-            i, 2, new QTableWidgetItem(QString::fromStdString(cheats[i]->GetType())));
+        ui->tableCheats->setItem(i, 1,
+                                 new QTableWidgetItem(QString::fromStdString(cheats[i].GetName())));
         enabled->setProperty("row", static_cast<int>(i));
 
         ui->tableCheats->setRowHeight(i, 23);
@@ -114,8 +115,8 @@ void CheatDialog::OnSave() {
     QString error_message{"The following cheats are empty:\n\n%1"};
     QStringList empty_cheat_names{};
     for (auto& cheat : cheats) {
-        if (cheat->GetCheatLines().empty()) {
-            empty_cheat_names.append(QString::fromStdString(cheat->GetName()));
+        if (cheat.GetCheatLines().empty()) {
+            empty_cheat_names.append(QString::fromStdString(cheat.GetName()));
             error = true;
         }
     }
@@ -124,7 +125,7 @@ void CheatDialog::OnSave() {
         return;
     }
 
-    CheatEngine::CheatEngine::Save(cheats);
+    CheatCore::Engine::Save(cheats);
     CheatCore::RefreshCheats();
 }
 
@@ -146,7 +147,7 @@ void CheatDialog::OnRowSelected(int row, int column) {
     const auto& current_cheat{cheats[row]};
 
     std::vector<std::string> lines{};
-    for (const auto& line : current_cheat->GetCheatLines())
+    for (const auto& line : current_cheat.GetCheatLines())
         lines.push_back(line.cheat_line);
     ui->textLines->setPlainText(QString::fromStdString(Common::Join(lines, "\n")));
 
@@ -160,17 +161,17 @@ void CheatDialog::OnLinesChanged() {
     QString lines{ui->textLines->toPlainText()};
     std::vector<std::string> lines_vec{};
     Common::SplitString(lines.toStdString(), '\n', lines_vec);
-    auto new_lines{std::vector<CheatEngine::CheatLine>()};
+    auto new_lines{std::vector<CheatCore::CheatLine>()};
     for (const auto& line : lines_vec) {
         new_lines.emplace_back(line);
     }
-    cheats[current_row]->SetCheatLines(new_lines);
+    cheats[current_row].SetCheatLines(new_lines);
 }
 
 void CheatDialog::OnCheckChanged(int state) {
     QCheckBox* checkbox{qobject_cast<QCheckBox*>(sender())};
     int row{static_cast<int>(checkbox->property("row").toInt())};
-    cheats[row]->SetEnabled(static_cast<bool>(state));
+    cheats[row].SetEnabled(static_cast<bool>(state));
 }
 
 void CheatDialog::OnDelete() {
@@ -194,9 +195,10 @@ void CheatDialog::OnAddCheat() {
     NewCheatDialog dialog{this};
     dialog.exec();
 
-    auto result{dialog.GetReturnValue()};
-    if (result == nullptr)
+    if (!dialog.IsCheatValid()) {
         return;
+    }
+    auto result{dialog.GetReturnValue()};
     cheats.push_back(result);
     int new_cheat_index{static_cast<int>(cheats.size() - 1)};
     QCheckBox* enabled{new QCheckBox()};
@@ -207,10 +209,7 @@ void CheatDialog::OnAddCheat() {
     ui->tableCheats->setCellWidget(new_cheat_index, 0, enabled);
     ui->tableCheats->setItem(
         new_cheat_index, 1,
-        new QTableWidgetItem(QString::fromStdString(cheats[new_cheat_index]->GetName())));
-    ui->tableCheats->setItem(
-        new_cheat_index, 2,
-        new QTableWidgetItem(QString::fromStdString(cheats[new_cheat_index]->GetType())));
+        new QTableWidgetItem(QString::fromStdString(cheats[new_cheat_index].GetName())));
     ui->tableCheats->setRowHeight(new_cheat_index, 23);
     enabled->setProperty("row", new_cheat_index);
     connect(enabled, &QCheckBox::stateChanged, this, &CheatDialog::OnCheckChanged);
@@ -218,10 +217,10 @@ void CheatDialog::OnAddCheat() {
     OnRowSelected(new_cheat_index, 0);
 }
 
-NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
-    resize(166, 115);
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+NewCheatDialog::NewCheatDialog(QWidget* parent)
+    : QDialog{parent, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint} {
     setWindowTitle("New Cheat");
+
     QVBoxLayout* main_layout{new QVBoxLayout(this)};
     QHBoxLayout* name_panel{new QHBoxLayout()};
     QLabel* name_label{new QLabel()};
@@ -230,21 +229,13 @@ NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
     name_panel->addWidget(name_label);
     name_panel->addWidget(name_block);
 
-    QHBoxLayout* type_panel{new QHBoxLayout()};
-    QLabel* type_label{new QLabel()};
-    type_select = new QComboBox();
-    type_label->setText("Type: ");
-    type_select->addItem("Gateway", 0);
-    type_panel->addWidget(type_label);
-    type_panel->addWidget(type_select);
-
     QDialogButtonBox* button_box{
         new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel)};
     connect(button_box, &QDialogButtonBox::accepted, this, [&]() {
         std::string name{name_block->text().toStdString()};
-        if (type_select->currentIndex() == 0 && Common::Trim(name).length() > 0) {
-            return_value =
-                std::make_shared<CheatEngine::GatewayCheat>(name_block->text().toStdString());
+        if (Common::Trim(name).length() > 0) {
+            return_value = CheatCore::Cheat(name_block->text().toStdString());
+            cheat_valid = true;
         }
         close();
     });
@@ -252,7 +243,6 @@ NewCheatDialog::NewCheatDialog(QWidget* parent) : QDialog(parent) {
     QHBoxLayout* confirmation_panel{new QHBoxLayout()};
     confirmation_panel->addWidget(button_box);
     main_layout->addLayout(name_panel);
-    main_layout->addLayout(type_panel);
     main_layout->addLayout(confirmation_panel);
 }
 
@@ -316,7 +306,7 @@ QString IeeeFloatToHex(float value) {
 
     f = value;
 
-    std::ostringstream oss;
+    std::ostringstream oss{};
     oss << std::hex << std::uppercase << i;
 
     return QString::fromStdString(oss.str());
@@ -554,9 +544,7 @@ bool CheatDialog::Between(int value, int min, int max) {
 
 ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, const QString& address, int type,
                                          const QString& value)
-    : QDialog(parent) {
-    resize(300, 30);
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    : QDialog{parent, Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint} {
     setWindowTitle("Modify Address");
     setSizeGripEnabled(false);
 
@@ -583,13 +571,13 @@ ModifyAddressDialog::ModifyAddressDialog(QWidget* parent, const QString& address
     edit_panel->addWidget(type_select);
     edit_panel->addWidget(value_block);
 
-    auto button_box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    auto button_box{new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel)};
     connect(button_box, &QDialogButtonBox::accepted, this, [&] { OnOkClicked(); });
     connect(button_box, &QDialogButtonBox::rejected, this, [&] {
         return_value = value;
         close();
     });
-    QHBoxLayout* confirmation_panel = new QHBoxLayout();
+    QHBoxLayout* confirmation_panel{new QHBoxLayout()};
     confirmation_panel->addWidget(button_box);
     main_layout->addLayout(edit_panel);
     main_layout->addLayout(confirmation_panel);

@@ -50,7 +50,7 @@
         <bool>false</bool>
        </property>
        <property name="columnCount">
-        <number>3</number>
+        <number>2</number>
        </property>
        <attribute name="horizontalHeaderVisible">
         <bool>true</bool>
@@ -66,11 +66,6 @@
        <column>
         <property name="text">
          <string>Name</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Type</string>
         </property>
        </column>
       </widget>

@@ -3,21 +3,16 @@
 // Refer to the license.txt file included.
 
 #include <map>
-#include <memory>
 #include <vector>
 #include "common/string_util.h"
 #include "core/core_timing.h"
 
 namespace CheatCore {
-/*
- * Starting point for running cheat codes. Initializes tick event and executes cheats every tick.
- */
+
+// Starting point for running cheat codes. Initializes tick event and executes cheats every tick.
 void Init();
 void Shutdown();
 void RefreshCheats();
-} // namespace CheatCore
-
-namespace CheatEngine {
 
 enum class CheatType {
     Null = -0x1,
@@ -88,12 +83,18 @@ struct CheatLine {
     std::string cheat_line;
 };
 
-/// Base interface for all types of cheats.
-class CheatBase {
+/// Implements support for Gateway (GateShark) cheats.
+class Cheat {
 public:
-    virtual void Execute() = 0;
-    virtual ~CheatBase() = default;
-    virtual std::string ToString() = 0;
+    explicit Cheat(std::string name = "", std::vector<CheatLine> cheat_lines = {},
+                   bool enabled = false) {
+        this->name = std::move(name);
+        this->cheat_lines = std::move(cheat_lines);
+        this->enabled = enabled;
+    }
+
+    void Execute();
+    std::string ToString();
 
     bool GetEnabled() const {
         return enabled;
@@ -119,45 +120,23 @@ public:
         name = std::move(new_name);
     }
 
-    virtual std::string GetType() = 0;
-
-protected:
-    bool enabled = false;
+private:
+    bool enabled{};
     std::vector<CheatLine> cheat_lines;
     std::string name;
 };
 
-/// Implements support for Gateway (GateShark) cheats.
-class GatewayCheat : public CheatBase {
-public:
-    explicit GatewayCheat(std::string name) {
-        this->name = std::move(name);
-    }
-
-    explicit GatewayCheat(std::vector<CheatLine> cheat_lines, bool enabled, std::string name) {
-        this->name = std::move(name);
-        this->cheat_lines = std::move(cheat_lines);
-        this->enabled = enabled;
-    }
-
-    void Execute() override;
-    std::string ToString() override;
-
-    std::string GetType() override {
-        return "Gateway";
-    }
-};
-
 /// Handles loading/saving of cheats and executing them.
-class CheatEngine {
+class Engine {
 public:
-    CheatEngine();
+    Engine();
     void Run();
-    static std::vector<std::shared_ptr<CheatBase>> ReadFileContents();
-    static void Save(std::vector<std::shared_ptr<CheatBase>> cheats);
+    static std::vector<Cheat> ReadFileContents();
+    static void Save(std::vector<Cheat> cheats);
     void RefreshCheats();
 
 private:
-    std::vector<std::shared_ptr<CheatBase>> cheats_list;
+    std::vector<Cheat> cheats_list;
 };
-} // namespace CheatEngine
+
+} // namespace CheatCore
