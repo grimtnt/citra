@@ -17,7 +17,7 @@ option(ENABLE_WEB_SERVICE "Enable web services" ON)
 
 option(ENABLE_DISCORD_RPC "Enable Discord Rich Presence integration" OFF)
 
-option(ENABLE_SCRIPTING ON)
+option(ENABLE_SCRIPTING "Enables scripting support" ON)
 
 # Sanity check : Check that all submodules are present
 # =======================================================================
