@@ -44,7 +44,7 @@ void EmuThread::run() {
 class GGLWidgetInternal : public QGLWidget {
 public:
     GGLWidgetInternal(QGLFormat fmt, GRenderWindow* parent)
-        : QGLWidget(fmt, parent), parent(parent) {}
+        : QGLWidget{fmt, parent}, parent{parent} {}
 
     void paintEvent(QPaintEvent* ev) override {
         if (do_painting) {
@@ -66,8 +66,8 @@ public:
     }
 
 private:
-    GRenderWindow* parent;
-    bool do_painting;
+    GRenderWindow* parent{};
+    bool do_painting{};
 };
 
 GRenderWindow::GRenderWindow(QWidget* parent, EmuThread* emu_thread)

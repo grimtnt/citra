@@ -126,7 +126,7 @@ void Module::UpdatePadCallback(u64 userdata, s64 cycles_late) {
     next_pad_index = (next_pad_index + 1) % mem->pad.entries.size();
 
     // Get the previous Pad state
-    u32 last_entry_index = (mem->pad.index - 1) % mem->pad.entries.size();
+    u32 last_entry_index{(mem->pad.index - 1) % mem->pad.entries.size()};
     PadState old_state = mem->pad.entries[last_entry_index].current_state;
 
     // Compute bitmask with 1s for bits different from the old state

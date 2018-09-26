@@ -30,8 +30,8 @@ struct Context {
     }
 
     void SetKeepAlive(bool keep_alive) {
-        auto itr = request_headers.find("Connection");
-        bool header_keep_alive = (itr != request_headers.end()) && (itr->second == "Keep-Alive");
+        auto itr{request_headers.find("Connection")};
+        bool header_keep_alive{(itr != request_headers.end()) && (itr->second == "Keep-Alive")};
         if (keep_alive && !header_keep_alive) {
             request_headers.emplace("Connection", "Keep-Alive");
         } else if (!keep_alive && header_keep_alive) {

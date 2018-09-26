@@ -33,11 +33,11 @@ public:
     static Float<M, E> FromRaw(u32 hex) {
         Float<M, E> res;
 
-        const int width = M + E + 1;
-        const int bias = 128 - (1 << (E - 1));
-        int exponent = (hex >> M) & ((1 << E) - 1);
-        const unsigned mantissa = hex & ((1 << M) - 1);
-        const unsigned sign = (hex >> (E + M)) << 31;
+        const int width{M + E + 1};
+        const int bias{128 - (1 << (E - 1))};
+        unsigned exponent{(hex >> M) & ((1 << E) - 1)};
+        const unsigned mantissa{hex & ((1 << M) - 1)};
+        const unsigned sign{(hex >> (E + M)) << 31};
 
         if (hex & ((1 << (width - 1)) - 1)) {
             if (exponent == (1 << E) - 1)
@@ -64,7 +64,7 @@ public:
     }
 
     Float<M, E> operator*(const Float<M, E>& flt) const {
-        float result = value * flt.ToFloat32();
+        float result{value * flt.ToFloat32()};
         // PICA gives 0 instead of NaN when multiplying by inf
         if (std::isnan(result))
             if (!std::isnan(value) && !std::isnan(flt.ToFloat32()))
@@ -133,9 +133,9 @@ public:
     }
 
 private:
-    static const unsigned MASK = (1 << (M + E + 1)) - 1;
-    static const unsigned MANTISSA_MASK = (1 << M) - 1;
-    static const unsigned EXPONENT_MASK = (1 << E) - 1;
+    static const unsigned MASK{(1 << (M + E + 1)) - 1};
+    static const unsigned MANTISSA_MASK{(1 << M) - 1};
+    static const unsigned EXPONENT_MASK{(1 << E) - 1};
 
     // Stored as a regular float, merely for convenience
     // TODO: Perform proper arithmetic on this!

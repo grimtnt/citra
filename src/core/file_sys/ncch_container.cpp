@@ -72,8 +72,8 @@ static bool LZSS_Decompress(const u8* compressed, u32 compressed_size, u8* decom
                     return false;
                 index -= 2;
 
-                u32 segment_offset = compressed[index] | (compressed[index + 1] << 8);
-                u32 segment_size = ((segment_offset >> 12) & 15) + 3;
+                u32 segment_offset{compressed[index] | (compressed[index + 1] << 8)};
+                u32 segment_size{((segment_offset >> 12) & 15) + 3};
                 segment_offset &= 0x0FFF;
                 segment_offset += 2;
 
@@ -86,7 +86,7 @@ static bool LZSS_Decompress(const u8* compressed, u32 compressed_size, u8* decom
                     if (out + segment_offset >= decompressed_size)
                         return false;
 
-                    u8 data = decompressed[out + segment_offset];
+                    u8 data{decompressed[out + segment_offset]};
                     decompressed[--out] = data;
                 }
             } else {

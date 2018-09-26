@@ -124,12 +124,12 @@ static std::vector<u8> GenerateCCMPAAD(const MacAddress& sender, const MacAddres
         u16_be SC; // MPDU Sequence Control field
     } aad_struct{};
 
-    constexpr u16 AADFrameControlMask = 0x8FC7;
+    constexpr u16 AADFrameControlMask{0x8FC7};
     aad_struct.FC = frame_control & AADFrameControlMask;
     aad_struct.SC = 0;
 
-    bool to_ds = (frame_control & (1 << 0)) != 0;
-    bool from_ds = (frame_control & (1 << 1)) != 0;
+    bool to_ds{(frame_control & (1 << 0)) != 0};
+    bool from_ds{(frame_control & (1 << 1)) != 0};
     // In the 802.11 standard, ToDS = 1 and FromDS = 1 is a valid configuration,
     // however, the 3DS doesn't seem to transmit frames with such combination.
     ASSERT_MSG(to_ds != from_ds, "Invalid combination");

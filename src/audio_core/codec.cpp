@@ -25,13 +25,13 @@ StereoBuffer16 DecodeADPCM(const u8* const data, const std::size_t sample_count,
         {0, 1, 2, 3, 4, 5, 6, 7, -8, -7, -6, -5, -4, -3, -2, -1}};
 
     const std::size_t ret_size{sample_count % 2 == 0 ? sample_count
-                                                : sample_count + 1}; // Ensure multiple of two.
+                                                     : sample_count + 1}; // Ensure multiple of two.
     StereoBuffer16 ret{ret_size};
 
     int yn1{state.yn1}, yn2{state.yn2};
 
     const std::size_t NUM_FRAMES{(sample_count + (SAMPLES_PER_FRAME - 1)) /
-                            SAMPLES_PER_FRAME}; // Round up.
+                                 SAMPLES_PER_FRAME}; // Round up.
     for (std::size_t framei{}; framei < NUM_FRAMES; framei++) {
         const int frame_header{data[framei * FRAME_LEN]};
         const int scale{1 << (frame_header & 0xF)};
@@ -42,20 +42,20 @@ StereoBuffer16 DecodeADPCM(const u8* const data, const std::size_t sample_count,
         const s16 coef2{adpcm_coeff[idx * 2 + 1]};
 
         // Decodes an audio sample. One nibble produces one sample.
-        const auto decode_sample = [&](const int nibble) -> s16 {
-            const int xn = nibble * scale;
+        const auto decode_sample{[&](const int nibble) -> s16 {
+            const int xn{nibble * scale};
             // We first transform everything into 11 bit fixed point, perform the second order
             // digital filter, then transform back.
             // 0x400 == 0.5 in 11 bit fixed point.
             // Filter: y[n] = x[n] + 0.5 + c1 * y[n-1] + c2 * y[n-2]
-            int val = ((xn << 11) + 0x400 + coef1 * yn1 + coef2 * yn2) >> 11;
+            int val{((xn << 11) + 0x400 + coef1 * yn1 + coef2 * yn2) >> 11};
             // Clamp to output range.
             val = std::clamp(val, -32768, 32767);
             // Advance output feedback.
             yn2 = yn1;
             yn1 = val;
             return (s16)val;
-        };
+        }};
 
         std::size_t outputi{framei * SAMPLES_PER_FRAME};
         std::size_t datai{framei * FRAME_LEN + 1};

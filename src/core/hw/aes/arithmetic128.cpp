@@ -11,12 +11,12 @@ namespace HW::AES {
 AESKey Lrot128(const AESKey& in, u32 rot) {
     AESKey out;
     rot %= 128;
-    const u32 byte_shift = rot / 8;
-    const u32 bit_shift = rot % 8;
+    const u32 byte_shift{rot / 8};
+    const u32 bit_shift{rot % 8};
 
     for (u32 i{}; i < 16; i++) {
-        const u32 wrap_index_a = (i + byte_shift) % 16;
-        const u32 wrap_index_b = (i + byte_shift + 1) % 16;
+        const u32 wrap_index_a{(i + byte_shift) % 16};
+        const u32 wrap_index_b{(i + byte_shift + 1) % 16};
         out[i] = ((in[wrap_index_a] << bit_shift) | (in[wrap_index_b] >> (8 - bit_shift))) & 0xFF;
     }
     return out;

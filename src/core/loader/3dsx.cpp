@@ -158,8 +158,8 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
             }
             THREEDSX_Reloc reloc_table[RELOCBUFSIZE];
 
-            u32* pos = (u32*)loadinfo.seg_ptrs[current_segment];
-            const u32* end_pos = pos + (loadinfo.seg_sizes[current_segment] / 4);
+            u32* pos{(u32*)loadinfo.seg_ptrs[current_segment]};
+            const u32* end_pos{pos + (loadinfo.seg_sizes[current_segment] / 4)};
 
             while (n_relocs) {
                 u32 remaining{std::min(RELOCBUFSIZE, n_relocs)};
@@ -171,14 +171,14 @@ static THREEDSX_Error Load3DSXFile(FileUtil::IOFile& file, u32 base_addr,
 
                 for (unsigned current_inprogress{}; current_inprogress < remaining && pos < end_pos;
                      current_inprogress++) {
-                    const auto& table = reloc_table[current_inprogress];
+                    const auto& table{reloc_table[current_inprogress]};
                     LOG_TRACE(Loader, "(t={},skip={},patch={})", current_segment_reloc_table,
                               static_cast<u32>(table.skip), static_cast<u32>(table.patch));
                     pos += table.skip;
                     s32 num_patches{table.patch};
                     while (0 < num_patches && pos < end_pos) {
-                        u32 in_addr = base_addr + static_cast<u32>(reinterpret_cast<u8*>(pos) -
-                                                                   program_image.data());
+                        u32 in_addr{base_addr + static_cast<u32>(reinterpret_cast<u8*>(pos) -
+                                                                 program_image.data())};
                         u32 orig_data{*pos};
                         u32 sub_type{orig_data >> (32 - 4)};
                         u32 addr{TranslateAddr(orig_data & ~0xF0000000, &loadinfo, offsets)};

@@ -25,6 +25,39 @@ static std::array<u8, Memory::VRAM_SIZE> vram;
 static std::array<u8, Memory::N3DS_EXTRA_RAM_SIZE> n3ds_extra_ram;
 static std::array<u8, Memory::L2C_SIZE> l2cache;
 
+class AreaCache {
+public:
+    void CacheNewArea(u8* p_ptr, u32 base, u32 start, u32 size) {
+        physical_base = p_ptr;
+        address_base = base;
+        region_start = start;
+        region_end = start + size;
+    }
+
+    void CacheNewArea(u8* p_ptr, u32 base, u32 size) {
+        CacheNewArea(p_ptr, base, base, size);
+    }
+
+    u8* GetCachedAreaPointer(PAddr address) {
+        if (address < region_end && address >= region_start) {
+            return physical_base + (address - address_base);
+        }
+        Invalidate();
+        return nullptr;
+    }
+
+    void Invalidate() {
+        region_start = region_end = 0;
+    }
+
+private:
+    u8* physical_base{};
+    PAddr address_base{};
+    PAddr region_start{};
+    PAddr region_end{};
+};
+
+static AreaCache area_cache;
 static PageTable* current_page_table{};
 
 void SetCurrentPageTable(PageTable* page_table) {
@@ -41,6 +74,8 @@ PageTable* GetCurrentPageTable() {
 static void MapPages(PageTable& page_table, u32 base, u32 size, u8* memory, PageType type) {
     LOG_DEBUG(HW_Memory, "Mapping {} onto {:08X}-{:08X}", (void*)memory, base * PAGE_SIZE,
               (base + size) * PAGE_SIZE);
+
+    area_cache.Invalidate();
 
     RasterizerFlushVirtualRegion(base << PAGE_BITS, size * PAGE_SIZE,
                                  FlushMode::FlushAndInvalidate);
@@ -266,6 +301,9 @@ std::string ReadCString(VAddr vaddr, std::size_t max_length) {
 }
 
 u8* GetPhysicalPointer(PAddr address) {
+    if (u8 * cached_ptr{area_cache.GetCachedAreaPointer(address)})
+        return cached_ptr;
+
     struct MemoryArea {
         PAddr paddr_base;
         u32 size;
@@ -297,29 +335,40 @@ u8* GetPhysicalPointer(PAddr address) {
 
     u32 offset_into_region{address - area->paddr_base};
 
+    u8* target_base{};
     u8* target_pointer{};
     switch (area->paddr_base) {
     case VRAM_PADDR:
-        target_pointer = vram.data() + offset_into_region;
+        target_base = vram.data();
+        target_pointer = target_base + offset_into_region;
+        area_cache.CacheNewArea(target_base, area->paddr_base, area->size);
         break;
     case DSP_RAM_PADDR:
-        target_pointer = Core::DSP().GetDspMemory().data() + offset_into_region;
+        target_base = Core::DSP().GetDspMemory().data();
+        target_pointer = target_base + offset_into_region;
+        area_cache.CacheNewArea(target_base, area->paddr_base, area->size);
         break;
     case FCRAM_PADDR:
         for (const auto& region : Kernel::memory_regions) {
             if (offset_into_region >= region.base &&
                 offset_into_region < region.base + region.size) {
-                target_pointer =
-                    region.linear_heap_memory->data() + offset_into_region - region.base;
+                target_base = region.linear_heap_memory->data();
+                target_pointer = target_base + offset_into_region - region.base;
+                area_cache.CacheNewArea(target_base - region.base, area->paddr_base,
+                                        area->paddr_base + region.base, region.size);
                 break;
             }
         }
         break;
     case N3DS_EXTRA_RAM_PADDR:
-        target_pointer = n3ds_extra_ram.data() + offset_into_region;
+        target_base = n3ds_extra_ram.data();
+        target_pointer = target_base + offset_into_region;
+        area_cache.CacheNewArea(target_base, area->paddr_base, area->size);
         break;
     case L2C_PADDR:
-        target_pointer = l2cache.data() + offset_into_region;
+        target_base = l2cache.data();
+        target_pointer = target_base + offset_into_region;
+        area_cache.CacheNewArea(target_base, area->paddr_base, area->size);
         break;
     default:
         UNREACHABLE();
@@ -790,6 +839,10 @@ boost::optional<VAddr> PhysicalToVirtualAddress(const PAddr addr) {
     }
 
     return boost::none;
+}
+
+void InvalidateAreaCache() {
+    area_cache.Invalidate();
 }
 
 } // namespace Memory

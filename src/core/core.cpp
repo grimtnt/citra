@@ -235,6 +235,7 @@ void System::Shutdown() {
     CoreTiming::Shutdown();
     app_loader.reset();
     rpc_server.reset();
+    Memory::InvalidateAreaCache();
 
     LOG_DEBUG(Core, "Shutdown OK");
 }

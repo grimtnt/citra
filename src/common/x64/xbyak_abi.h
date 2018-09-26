@@ -151,12 +151,13 @@ constexpr std::size_t ABI_SHADOW_SPACE{};
 
 #endif
 
-inline void ABI_CalculateFrameSize(BitSet32 regs, std::size_t rsp_alignment, std::size_t needed_frame_size,
-                                   s32* out_subtraction, s32* out_xmm_offset) {
-    int count = (regs & ABI_ALL_GPRS).Count();
+inline void ABI_CalculateFrameSize(BitSet32 regs, std::size_t rsp_alignment,
+                                   std::size_t needed_frame_size, s32* out_subtraction,
+                                   s32* out_xmm_offset) {
+    int count{static_cast<int>((regs & ABI_ALL_GPRS).Count())};
     rsp_alignment -= count * 8;
     std::size_t subtraction{};
-    int xmm_count = (regs & ABI_ALL_XMMS).Count();
+    int xmm_count{static_cast<int>((regs & ABI_ALL_XMMS).Count())};
     if (xmm_count) {
         // If we have any XMMs to save, we must align the stack here.
         subtraction = rsp_alignment & 0xF;
@@ -174,7 +175,8 @@ inline void ABI_CalculateFrameSize(BitSet32 regs, std::size_t rsp_alignment, std
 }
 
 inline std::size_t ABI_PushRegistersAndAdjustStack(Xbyak::CodeGenerator& code, BitSet32 regs,
-                                              std::size_t rsp_alignment, std::size_t needed_frame_size = 0) {
+                                                   std::size_t rsp_alignment,
+                                                   std::size_t needed_frame_size = 0) {
     s32 subtraction, xmm_offset;
     ABI_CalculateFrameSize(regs, rsp_alignment, needed_frame_size, &subtraction, &xmm_offset);
 
@@ -195,7 +197,8 @@ inline std::size_t ABI_PushRegistersAndAdjustStack(Xbyak::CodeGenerator& code, B
 }
 
 inline void ABI_PopRegistersAndAdjustStack(Xbyak::CodeGenerator& code, BitSet32 regs,
-                                           std::size_t rsp_alignment, std::size_t needed_frame_size = 0) {
+                                           std::size_t rsp_alignment,
+                                           std::size_t needed_frame_size = 0) {
     s32 subtraction, xmm_offset;
     ABI_CalculateFrameSize(regs, rsp_alignment, needed_frame_size, &subtraction, &xmm_offset);
 

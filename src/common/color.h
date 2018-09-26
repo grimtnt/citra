@@ -181,8 +181,8 @@ inline void EncodeRG8(const Math::Vec4<u8>& color, u8* bytes) {
  * @param bytes Destination pointer to store encoded color
  */
 inline void EncodeRGB565(const Math::Vec4<u8>& color, u8* bytes) {
-    const u16_le data =
-        (Convert8To5(color.r()) << 11) | (Convert8To6(color.g()) << 5) | Convert8To5(color.b());
+    const u16_le data{static_cast<u16_le>((Convert8To5(color.r()) << 11) |
+                                          (Convert8To6(color.g()) << 5) | Convert8To5(color.b()))};
 
     std::memcpy(bytes, &data, sizeof(data));
 }
@@ -193,8 +193,9 @@ inline void EncodeRGB565(const Math::Vec4<u8>& color, u8* bytes) {
  * @param bytes Destination pointer to store encoded color
  */
 inline void EncodeRGB5A1(const Math::Vec4<u8>& color, u8* bytes) {
-    const u16_le data = (Convert8To5(color.r()) << 11) | (Convert8To5(color.g()) << 6) |
-                        (Convert8To5(color.b()) << 1) | Convert8To1(color.a());
+    const u16_le data{static_cast<u16_le>((Convert8To5(color.r()) << 11) |
+                                          (Convert8To5(color.g()) << 6) |
+                                          (Convert8To5(color.b()) << 1) | Convert8To1(color.a()))};
 
     std::memcpy(bytes, &data, sizeof(data));
 }
@@ -205,8 +206,8 @@ inline void EncodeRGB5A1(const Math::Vec4<u8>& color, u8* bytes) {
  * @param bytes Destination pointer to store encoded color
  */
 inline void EncodeRGBA4(const Math::Vec4<u8>& color, u8* bytes) {
-    const u16 data = (Convert8To4(color.r()) << 12) | (Convert8To4(color.g()) << 8) |
-                     (Convert8To4(color.b()) << 4) | Convert8To4(color.a());
+    const u16 data{static_cast<u16>((Convert8To4(color.r()) << 12) | (Convert8To4(color.g()) << 8) |
+                                    (Convert8To4(color.b()) << 4) | Convert8To4(color.a()))};
 
     std::memcpy(bytes, &data, sizeof(data));
 }

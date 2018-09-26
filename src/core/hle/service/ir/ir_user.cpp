@@ -90,11 +90,11 @@ public:
             if (packet.size() > max_data_size)
                 return false;
         } else {
-            const u32 last_index = (info.end_index + max_packet_count - 1) % max_packet_count;
-            const PacketInfo first = GetPacketInfo(info.begin_index);
-            const PacketInfo last = GetPacketInfo(last_index);
+            const u32 last_index{(info.end_index + max_packet_count - 1) % max_packet_count};
+            const PacketInfo first{GetPacketInfo(info.begin_index)};
+            const PacketInfo last{GetPacketInfo(last_index)};
             write_offset = (last.offset + last.size) % max_data_size;
-            const u32 free_space = (first.offset + max_data_size - write_offset) % max_data_size;
+            const u32 free_space{(first.offset + max_data_size - write_offset) % max_data_size};
             if (packet.size() > free_space)
                 return false;
         }

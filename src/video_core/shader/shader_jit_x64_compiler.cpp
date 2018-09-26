@@ -188,13 +188,13 @@ void JitShader::Compile_SwizzleSrc(Instruction instr, unsigned src_num, SourceRe
         src_offset = UnitState::InputOffset(src_reg);
     }
 
-    int src_offset_disp = (int)src_offset;
+    int src_offset_disp{(int)src_offset};
     ASSERT_MSG(src_offset == src_offset_disp, "Source register offset too large for int type");
 
     unsigned operand_desc_id;
 
-    const bool is_inverted =
-        (0 != (instr.opcode.Value().GetInfo().subtype & OpCode::Info::SrcInversed));
+    const bool is_inverted{
+        (0 != (instr.opcode.Value().GetInfo().subtype & OpCode::Info::SrcInversed))};
 
     unsigned address_register_index;
     unsigned offset_src;
@@ -230,10 +230,10 @@ void JitShader::Compile_SwizzleSrc(Instruction instr, unsigned src_num, SourceRe
         movaps(dest, xword[src_ptr + src_offset_disp]);
     }
 
-    SwizzlePattern swiz = {(*swizzle_data)[operand_desc_id]};
+    SwizzlePattern swiz{(*swizzle_data)[operand_desc_id]};
 
     // Generate instructions for source register swizzling as needed
-    u8 sel = swiz.GetRawSelector(src_num);
+    u8 sel{static_cast<u8>(swiz.GetRawSelector(src_num))};
     if (sel != NO_SRC_REG_SWIZZLE) {
         // Selector component order needs to be reversed for the SHUFPS instruction
         sel = ((sel & 0xc0) >> 6) | ((sel & 3) << 6) | ((sel & 0xc) << 2) | ((sel & 0x30) >> 2);
@@ -275,8 +275,8 @@ void JitShader::Compile_DestEnable(Instruction instr, Xmm src) {
         // register...
         movaps(SCRATCH, xword[STATE + dest_offset_disp]);
 
-        u8 mask = ((swiz.dest_mask & 1) << 3) | ((swiz.dest_mask & 8) >> 3) |
-                  ((swiz.dest_mask & 2) << 1) | ((swiz.dest_mask & 4) >> 1);
+        u8 mask{static_cast<u8>(((swiz.dest_mask & 1) << 3) | ((swiz.dest_mask & 8) >> 3) |
+                                ((swiz.dest_mask & 2) << 1) | ((swiz.dest_mask & 4) >> 1))};
         blendps(SCRATCH, src, mask);
 
         // Store dest back to memory
@@ -604,8 +604,8 @@ void JitShader::Compile_CALLU(Instruction instr) {
 
 void JitShader::Compile_CMP(Instruction instr) {
     using Op = Instruction::Common::CompareOpType::Op;
-    Op op_x = instr.common.compare_op.x;
-    Op op_y = instr.common.compare_op.y;
+    Op op_x{instr.common.compare_op.x};
+    Op op_y{instr.common.compare_op.y};
 
     Compile_SwizzleSrc(instr, 1, instr.common.src1, SRC1);
     Compile_SwizzleSrc(instr, 2, instr.common.src2, SRC2);
@@ -615,7 +615,7 @@ void JitShader::Compile_CMP(Instruction instr) {
     // because they don't match when used with NaNs.
     static const u8 cmp[] = {CMP_EQ, CMP_NEQ, CMP_LT, CMP_LE, CMP_LT, CMP_LE};
 
-    bool invert_op_x = (op_x == Op::GreaterThan || op_x == Op::GreaterEqual);
+    bool invert_op_x{(op_x == Op::GreaterThan || op_x == Op::GreaterEqual)};
     Xmm lhs_x = invert_op_x ? SRC2 : SRC1;
     Xmm rhs_x = invert_op_x ? SRC1 : SRC2;
 
@@ -626,7 +626,7 @@ void JitShader::Compile_CMP(Instruction instr) {
 
         mov(COND1, COND0);
     } else {
-        bool invert_op_y = (op_y == Op::GreaterThan || op_y == Op::GreaterEqual);
+        bool invert_op_y{(op_y == Op::GreaterThan || op_y == Op::GreaterEqual)};
         Xmm lhs_y = invert_op_y ? SRC2 : SRC1;
         Xmm rhs_y = invert_op_y ? SRC1 : SRC2;
 
@@ -738,8 +738,8 @@ void JitShader::Compile_JMP(Instruction instr) {
     else
         UNREACHABLE();
 
-    bool inverted_condition =
-        (instr.opcode.Value() == OpCode::Id::JMPU) && (instr.flow_control.num_instructions & 1);
+    bool inverted_condition{(instr.opcode.Value() == OpCode::Id::JMPU) &&
+                            (instr.flow_control.num_instructions & 1)};
 
     Label& b = instruction_labels[instr.flow_control.dest_offset];
     if (inverted_condition) {
@@ -819,10 +819,10 @@ void JitShader::Compile_NextInstr() {
 
     L(instruction_labels[program_counter]);
 
-    Instruction instr = {(*program_code)[program_counter++]};
+    Instruction instr{(*program_code)[program_counter++]};
 
-    OpCode::Id opcode = instr.opcode.Value();
-    auto instr_func = instr_table[static_cast<unsigned>(opcode)];
+    OpCode::Id opcode{instr.opcode.Value()};
+    auto instr_func{instr_table[static_cast<unsigned>(opcode)]};
 
     if (instr_func) {
         // JIT the instruction!
@@ -837,7 +837,7 @@ void JitShader::Compile_NextInstr() {
 void JitShader::FindReturnOffsets() {
     return_offsets.clear();
 
-    for (std::size_t offset = 0; offset < program_code->size(); ++offset) {
+    for (std::size_t offset{}; offset < program_code->size(); ++offset) {
         Instruction instr = {(*program_code)[offset]};
 
         switch (instr.opcode.Value()) {
@@ -919,7 +919,7 @@ void JitShader::Compile(const std::array<u32, MAX_PROGRAM_CODE_LENGTH>* program_
     LOG_DEBUG(HW_GPU, "Compiled shader size={}", getSize());
 }
 
-JitShader::JitShader() : Xbyak::CodeGenerator(MAX_SHADER_SIZE) {
+JitShader::JitShader() : Xbyak::CodeGenerator{MAX_SHADER_SIZE} {
     CompilePrelude();
 }
 
@@ -940,24 +940,24 @@ Xbyak::Label JitShader::CompilePrelude_Log2() {
     // f(x) computes approximately log2(x) / (x - 1).
     // f(x) = c4 + x * (c3 + x * (c2 + x * (c1 + x * c0)).
     align(64);
-    const void* c0 = getCurr();
+    const void* c0{getCurr()};
     dd(0x3d74552f);
-    const void* c1 = getCurr();
+    const void* c1{getCurr()};
     dd(0xbeee7397);
-    const void* c2 = getCurr();
+    const void* c2{getCurr()};
     dd(0x3fbd96dd);
-    const void* c3 = getCurr();
+    const void* c3{getCurr()};
     dd(0xc02153f6);
-    const void* c4 = getCurr();
+    const void* c4{getCurr()};
     dd(0x4038d96c);
 
     align(16);
-    const void* negative_infinity_vector = getCurr();
+    const void* negative_infinity_vector{getCurr()};
     dd(0xff800000);
     dd(0xff800000);
     dd(0xff800000);
     dd(0xff800000);
-    const void* default_qnan_vector = getCurr();
+    const void* default_qnan_vector{getCurr()};
     dd(0x7fc00000);
     dd(0x7fc00000);
     dd(0x7fc00000);
@@ -1030,21 +1030,21 @@ Xbyak::Label JitShader::CompilePrelude_Exp2() {
     // We then restore the result into the appropriate range.
 
     align(64);
-    const void* input_max = getCurr();
+    const void* input_max{getCurr()};
     dd(0x43010000);
-    const void* input_min = getCurr();
+    const void* input_min{getCurr()};
     dd(0xc2fdffff);
-    const void* c0 = getCurr();
+    const void* c0{getCurr()};
     dd(0x3c5dbe69);
-    const void* half = getCurr();
+    const void* half{getCurr()};
     dd(0x3f000000);
-    const void* c1 = getCurr();
+    const void* c1{getCurr()};
     dd(0x3d5509f9);
-    const void* c2 = getCurr();
+    const void* c2{getCurr()};
     dd(0x3e773cc5);
-    const void* c3 = getCurr();
+    const void* c3{getCurr()};
     dd(0x3f3168b3);
-    const void* c4 = getCurr();
+    const void* c4{getCurr()};
     dd(0x3f800016);
 
     Xbyak::Label ret_label;

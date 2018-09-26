@@ -74,15 +74,15 @@ void Module::PortConfig::Clear() {
 }
 
 void Module::CompletionEventCallBack(u64 port_id, s64) {
-    PortConfig& port = ports[port_id];
-    const CameraConfig& camera = cameras[port.camera_id];
-    const auto buffer = port.capture_result.get();
+    PortConfig& port{ports[port_id]};
+    const CameraConfig& camera{cameras[port.camera_id]};
+    const auto buffer{port.capture_result.get()};
 
     if (port.is_trimming) {
         u32 trim_width;
         u32 trim_height;
-        const int original_width = camera.contexts[camera.current_context].resolution.width;
-        const int original_height = camera.contexts[camera.current_context].resolution.height;
+        const int original_width{camera.contexts[camera.current_context].resolution.width};
+        const int original_height{camera.contexts[camera.current_context].resolution.height};
         if (port.x1 <= port.x0 || port.y1 <= port.y0 || port.x1 > original_width ||
             port.y1 > original_height) {
             LOG_ERROR(Service_CAM, "Invalid trimming coordinates x0={}, y0={}, x1={}, y1={}",
@@ -94,23 +94,23 @@ void Module::CompletionEventCallBack(u64 port_id, s64) {
             trim_height = port.y1 - port.y0;
         }
 
-        u32 trim_size = (port.x1 - port.x0) * (port.y1 - port.y0) * 2;
+        u32 trim_size{(port.x1 - port.x0) * (port.y1 - port.y0) * 2};
         if (port.dest_size != trim_size) {
             LOG_ERROR(Service_CAM, "The destination size ({}) doesn't match the source ({})!",
                       port.dest_size, trim_size);
         }
 
-        const u32 src_offset = port.y0 * original_width + port.x0;
-        const u16* src_ptr = buffer.data() + src_offset;
+        const u32 src_offset{port.y0 * original_width + port.x0};
+        const u16* src_ptr{buffer.data() + src_offset};
         // Note: src_size_left is int because it can be negative if the buffer size doesn't match.
-        int src_size_left = static_cast<int>((buffer.size() - src_offset) * sizeof(u16));
-        VAddr dest_ptr = port.dest;
+        int src_size_left{static_cast<int>((buffer.size() - src_offset) * sizeof(u16))};
+        VAddr dest_ptr{port.dest};
         // Note: dest_size_left and line_bytes are int to match the type of src_size_left.
-        int dest_size_left = static_cast<int>(port.dest_size);
-        const int line_bytes = static_cast<int>(trim_width * sizeof(u16));
+        int dest_size_left{static_cast<int>(port.dest_size)};
+        const int line_bytes{static_cast<int>(trim_width * sizeof(u16))};
 
         for (u32 y{}; y < trim_height; ++y) {
-            int copy_length = std::min({line_bytes, dest_size_left, src_size_left});
+            int copy_length{std::min({line_bytes, dest_size_left, src_size_left})};
             if (copy_length <= 0) {
                 break;
             }
@@ -121,7 +121,7 @@ void Module::CompletionEventCallBack(u64 port_id, s64) {
             src_size_left -= original_width * sizeof(u16);
         }
     } else {
-        std::size_t buffer_size = buffer.size() * sizeof(u16);
+        std::size_t buffer_size{buffer.size() * sizeof(u16)};
         if (port.dest_size != buffer_size) {
             LOG_ERROR(Service_CAM, "The destination size ({}) doesn't match the source ({})!",
                       port.dest_size, buffer_size);
@@ -135,11 +135,11 @@ void Module::CompletionEventCallBack(u64 port_id, s64) {
 }
 
 void Module::StartReceiving(int port_id) {
-    PortConfig& port = ports[port_id];
+    PortConfig& port{ports[port_id]};
     port.is_receiving = true;
 
     // launches a capture task asynchronously
-    CameraConfig& camera = cameras[port.camera_id];
+    CameraConfig& camera{cameras[port.camera_id]};
     port.capture_result = std::async(std::launch::async, [&camera, &port, this] {
         if (is_camera_reload_pending.exchange(false)) {
             // reinitialize the camera according to new settings
@@ -179,7 +179,7 @@ void Module::ActivatePort(int port_id, int camera_id) {
 template <int max_index>
 class CommandParamBitSet : public BitSet8 {
 public:
-    explicit CommandParamBitSet(u8 command_param) : BitSet8(command_param) {}
+    explicit CommandParamBitSet(u8 command_param) : BitSet8{command_param} {}
 
     bool IsValid() const {
         return m_val < (1 << max_index);
