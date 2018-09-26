@@ -14,7 +14,6 @@
 #include "common/scm_rev.h"
 #include "common/string_util.h"
 #include "common/swap.h"
-#include "common/timer.h"
 #include "core/core.h"
 #include "core/hle/service/hid/hid.h"
 #include "core/hle/service/ir/extra_hid.h"
@@ -461,7 +460,9 @@ void Movie::PrepareForPlayback(const std::string& movie_file) {
 
 void Movie::PrepareForRecording() {
     init_time = (Settings::values.init_clock == Settings::InitClock::SystemTime
-                     ? Common::Timer::GetTimeSinceJan1970().count()
+                     ? std::chrono::duration_cast<std::chrono::seconds>(
+                           std::chrono::system_clock::now().time_since_epoch())
+                           .count()
                      : Settings::values.init_time);
 }
 
