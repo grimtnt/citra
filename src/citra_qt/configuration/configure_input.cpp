@@ -60,7 +60,7 @@ static QString ButtonToText(const Common::ParamPackage& param) {
                      QString::fromStdString(param.Get("direction", "")));
         }
         if (param.Has("axis")) {
-            return QString("Axis %1% 2")
+            return QString("Axis %1%2")
                 .arg(QString::fromStdString(param.Get("axis", "")),
                      QString::fromStdString(param.Get("direction", "")));
         }
