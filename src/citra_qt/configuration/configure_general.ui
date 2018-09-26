@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>228</width>
-    <height>346</height>
+    <width>311</width>
+    <height>359</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -62,13 +62,6 @@
              <widget class="QComboBox" name="theme_combobox"/>
             </item>
            </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="enable_nfc">
-            <property name="text">
-             <string>Enable Amiibo Support</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </item>

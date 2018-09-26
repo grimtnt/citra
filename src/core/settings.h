@@ -129,7 +129,6 @@ struct Values {
     std::string sdmc_dir;
 
     // System
-    bool enable_nfc;
     int region_value;
     InitClock init_clock;
     u64 init_time;
