@@ -179,13 +179,12 @@ struct Values {
     TicksMode ticks_mode;
     u64 ticks;
     bool use_bos;
-    bool disable_mh_3d
-} extern values;
+    bool disable_mh_3d;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region
 // value to fit the region lockout info of the game
-static constexpr int REGION_VALUE_AUTO_SELECT = -1;
+static constexpr int REGION_VALUE_AUTO_SELECT{-1};
 
 void Apply();
 void LogSettings();
