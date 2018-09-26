@@ -94,13 +94,13 @@ void Module::CompletionEventCallBack(u64 port_id, s64) {
             trim_height = port.y1 - port.y0;
         }
 
-        u32 trim_size{(port.x1 - port.x0) * (port.y1 - port.y0) * 2};
+        u32 trim_size{static_cast<u32>((port.x1 - port.x0) * (port.y1 - port.y0) * 2)};
         if (port.dest_size != trim_size) {
             LOG_ERROR(Service_CAM, "The destination size ({}) doesn't match the source ({})!",
                       port.dest_size, trim_size);
         }
 
-        const u32 src_offset{port.y0 * original_width + port.x0};
+        const u32 src_offset{static_cast<u32>(port.y0 * original_width + port.x0)};
         const u16* src_ptr{buffer.data() + src_offset};
         // Note: src_size_left is int because it can be negative if the buffer size doesn't match.
         int src_size_left{static_cast<int>((buffer.size() - src_offset) * sizeof(u16))};
