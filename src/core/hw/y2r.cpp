@@ -26,7 +26,6 @@ using ImageTile = std::array<u32, TILE_SIZE>;
 static void ConvertYUVToRGB(InputFormat input_format, const u8* input_Y, const u8* input_U,
                             const u8* input_V, ImageTile output[], unsigned int width,
                             unsigned int height, const CoefficientSet& coefficients) {
-
     for (unsigned int y{}; y < height; ++y) {
         for (unsigned int x{}; x < width; ++x) {
             s32 Y{};
@@ -175,7 +174,7 @@ static void RotateTile90(const ImageTile& input, ImageTile& output, int height,
                          const u8 out_map[64]) {
     int out_i{};
     for (int x{}; x < 8; ++x) {
-        for (int y = height - 1; y >= 0; --y) {
+        for (int y{height - 1}; y >= 0; --y) {
             output[out_map[out_i++]] = input[y * 8 + x];
         }
     }
@@ -261,7 +260,7 @@ void PerformConversion(ConversionConfiguration& cvt) {
     ASSERT(cvt.input_line_width % 8 == 0);
     ASSERT(cvt.block_alignment != BlockAlignment::Block8x8 || cvt.input_lines % 8 == 0);
     // Tiles per row
-    std::size_t num_tiles = cvt.input_line_width / 8;
+    std::size_t num_tiles{static_cast<std::size_t>(cvt.input_line_width / 8)};
     ASSERT(num_tiles <= MAX_TILES);
 
     // Buffer used as a CDMA source/target.
@@ -284,10 +283,10 @@ void PerformConversion(ConversionConfiguration& cvt) {
     }
 
     for (unsigned int y{}; y < cvt.input_lines; y += 8) {
-        unsigned int row_height = std::min(cvt.input_lines - y, 8u);
+        unsigned int row_height{std::min(cvt.input_lines - y, 8u)};
 
         // Total size in pixels of incoming data required for this strip.
-        const std::size_t row_data_size = row_height * cvt.input_line_width;
+        const std::size_t row_data_size{row_height * cvt.input_line_width};
 
         u8* input_Y{data_buffer.get()};
         u8* input_U{input_Y + 8 * cvt.input_line_width};

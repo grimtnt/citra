@@ -55,7 +55,7 @@ struct Context {
 
     u32 GetResponseContentLength() const {
         try {
-            const std::string length = response->get_header_value("Content-Length");
+            const std::string length{response->get_header_value("Content-Length")};
             return std::stoi(length);
         } catch (...) {
             return 0;
