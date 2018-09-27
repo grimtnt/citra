@@ -50,6 +50,7 @@ else
     echo "Running git reset --hard HEAD"
     git reset --hard HEAD
     echo "Running git pull"
+    git pull
     if [ ! -d "build" ]; then
         echo "Build directory not found, creating it"
         mkdir build
