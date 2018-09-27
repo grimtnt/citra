@@ -71,6 +71,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->enable_shadows->setChecked(Settings::values.enable_shadows);
     ui->clear_cache_secs->setValue(Settings::values.clear_cache_secs);
     ui->screen_refresh_rate->setValue(Settings::values.screen_refresh_rate);
+    ui->min_vertices_per_thread->setValue(Settings::values.min_vertices_per_thread);
 }
 
 void ConfigureGraphics::applyConfiguration() {
@@ -90,6 +91,7 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.enable_shadows = ui->enable_shadows->isChecked();
     Settings::values.clear_cache_secs = ui->clear_cache_secs->value();
     Settings::values.screen_refresh_rate = ui->screen_refresh_rate->value();
+    Settings::values.min_vertices_per_thread = ui->min_vertices_per_thread->value();
     if (VideoCore::g_renderer)
         VideoCore::g_renderer->GetRasterizer()->SyncSettings();
 }
