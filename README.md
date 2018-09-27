@@ -1,4 +1,4 @@
-**BEFORE FILING AN ISSUE, READ THE RELEVANT SECTION IN THE [CONTRIBUTING](https://github.com/valentinvanelslande/citra/blob/master/CONTRIBUTING.md#reporting-issues) FILE!!!**
+**BEFORE FILING AN ISSUE, READ THE RELEVANT SECTION IN THE [CONTRIBUTING](https://github.com/citra-valentin/citra/blob/master/CONTRIBUTING.md#reporting-issues) FILE!!!**
 
 Citra
 ==============
@@ -12,12 +12,12 @@ Citra is licensed under the GPLv2 (or any later version). Refer to the license.t
 
 ### Development
 
-Most of the development happens on GitHub. It's also where [our central repository](https://github.com/valentinvanelslande/citra) is hosted.
+Most of the development happens on GitHub. It's also where [our central repository](https://github.com/citra-valentin/citra) is hosted.
 
-If you want to contribute please take a look at the [Contributor's Guide](CONTRIBUTING.md), [Developer Information](https://github.com/valentinvanelslande/citra/wiki/Developer-Information) and [TODO List](https://github.com/valentinvanelslande/citra/wiki/TODO-List)
+If you want to contribute please take a look at the [Contributor's Guide](CONTRIBUTING.md), [Developer Information](https://github.com/citra-valentin/citra/wiki/Developer-Information) and [TODO List](https://github.com/citra-valentin/citra/wiki/TODO-List)
 
 ### Building
 
-* __Windows__: [Windows Build](https://github.com/valentinvanelslande/citra/wiki/Building-For-Windows)
-* __Linux__: [Linux Build](https://github.com/valentinvanelslande/citra/wiki/Building-For-Linux)
-* __macOS__: [macOS Build](https://github.com/valentinvanelslande/citra/wiki/Building-for-macOS)
+* __Windows__: [Windows Build](https://github.com/citra-valentin/citra/wiki/Building-For-Windows)
+* __Linux__: [Linux Build](https://github.com/citra-valentin/citra/wiki/Building-For-Linux)
+* __macOS__: [macOS Build](https://github.com/citra-valentin/citra/wiki/Building-for-macOS)
