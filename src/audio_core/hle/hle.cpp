@@ -80,7 +80,7 @@ private:
     std::weak_ptr<DSP_DSP> dsp_dsp{};
 };
 
-DspHle::Impl::Impl(DspHle& parent_) : parent(parent_) {
+DspHle::Impl::Impl(DspHle& parent_) : parent{parent_} {
     dsp_memory.raw_memory.fill(0);
 
     tick_event =

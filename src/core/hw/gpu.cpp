@@ -15,6 +15,7 @@
 #include "core/hw/gpu.h"
 #include "core/hw/hw.h"
 #include "core/memory.h"
+#include "core/settings.h"
 #include "video_core/command_processor.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/utils.h"
@@ -23,9 +24,6 @@
 namespace GPU {
 
 Regs g_regs;
-
-/// 268MHz CPU clocks / 60Hz frames per second
-const u64 frame_ticks{static_cast<u64>(BASE_CLOCK_RATE_ARM11 / SCREEN_REFRESH_RATE)};
 
 /// Event id for CoreTiming
 static CoreTiming::EventType* vblank_event;
@@ -489,7 +487,10 @@ static void VBlankCallback(u64 userdata, s64 cycles_late) {
     Service::GSP::SignalInterrupt(Service::GSP::InterruptId::PDC1);
 
     // Reschedule recurrent event
-    CoreTiming::ScheduleEvent(frame_ticks - cycles_late, vblank_event);
+    CoreTiming::ScheduleEvent(
+        static_cast<u64>(BASE_CLOCK_RATE_ARM11 / Settings::values.screen_refresh_rate) -
+            cycles_late,
+        vblank_event);
 }
 
 /// Initialize hardware
@@ -523,7 +524,9 @@ void Init() {
     framebuffer_sub.active_fb = 0;
 
     vblank_event = CoreTiming::RegisterEvent("GPU::VBlankCallback", VBlankCallback);
-    CoreTiming::ScheduleEvent(frame_ticks, vblank_event);
+    CoreTiming::ScheduleEvent(
+        static_cast<u64>(BASE_CLOCK_RATE_ARM11 / Settings::values.screen_refresh_rate),
+        vblank_event);
 
     LOG_DEBUG(HW_GPU, "initialized OK");
 }

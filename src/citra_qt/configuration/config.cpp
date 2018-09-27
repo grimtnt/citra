@@ -133,6 +133,7 @@ void Config::ReadValues() {
     Settings::values.bg_blue = qt_config->value("bg_blue", 0.0).toFloat();
     Settings::values.enable_shadows = qt_config->value("enable_shadows", true).toBool();
     Settings::values.clear_cache_secs = qt_config->value("clear_cache_secs", 30).toInt();
+    Settings::values.screen_refresh_rate = qt_config->value("screen_refresh_rate", 60).toInt();
     qt_config->endGroup();
 
     qt_config->beginGroup("Layout");
@@ -332,6 +333,7 @@ void Config::SaveValues() {
     qt_config->setValue("bg_green", (double)Settings::values.bg_green);
     qt_config->setValue("bg_blue", (double)Settings::values.bg_blue);
     qt_config->setValue("enable_shadows", Settings::values.enable_shadows);
+    qt_config->setValue("screen_refresh_rate", Settings::values.screen_refresh_rate);
     qt_config->endGroup();
 
     qt_config->beginGroup("Layout");

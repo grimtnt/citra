@@ -132,9 +132,8 @@ struct Values {
     int region_value;
     InitClock init_clock;
     u64 init_time;
-    bool memory_developer_mode;
 
-    // Renderer
+    // Graphics
     bool use_hw_shader;
     bool shaders_accurate_gs;
     bool shaders_accurate_mul;
@@ -143,6 +142,7 @@ struct Values {
     u16 frame_limit;
     bool enable_shadows;
     int clear_cache_secs;
+    int screen_refresh_rate;
 
     LayoutOption layout_option;
     bool swap_screen;
@@ -179,6 +179,7 @@ struct Values {
     u64 ticks;
     bool use_bos;
     bool disable_mh_3d;
+    bool memory_developer_mode;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region

@@ -60,7 +60,7 @@ struct CheatLine {
                 sub_type_temp = line.substr(1, 1);
             std::string complete_type_str{type_temp + sub_type_temp};
             type = static_cast<CheatType>(std::stoi(complete_type_str, 0, 16));
-            std::vector<std::string> out{};
+            std::vector<std::string> out;
             Common::SplitString(line.substr(complete_type_str.length()), ' ', out);
             if (out.size() == 2) {
                 address = std::stoi(out[0], 0, 16);

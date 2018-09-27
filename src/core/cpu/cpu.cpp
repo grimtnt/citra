@@ -26,33 +26,10 @@ static std::unordered_map<u64, u64> custom_ticks_map = {
 
 class UserCallbacks final : public Dynarmic::A32::UserCallbacks {
 public:
-    explicit UserCallbacks(CPU& parent) : parent(parent) {
-        switch (Settings::values.ticks_mode) {
-        case Settings::TicksMode::Custom: {
-            custom_ticks = Settings::values.ticks;
-            use_custom_ticks = true;
-            break;
-        }
-        case Settings::TicksMode::Auto: {
-            u64 program_id{};
-            Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
-            auto itr = custom_ticks_map.find(program_id);
-            if (itr != custom_ticks_map.end()) {
-                custom_ticks = itr->second;
-                use_custom_ticks = true;
-            } else {
-                custom_ticks = 0;
-                use_custom_ticks = false;
-            }
-            break;
-        }
-        case Settings::TicksMode::Accurate: {
-            custom_ticks = 0;
-            use_custom_ticks = false;
-            break;
-        }
-        }
+    explicit UserCallbacks(CPU& parent) : parent{parent} {
+        SyncSettings();
     }
+
     ~UserCallbacks() = default;
 
     std::uint8_t MemoryRead8(VAddr vaddr) override {
@@ -110,12 +87,43 @@ public:
         return static_cast<u64>(ticks <= 0 ? 0 : ticks);
     }
 
+    void SyncSettings() {
+        custom_ticks = Settings::values.ticks;
+        use_custom_ticks = Settings::values.ticks_mode != Settings::TicksMode::Accurate;
+        switch (Settings::values.ticks_mode) {
+        case Settings::TicksMode::Custom: {
+            custom_ticks = Settings::values.ticks;
+            use_custom_ticks = true;
+            break;
+        }
+        case Settings::TicksMode::Auto: {
+            u64 program_id;
+            Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
+            auto itr{custom_ticks_map.find(program_id)};
+            if (itr != custom_ticks_map.end()) {
+                custom_ticks = itr->second;
+                use_custom_ticks = true;
+            } else {
+                custom_ticks = 0;
+                use_custom_ticks = false;
+            }
+            break;
+        }
+        case Settings::TicksMode::Accurate: {
+            custom_ticks = 0;
+            use_custom_ticks = false;
+            break;
+        }
+        }
+    }
+
+private:
     CPU& parent;
     u64 custom_ticks{};
     bool use_custom_ticks{};
 };
 
-CPU::CPU() : cb(std::make_unique<UserCallbacks>(*this)) {
+CPU::CPU() : cb{std::make_unique<UserCallbacks>(*this)} {
     state = std::make_shared<State>();
     PageTableChanged();
 }
@@ -191,7 +199,7 @@ std::unique_ptr<ThreadContext> CPU::NewContext() const {
 }
 
 void CPU::SaveContext(const std::unique_ptr<ThreadContext>& arg) {
-    ThreadContext* ctx = dynamic_cast<ThreadContext*>(arg.get());
+    ThreadContext* ctx{dynamic_cast<ThreadContext*>(arg.get())};
     ASSERT(ctx);
 
     jit->SaveContext(ctx->ctx);
@@ -199,7 +207,7 @@ void CPU::SaveContext(const std::unique_ptr<ThreadContext>& arg) {
 }
 
 void CPU::LoadContext(const std::unique_ptr<ThreadContext>& arg) {
-    const ThreadContext* ctx = dynamic_cast<ThreadContext*>(arg.get());
+    const ThreadContext* ctx{dynamic_cast<ThreadContext*>(arg.get())};
     ASSERT(ctx);
 
     jit->LoadContext(ctx->ctx);
@@ -219,45 +227,19 @@ void CPU::InvalidateCacheRange(u32 start_address, std::size_t length) {
 void CPU::PageTableChanged() {
     current_page_table = Memory::GetCurrentPageTable();
 
-    auto iter = jits.find(current_page_table);
+    auto iter{jits.find(current_page_table)};
     if (iter != jits.end()) {
         jit = iter->second.get();
         return;
     }
 
-    auto new_jit = MakeJit();
+    auto new_jit{MakeJit()};
     jit = new_jit.get();
     jits.emplace(current_page_table, std::move(new_jit));
 }
 
 void CPU::SyncSettings() {
-    cb->custom_ticks = Settings::values.ticks;
-    cb->use_custom_ticks = Settings::values.ticks_mode != Settings::TicksMode::Accurate;
-    switch (Settings::values.ticks_mode) {
-    case Settings::TicksMode::Custom: {
-        cb->custom_ticks = Settings::values.ticks;
-        cb->use_custom_ticks = true;
-        break;
-    }
-    case Settings::TicksMode::Auto: {
-        u64 program_id{};
-        Core::System::GetInstance().GetAppLoader().ReadProgramId(program_id);
-        auto itr{custom_ticks_map.find(program_id)};
-        if (itr != custom_ticks_map.end()) {
-            cb->custom_ticks = itr->second;
-            cb->use_custom_ticks = true;
-        } else {
-            cb->custom_ticks = 0;
-            cb->use_custom_ticks = false;
-        }
-        break;
-    }
-    case Settings::TicksMode::Accurate: {
-        cb->custom_ticks = 0;
-        cb->use_custom_ticks = false;
-        break;
-    }
-    }
+    cb->SyncSettings();
 }
 
 std::unique_ptr<Dynarmic::A32::Jit> CPU::MakeJit() {
