@@ -107,7 +107,7 @@ public:
         } else {
             Shader shader;
             shader.Create(source, type);
-            Program& program = boost::get<Program>(shader_or_program);
+            Program& program{boost::get<Program>(shader_or_program)};
             program.Create(true, {shader.handle});
             SetShaderUniformBlockBindings(program.handle);
             SetShaderSamplerBindings(program.handle);
@@ -128,9 +128,10 @@ private:
 
 class TrivialVertexShader {
 public:
-    explicit TrivialVertexShader(bool separable) : program(separable) {
+    explicit TrivialVertexShader(bool separable) : program{separable} {
         program.Create(GLShader::GenerateTrivialVertexShader(separable).c_str(), GL_VERTEX_SHADER);
     }
+
     GLuint Get() const {
         return program.GetHandle();
     }
@@ -143,7 +144,8 @@ template <typename KeyConfigType, std::string (*CodeGenerator)(const KeyConfigTy
           GLenum ShaderType>
 class ShaderCache {
 public:
-    explicit ShaderCache(bool separable) : separable(separable) {}
+    explicit ShaderCache(bool separable) : separable{separable} {}
+
     GLuint Get(const KeyConfigType& config) {
         auto [iter, new_shader]{shaders.emplace(config, ShaderStage{separable})};
         ShaderStage& cached_shader{iter->second};
@@ -169,19 +171,20 @@ template <typename KeyConfigType,
           GLenum ShaderType>
 class ShaderDoubleCache {
 public:
-    explicit ShaderDoubleCache(bool separable) : separable(separable) {}
+    explicit ShaderDoubleCache(bool separable) : separable{separable} {}
+
     GLuint Get(const KeyConfigType& key, const Pica::Shader::ShaderSetup& setup) {
-        auto map_it = shader_map.find(key);
+        auto map_it{shader_map.find(key)};
         if (map_it == shader_map.end()) {
-            auto program_opt = CodeGenerator(setup, key, separable);
+            auto program_opt{CodeGenerator(setup, key, separable)};
             if (!program_opt) {
                 shader_map[key] = nullptr;
                 return 0;
             }
 
-            std::string& program = program_opt.get();
-            auto [iter, new_shader] = shader_cache.emplace(program, ShaderStage{separable});
-            ShaderStage& cached_shader = iter->second;
+            std::string program{program_opt.get()};
+            auto [iter, new_shader]{shader_cache.emplace(program, ShaderStage{separable})};
+            ShaderStage& cached_shader{iter->second};
             if (new_shader) {
                 cached_shader.Create(program.c_str(), ShaderType);
             }
@@ -219,9 +222,9 @@ using FragmentShaders =
 class ShaderProgramManager::Impl {
 public:
     explicit Impl(bool separable, bool is_amd)
-        : is_amd(is_amd), separable(separable), programmable_vertex_shaders(separable),
-          trivial_vertex_shader(separable), programmable_geometry_shaders(separable),
-          fixed_geometry_shaders(separable), fragment_shaders(separable) {
+        : is_amd{is_amd}, separable{separable}, programmable_vertex_shaders{separable},
+          trivial_vertex_shader{separable}, programmable_geometry_shaders{separable},
+          fixed_geometry_shaders{separable}, fragment_shaders{separable} {
         if (separable)
             pipeline.Create();
     }
@@ -268,13 +271,13 @@ public:
 };
 
 ShaderProgramManager::ShaderProgramManager(bool separable, bool is_amd)
-    : impl(std::make_unique<Impl>(separable, is_amd)) {}
+    : impl{std::make_unique<Impl>(separable, is_amd)} {}
 
 ShaderProgramManager::~ShaderProgramManager() = default;
 
 bool ShaderProgramManager::UseProgrammableVertexShader(const GLShader::PicaVSConfig& config,
                                                        const Pica::Shader::ShaderSetup& setup) {
-    GLuint handle = impl->programmable_vertex_shaders.Get(config, setup);
+    GLuint handle{impl->programmable_vertex_shaders.Get(config, setup)};
     if (handle == 0)
         return false;
     impl->current.vs = handle;
@@ -287,7 +290,7 @@ void ShaderProgramManager::UseTrivialVertexShader() {
 
 bool ShaderProgramManager::UseProgrammableGeometryShader(const GLShader::PicaGSConfig& config,
                                                          const Pica::Shader::ShaderSetup& setup) {
-    GLuint handle = impl->programmable_geometry_shaders.Get(config, setup);
+    GLuint handle{impl->programmable_geometry_shaders.Get(config, setup)};
     if (handle == 0)
         return false;
     impl->current.gs = handle;
@@ -324,7 +327,7 @@ void ShaderProgramManager::ApplyTo(OpenGLState& state) {
         state.draw.shader_program = 0;
         state.draw.program_pipeline = impl->pipeline.handle;
     } else {
-        Program& cached_program = impl->program_cache[impl->current];
+        Program& cached_program{impl->program_cache[impl->current]};
         if (cached_program.handle == 0) {
             cached_program.Create(false, {impl->current.vs, impl->current.gs, impl->current.fs});
             SetShaderUniformBlockBindings(cached_program.handle);
