@@ -597,8 +597,6 @@ void GSP_GPU::TriggerCmdReqQueue(Kernel::HLERequestContext& ctx) {
 void GSP_GPU::ImportDisplayCaptureInfo(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x18, 0, 0};
 
-    LOG_INFO(Service, "thread {}", active_thread_id);
-
     FrameBufferUpdate* top_screen{GetFrameBufferInfo(active_thread_id, 0)};
     FrameBufferUpdate* bottom_screen{GetFrameBufferInfo(active_thread_id, 1)};
 
