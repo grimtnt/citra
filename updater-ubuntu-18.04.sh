@@ -37,7 +37,7 @@ if $install; then
     echo "Entering $repo"
     cd "$repo"
     echo "Adding upstream remote"
-    git remote add upstream https://github.com/valentinvanelslande/citra
+    git remote add upstream https://github.com/citra-valentin/citra
     echo "Creating build directory"
     mkdir build
     echo "Entering build directory"
