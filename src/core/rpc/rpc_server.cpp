@@ -122,6 +122,19 @@ void RPCServer::HandleSetBackgroundColor(Packet& packet, float r, float g, float
     packet.SendReply();
 }
 
+void RPCServer::HandleSetScreenRefreshRate(Packet& packet, int rate) {
+    Settings::values.screen_refresh_rate = rate;
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleSetShadowsEnabled(Packet& packet, bool enabled) {
+    Settings::values.enable_shadows = enabled;
+    Settings::Apply();
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
@@ -139,6 +152,8 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::Restart:
         case PacketType::SetSpeedLimit:
         case PacketType::SetBackgroundColor:
+        case PacketType::SetScreenRefreshRate:
+        case PacketType::SetShadowsEnabled:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -155,8 +170,8 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
 
     if (ValidatePacket(request_packet->GetHeader())) {
         // Currently, all request types use the address/data_size wire format
-        u32 address{};
-        u32 data_size{};
+        u32 address;
+        u32 data_size;
         std::memcpy(&address, request_packet->GetPacketData().data(), sizeof(address));
         std::memcpy(&data_size, request_packet->GetPacketData().data() + sizeof(address),
                     sizeof(data_size));
@@ -178,7 +193,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         }
         case PacketType::PadState: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            u32 raw{};
+            u32 raw;
             std::memcpy(&raw, data, sizeof(u32));
             HandlePadState(*request_packet, raw);
             success = true;
@@ -191,7 +206,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 s16 y;
                 bool valid;
             };
-            State state{};
+            State state;
             std::memcpy(&state, data, sizeof(State));
             HandleTouchState(*request_packet, state.x, state.y, state.valid);
             success = true;
@@ -207,7 +222,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 s16 pitch;
                 s16 yaw;
             };
-            State state{};
+            State state;
             std::memcpy(&state, data, sizeof(State));
             HandleMotionState(*request_packet, state.x, state.y, state.z, state.roll, state.pitch,
                               state.yaw);
@@ -220,7 +235,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 s16 x;
                 s16 y;
             };
-            State state{};
+            State state;
             std::memcpy(&state, data, sizeof(State));
             HandleCircleState(*request_packet, state.x, state.y);
             success = true;
@@ -228,7 +243,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         }
         case PacketType::SetResolution: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            u16 resolution{};
+            u16 resolution;
             std::memcpy(&resolution, data, sizeof(u16));
             HandleSetResolution(*request_packet, resolution);
             success = true;
@@ -236,7 +251,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         }
         case PacketType::SetGame: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            std::string path{};
+            std::string path;
             path.resize(request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
             std::memcpy(&path[0], data, request_packet->GetPacketDataSize() - (sizeof(u32) * 2));
             HandleSetGame(*request_packet, path);
@@ -251,7 +266,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 bool motion;
                 bool circle;
             };
-            State state{};
+            State state;
             std::memcpy(&state, data, sizeof(State));
             HandleSetOverrideControls(*request_packet, state.pad, state.touch, state.motion,
                                       state.circle);
@@ -275,7 +290,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
         }
         case PacketType::SetSpeedLimit: {
             const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
-            u16 speed_limit{};
+            u16 speed_limit;
             std::memcpy(&speed_limit, data, sizeof(u16));
             HandleSetSpeedLimit(*request_packet, speed_limit);
             success = true;
@@ -288,9 +303,25 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                 float g;
                 float b;
             };
-            Color color{};
+            Color color;
             std::memcpy(&color, data, sizeof(Color));
             HandleSetBackgroundColor(*request_packet, color.r, color.g, color.b);
+            success = true;
+            break;
+        }
+        case PacketType::SetScreenRefreshRate: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            int rate;
+            std::memcpy(&rate, data, sizeof(int));
+            HandleSetScreenRefreshRate(*request_packet, rate);
+            success = true;
+            break;
+        }
+        case PacketType::SetShadowsEnabled: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            bool enabled;
+            std::memcpy(&enabled, data, sizeof(bool));
+            HandleSetShadowsEnabled(*request_packet, enabled);
             success = true;
             break;
         }

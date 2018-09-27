@@ -22,6 +22,7 @@ void Apply() {
 
     if (VideoCore::g_renderer) {
         VideoCore::g_renderer->UpdateCurrentFramebufferLayout();
+        VideoCore::g_renderer->GetRasterizer()->SyncSettings();
     }
 
     VideoCore::g_renderer_bg_color_update_requested = true;
