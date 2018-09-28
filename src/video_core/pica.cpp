@@ -26,7 +26,7 @@ void Zero(T& o) {
     memset(&o, 0, sizeof(o));
 }
 
-State::State() : geometry_pipeline(*this) {
+State::State() : geometry_pipeline{*this} {
     auto SubmitVertex{[this](const Shader::AttributeBuffer& vertex) {
         primitive_assembler.SubmitVertex(
             Shader::OutputVertex::FromAttributeBuffer(regs.rasterizer, vertex));
