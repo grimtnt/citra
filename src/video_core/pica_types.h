@@ -25,13 +25,13 @@ template <unsigned M, unsigned E>
 struct Float {
 public:
     static Float<M, E> FromFloat32(float val) {
-        Float<M, E> ret;
+        Float<M, E> ret{};
         ret.value = val;
         return ret;
     }
 
     static Float<M, E> FromRaw(u32 hex) {
-        Float<M, E> res;
+        Float<M, E> res{};
 
         const int width{M + E + 1};
         const int bias{128 - (1 << (E - 1))};
