@@ -1360,8 +1360,8 @@ Module::Module() {
     change_state_event =
         Kernel::Event::Create(Kernel::ResetType::OneShot, "CECD::change_state_event");
 
-    std::string nand_directory = FileUtil::GetUserPath(FileUtil::UserPath::NANDDir);
-    FileSys::ArchiveFactory_SystemSaveData systemsavedata_factory(nand_directory);
+    std::string nand_directory{FileUtil::GetUserPath(D_NAND_IDX)};
+    FileSys::ArchiveFactory_SystemSaveData systemsavedata_factory{nand_directory};
 
     // Open the SystemSaveData archive 0x00010026
     FileSys::Path archive_path{cecd_system_savedata_id};

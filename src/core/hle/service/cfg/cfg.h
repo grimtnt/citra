@@ -9,7 +9,11 @@
 #include <string>
 #include <vector>
 #include "common/common_types.h"
-#include "core/hle/service/fs/archive.h"
+#include "core/hle/service/service.h"
+
+namespace FileSys {
+class ArchiveBackend;
+} // namespace FileSys
 
 namespace Service::CFG {
 
@@ -302,7 +306,7 @@ public:
 private:
     static constexpr u32 CONFIG_SAVEFILE_SIZE{0x8000};
     std::array<u8, CONFIG_SAVEFILE_SIZE> cfg_config_file_buffer;
-    Service::FS::ArchiveHandle cfg_system_save_data_archive;
+    std::unique_ptr<FileSys::ArchiveBackend> cfg_system_save_data_archive;
     u32 preferred_region_code{};
 };
 

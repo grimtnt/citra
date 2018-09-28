@@ -27,7 +27,6 @@
 #include "core/hw/aes/key.h"
 #include "core/settings.h"
 
-
 namespace Service::APT {
 
 static std::vector<u8> argument{};
@@ -131,7 +130,7 @@ bool Module::LoadSharedFont() {
     FileSys::NCCHArchive archive{shared_font_archive_id_low, Service::FS::MediaType::NAND};
     std::vector<u8> romfs_path(20, 0); // 20-byte all zero path for opening RomFS
     FileSys::Path file_path{romfs_path};
-    FileSys::Mode open_mode = {};
+    FileSys::Mode open_mode{};
     open_mode.read_flag.Assign(1);
     auto file_result{archive.OpenFile(file_path, open_mode)};
     if (file_result.Failed())

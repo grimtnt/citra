@@ -150,7 +150,7 @@ Module::Module() {
 
         FileSys::Path gamecoin_path{"/gamecoin.dat"};
         Service::FS::CreateFileInArchive(*archive_result, gamecoin_path, sizeof(GameCoin));
-        FileSys::Mode open_mode = {};
+        FileSys::Mode open_mode{};
         open_mode.write_flag.Assign(1);
         // Open the file and write the default gamecoin information
         auto gamecoin_result{
@@ -170,8 +170,8 @@ void SetPlayCoins(u16 play_coins) {
 
     ASSERT_MSG(archive_result.Succeeded(), "Could not open the PTM SharedExtSaveData archive!");
 
-    FileSys::Path gamecoin_path("/gamecoin.dat");
-    FileSys::Mode open_mode = {};
+    FileSys::Path gamecoin_path{"/gamecoin.dat"};
+    FileSys::Mode open_mode{};
     open_mode.read_flag.Assign(1);
     open_mode.write_flag.Assign(1);
     // Open the file and write the gamecoin information
