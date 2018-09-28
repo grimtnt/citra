@@ -18,17 +18,17 @@ namespace Service::NWM {
 // 802.11 broadcast MAC address
 constexpr MacAddress BroadcastMac = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-constexpr u64 DefaultNetworkUptime = 900000000; // 15 minutes in microseconds.
+constexpr u64 DefaultNetworkUptime{900000000}; // 15 minutes in microseconds.
 
 // Note: These values were taken from a packet capture of an o3DS XL
 // broadcasting a Super Smash Bros. 4 lobby.
-constexpr u16 DefaultExtraCapabilities = 0x0431;
+constexpr u16 DefaultExtraCapabilities{0x0431};
 
 // Size of the SSID broadcast by an UDS beacon frame.
-constexpr u8 UDSBeaconSSIDSize = 8;
+constexpr u8 UDSBeaconSSIDSize{8};
 
 // The maximum size of the data stored in the EncryptedData0 tag (24).
-constexpr u32 EncryptedDataSizeCutoff = 0xFA;
+constexpr u32 EncryptedDataSizeCutoff{0xFA};
 
 /**
  * NWM Beacon data encryption key, taken from the NWM module code.
@@ -237,8 +237,8 @@ void DecryptBeacon(const NetworkInfo& network_info, std::vector<u8>& buffer) {
  */
 std::vector<u8> GenerateNintendoFirstEncryptedDataTag(const NetworkInfo& network_info,
                                                       const NodeList& nodes) {
-    const std::size_t payload_size =
-        std::min<std::size_t>(EncryptedDataSizeCutoff, nodes.size() * sizeof(NodeInfo));
+    const std::size_t payload_size{
+        std::min<std::size_t>(EncryptedDataSizeCutoff, nodes.size() * sizeof(NodeInfo))};
 
     EncryptedDataTag tag{};
     tag.header.tag_id = static_cast<u8>(TagId::VendorSpecific);
@@ -281,7 +281,7 @@ std::vector<u8> GenerateNintendoSecondEncryptedDataTag(const NetworkInfo& networ
     std::vector<u8> buffer(sizeof(tag) + payload_size);
     std::memcpy(buffer.data(), &tag, sizeof(tag));
 
-    std::vector<u8> encrypted_data = GeneratedEncryptedData(network_info, nodes);
+    std::vector<u8> encrypted_data{GeneratedEncryptedData(network_info, nodes)};
     std::memcpy(buffer.data() + sizeof(tag), encrypted_data.data() + EncryptedDataSizeCutoff,
                 payload_size);
 
@@ -297,10 +297,10 @@ std::vector<u8> GenerateNintendoTaggedParameters(const NetworkInfo& network_info
                                                  const NodeList& nodes) {
     ASSERT_MSG(network_info.max_nodes == nodes.size(), "Inconsistent network state.");
 
-    std::vector<u8> buffer = GenerateNintendoDummyTag();
-    std::vector<u8> network_info_tag = GenerateNintendoNetworkInfoTag(network_info);
-    std::vector<u8> first_data_tag = GenerateNintendoFirstEncryptedDataTag(network_info, nodes);
-    std::vector<u8> second_data_tag = GenerateNintendoSecondEncryptedDataTag(network_info, nodes);
+    std::vector<u8> buffer{GenerateNintendoDummyTag()};
+    std::vector<u8> network_info_tag{GenerateNintendoNetworkInfoTag(network_info)};
+    std::vector<u8> first_data_tag{GenerateNintendoFirstEncryptedDataTag(network_info, nodes)};
+    std::vector<u8> second_data_tag{GenerateNintendoSecondEncryptedDataTag(network_info, nodes)};
 
     buffer.insert(buffer.end(), network_info_tag.begin(), network_info_tag.end());
     buffer.insert(buffer.end(), first_data_tag.begin(), first_data_tag.end());
@@ -310,9 +310,9 @@ std::vector<u8> GenerateNintendoTaggedParameters(const NetworkInfo& network_info
 }
 
 std::vector<u8> GenerateBeaconFrame(const NetworkInfo& network_info, const NodeList& nodes) {
-    std::vector<u8> buffer = GenerateFixedParameters();
-    std::vector<u8> basic_tags = GenerateBasicTaggedParameters();
-    std::vector<u8> nintendo_tags = GenerateNintendoTaggedParameters(network_info, nodes);
+    std::vector<u8> buffer{GenerateFixedParameters()};
+    std::vector<u8> basic_tags{GenerateBasicTaggedParameters()};
+    std::vector<u8> nintendo_tags{GenerateNintendoTaggedParameters(network_info, nodes)};
 
     buffer.insert(buffer.end(), basic_tags.begin(), basic_tags.end());
     buffer.insert(buffer.end(), nintendo_tags.begin(), nintendo_tags.end());

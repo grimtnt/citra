@@ -1033,9 +1033,9 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
 
     // TODO(B3N30): Increment the sequence number after each sent packet.
     u16 sequence_number{};
-    std::vector<u8> data_payload =
-        GenerateDataPayload(input_buffer, data_channel, dest_node_id,
-                            connection_status.network_node_id, sequence_number);
+    std::vector<u8> data_payload{GenerateDataPayload(input_buffer, data_channel, dest_node_id,
+                                                     connection_status.network_node_id,
+                                                     sequence_number)};
 
     // TODO(B3N30): Retrieve the MAC address of the dest_node_id and our own to encrypt
     // and encapsulate the payload.

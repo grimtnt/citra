@@ -94,8 +94,8 @@ static std::array<u8, CryptoPP::AES::BLOCKSIZE> GenerateDataCCMPKey(
     // The CCMP key is the result of encrypting the MD5 hash of the passphrase with AES-CTR using
     // keyslot 0x2D.
     using CryptoPP::AES;
-    std::array<u8, CryptoPP::Weak::MD5::DIGESTSIZE> counter = GetDataCryptoCTR(network_info);
-    std::array<u8, AES::BLOCKSIZE> key = HW::AES::GetNormalKey(HW::AES::KeySlotID::UDSDataKey);
+    std::array<u8, CryptoPP::Weak::MD5::DIGESTSIZE> counter{GetDataCryptoCTR(network_info)};
+    std::array<u8, AES::BLOCKSIZE> key{HW::AES::GetNormalKey(HW::AES::KeySlotID::UDSDataKey)};
     CryptoPP::CTR_Mode<AES>::Encryption aes;
     aes.SetKeyWithIV(key.data(), AES::BLOCKSIZE, counter.data());
     aes.ProcessData(ccmp_key.data(), passphrase_hash.data(), passphrase_hash.size());
@@ -165,7 +165,7 @@ static std::vector<u8> DecryptDataFrame(const std::vector<u8>& encrypted_payload
 
     // Reference: IEEE 802.11-2007
 
-    std::vector<u8> aad = GenerateCCMPAAD(sender, receiver, bssid, frame_control);
+    std::vector<u8> aad{GenerateCCMPAAD(sender, receiver, bssid, frame_control)};
 
     std::vector<u8> packet_number{0,
                                   0,
@@ -175,20 +175,20 @@ static std::vector<u8> DecryptDataFrame(const std::vector<u8>& encrypted_payload
                                   static_cast<u8>(sequence_number & 0xFF)};
 
     // 8.3.3.3.3 Construct CCM nonce (13 bytes)
-    std::vector<u8> nonce;
+    std::vector<u8> nonce{};
     nonce.push_back(0);                                                    // priority
     nonce.insert(nonce.end(), sender.begin(), sender.end());               // Address 2
     nonce.insert(nonce.end(), packet_number.begin(), packet_number.end()); // PN
 
     try {
-        CryptoPP::CCM<CryptoPP::AES, 8>::Decryption d;
+        CryptoPP::CCM<CryptoPP::AES, 8>::Decryption d{};
         d.SetKeyWithIV(ccmp_key.data(), ccmp_key.size(), nonce.data(), nonce.size());
         d.SpecifyDataLengths(aad.size(), encrypted_payload.size() - 8, 0);
 
-        CryptoPP::AuthenticatedDecryptionFilter df(
+        CryptoPP::AuthenticatedDecryptionFilter df{
             d, nullptr,
             CryptoPP::AuthenticatedDecryptionFilter::MAC_AT_END |
-                CryptoPP::AuthenticatedDecryptionFilter::THROW_EXCEPTION);
+                CryptoPP::AuthenticatedDecryptionFilter::THROW_EXCEPTION};
         // put aad
         df.ChannelPut(CryptoPP::AAD_CHANNEL, aad.data(), aad.size());
 
@@ -202,7 +202,7 @@ static std::vector<u8> DecryptDataFrame(const std::vector<u8>& encrypted_payload
         df.ChannelMessageEnd(CryptoPP::DEFAULT_CHANNEL);
         df.SetRetrievalChannel(CryptoPP::DEFAULT_CHANNEL);
 
-        std::size_t size = df.MaxRetrievable();
+        std::size_t size{df.MaxRetrievable()};
 
         std::vector<u8> pdata(size);
         df.Get(pdata.data(), size);
@@ -225,7 +225,7 @@ static std::vector<u8> EncryptDataFrame(const std::vector<u8>& payload,
                                         u16 frame_control) {
     // Reference: IEEE 802.11-2007
 
-    std::vector<u8> aad = GenerateCCMPAAD(sender, receiver, bssid, frame_control);
+    std::vector<u8> aad{GenerateCCMPAAD(sender, receiver, bssid, frame_control)};
 
     std::vector<u8> packet_number{0,
                                   0,
@@ -241,11 +241,11 @@ static std::vector<u8> EncryptDataFrame(const std::vector<u8>& payload,
     nonce.insert(nonce.end(), packet_number.begin(), packet_number.end()); // PN
 
     try {
-        CryptoPP::CCM<CryptoPP::AES, 8>::Encryption d;
+        CryptoPP::CCM<CryptoPP::AES, 8>::Encryption d{};
         d.SetKeyWithIV(ccmp_key.data(), ccmp_key.size(), nonce.data(), nonce.size());
         d.SpecifyDataLengths(aad.size(), payload.size(), 0);
 
-        CryptoPP::AuthenticatedEncryptionFilter df(d);
+        CryptoPP::AuthenticatedEncryptionFilter df{d};
         // put aad
         df.ChannelPut(CryptoPP::AAD_CHANNEL, aad.data(), aad.size());
         df.ChannelMessageEnd(CryptoPP::AAD_CHANNEL);
@@ -256,7 +256,7 @@ static std::vector<u8> EncryptDataFrame(const std::vector<u8>& payload,
 
         df.SetRetrievalChannel(CryptoPP::DEFAULT_CHANNEL);
 
-        std::size_t size = df.MaxRetrievable();
+        std::size_t size{df.MaxRetrievable()};
 
         std::vector<u8> cipher(size);
         df.Get(cipher.data(), size);
@@ -270,9 +270,9 @@ static std::vector<u8> EncryptDataFrame(const std::vector<u8>& payload,
 
 std::vector<u8> GenerateDataPayload(const std::vector<u8>& data, u8 channel, u16 dest_node,
                                     u16 src_node, u16 sequence_number) {
-    std::vector<u8> buffer = GenerateLLCHeader(EtherType::SecureData);
-    std::vector<u8> securedata_header = GenerateSecureDataHeader(
-        static_cast<u16>(data.size()), channel, dest_node, src_node, sequence_number);
+    std::vector<u8> buffer{GenerateLLCHeader(EtherType::SecureData)};
+    std::vector<u8> securedata_header{GenerateSecureDataHeader(
+        static_cast<u16>(data.size()), channel, dest_node, src_node, sequence_number)};
 
     buffer.insert(buffer.end(), securedata_header.begin(), securedata_header.end());
     buffer.insert(buffer.end(), data.begin(), data.end());

@@ -97,7 +97,7 @@ struct EAPoLStartPacket {
 
 static_assert(sizeof(EAPoLStartPacket) == 0x30, "EAPoLStartPacket has the wrong size");
 
-constexpr u16 EAPoLLogoffMagic = 0x202;
+constexpr u16 EAPoLLogoffMagic{0x202};
 
 struct EAPoLLogoffPacket {
     u16_be magic = EAPoLLogoffMagic;

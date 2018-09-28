@@ -10,7 +10,7 @@ namespace Service::NWM {
 
 // Note: These values were taken from a packet capture of an o3DS XL
 // broadcasting a Super Smash Bros. 4 lobby.
-constexpr u16 DefaultExtraCapabilities = 0x0431;
+constexpr u16 DefaultExtraCapabilities{0x0431};
 
 std::vector<u8> GenerateAuthenticationFrame(AuthenticationSeq seq) {
     AuthenticationFrame frame{};
@@ -36,18 +36,18 @@ AuthenticationSeq GetAuthenticationSeqNumber(const std::vector<u8>& body) {
  * @returns A buffer with the SSID tag.
  */
 static std::vector<u8> GenerateSSIDTag(u32 network_id) {
-    constexpr u8 SSIDSize = 8;
+    constexpr u8 SSIDSize{8};
 
     struct {
-        u8 id = static_cast<u8>(TagId::SSID);
-        u8 size = SSIDSize;
+        u8 id{static_cast<u8>(TagId::SSID)};
+        u8 size{SSIDSize};
     } tag_header;
 
     std::vector<u8> buffer(sizeof(tag_header) + SSIDSize);
 
     std::memcpy(buffer.data(), &tag_header, sizeof(tag_header));
 
-    std::string network_name = fmt::format("{0:08X}", network_id);
+    std::string network_name{fmt::format("{0:08X}", network_id)};
 
     std::memcpy(buffer.data() + sizeof(tag_header), network_name.c_str(), SSIDSize);
 
@@ -59,13 +59,13 @@ std::vector<u8> GenerateAssocResponseFrame(AssocStatus status, u16 association_i
     frame.capabilities = DefaultExtraCapabilities;
     frame.status_code = status;
     // The association id is ORed with this magic value (0xC000)
-    constexpr u16 AssociationIdMagic = 0xC000;
+    constexpr u16 AssociationIdMagic{0xC000};
     frame.assoc_id = association_id | AssociationIdMagic;
 
     std::vector<u8> data(sizeof(frame));
     std::memcpy(data.data(), &frame, sizeof(frame));
 
-    auto ssid_tag = GenerateSSIDTag(network_id);
+    auto ssid_tag{GenerateSSIDTag(network_id)};
     data.insert(data.end(), ssid_tag.begin(), ssid_tag.end());
 
     // TODO(Subv): Add the SupportedRates tag.
@@ -78,7 +78,7 @@ std::tuple<AssocStatus, u16> GetAssociationResult(const std::vector<u8>& body) {
     AssociationResponseFrame frame;
     memcpy(&frame, body.data(), sizeof(frame));
 
-    constexpr u16 AssociationIdMask = 0x3FFF;
+    constexpr u16 AssociationIdMask{0x3FFF};
     return std::make_tuple(frame.status_code, frame.assoc_id & AssociationIdMask);
 }
 
