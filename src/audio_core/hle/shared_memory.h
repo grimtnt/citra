@@ -27,8 +27,8 @@ namespace AudioCore::HLE {
 // double-buffer. The frame counter is located as the very last u16 of each region and is
 // incremented each audio tick.
 
-constexpr u32 region0_offset = 0x50000;
-constexpr u32 region1_offset = 0x70000;
+constexpr u32 region0_offset{0x50000};
+constexpr u32 region1_offset{0x70000};
 
 /**
  * The DSP is native 16-bit. The DSP also appears to be big-endian. When reading 32-bit numbers from
@@ -44,9 +44,11 @@ constexpr u32 region1_offset = 0x70000;
  */
 struct u32_dsp {
     u32_dsp() = default;
+
     operator u32() const {
         return Convert(storage);
     }
+
     void operator=(u32 new_value) {
         storage = Convert(new_value);
     }
@@ -55,6 +57,7 @@ private:
     static constexpr u32 Convert(u32 value) {
         return (value << 16) | (value >> 16);
     }
+
     u32_le storage;
 };
 #if (__GNUC__ >= 5) || defined(__clang__) || defined(_MSC_VER)

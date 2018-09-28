@@ -18,7 +18,7 @@ struct TagInfo {
     std::array<u8, 10> uuid;
     INSERT_PADDING_BYTES(0x1D);
 };
-static_assert(sizeof(TagInfo) == 0x2C, "TagInfo is an invalid size");
+static_assert(sizeof(TagInfo) == 0x2C, "TagInfo has an invalid size");
 
 struct AmiiboConfig {
     u16 lastwritedate_year;
@@ -38,7 +38,7 @@ struct AmiiboConfig {
     INSERT_PADDING_BYTES(0x30); /// "Unused / reserved: this is cleared by NFC module but never
                                 /// written after that."
 };
-static_assert(sizeof(AmiiboConfig) == 0x40, "AmiiboConfig is an invalid size");
+static_assert(sizeof(AmiiboConfig) == 0x40, "AmiiboConfig has an invalid size");
 
 void Module::Interface::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x01, 1, 0};

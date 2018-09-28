@@ -41,7 +41,7 @@ private:
     Kernel::SharedPtr<Kernel::Mutex> mutex{};
     Kernel::SharedPtr<Kernel::SharedMemory> shared_memory{};
 
-    static constexpr u32 MaxCaptureUnits = 2;
+    static constexpr u32 MaxCaptureUnits{2};
     std::array<bool, MaxCaptureUnits> capture_units = {false, false};
 };
 

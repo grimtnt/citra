@@ -389,8 +389,8 @@ private:
     /// The offset field of the table where to crop for each fix level
     static const std::array<HeaderField, 4> FIX_BARRIERS;
 
-    static constexpr u32 MAGIC_CRO0 = 0x304F5243;
-    static constexpr u32 MAGIC_FIXD = 0x44584946;
+    static constexpr u32 MAGIC_CRO0{0x304F5243};
+    static constexpr u32 MAGIC_FIXD{0x44584946};
 
     VAddr Field(HeaderField field) const {
         return module_address + CRO_HASH_SIZE + field * 4;
