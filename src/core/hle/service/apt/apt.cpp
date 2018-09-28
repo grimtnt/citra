@@ -57,7 +57,7 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
     memcpy(&decompressed_size, in, sizeof(u32));
     in += 4;
 
-    u8 type = decompressed_size & 0xFF;
+    u8 type{static_cast<u8>(decompressed_size & 0xFF)};
     ASSERT(type == 0x11);
     decompressed_size >>= 8;
 
@@ -72,8 +72,8 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
         }
 
         if (flags & mask) {
-            u8 byte1 = *(in++);
-            u32 length = byte1 >> 4;
+            u8 byte1{*(in++)};
+            u32 length{static_cast<u32>(byte1 >> 4)};
             u32 offset;
             if (length == 0) {
                 u8 byte2 = *(in++);
@@ -130,7 +130,7 @@ bool Module::LoadSharedFont() {
     std::memcpy(&shared_font_archive_id[0], &shared_font_archive_id_low, sizeof(u64));
     std::memcpy(&shared_font_archive_id[8], &shared_font_archive_id_high, sizeof(u64));
     FileSys::Path archive_path{shared_font_archive_id};
-    auto archive_result = Service::FS::OpenArchive(Service::FS::ArchiveIdCode::NCCH, archive_path);
+    auto archive_result{Service::FS::OpenArchive(Service::FS::ArchiveIdCode::NCCH, archive_path)};
     if (archive_result.Failed())
         return false;
 
@@ -288,7 +288,7 @@ void Module::Interface::SendParameter(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
-    MessageParameter param;
+    MessageParameter param{};
     param.destination_id = dst_app_id;
     param.sender_id = src_app_id;
     param.object = std::move(object);
@@ -334,7 +334,7 @@ void Module::Interface::GlanceParameter(Kernel::HLERequestContext& ctx) {
     LOG_DEBUG(Service_APT, "called, app_id={:#010X}, buffer_size={:#010X}",
               static_cast<u32>(app_id), buffer_size);
 
-    auto next_parameter = apt->applet_manager->GlanceParameter(app_id);
+    auto next_parameter{apt->applet_manager->GlanceParameter(app_id)};
 
     if (next_parameter.Failed()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -678,7 +678,7 @@ void Module::Interface::GetAppletInfo(Kernel::HLERequestContext& ctx) {
 
     LOG_DEBUG(Service_APT, "called, app_id={}", static_cast<u32>(app_id));
 
-    auto info = apt->applet_manager->GetAppletInfo(app_id);
+    auto info{apt->applet_manager->GetAppletInfo(app_id)};
     if (info.Failed()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(info.Code());
@@ -742,15 +742,15 @@ void Module::Interface::Wrap(Kernel::HLERequestContext& ctx) {
     nonce_size = std::min<u32>(nonce_size & ~3, HW::AES::CCM_NONCE_SIZE);
 
     // Reads nonce and concatenates the rest of the input as plaintext
-    HW::AES::CCMNonce nonce{};
+    HW::AES::CCMNonce nonce;
     input.Read(nonce.data(), nonce_offset, nonce_size);
-    u32 pdata_size = input_size - nonce_size;
+    u32 pdata_size{input_size - nonce_size};
     std::vector<u8> pdata(pdata_size);
     input.Read(pdata.data(), 0, nonce_offset);
     input.Read(pdata.data() + nonce_offset, nonce_offset + nonce_size, pdata_size - nonce_offset);
 
     // Encrypts the plaintext using AES-CCM
-    auto cipher = HW::AES::EncryptSignCCM(pdata, nonce, HW::AES::KeySlotID::APTWrap);
+    auto cipher{HW::AES::EncryptSignCCM(pdata, nonce, HW::AES::KeySlotID::APTWrap)};
 
     // Puts the nonce to the beginning of the output, with ciphertext followed
     output.Write(nonce.data(), 0, nonce_size);
@@ -794,7 +794,7 @@ void Module::Interface::Unwrap(Kernel::HLERequestContext& ctx) {
     input.Read(cipher.data(), nonce_size, cipher_size);
 
     // Decrypts the ciphertext using AES-CCM
-    auto pdata = HW::AES::DecryptVerifyCCM(cipher, nonce, HW::AES::KeySlotID::APTWrap);
+    auto pdata{HW::AES::DecryptVerifyCCM(cipher, nonce, HW::AES::KeySlotID::APTWrap)};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
     if (!pdata.empty()) {

@@ -3,8 +3,8 @@
 // Refer to the license.txt file included.
 
 #include <cstring>
-#include <string>
 #include "common/assert.h"
+#include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
 #include "core/hle/applets/mii_selector.h"
@@ -13,17 +13,6 @@
 #include "core/hle/result.h"
 
 namespace HLE::Applets {
-
-static const std::array<u8, 132> mii = {
-    0,   0,    0,    0,    0,    0,    0,   0,    0377, 0377, 0377, 0377, 03,   0,   0,   '0', 0253,
-    '#', 0226, '3',  0134, '?',  0312, '9', 0227, 0374, 0317, 'P',  '@',  0364, 07,  014, 'Z', 021,
-    0,   0,    0262, 'Z',  'V',  0,    'a', 0,    'l',  0,    'e',  0,    'n',  0,   't', 0,   'i',
-    0,   'n',  0,    0,    0,    0,    0,   '@',  '@',  022,  0,    '!',  01,   02,  'h', 'D', 030,
-    ' ', '4',  'F',  024,  0201, 022,  023, 'f',  015,  0,    0,    ')',  0,    'R', 'H', 'P', 'V',
-    0,   'a',  0,    'l',  0,    'e',  0,   'n',  0,    't',  0,    'i',  0,    'n', 0,   0,   0,
-    0,   0,    0,    0,    0134, 'i',  0,   0,    0,    0,    0,    0,    0,    0,   0,   0,   0,
-    0,   0,    0,    0,    0,    0,    0,   0,    0,    0,    0,    0,    0,
-};
 
 ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& parameter) {
     if (parameter.signal != Service::APT::SignalType::Request) {
@@ -67,7 +56,14 @@ ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& pa
     memcpy(&config, parameter.buffer.data(), parameter.buffer.size());
 
     MiiResult result{};
-    std::memcpy(&result, mii.data(), mii.size());
+    if (cb) {
+        std::string path{};
+        cb(path);
+        if (!path.empty()) {
+            FileUtil::IOFile file{path, "rb"};
+            file.ReadBytes(&result, sizeof(MiiResult));
+        }
+    }
 
     // Let the application know that we're closing
     Service::APT::MessageParameter message{};
@@ -83,4 +79,5 @@ ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& pa
 }
 
 void MiiSelector::Update() {}
+
 } // namespace HLE::Applets

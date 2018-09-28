@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <string>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "core/hle/applets/applet.h"
@@ -65,6 +66,8 @@ public:
     ResultCode ReceiveParameter(const Service::APT::MessageParameter& parameter) override;
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;
     void Update() override;
+
+    static inline std::function<void(std::string&)> cb;
 
 private:
     /// This SharedMemory will be created when we receive the LibAppJustStarted message.

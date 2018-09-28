@@ -81,6 +81,7 @@ private:
     Q_INVOKABLE void ErrEulaCallback(HLE::Applets::ErrEulaConfig& config);
     Q_INVOKABLE void SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
                                    std::u16string& text);
+    Q_INVOKABLE void MiiSelectorCallback(std::string& path);
     Q_INVOKABLE void Update3D();
     void SyncMenuUISettings();
     void RestoreUIState();
@@ -200,7 +201,7 @@ private:
     bool movie_record_on_start{};
     QString movie_record_path;
 
-    // Variables used to sleep the application when a Qt applet is open.
+    // Variables used to pause the application when a Qt applet is open.
     bool applet_open{};
     std::mutex applet_mutex;
     std::condition_variable applet_cv;

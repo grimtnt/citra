@@ -49,6 +49,7 @@
 #include "core/core.h"
 #include "core/file_sys/archive_extsavedata.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
+#include "core/hle/applets/mii_selector.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
@@ -659,6 +660,13 @@ void GMainWindow::BootGame(const QString& filename) {
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
+    HLE::Applets::MiiSelector::cb = [this](std::string& path) {
+        applet_open = true;
+        MiiSelectorCallback(path);
+        std::unique_lock<std::mutex> lock{applet_mutex};
+        applet_cv.wait(lock, [&] { return !applet_open; });
+    };
+
     SharedPage::Handler::update_3d = [this] { Update3D(); };
 }
 
@@ -781,6 +789,32 @@ void GMainWindow::SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
     applet_open = false;
 }
 
+void GMainWindow::MiiSelectorCallback(std::string& path) {
+    if (QThread::currentThread() != thread()) {
+        QMetaObject::invokeMethod(this, "MiiSelectorCallback", Qt::BlockingQueuedConnection,
+                                  Q_ARG(std::string&, path));
+        return;
+    }
+
+    std::unique_lock<std::mutex> lock{applet_mutex};
+    QMessageBox::information(
+        this, "Mii Selector",
+        "Select a Mii file.\nWhen you select a Mii with LLE Mii Selector, the Mii is saved to User "
+        "Directory/miis.\nMiis selected with this are saved to User Directory/miis.");
+    QString qpath{QFileDialog::getOpenFileName(this, "Select Mii", ".", "Mii (*.mii)")};
+    if (!qpath.isEmpty()) {
+        QFile file{qpath};
+        file.open(QFile::ReadOnly);
+        if (file.size() != 132) {
+            QMessageBox::critical(this, "Invalid Mii file", "File size is not 132");
+        } else {
+            path = qpath.toStdString();
+        }
+    }
+
+    applet_open = false;
+}
+
 void GMainWindow::Update3D() {
     if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, "Update3D", Qt::BlockingQueuedConnection);
@@ -796,15 +830,15 @@ void GMainWindow::UpdateRecentFiles() {
         std::min(UISettings::values.recent_files.size(), max_recent_files_item)};
 
     for (int i{}; i < num_recent_files; i++) {
-        const QString text = QString("%1. %2").arg(i + 1).arg(
-            QFileInfo(UISettings::values.recent_files[i]).fileName());
+        const QString text{QString("%1. %2").arg(i + 1).arg(
+            QFileInfo(UISettings::values.recent_files[i]).fileName())};
         actions_recent_files[i]->setText(text);
         actions_recent_files[i]->setData(UISettings::values.recent_files[i]);
         actions_recent_files[i]->setToolTip(UISettings::values.recent_files[i]);
         actions_recent_files[i]->setVisible(true);
     }
 
-    for (int j = num_recent_files; j < max_recent_files_item; ++j) {
+    for (int j{num_recent_files}; j < max_recent_files_item; ++j) {
         actions_recent_files[j]->setVisible(false);
     }
 
