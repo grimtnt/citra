@@ -86,7 +86,7 @@ struct VirtualMemoryArea {
 
     // Settings for type = MMIO
     /// Physical address of the register area this VMA maps to.
-    PAddr paddr = 0;
+    PAddr paddr{};
     Memory::MMIORegionPointer mmio_handler{};
 
     /// Tests if this area can be merged to the right with `next`.

@@ -50,7 +50,7 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
     auto buffer{rp.PopMappedBuffer()};
     switch (id) {
     case BlkID::NNID: {
-        std::string nnid = Common::UTF16ToUTF8(CFG::GetCurrentModule()->GetUsername());
+        std::string nnid{Common::UTF16ToUTF8(CFG::GetCurrentModule()->GetUsername())};
         nnid.resize(0x11);
         nnid = Common::ReplaceAll(nnid, " ", "_");
         buffer.Write(nnid.c_str(), 0, nnid.length());
@@ -62,34 +62,34 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
         break;
     }
     case BlkID::U16MiiName: {
-        std::u16string username = CFG::GetCurrentModule()->GetUsername();
+        std::u16string username{CFG::GetCurrentModule()->GetUsername()};
         buffer.Write(username.c_str(), 0, username.length());
         break;
     }
     case BlkID::PrincipalID: {
-        u32 principal_id = 0xDEADBEEF;
+        u32 principal_id{0xDEADBEEF};
         buffer.Write(&principal_id, 0, sizeof(u32));
         break;
     }
     case BlkID::CountryName: {
-        u8 country_code = CFG::GetCurrentModule()->GetCountryCode();
-        u16 country_name = CFG::country_codes[country_code];
+        u8 country_code{CFG::GetCurrentModule()->GetCountryCode()};
+        u16 country_name{CFG::country_codes[country_code]};
         buffer.Write(&country_name, 0, sizeof(u16));
         break;
     }
     case BlkID::Age: {
-        u16 age = 0;
+        u16 age{};
         buffer.Write(&age, 0, sizeof(u16));
         break;
     }
     case BlkID::Birthday: {
-        Birthday birthday = {};
+        Birthday birthday{};
         buffer.Write(&birthday, 0, sizeof(Birthday));
         break;
     }
     case BlkID::InfoStruct: {
-        InfoBlock info = {};
-        std::u16string username = CFG::GetCurrentModule()->GetUsername();
+        InfoBlock info{};
+        std::u16string username{CFG::GetCurrentModule()->GetUsername()};
         username.copy(info.MachinUserName, username.length());
         buffer.Write(&info, 0, username.length());
         break;

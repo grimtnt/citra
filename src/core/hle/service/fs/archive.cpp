@@ -75,7 +75,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
     auto& buffer{rp.PopMappedBuffer()};
     LOG_TRACE(Service_FS, "Read {}: offset=0x{:X} length=0x{:08X}", GetName(), offset, length);
 
-    const FileSessionSlot* file = GetSessionData(ctx.Session());
+    const FileSessionSlot* file{GetSessionData(ctx.Session())};
 
     if (file->subfile && length > file->size) {
         LOG_WARNING(Service_FS, "Trying to read beyond the subfile size, truncating");
@@ -94,7 +94,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
 
     std::vector<u8> data(length);
-    ResultVal<std::size_t> read = backend->Read(offset, data.size(), data.data());
+    ResultVal<std::size_t> read{backend->Read(offset, data.size(), data.data())};
     if (read.Failed()) {
         rb.Push(read.Code());
         rb.Push<u32>(0);
@@ -124,7 +124,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
 
-    const FileSessionSlot* file = GetSessionData(ctx.Session());
+    const FileSessionSlot* file{GetSessionData(ctx.Session())};
 
     // Subfiles can not be written to
     if (file->subfile) {
@@ -136,7 +136,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
 
     std::vector<u8> data(length);
     buffer.Read(data.data(), 0, data.size());
-    ResultVal<std::size_t> written = backend->Write(offset, data.size(), flush != 0, data.data());
+    ResultVal<std::size_t> written{backend->Write(offset, data.size(), flush != 0, data.data())};
     if (written.Failed()) {
         rb.Push(written.Code());
         rb.Push<u32>(0);
@@ -150,7 +150,7 @@ void File::Write(Kernel::HLERequestContext& ctx) {
 void File::GetSize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0804, 0, 0};
 
-    const FileSessionSlot* file = GetSessionData(ctx.Session());
+    const FileSessionSlot* file{GetSessionData(ctx.Session())};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -161,7 +161,7 @@ void File::SetSize(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x0805, 2, 0};
     u64 size{rp.Pop<u64>()};
 
-    FileSessionSlot* file = GetSessionData(ctx.Session());
+    FileSessionSlot* file{GetSessionData(ctx.Session())};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
@@ -194,7 +194,7 @@ void File::Flush(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
 
-    const FileSessionSlot* file = GetSessionData(ctx.Session());
+    const FileSessionSlot* file{GetSessionData(ctx.Session())};
 
     // Subfiles can not be flushed.
     if (file->subfile) {
@@ -209,7 +209,7 @@ void File::Flush(Kernel::HLERequestContext& ctx) {
 void File::SetPriority(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x080A, 1, 0};
 
-    FileSessionSlot* file = GetSessionData(ctx.Session());
+    FileSessionSlot* file{GetSessionData(ctx.Session())};
     file->priority = rp.Pop<u32>();
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -218,7 +218,7 @@ void File::SetPriority(Kernel::HLERequestContext& ctx) {
 
 void File::GetPriority(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x080B, 0, 0};
-    const FileSessionSlot* file = GetSessionData(ctx.Session());
+    const FileSessionSlot* file{GetSessionData(ctx.Session())};
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -231,12 +231,12 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
     using Kernel::SharedPtr;
     IPC::RequestParser rp{ctx, 0x080C, 0, 0};
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
-    auto sessions = ServerSession::CreateSessionPair(GetName());
-    auto server = std::get<SharedPtr<ServerSession>>(sessions);
+    auto sessions{ServerSession::CreateSessionPair(GetName())};
+    auto server{std::get<SharedPtr<ServerSession>>(sessions)};
     ClientConnected(server);
 
-    FileSessionSlot* slot = GetSessionData(server);
-    const FileSessionSlot* original_file = GetSessionData(ctx.Session());
+    FileSessionSlot* slot{GetSessionData(server)};
+    const FileSessionSlot* original_file{GetSessionData(ctx.Session())};
 
     slot->priority = original_file->priority;
     slot->offset = 0;
@@ -256,7 +256,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
 
-    const FileSessionSlot* original_file = GetSessionData(ctx.Session());
+    const FileSessionSlot* original_file{GetSessionData(ctx.Session())};
 
     if (original_file->subfile) {
         // OpenSubFile can not be called on a file which is already as subfile
@@ -269,7 +269,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    std::size_t end = offset + size;
+    std::size_t end{offset + size};
 
     // TODO(Subv): Check for overflow and return ERR_WRITE_BEYOND_END
 
@@ -281,8 +281,8 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
     using Kernel::ClientSession;
     using Kernel::ServerSession;
     using Kernel::SharedPtr;
-    auto sessions = ServerSession::CreateSessionPair(GetName());
-    auto server = std::get<SharedPtr<ServerSession>>(sessions);
+    auto sessions{ServerSession::CreateSessionPair(GetName())};
+    auto server{std::get<SharedPtr<ServerSession>>(sessions)};
     ClientConnected(server);
 
     FileSessionSlot* slot = GetSessionData(server);
@@ -296,11 +296,11 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
 }
 
 Kernel::SharedPtr<Kernel::ClientSession> File::Connect() {
-    auto sessions = Kernel::ServerSession::CreateSessionPair(GetName());
-    auto server = std::get<Kernel::SharedPtr<Kernel::ServerSession>>(sessions);
+    auto sessions{Kernel::ServerSession::CreateSessionPair(GetName())};
+    auto server{std::get<Kernel::SharedPtr<Kernel::ServerSession>>(sessions)};
     ClientConnected(server);
 
-    FileSessionSlot* slot = GetSessionData(server);
+    FileSessionSlot* slot{GetSessionData(server)};
     slot->priority = 0;
     slot->offset = 0;
     slot->size = backend->GetSize();
@@ -330,7 +330,7 @@ void Directory::Read(Kernel::HLERequestContext& ctx) {
     std::vector<FileSys::Entry> entries(count);
     LOG_TRACE(Service_FS, "Read {}: count={}", GetName(), count);
     // Number of entries actually read
-    u32 read = backend->Read(static_cast<u32>(entries.size()), entries.data());
+    u32 read{backend->Read(static_cast<u32>(entries.size()), entries.data())};
     buffer.Write(entries.data(), 0, read * sizeof(FileSys::Entry));
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(2, 2)};
@@ -364,14 +364,14 @@ static std::unordered_map<ArchiveHandle, std::unique_ptr<ArchiveBackend>> handle
 static ArchiveHandle next_handle;
 
 static ArchiveBackend* GetArchive(ArchiveHandle handle) {
-    auto itr = handle_map.find(handle);
+    auto itr{handle_map.find(handle)};
     return (itr == handle_map.end()) ? nullptr : itr->second.get();
 }
 
 ResultVal<ArchiveHandle> OpenArchive(ArchiveIdCode id_code, FileSys::Path& archive_path) {
     LOG_TRACE(Service_FS, "Opening archive with id code 0x{:08X}", static_cast<u32>(id_code));
 
-    auto itr = id_code_map.find(id_code);
+    auto itr{id_code_map.find(id_code)};
     if (itr == id_code_map.end()) {
         return FileSys::ERROR_NOT_FOUND;
     }
@@ -397,12 +397,12 @@ ResultCode CloseArchive(ArchiveHandle handle) {
 // http://3dbrew.org/wiki/Filesystem_services#ProgramRegistry_service_.22fs:REG.22
 ResultCode RegisterArchiveType(std::unique_ptr<FileSys::ArchiveFactory>&& factory,
                                ArchiveIdCode id_code) {
-    auto result = id_code_map.emplace(id_code, std::move(factory));
+    auto result{id_code_map.emplace(id_code, std::move(factory))};
 
-    bool inserted = result.second;
+    bool inserted{result.second};
     ASSERT_MSG(inserted, "Tried to register more than one archive with same id code");
 
-    auto& archive = result.first->second;
+    auto& archive{result.first->second};
     LOG_DEBUG(Service_FS, "Registered archive {} with id code 0x{:08X}", archive->GetName(),
               static_cast<u32>(id_code));
     return RESULT_SUCCESS;
@@ -411,11 +411,11 @@ ResultCode RegisterArchiveType(std::unique_ptr<FileSys::ArchiveFactory>&& factor
 ResultVal<std::shared_ptr<File>> OpenFileFromArchive(ArchiveHandle archive_handle,
                                                      const FileSys::Path& path,
                                                      const FileSys::Mode mode) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
-    auto backend = archive->OpenFile(path, mode);
+    auto backend{archive->OpenFile(path, mode)};
     if (backend.Failed())
         return backend.Code();
 
@@ -424,7 +424,7 @@ ResultVal<std::shared_ptr<File>> OpenFileFromArchive(ArchiveHandle archive_handl
 }
 
 ResultCode DeleteFileFromArchive(ArchiveHandle archive_handle, const FileSys::Path& path) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
@@ -435,8 +435,8 @@ ResultCode RenameFileBetweenArchives(ArchiveHandle src_archive_handle,
                                      const FileSys::Path& src_path,
                                      ArchiveHandle dest_archive_handle,
                                      const FileSys::Path& dest_path) {
-    ArchiveBackend* src_archive = GetArchive(src_archive_handle);
-    ArchiveBackend* dest_archive = GetArchive(dest_archive_handle);
+    ArchiveBackend* src_archive{GetArchive(src_archive_handle)};
+    ArchiveBackend* dest_archive{GetArchive(dest_archive_handle)};
     if (src_archive == nullptr || dest_archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
@@ -449,7 +449,7 @@ ResultCode RenameFileBetweenArchives(ArchiveHandle src_archive_handle,
 }
 
 ResultCode DeleteDirectoryFromArchive(ArchiveHandle archive_handle, const FileSys::Path& path) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
@@ -458,7 +458,7 @@ ResultCode DeleteDirectoryFromArchive(ArchiveHandle archive_handle, const FileSy
 
 ResultCode DeleteDirectoryRecursivelyFromArchive(ArchiveHandle archive_handle,
                                                  const FileSys::Path& path) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
@@ -467,7 +467,7 @@ ResultCode DeleteDirectoryRecursivelyFromArchive(ArchiveHandle archive_handle,
 
 ResultCode CreateFileInArchive(ArchiveHandle archive_handle, const FileSys::Path& path,
                                u64 file_size) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
@@ -475,7 +475,7 @@ ResultCode CreateFileInArchive(ArchiveHandle archive_handle, const FileSys::Path
 }
 
 ResultCode CreateDirectoryFromArchive(ArchiveHandle archive_handle, const FileSys::Path& path) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
@@ -501,11 +501,11 @@ ResultCode RenameDirectoryBetweenArchives(ArchiveHandle src_archive_handle,
 
 ResultVal<std::shared_ptr<Directory>> OpenDirectoryFromArchive(ArchiveHandle archive_handle,
                                                                const FileSys::Path& path) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
 
-    auto backend = archive->OpenDirectory(path);
+    auto backend{archive->OpenDirectory(path)};
     if (backend.Failed())
         return backend.Code();
 
@@ -514,7 +514,7 @@ ResultVal<std::shared_ptr<Directory>> OpenDirectoryFromArchive(ArchiveHandle arc
 }
 
 ResultVal<u64> GetFreeBytesInArchive(ArchiveHandle archive_handle) {
-    ArchiveBackend* archive = GetArchive(archive_handle);
+    ArchiveBackend* archive{GetArchive(archive_handle)};
     if (archive == nullptr)
         return FileSys::ERR_INVALID_ARCHIVE_HANDLE;
     return MakeResult<u64>(archive->GetFreeBytes());
@@ -522,7 +522,7 @@ ResultVal<u64> GetFreeBytesInArchive(ArchiveHandle archive_handle) {
 
 ResultCode FormatArchive(ArchiveIdCode id_code, const FileSys::ArchiveFormatInfo& format_info,
                          const FileSys::Path& path) {
-    auto archive_itr = id_code_map.find(id_code);
+    auto archive_itr{id_code_map.find(id_code)};
     if (archive_itr == id_code_map.end()) {
         return UnimplementedFunction(ErrorModule::FS); // TODO(Subv): Find the right error
     }
@@ -532,7 +532,7 @@ ResultCode FormatArchive(ArchiveIdCode id_code, const FileSys::ArchiveFormatInfo
 
 ResultVal<FileSys::ArchiveFormatInfo> GetArchiveFormatInfo(ArchiveIdCode id_code,
                                                            FileSys::Path& archive_path) {
-    auto archive = id_code_map.find(id_code);
+    auto archive{id_code_map.find(id_code)};
     if (archive == id_code_map.end()) {
         return UnimplementedFunction(ErrorModule::FS); // TODO(Subv): Find the right error
     }
@@ -544,19 +544,19 @@ ResultCode CreateExtSaveData(MediaType media_type, u32 high, u32 low,
                              const std::vector<u8>& smdh_icon,
                              const FileSys::ArchiveFormatInfo& format_info) {
     // Construct the binary path to the archive first
-    FileSys::Path path =
-        FileSys::ConstructExtDataBinaryPath(static_cast<u32>(media_type), high, low);
+    FileSys::Path path{
+        FileSys::ConstructExtDataBinaryPath(static_cast<u32>(media_type), high, low)};
 
-    auto archive = id_code_map.find(media_type == MediaType::NAND ? ArchiveIdCode::SharedExtSaveData
-                                                                  : ArchiveIdCode::ExtSaveData);
+    auto archive{id_code_map.find(media_type == MediaType::NAND ? ArchiveIdCode::SharedExtSaveData
+                                                                : ArchiveIdCode::ExtSaveData)};
 
     if (archive == id_code_map.end()) {
         return UnimplementedFunction(ErrorModule::FS); // TODO(Subv): Find the right error
     }
 
-    auto ext_savedata = static_cast<FileSys::ArchiveFactory_ExtSaveData*>(archive->second.get());
+    auto ext_savedata{static_cast<FileSys::ArchiveFactory_ExtSaveData*>(archive->second.get())};
 
-    ResultCode result = ext_savedata->Format(path, format_info);
+    ResultCode result{ext_savedata->Format(path, format_info)};
     if (result.IsError())
         return result;
 
@@ -566,8 +566,8 @@ ResultCode CreateExtSaveData(MediaType media_type, u32 high, u32 low,
 
 ResultCode DeleteExtSaveData(MediaType media_type, u32 high, u32 low) {
     // Construct the binary path to the archive first
-    FileSys::Path path =
-        FileSys::ConstructExtDataBinaryPath(static_cast<u32>(media_type), high, low);
+    FileSys::Path path{
+        FileSys::ConstructExtDataBinaryPath(static_cast<u32>(media_type), high, low)};
 
     std::string media_type_directory;
     if (media_type == MediaType::NAND) {
@@ -581,9 +581,9 @@ ResultCode DeleteExtSaveData(MediaType media_type, u32 high, u32 low) {
     }
 
     // Delete all directories (/user, /boss) and the icon file.
-    std::string base_path =
-        FileSys::GetExtDataContainerPath(media_type_directory, media_type == MediaType::NAND);
-    std::string extsavedata_path = FileSys::GetExtSaveDataPath(base_path, path);
+    std::string base_path{
+        FileSys::GetExtDataContainerPath(media_type_directory, media_type == MediaType::NAND)};
+    std::string extsavedata_path{FileSys::GetExtSaveDataPath(base_path, path)};
     if (FileUtil::Exists(extsavedata_path) && !FileUtil::DeleteDirRecursively(extsavedata_path))
         return ResultCode(-1); // TODO(Subv): Find the right error code
     return RESULT_SUCCESS;
@@ -591,11 +591,11 @@ ResultCode DeleteExtSaveData(MediaType media_type, u32 high, u32 low) {
 
 ResultCode DeleteSystemSaveData(u32 high, u32 low) {
     // Construct the binary path to the archive first
-    FileSys::Path path = FileSys::ConstructSystemSaveDataBinaryPath(high, low);
+    FileSys::Path path{FileSys::ConstructSystemSaveDataBinaryPath(high, low)};
 
-    std::string nand_directory = FileUtil::GetUserPath(D_NAND_IDX);
-    std::string base_path = FileSys::GetSystemSaveDataContainerPath(nand_directory);
-    std::string systemsavedata_path = FileSys::GetSystemSaveDataPath(base_path, path);
+    std::string nand_directory{FileUtil::GetUserPath(D_NAND_IDX)};
+    std::string base_path{FileSys::GetSystemSaveDataContainerPath(nand_directory)};
+    std::string systemsavedata_path{FileSys::GetSystemSaveDataPath(base_path, path)};
     if (!FileUtil::DeleteDirRecursively(systemsavedata_path))
         return ResultCode(-1); // TODO(Subv): Find the right error code
     return RESULT_SUCCESS;
@@ -603,11 +603,11 @@ ResultCode DeleteSystemSaveData(u32 high, u32 low) {
 
 ResultCode CreateSystemSaveData(u32 high, u32 low) {
     // Construct the binary path to the archive first
-    FileSys::Path path = FileSys::ConstructSystemSaveDataBinaryPath(high, low);
+    FileSys::Path path{FileSys::ConstructSystemSaveDataBinaryPath(high, low)};
 
-    std::string nand_directory = FileUtil::GetUserPath(D_NAND_IDX);
-    std::string base_path = FileSys::GetSystemSaveDataContainerPath(nand_directory);
-    std::string systemsavedata_path = FileSys::GetSystemSaveDataPath(base_path, path);
+    std::string nand_directory{FileUtil::GetUserPath(D_NAND_IDX)};
+    std::string base_path{FileSys::GetSystemSaveDataContainerPath(nand_directory)};
+    std::string systemsavedata_path{FileSys::GetSystemSaveDataPath(base_path, path)};
     if (!FileUtil::CreateFullPath(systemsavedata_path))
         return ResultCode(-1); // TODO(Subv): Find the right error code
     return RESULT_SUCCESS;
@@ -617,17 +617,16 @@ void RegisterArchiveTypes() {
     // TODO(Subv): Add the other archive types (see here for the known types:
     // http://3dbrew.org/wiki/FS:OpenArchive#Archive_idcodes).
 
-    std::string sdmc_directory = Settings::values.sdmc_dir.empty()
-                                     ? FileUtil::GetUserPath(D_SDMC_IDX)
-                                     : Settings::values.sdmc_dir + "/";
+    std::string sdmc_directory{Settings::values.sdmc_dir.empty() ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                                                 : Settings::values.sdmc_dir + "/"};
     std::string nand_directory = FileUtil::GetUserPath(D_NAND_IDX);
-    auto sdmc_factory = std::make_unique<FileSys::ArchiveFactory_SDMC>(sdmc_directory);
+    auto sdmc_factory{std::make_unique<FileSys::ArchiveFactory_SDMC>(sdmc_directory)};
     if (sdmc_factory->Initialize())
         RegisterArchiveType(std::move(sdmc_factory), ArchiveIdCode::SDMC);
     else
         LOG_ERROR(Service_FS, "Can't instantiate SDMC archive with path {}", sdmc_directory);
 
-    auto sdmcwo_factory = std::make_unique<FileSys::ArchiveFactory_SDMCWriteOnly>(sdmc_directory);
+    auto sdmcwo_factory{std::make_unique<FileSys::ArchiveFactory_SDMCWriteOnly>(sdmc_directory)};
     if (sdmcwo_factory->Initialize())
         RegisterArchiveType(std::move(sdmcwo_factory), ArchiveIdCode::SDMCWriteOnly);
     else
@@ -635,28 +634,28 @@ void RegisterArchiveTypes() {
                   sdmc_directory);
 
     // Create the SaveData archive
-    auto sd_savedata_source = std::make_shared<FileSys::ArchiveSource_SDSaveData>(sdmc_directory);
-    auto savedata_factory = std::make_unique<FileSys::ArchiveFactory_SaveData>(sd_savedata_source);
+    auto sd_savedata_source{std::make_shared<FileSys::ArchiveSource_SDSaveData>(sdmc_directory)};
+    auto savedata_factory{std::make_unique<FileSys::ArchiveFactory_SaveData>(sd_savedata_source)};
     RegisterArchiveType(std::move(savedata_factory), ArchiveIdCode::SaveData);
-    auto other_savedata_permitted_factory =
-        std::make_unique<FileSys::ArchiveFactory_OtherSaveDataPermitted>(sd_savedata_source);
+    auto other_savedata_permitted_factory{
+        std::make_unique<FileSys::ArchiveFactory_OtherSaveDataPermitted>(sd_savedata_source)};
     RegisterArchiveType(std::move(other_savedata_permitted_factory),
                         ArchiveIdCode::OtherSaveDataPermitted);
-    auto other_savedata_general_factory =
-        std::make_unique<FileSys::ArchiveFactory_OtherSaveDataGeneral>(sd_savedata_source);
+    auto other_savedata_general_factory{
+        std::make_unique<FileSys::ArchiveFactory_OtherSaveDataGeneral>(sd_savedata_source)};
     RegisterArchiveType(std::move(other_savedata_general_factory),
                         ArchiveIdCode::OtherSaveDataGeneral);
 
-    auto extsavedata_factory =
-        std::make_unique<FileSys::ArchiveFactory_ExtSaveData>(sdmc_directory, false);
+    auto extsavedata_factory{
+        std::make_unique<FileSys::ArchiveFactory_ExtSaveData>(sdmc_directory, false)};
     if (extsavedata_factory->Initialize())
         RegisterArchiveType(std::move(extsavedata_factory), ArchiveIdCode::ExtSaveData);
     else
         LOG_ERROR(Service_FS, "Can't instantiate ExtSaveData archive with path {}",
                   extsavedata_factory->GetMountPoint().c_str());
 
-    auto sharedextsavedata_factory =
-        std::make_unique<FileSys::ArchiveFactory_ExtSaveData>(nand_directory, true);
+    auto sharedextsavedata_factory{
+        std::make_unique<FileSys::ArchiveFactory_ExtSaveData>(nand_directory, true)};
     if (sharedextsavedata_factory->Initialize())
         RegisterArchiveType(std::move(sharedextsavedata_factory), ArchiveIdCode::SharedExtSaveData);
     else
@@ -664,26 +663,26 @@ void RegisterArchiveTypes() {
                   sharedextsavedata_factory->GetMountPoint().c_str());
 
     // Create the NCCH archive, basically a small variation of the RomFS archive
-    auto savedatacheck_factory = std::make_unique<FileSys::ArchiveFactory_NCCH>();
+    auto savedatacheck_factory{std::make_unique<FileSys::ArchiveFactory_NCCH>()};
     RegisterArchiveType(std::move(savedatacheck_factory), ArchiveIdCode::NCCH);
 
-    auto systemsavedata_factory =
-        std::make_unique<FileSys::ArchiveFactory_SystemSaveData>(nand_directory);
+    auto systemsavedata_factory{
+        std::make_unique<FileSys::ArchiveFactory_SystemSaveData>(nand_directory)};
     RegisterArchiveType(std::move(systemsavedata_factory), ArchiveIdCode::SystemSaveData);
 
-    auto selfncch_factory = std::make_unique<FileSys::ArchiveFactory_SelfNCCH>();
+    auto selfncch_factory{std::make_unique<FileSys::ArchiveFactory_SelfNCCH>()};
     RegisterArchiveType(std::move(selfncch_factory), ArchiveIdCode::SelfNCCH);
 }
 
 void RegisterSelfNCCH(Loader::AppLoader& app_loader) {
-    auto itr = id_code_map.find(ArchiveIdCode::SelfNCCH);
+    auto itr{id_code_map.find(ArchiveIdCode::SelfNCCH)};
     if (itr == id_code_map.end()) {
         LOG_ERROR(Service_FS,
                   "Could not register a new NCCH because the SelfNCCH archive hasn't been created");
         return;
     }
 
-    auto* factory = static_cast<FileSys::ArchiveFactory_SelfNCCH*>(itr->second.get());
+    auto* factory{static_cast<FileSys::ArchiveFactory_SelfNCCH*>(itr->second.get())};
     factory->Register(app_loader);
 }
 
