@@ -585,10 +585,10 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
     Kernel::MappedBuffer out_buffer{rp.PopMappedBuffer()};
     ASSERT(out_buffer.GetSize() == out_buffer_size);
 
-    std::size_t cur_buffer_size = sizeof(BeaconDataReplyHeader);
+    std::size_t cur_buffer_size{sizeof(BeaconDataReplyHeader)};
 
     // Retrieve all beacon frames that were received from the desired mac address.
-    auto beacons = GetReceivedBeacons(mac_address);
+    auto beacons{GetReceivedBeacons(mac_address)};
 
     BeaconDataReplyHeader data_reply_header{};
     data_reply_header.total_entries = static_cast<u32>(beacons.size());
@@ -608,7 +608,7 @@ void NWM_UDS::RecvBeaconBroadcastData(Kernel::HLERequestContext& ctx) {
 
         out_buffer.Write(&entry, cur_buffer_size, sizeof(BeaconEntryHeader));
         cur_buffer_size += sizeof(BeaconEntryHeader);
-        const unsigned char* beacon_data = beacon.data.data();
+        const unsigned char* beacon_data{beacon.data.data()};
         out_buffer.Write(beacon_data, cur_buffer_size, beacon.data.size());
         cur_buffer_size += beacon.data.size();
     }
@@ -700,10 +700,10 @@ void NWM_UDS::GetNodeInformation(Kernel::HLERequestContext& ctx) {
 
     {
         std::lock_guard<std::mutex> lock{connection_status_mutex};
-        auto itr = std::find_if(node_info.begin(), node_info.end(),
-                                [network_node_id](const NodeInfo& node) {
-                                    return node.network_node_id == network_node_id;
-                                });
+        auto itr{std::find_if(node_info.begin(), node_info.end(),
+                              [network_node_id](const NodeInfo& node) {
+                                  return node.network_node_id == network_node_id;
+                              })};
         if (itr == node_info.end()) {
             IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
             rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::UDS,
@@ -736,7 +736,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    constexpr std::size_t MaxBindNodes = 16;
+    constexpr std::size_t MaxBindNodes{16};
     if (channel_data.size() >= MaxBindNodes) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::OutOfMemory, ErrorModule::UDS,
@@ -745,7 +745,7 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    constexpr u32 MinRecvBufferSize = 0x5F4;
+    constexpr u32 MinRecvBufferSize{0x5F4};
     if (recv_buffer_size < MinRecvBufferSize) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrorDescription::TooLarge, ErrorModule::UDS,
@@ -755,8 +755,8 @@ void NWM_UDS::Bind(Kernel::HLERequestContext& ctx) {
     }
 
     // Create a new event for this bind node.
-    auto event = Kernel::Event::Create(Kernel::ResetType::OneShot,
-                                       "NWM::BindNodeEvent" + std::to_string(bind_node_id));
+    auto event{Kernel::Event::Create(Kernel::ResetType::OneShot,
+                                     "NWM::BindNodeEvent" + std::to_string(bind_node_id))};
     std::lock_guard<std::mutex> lock{connection_status_mutex};
 
     ASSERT(channel_data.find(data_channel) == channel_data.end());
@@ -783,10 +783,10 @@ void NWM_UDS::Unbind(Kernel::HLERequestContext& ctx) {
 
     std::lock_guard<std::mutex> lock{connection_status_mutex};
 
-    auto itr =
+    auto itr{
         std::find_if(channel_data.begin(), channel_data.end(), [bind_node_id](const auto& data) {
             return data.second.bind_node_id == bind_node_id;
-        });
+        })};
 
     if (itr != channel_data.end()) {
         channel_data.erase(itr);
@@ -998,7 +998,7 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    Network::MacAddress dest_address{};
+    Network::MacAddress dest_address;
 
     if (flags >> 2) {
         LOG_ERROR(Service_NWM, "Unexpected flags 0x{:02X}", flags);
@@ -1041,7 +1041,6 @@ void NWM_UDS::SendTo(Kernel::HLERequestContext& ctx) {
     // and encapsulate the payload.
 
     Network::WifiPacket packet{};
-
     packet.destination_address = dest_address;
     packet.channel = network_channel;
     packet.data = std::move(data_payload);
@@ -1161,7 +1160,7 @@ void NWM_UDS::ConnectToNetwork(Kernel::HLERequestContext& ctx) {
         [](Kernel::SharedPtr<Kernel::Thread> thread, Kernel::HLERequestContext& ctx,
            Kernel::ThreadWakeupReason reason) {
             // TODO(B3N30): Add error handling for host full and timeout
-            IPC::ResponseBuilder rb(ctx, 0x1E, 1, 0);
+            IPC::ResponseBuilder rb{ctx, 0x1E, 1, 0};
             rb.Push(RESULT_SUCCESS);
             LOG_DEBUG(Service_NWM, "connection sequence finished");
         });
@@ -1230,7 +1229,7 @@ void NWM_UDS::DecryptBeaconData(Kernel::HLERequestContext& ctx) {
 
     // TODO(Subv): Verify the MD5 hash of the data and return 0xE1211005 if invalid.
 
-    u8 num_nodes = net_info.max_nodes;
+    u8 num_nodes{net_info.max_nodes};
 
     std::vector<NodeInfo> nodes{};
 
