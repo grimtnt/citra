@@ -5,7 +5,6 @@
 #include <cryptopp/base64.h>
 #include <cryptopp/hmac.h>
 #include <cryptopp/sha.h>
-#include "common/common_paths.h"
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
@@ -55,7 +54,7 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
     case CecDataPathType::MboxDir:
     case CecDataPathType::InboxDir:
     case CecDataPathType::OutboxDir: {
-        auto dir_result = cecd->cecd_system_save_data_archive->OpenDirectory(path);
+        auto dir_result{cecd->cecd_system_save_data_archive->OpenDirectory(path)};
         if (dir_result.Failed()) {
             if (open_mode.create) {
                 cecd->cecd_system_save_data_archive->CreateDirectory(path);
@@ -68,11 +67,11 @@ void Module::Interface::Open(Kernel::HLERequestContext& ctx) {
             rb.Push<u32>(0); // Zero entries
         } else {
             constexpr u32 max_entries{32}; // reasonable value, just over max boxes 24
-            auto directory{dir_result.Unwrap()};
+            auto directory{std::move(dir_result).Unwrap()};
 
             // Actual reading into vector seems to be required for entry count
             std::vector<FileSys::Entry> entries(max_entries);
-            const u32 entry_count{directory->backend->Read(max_entries, entries.data())};
+            const u32 entry_count{directory->Read(max_entries, entries.data())};
 
             LOG_DEBUG(Service_CECD, "Number of entries found: {}", entry_count);
 

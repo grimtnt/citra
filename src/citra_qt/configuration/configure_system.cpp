@@ -251,11 +251,9 @@ void ConfigureSystem::setConfiguration() {
         ReadSystemSettings();
         ui->group_system_settings->setEnabled(false);
     } else {
-        // This tab is enabled only when game is not running (i.e. all service are not initialized).
-        // Temporarily register archive types and load the config savegame file to memory.
-        Service::FS::RegisterArchiveTypes();
+        // This tab is enabled only when game is not running (i.e. all services are not
+        // initialized).
         cfg = std::make_shared<Service::CFG::Module>();
-        Service::FS::UnregisterArchiveTypes();
 
         ReadSystemSettings();
         ui->label_disable_info->hide();

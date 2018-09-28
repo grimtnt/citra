@@ -336,7 +336,6 @@ void GMainWindow::RestoreUIState() {
     render_window->restoreGeometry(UISettings::values.renderwindow_geometry);
 
     ui.action_Cheats->setEnabled(false);
-    ui.action_Set_Play_Coins->setEnabled(false);
 
     game_list->LoadInterfaceLayout();
 
@@ -693,7 +692,6 @@ void GMainWindow::ShutdownGame() {
     ui.action_Restart->setEnabled(false);
     ui.action_Cheats->setEnabled(false);
     ui.action_Select_SDMC_Directory->setEnabled(true);
-    ui.action_Set_Play_Coins->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(false);
     ui.action_Load_Amiibo->setEnabled(false);
     render_window->hide();
@@ -1055,7 +1053,6 @@ void GMainWindow::OnStartGame() {
     ui.action_Restart->setEnabled(true);
     ui.action_Cheats->setEnabled(true);
     ui.action_Select_SDMC_Directory->setEnabled(false);
-    ui.action_Set_Play_Coins->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(true);
     ui.action_Load_Amiibo->setEnabled(true);
 }

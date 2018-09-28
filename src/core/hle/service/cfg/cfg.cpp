@@ -656,13 +656,12 @@ ResultCode Module::LoadConfigNANDSaveFile() {
         // Format the archive to create the directories
         systemsavedata_factory.Format(archive_path, FileSys::ArchiveFormatInfo());
 
-        // Open it again to get a valid archive now that the folder exists
-        archive_result = systemsavedata_factory.Open(archive_path);
+        cfg_system_save_data_archive = systemsavedata_factory.Open(archive_path).Unwrap();
+    } else {
+        ASSERT_MSG(archive_result.Succeeded(), "Could not open the CFG SystemSaveData archive!");
+
+        cfg_system_save_data_archive = std::move(archive_result).Unwrap();
     }
-
-    ASSERT_MSG(archive_result.Succeeded(), "Could not open the CFG SystemSaveData archive!");
-
-    cfg_system_save_data_archive = systemsavedata_factory.Open(archive_path).Unwrap();
 
     FileSys::Path config_path{"/config"};
     FileSys::Mode open_mode{};
