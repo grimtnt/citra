@@ -28,13 +28,8 @@ void Zero(T& o) {
 
 State::State() : geometry_pipeline(*this) {
     auto SubmitVertex{[this](const Shader::AttributeBuffer& vertex) {
-        using Pica::Shader::OutputVertex;
-        auto AddTriangle{
-            [this](const OutputVertex& v0, const OutputVertex& v1, const OutputVertex& v2) {
-                VideoCore::g_renderer->GetRasterizer()->AddTriangle(v0, v1, v2);
-            }};
         primitive_assembler.SubmitVertex(
-            Shader::OutputVertex::FromAttributeBuffer(regs.rasterizer, vertex), AddTriangle);
+            Shader::OutputVertex::FromAttributeBuffer(regs.rasterizer, vertex));
     }};
 
     auto SetWinding{[this]() { primitive_assembler.SetWinding(); }};

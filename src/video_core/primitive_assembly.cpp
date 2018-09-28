@@ -5,7 +5,9 @@
 #include "common/logging/log.h"
 #include "video_core/primitive_assembly.h"
 #include "video_core/regs_pipeline.h"
+#include "video_core/renderer/renderer.h"
 #include "video_core/shader/shader.h"
+#include "video_core/video_core.h"
 
 namespace Pica {
 
@@ -14,8 +16,7 @@ PrimitiveAssembler<VertexType>::PrimitiveAssembler(PipelineRegs::TriangleTopolog
     : topology{topology} {}
 
 template <typename VertexType>
-void PrimitiveAssembler<VertexType>::SubmitVertex(const VertexType& vtx,
-                                                  const TriangleHandler& triangle_handler) {
+void PrimitiveAssembler<VertexType>::SubmitVertex(const VertexType& vtx) {
     switch (topology) {
     case PipelineRegs::TriangleTopology::List:
     case PipelineRegs::TriangleTopology::Shader:
@@ -24,10 +25,10 @@ void PrimitiveAssembler<VertexType>::SubmitVertex(const VertexType& vtx,
         } else {
             buffer_index = 0;
             if (topology == PipelineRegs::TriangleTopology::Shader && winding) {
-                triangle_handler(buffer[1], buffer[0], vtx);
+                VideoCore::g_renderer->GetRasterizer()->AddTriangle(buffer[1], buffer[0], vtx);
                 winding = false;
             } else {
-                triangle_handler(buffer[0], buffer[1], vtx);
+                VideoCore::g_renderer->GetRasterizer()->AddTriangle(buffer[0], buffer[1], vtx);
             }
         }
         break;
@@ -35,7 +36,7 @@ void PrimitiveAssembler<VertexType>::SubmitVertex(const VertexType& vtx,
     case PipelineRegs::TriangleTopology::Strip:
     case PipelineRegs::TriangleTopology::Fan:
         if (strip_ready)
-            triangle_handler(buffer[0], buffer[1], vtx);
+            VideoCore::g_renderer->GetRasterizer()->AddTriangle(buffer[0], buffer[1], vtx);
 
         buffer[buffer_index] = vtx;
 

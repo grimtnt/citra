@@ -15,19 +15,14 @@ namespace Pica {
  */
 template <typename VertexType>
 struct PrimitiveAssembler {
-    using TriangleHandler =
-        std::function<void(const VertexType& v0, const VertexType& v1, const VertexType& v2)>;
-
     PrimitiveAssembler(
         PipelineRegs::TriangleTopology topology = PipelineRegs::TriangleTopology::List);
 
     /*
      * Queues a vertex, builds primitives from the vertex queue according to the given
-     * triangle topology, and calls triangle_handler for each generated primitive.
-     * NOTE: We could specify the triangle handler in the constructor, but this way we can
-     * keep event and handler code next to each other.
+     * triangle topology.
      */
-    void SubmitVertex(const VertexType& vtx, const TriangleHandler& triangle_handler);
+    void SubmitVertex(const VertexType& vtx);
 
     /**
      * Invert the vertex order of the next triangle. Called by geometry shader emitter.

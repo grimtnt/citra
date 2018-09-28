@@ -25,7 +25,6 @@
 #include "core/movie.h"
 #include "core/rpc/rpc_server.h"
 #include "core/settings.h"
-#include "video_core/renderer/rasterizer.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 

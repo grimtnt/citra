@@ -20,7 +20,6 @@
 #include "video_core/regs_rasterizer.h"
 #include "video_core/regs_texturing.h"
 #include "video_core/renderer/pica_to_gl.h"
-#include "video_core/renderer/rasterizer.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/renderer/state.h"
 
@@ -30,7 +29,9 @@ using SurfaceType = SurfaceParams::SurfaceType;
 static bool IsVendorAmd() {
     std::string gpu_vendor{reinterpret_cast<char const*>(glGetString(GL_VENDOR))};
     std::string gpu_renderer{reinterpret_cast<char const*>(glGetString(GL_RENDERER))};
-    return gpu_vendor == "ATI Technologies Inc." || gpu_vendor == "Advanced Micro Devices, Inc." || gpu_renderer == "Intel(R) HD Graphics 4600" || gpu_renderer == "Intel(R) HD Graphics 4400";
+    return gpu_vendor == "ATI Technologies Inc." || gpu_vendor == "Advanced Micro Devices, Inc." ||
+           gpu_renderer == "Intel(R) HD Graphics 4600" ||
+           gpu_renderer == "Intel(R) HD Graphics 4400";
 }
 
 Rasterizer::Rasterizer(EmuWindow& window)

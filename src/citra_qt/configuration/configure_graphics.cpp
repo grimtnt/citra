@@ -10,7 +10,6 @@
 #include "core/core.h"
 #include "core/settings.h"
 #include "ui_configure_graphics.h"
-#include "video_core/renderer/rasterizer.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 

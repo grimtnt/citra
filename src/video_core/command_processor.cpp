@@ -413,11 +413,6 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         if (g_state.geometry_pipeline.NeedIndexInput())
             ASSERT(is_indexed);
 
-        const auto AddTriangle{
-            [rasterizer = VideoCore::g_renderer->GetRasterizer()](auto& v0, auto& v1, auto& v2) {
-                rasterizer->AddTriangle(v0, v1, v2);
-            }};
-
         for (u32 index{}; index < regs.pipeline.num_vertices; ++index) {
             u32 vertex{VertexIndex(index)};
             auto& cached_vertex{vs_output[is_indexed ? vertex : index]};
@@ -438,7 +433,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                 // Send to geometry pipeline
                 g_state.geometry_pipeline.SubmitVertex(cached_vertex.output_attr);
             } else {
-                primitive_assembler.SubmitVertex(cached_vertex.output_vertex, AddTriangle);
+                primitive_assembler.SubmitVertex(cached_vertex.output_vertex);
             }
         }
 

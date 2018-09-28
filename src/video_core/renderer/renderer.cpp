@@ -17,7 +17,6 @@
 #include "core/hw/lcd.h"
 #include "core/memory.h"
 #include "core/settings.h"
-#include "video_core/renderer/rasterizer.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
