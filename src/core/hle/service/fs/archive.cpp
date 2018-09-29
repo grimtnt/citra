@@ -269,7 +269,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    std::size_t end{offset + size};
+    auto end{offset + size};
 
     // TODO(Subv): Check for overflow and return ERR_WRITE_BEYOND_END
 
@@ -285,7 +285,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
     auto server{std::get<SharedPtr<ServerSession>>(sessions)};
     ClientConnected(server);
 
-    FileSessionSlot* slot = GetSessionData(server);
+    FileSessionSlot* slot{GetSessionData(server)};
     slot->priority = original_file->priority;
     slot->offset = offset;
     slot->size = size;

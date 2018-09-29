@@ -56,7 +56,7 @@ void HostRoomWindow::Host() {
     bool stop_in_checked{ui->stop_in_checkbox->isChecked()};
     if (stop_in_checked) {
         parent->SetCloseMs(std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::minutes(ui->minutes_spinbox->value()))
+                               std::chrono::minutes{ui->minutes_spinbox->value()})
                                .count());
     }
     if (auto member{Network::GetRoomMember().lock()}) {
@@ -89,8 +89,9 @@ void HostRoomWindow::Host() {
                                            : QString::number(Network::DefaultRoomPort);
         Settings::Apply();
         OnConnection();
-        if (stop_in_checked)
+        if (stop_in_checked) {
             parent->StartTimer();
+        }
     }
 }
 
