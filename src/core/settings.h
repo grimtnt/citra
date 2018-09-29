@@ -133,7 +133,7 @@ struct Values {
     InitClock init_clock;
     u64 init_time;
 
-    // Graphics
+    // Renderer
     bool use_hw_shader;
     bool shaders_accurate_gs;
     bool shaders_accurate_mul;
