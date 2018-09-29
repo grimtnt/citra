@@ -194,8 +194,6 @@ void Config::ReadValues() {
     Settings::values.init_clock = static_cast<Settings::InitClock>(
         qt_config->value("init_clock", static_cast<u32>(Settings::InitClock::SystemTime)).toInt());
     Settings::values.init_time = qt_config->value("init_time", 946681277ULL).toULongLong();
-    Settings::values.memory_developer_mode =
-        qt_config->value("memory_developer_mode", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");
@@ -208,6 +206,8 @@ void Config::ReadValues() {
         static_cast<Settings::TicksMode>(qt_config->value("ticks_mode", 0).toInt());
     Settings::values.ticks = qt_config->value("ticks", 0).toULongLong();
     Settings::values.use_bos = qt_config->value("use_bos", false).toBool();
+    Settings::values.memory_developer_mode =
+        qt_config->value("memory_developer_mode", false).toBool();
     Settings::values.disable_mh_3d = qt_config->value("disable_mh_3d", false).toBool();
     qt_config->endGroup();
 
@@ -384,7 +384,6 @@ void Config::SaveValues() {
     qt_config->setValue("region_value", Settings::values.region_value);
     qt_config->setValue("init_clock", static_cast<u32>(Settings::values.init_clock));
     qt_config->setValue("init_time", static_cast<unsigned long long>(Settings::values.init_time));
-    qt_config->setValue("memory_developer_mode", Settings::values.memory_developer_mode);
     qt_config->endGroup();
 
     qt_config->beginGroup("Miscellaneous");
@@ -396,6 +395,7 @@ void Config::SaveValues() {
     qt_config->setValue("ticks_mode", static_cast<int>(Settings::values.ticks_mode));
     qt_config->setValue("ticks", static_cast<unsigned long long>(Settings::values.ticks));
     qt_config->setValue("use_bos", Settings::values.use_bos);
+    qt_config->setValue("memory_developer_mode", Settings::values.memory_developer_mode);
     qt_config->setValue("disable_mh_3d", Settings::values.disable_mh_3d);
     qt_config->endGroup();
 
