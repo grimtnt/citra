@@ -91,7 +91,9 @@ static std::array<GLfloat, 6> MakeOrthographicMatrix(const float width, const fl
 }
 
 Renderer::Renderer(EmuWindow& window)
-    : render_window{window}, rasterizer{std::make_unique<Rasterizer>(window)} {}
+    : render_window{window}, rasterizer{std::make_unique<Rasterizer>(window)} {
+    VideoCore::g_renderer_bg_color_update_requested = true;
+}
 
 Renderer::~Renderer() = default;
 
