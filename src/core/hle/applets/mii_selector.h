@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <string>
+#include <functional>
 #include "common/common_funcs.h"
 #include "common/common_types.h"
 #include "core/hle/applets/applet.h"
@@ -20,15 +20,15 @@ struct MiiConfig {
     u8 enable_guest_mii;
     u8 show_on_top_screen;
     INSERT_PADDING_BYTES(5);
-    u16 title[0x40];
+    std::array<u16_le, 0x40> title;
     INSERT_PADDING_BYTES(4);
     u8 show_guest_miis;
     INSERT_PADDING_BYTES(3);
-    u32 initially_selected_mii_index;
+    u32_le initially_selected_mii_index;
     u8 guest_mii_whitelist[6];
     u8 user_mii_whitelist[0x64];
     INSERT_PADDING_BYTES(2);
-    u32 magic_value;
+    u32_le magic_value;
 };
 static_assert(sizeof(MiiConfig) == 0x104, "MiiConfig structure has incorrect size");
 #define ASSERT_REG_POSITION(field_name, position)                                                  \
@@ -41,14 +41,14 @@ ASSERT_REG_POSITION(guest_mii_whitelist, 0x94);
 #undef ASSERT_REG_POSITION
 
 struct MiiResult {
-    u32 return_code;
-    u32 is_guest_mii_selected;
-    u32 selected_guest_mii_index;
+    u32_le return_code;
+    u32_le is_guest_mii_selected;
+    u32_le selected_guest_mii_index;
     // TODO(mailwl): expand to Mii Format structure: https://www.3dbrew.org/wiki/Mii
     u8 selected_mii_data[0x5C];
     INSERT_PADDING_BYTES(2);
-    u16 mii_data_checksum;
-    u16 guest_mii_name[0xC];
+    u16_be mii_data_checksum;
+    u16_le guest_mii_name[0xC];
 };
 static_assert(sizeof(MiiResult) == 0x84, "MiiResult structure has incorrect size");
 #define ASSERT_REG_POSITION(field_name, position)                                                  \
@@ -67,7 +67,7 @@ public:
     ResultCode StartImpl(const Service::APT::AppletStartupParameter& parameter) override;
     void Update() override;
 
-    static inline std::function<void(std::string&)> cb;
+    static inline std::function<void(const MiiConfig&, MiiResult&)> cb;
 
 private:
     /// This SharedMemory will be created when we receive the LibAppJustStarted message.

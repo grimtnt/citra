@@ -24,9 +24,6 @@ namespace Service::PTM {
 /// Values for the default gamecoin.dat file
 static const GameCoin default_game_coin = {0x4F00, 42, 0, 0, 0, 2014, 12, 29};
 
-/// Id of the SharedExtData archive used by the PTM process
-static const std::vector<u8> ptm_shared_extdata_id = {0, 0, 0, 0, 0x0B, 0, 0, 0xF0, 0, 0, 0, 0};
-
 void Module::Interface::GetAdapterState(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x5, 0, 0};
 
@@ -145,8 +142,7 @@ Module::Module() {
     // If the archive didn't exist, create the files inside
     if (archive_result.Code() == FileSys::ERR_NOT_FORMATTED) {
         // Format the archive to create the directories
-        Service::FS::FormatArchive(Service::FS::ArchiveIdCode::SharedExtSaveData,
-                                   FileSys::ArchiveFormatInfo(), archive_path);
+        extdata_archive_factory.Format(archive_path, FileSys::ArchiveFormatInfo());
         // Open it again to get a valid archive now that the folder exists
         auto new_archive_result{extdata_archive_factory.Open(archive_path)};
         ASSERT_MSG(new_archive_result.Succeeded(),

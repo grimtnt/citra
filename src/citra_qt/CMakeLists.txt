@@ -67,6 +67,8 @@ add_executable(citra-qt
     util/util.h
     swkbd.cpp
     swkbd.h
+    mii_selector.cpp
+    mii_selector.h
     control_panel.cpp
     control_panel.h
 )
@@ -82,6 +84,7 @@ set(UIS
     configuration/configure_system.ui
     configuration/configure_hacks.ui
     swkbd.ui
+    mii_selector.ui
     aboutdialog.ui
     hotkeys.ui
     cheats.ui

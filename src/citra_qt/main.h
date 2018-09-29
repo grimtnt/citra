@@ -13,6 +13,7 @@
 #include "citra_qt/swkbd.h"
 #include "core/core.h"
 #include "core/hle/applets/erreula.h"
+#include "core/hle/applets/mii_selector.h"
 #include "core/hle/applets/swkbd.h"
 #include "core/hle/service/am/am.h"
 #include "ui_main.h"
@@ -81,7 +82,8 @@ private:
     Q_INVOKABLE void ErrEulaCallback(HLE::Applets::ErrEulaConfig& config);
     Q_INVOKABLE void SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
                                    std::u16string& text);
-    Q_INVOKABLE void MiiSelectorCallback(std::string& path);
+    Q_INVOKABLE void MiiSelectorCallback(const HLE::Applets::MiiConfig& config,
+                                         HLE::Applets::MiiResult& result);
     Q_INVOKABLE void Update3D();
     void SyncMenuUISettings();
     void RestoreUIState();

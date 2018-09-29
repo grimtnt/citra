@@ -34,6 +34,7 @@
 #include "citra_qt/game_list.h"
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
+#include "citra_qt/mii_selector.h"
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/swkbd.h"
 #include "citra_qt/ui_settings.h"
@@ -49,7 +50,6 @@
 #include "core/core.h"
 #include "core/file_sys/archive_extsavedata.h"
 #include "core/file_sys/archive_source_sd_savedata.h"
-#include "core/hle/applets/mii_selector.h"
 #include "core/hle/service/cfg/cfg.h"
 #include "core/hle/service/fs/archive.h"
 #include "core/hle/service/ptm/ptm.h"
@@ -659,9 +659,10 @@ void GMainWindow::BootGame(const QString& filename) {
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
 
-    HLE::Applets::MiiSelector::cb = [this](std::string& path) {
+    HLE::Applets::MiiSelector::cb = [this](const HLE::Applets::MiiConfig& config,
+                                           HLE::Applets::MiiResult& result) {
         applet_open = true;
-        MiiSelectorCallback(path);
+        MiiSelectorCallback(config, result);
         std::unique_lock<std::mutex> lock{applet_mutex};
         applet_cv.wait(lock, [&] { return !applet_open; });
     };
@@ -741,7 +742,7 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     switch (config.error_type) {
     case HLE::Applets::ErrEulaErrorType::ErrorCode: {
         QMessageBox::critical(
-            this, "ErrEula",
+            nullptr, "ErrEula",
             QString("Error Code: %1")
                 .arg(QString::fromStdString(fmt::format("0x{:08X}", config.error_code))));
         break;
@@ -750,7 +751,7 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::ErrorText: {
         std::string error{Common::UTF16ToUTF8(config.error_text)};
         QMessageBox::critical(
-            this, "ErrEula",
+            nullptr, "ErrEula",
             QString("Error Code: %1\n\n%2")
                 .arg(QString::fromStdString(fmt::format("0x{:08X}", config.error_code)),
                      QString::fromStdString(error)));
@@ -760,7 +761,8 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::Eula:
     case HLE::Applets::ErrEulaErrorType::EulaDrawOnly:
     case HLE::Applets::ErrEulaErrorType::EulaFirstBoot: {
-        QMessageBox::StandardButton button{QMessageBox::question(this, "ErrEula", "Agree EULA?")};
+        QMessageBox::StandardButton button{
+            QMessageBox::question(nullptr, "ErrEula", "Agree EULA?")};
         if (button == QMessageBox::StandardButton::Yes)
             Service::CFG::GetCurrentModule()->AgreeEula();
         break;
@@ -787,28 +789,18 @@ void GMainWindow::SwkbdCallback(HLE::Applets::SoftwareKeyboardConfig& config,
     applet_open = false;
 }
 
-void GMainWindow::MiiSelectorCallback(std::string& path) {
+void GMainWindow::MiiSelectorCallback(const HLE::Applets::MiiConfig& config,
+                                      HLE::Applets::MiiResult& result) {
     if (QThread::currentThread() != thread()) {
         QMetaObject::invokeMethod(this, "MiiSelectorCallback", Qt::BlockingQueuedConnection,
-                                  Q_ARG(std::string&, path));
+                                  Q_ARG(const HLE::Applets::MiiConfig&, config),
+                                  Q_ARG(HLE::Applets::MiiResult&, result));
         return;
     }
 
     std::unique_lock<std::mutex> lock{applet_mutex};
-    QMessageBox::information(
-        this, "Mii Selector",
-        "Select a Mii file.\nWhen you select a Mii with LLE Mii Selector, the Mii is saved to User "
-        "Directory/miis.\nMiis selected with this are saved to User Directory/miis.");
-    QString qpath{QFileDialog::getOpenFileName(this, "Select Mii", ".", "Mii (*.mii)")};
-    if (!qpath.isEmpty()) {
-        QFile file{qpath};
-        file.open(QFile::ReadOnly);
-        if (file.size() != 132) {
-            QMessageBox::critical(this, "Invalid Mii file", "File size is not 132");
-        } else {
-            path = qpath.toStdString();
-        }
-    }
+    MiiSelectorDialog dialog{this, config, result};
+    dialog.exec();
 
     applet_open = false;
 }

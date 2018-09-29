@@ -4,9 +4,7 @@
 
 #include <cstring>
 #include "common/assert.h"
-#include "common/file_util.h"
 #include "common/logging/log.h"
-#include "common/string_util.h"
 #include "core/hle/applets/mii_selector.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/shared_memory.h"
@@ -25,9 +23,8 @@ ResultCode MiiSelector::ReceiveParameter(const Service::APT::MessageParameter& p
     // The LibAppJustStarted message contains a buffer with the size of the framebuffer shared
     // memory.
     // Create the SharedMemory that will hold the framebuffer data
-    Service::APT::CaptureBufferInfo capture_info{};
+    Service::APT::CaptureBufferInfo capture_info;
     ASSERT(sizeof(capture_info) == parameter.buffer.size());
-
     memcpy(&capture_info, parameter.buffer.data(), sizeof(capture_info));
 
     using Kernel::MemoryPermission;
@@ -57,12 +54,7 @@ ResultCode MiiSelector::StartImpl(const Service::APT::AppletStartupParameter& pa
 
     MiiResult result{};
     if (cb) {
-        std::string path{};
-        cb(path);
-        if (!path.empty()) {
-            FileUtil::IOFile file{path, "rb"};
-            file.ReadBytes(&result, sizeof(MiiResult));
-        }
+        cb(config, result);
     }
 
     // Let the application know that we're closing
