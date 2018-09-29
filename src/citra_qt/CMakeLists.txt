@@ -122,10 +122,6 @@ target_link_libraries(citra-qt PRIVATE audio_core common core input_common netwo
 target_link_libraries(citra-qt PRIVATE Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia discord-rpc SDL2)
 target_link_libraries(citra-qt PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 
-if(UNIX AND NOT APPLE)
-    install(TARGETS citra-qt RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")
-endif()
-
 if (MSVC)
     include(CopyCitraQt5Deps)
     include(CopyCitraSDLDeps)
