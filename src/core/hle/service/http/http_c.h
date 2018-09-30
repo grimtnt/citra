@@ -65,8 +65,8 @@ struct Context {
     void Send() {
         using lup = LUrlParser::clParseURL;
         namespace hl = httplib;
-        lup parsedUrl = lup::ParseURL(url);
-        std::unique_ptr<hl::Client> cli{};
+        lup parsedUrl{lup::ParseURL(url)};
+        std::unique_ptr<hl::Client> cli;
         int port;
         if (parsedUrl.m_Scheme == "http") {
             if (!parsedUrl.GetPort(&port)) {
