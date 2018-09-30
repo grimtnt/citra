@@ -84,7 +84,7 @@ void RoomJson::AddPlayer(const std::string& nickname,
 }
 
 Common::WebResult RoomJson::Announce() {
-    nlohmann::json json{room};
+    nlohmann::json json = room;
     return client.PostJson("/lobby", json.dump(), false);
 }
 

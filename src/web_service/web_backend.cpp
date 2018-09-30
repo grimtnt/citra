@@ -75,7 +75,7 @@ Common::WebResult Client::GenericJson(const std::string& method, const std::stri
         params.emplace(std::string("Content-Type"), std::string("application/json"));
     };
 
-    httplib::Request request{};
+    httplib::Request request;
     request.method = method;
     request.path = path;
     request.headers = params;
