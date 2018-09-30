@@ -18,6 +18,11 @@ add_subdirectory(dynarmic)
 add_subdirectory(fmt)
 add_library(fmt::fmt ALIAS fmt)
 
+# getopt
+if (MSVC)
+    add_subdirectory(getopt)
+endif()
+
 # Glad
 add_subdirectory(glad)
 
