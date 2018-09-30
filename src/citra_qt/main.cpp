@@ -21,7 +21,9 @@
 #include <QtGui>
 #include <QtWidgets>
 #include <SDL.h>
+#ifdef ENABLE_DISCORD_RPC
 #include <discord_rpc.h>
+#endif
 #include <fmt/format.h>
 #include "citra_qt/aboutdialog.h"
 #include "citra_qt/bootmanager.h"
@@ -72,6 +74,7 @@ __declspec(dllexport) unsigned long NvOptimusEnablement{0x00000001};
 }
 #endif
 
+#ifdef ENABLE_DISCORD_RPC
 static void HandleDiscordDisconnected(int error_code, const char* message) {
     LOG_ERROR(Frontend, "Discord RPC disconnected ({} {})", error_code, message);
 }
@@ -79,11 +82,12 @@ static void HandleDiscordDisconnected(int error_code, const char* message) {
 static void HandleDiscordError(int error_code, const char* message) {
     LOG_ERROR(Frontend, "Discord RPC error ({} {})", error_code, message);
 }
+#endif
 
 const int GMainWindow::max_recent_files_item;
 
 GMainWindow::GMainWindow() : config{new Config()}, emu_thread{nullptr} {
-    Log::Filter log_filter{};
+    Log::Filter log_filter;
     log_filter.ParseFilterString(Settings::values.log_filter);
     Log::SetGlobalFilter(log_filter);
     FileUtil::CreateFullPath(FileUtil::GetUserPath(D_LOGS_IDX));
@@ -589,13 +593,14 @@ bool GMainWindow::LoadROM(const QString& filename) {
         return false;
     }
 
-    std::string title{};
+    std::string title;
     system.GetAppLoader().ReadTitle(title);
     game_title = QString::fromStdString(title);
     SetupUIStrings();
 
     game_path = filename;
 
+#ifdef ENABLE_DISCORD_RPC
     DiscordEventHandlers handlers{};
     handlers.disconnected = HandleDiscordDisconnected;
     handlers.errored = HandleDiscordError;
@@ -608,6 +613,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
                                   .count();
     presence.largeImageKey = "icon";
     Discord_UpdatePresence(&presence);
+#endif
 
     if (cheats_window != nullptr)
         cheats_window->UpdateTitleID();
@@ -724,8 +730,10 @@ void GMainWindow::ShutdownGame() {
 
     game_path.clear();
 
+#ifdef ENABLE_DISCORD_RPC
     Discord_ClearPresence();
     Discord_Shutdown();
+#endif
 }
 
 void GMainWindow::StoreRecentFile(const QString& filename) {

@@ -30,7 +30,7 @@ before_build:
   - mkdir build
   - cd build
   - ps: |
-        cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 .. 2>&1 && exit 0'
+        cmd /C 'cmake -G "Visual Studio 15 2017 Win64" -DCITRA_USE_BUNDLED_QT=1 -DCITRA_USE_BUNDLED_SDL2=1 -DENABLE_DISCORD_RPC=ON .. 2>&1 && exit 0'
   - cd ..
 
 build_script:
