@@ -23,7 +23,8 @@ class RequestType(enum.IntEnum):
     SetSpeedLimit = 13,
     SetBackgroundColor = 14,
     SetScreenRefreshRate = 15,
-    SetShadowsEnabled = 16
+    SetShadowsEnabled = 16,
+    IsButtonPressed = 17
 
 
 CITRA_PORT = "45987"
@@ -33,7 +34,7 @@ def BIT(n):  # https://github.com/smealum/ctrulib/blob/master/libctru/include/3d
     return (1 << n)
 
 
-class Key(enum.IntEnum):
+class Button(enum.IntEnum):
     A = BIT(0),             # A
     B = BIT(1),             # B
     Select = BIT(2),        # Select
@@ -209,3 +210,14 @@ class Citra:
         request += request_data
         self.socket.send(request)
         self.socket.recv()
+
+    def is_button_pressed(self, button):
+        request_data = struct.pack("IIi", 0, 0, button)
+        request, request_id = self._generate_header(
+            RequestType.IsButtonPressed, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        raw_reply = self.socket.recv()
+        pressed = self._read_and_validate_header(
+            raw_reply, request_id, RequestType.IsButtonPressed)
+        return pressed[0] == 1

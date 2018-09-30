@@ -28,6 +28,7 @@ enum class PacketType {
     SetBackgroundColor,
     SetScreenRefreshRate,
     SetShadowsEnabled,
+    IsButtonPressed,
 };
 
 struct PacketHeader {

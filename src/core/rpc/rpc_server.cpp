@@ -135,6 +135,12 @@ void RPCServer::HandleSetShadowsEnabled(Packet& packet, bool enabled) {
     packet.SendReply();
 }
 
+void RPCServer::HandleIsButtonPressed(Packet& packet, int button) {
+    packet.SetPacketDataSize(sizeof(bool));
+    packet.GetPacketData()[0] = (Service::HID::GetInputsThisFrame().hex & button) != 0;
+    packet.SendReply();
+}
+
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
@@ -154,6 +160,7 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::SetBackgroundColor:
         case PacketType::SetScreenRefreshRate:
         case PacketType::SetShadowsEnabled:
+        case PacketType::IsButtonPressed:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -324,6 +331,13 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             HandleSetShadowsEnabled(*request_packet, enabled);
             success = true;
             break;
+        }
+        case PacketType::IsButtonPressed: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            int button;
+            std::memcpy(&button, data, sizeof(int));
+            HandleIsButtonPressed(*request_packet, button);
+            success = true;
         }
         default:
             break;
