@@ -59,7 +59,7 @@ else
     cd build
 fi
 echo "Running cmake"
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_DISCORD_RPC=ON
 echo "Compiling"
 make -j8
 RESULT=$?

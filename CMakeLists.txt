@@ -15,7 +15,7 @@ CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "M
 
 option(ENABLE_WEB_SERVICE "Enable web services" ON)
 
-option(ENABLE_DISCORD_RPC "Enable Discord rich presence integration" OFF)
+option(ENABLE_DISCORD_RPC "Enable Discord Rich Presence integration" OFF)
 
 # Sanity check : Check that all submodules are present
 # =======================================================================
@@ -207,10 +207,6 @@ find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT}
 
 if (ENABLE_WEB_SERVICE)
     add_definitions(-DENABLE_WEB_SERVICE)
-endif()
-
-if (ENABLE_DISCORD_RPC)
-    add_definitions(-DENABLE_DISCORD_RPC)
 endif()
 
 # Platform-specific library requirements

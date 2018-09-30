@@ -142,6 +142,7 @@ target_link_libraries(citra-qt PRIVATE audio_core common core input_common netwo
 target_link_libraries(citra-qt PRIVATE Boost::boost Qt5::OpenGL Qt5::Widgets Qt5::Multimedia SDL2)
 if (ENABLE_DISCORD_RPC)
     target_link_libraries(citra-qt PRIVATE discord-rpc)
+    target_compile_definitions(citra-qt PRIVATE -DENABLE_DISCORD_RPC)
 endif()
 target_link_libraries(citra-qt PRIVATE ${PLATFORM_LIBRARIES} Threads::Threads)
 
