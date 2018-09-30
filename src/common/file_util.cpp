@@ -624,8 +624,7 @@ const std::string& GetUserPath(const unsigned int DirIDX) {
 #ifdef _WIN32
         paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP DATA_DIR DIR_SEP;
 #else
-        std::string data_dir{GetDataDirectory()};
-        paths[D_USER_IDX] = data_dir + DIR_SEP DATA_DIR DIR_SEP;
+        paths[D_USER_IDX] = GetDataDirectory() + DIR_SEP DATA_DIR DIR_SEP;
 #endif
 
         paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
