@@ -14,7 +14,7 @@ bool VerifyLogin(const std::string& host, const std::string& username, const std
     if (reply.empty()) {
         return false;
     }
-    nlohmann::json json{nlohmann::json::parse(reply)};
+    nlohmann::json json = nlohmann::json::parse(reply);
     const auto iter{json.find("username")};
 
     if (iter == json.end()) {
