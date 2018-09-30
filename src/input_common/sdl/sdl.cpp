@@ -10,4 +10,5 @@ namespace InputCommon::SDL {
 std::unique_ptr<State> Init() {
     return std::make_unique<SDLState>();
 }
+
 } // namespace InputCommon::SDL

@@ -23,9 +23,7 @@
 #include "core/frontend/input.h"
 #include "input_common/sdl/sdl_impl.h"
 
-namespace InputCommon {
-
-namespace SDL {
+namespace InputCommon::SDL {
 
 static std::string GetGUID(SDL_Joystick* joystick) {
     SDL_JoystickGUID guid{SDL_JoystickGetGUID(joystick)};
@@ -459,7 +457,7 @@ SDLState::SDLState() {
 
     initialized = true;
     if (start_thread) {
-        poll_thread = std::thread([&] {
+        poll_thread = std::thread([this] {
             using namespace std::chrono_literals;
             SDL_Event event;
             while (initialized) {
@@ -648,5 +646,4 @@ void SDLState::GetPollers(
     }
 }
 
-} // namespace SDL
-} // namespace InputCommon
+} // namespace InputCommon::SDL
