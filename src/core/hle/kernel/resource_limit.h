@@ -46,11 +46,13 @@ public:
     std::string GetTypeName() const override {
         return "ResourceLimit";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::ResourceLimit;
+    static const HandleType HANDLE_TYPE{HandleType::ResourceLimit};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

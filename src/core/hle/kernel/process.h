@@ -67,11 +67,13 @@ struct CodeSet final : public Object {
     std::string GetTypeName() const override {
         return "CodeSet";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::CodeSet;
+    static const HandleType HANDLE_TYPE{HandleType::CodeSet};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

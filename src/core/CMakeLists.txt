@@ -515,9 +515,11 @@ get_directory_property(OPENSSL_LIBS
         DEFINITION OPENSSL_LIBS)
 add_definitions(-DCPPHTTPLIB_OPENSSL_SUPPORT)
 
-target_link_libraries(core PUBLIC libzmq-headers cppzmq-headers libzmq)
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core ${OPENSSL_LIBS} httplib lurlparser dynarmic)
 target_link_libraries(core PUBLIC Boost::boost PRIVATE SDL2 cryptopp fmt open_source_archives)
 if (ENABLE_WEB_SERVICE)
     target_link_libraries(core PUBLIC json-headers web_service)
+endif()
+if (ENABLE_SCRIPTING)
+    target_link_libraries(core PUBLIC libzmq-headers cppzmq-headers libzmq)
 endif()

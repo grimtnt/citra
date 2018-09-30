@@ -16,16 +16,16 @@ namespace Kernel {
 
 ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread> dst_thread,
                                   VAddr src_address, VAddr dst_address, bool reply) {
-
-    auto& src_process = src_thread->owner_process;
-    auto& dst_process = dst_thread->owner_process;
+    auto& src_process{src_thread->owner_process};
+    auto& dst_process{dst_thread->owner_process};
 
     IPC::Header header;
+
     // TODO(Subv): Replace by Memory::Read32 when possible.
     Memory::ReadBlock(*src_process, src_address, &header.raw, sizeof(header.raw));
 
-    std::size_t untranslated_size = 1u + header.normal_params_size;
-    std::size_t command_size = untranslated_size + header.translate_params_size;
+    std::size_t untranslated_size{1u + header.normal_params_size};
+    std::size_t command_size{untranslated_size + header.translate_params_size};
 
     // Note: The real kernel does not check that the command length fits into the IPC buffer area.
     ASSERT(command_size <= IPC::COMMAND_BUFFER_LENGTH);
@@ -35,13 +35,14 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
 
     std::size_t i{untranslated_size};
     while (i < command_size) {
-        u32 descriptor = cmd_buf[i];
+        u32 descriptor{cmd_buf[i]};
         i += 1;
 
         switch (IPC::GetDescriptorType(descriptor)) {
         case IPC::DescriptorType::CopyHandle:
         case IPC::DescriptorType::MoveHandle: {
-            u32 num_handles = IPC::HandleNumberFromDesc(descriptor);
+            u32 num_handles{IPC::HandleNumberFromDesc(descriptor)};
+
             // Note: The real kernel does not check that the number of handles fits into the command
             // buffer before writing them, only after finishing.
             if (i + num_handles > command_size) {
@@ -83,7 +84,7 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
         }
         case IPC::DescriptorType::StaticBuffer: {
             IPC::StaticBufferDescInfo bufferInfo{descriptor};
-            VAddr static_buffer_src_address = cmd_buf[i];
+            VAddr static_buffer_src_address{cmd_buf[i]};
 
             std::vector<u8> data(bufferInfo.size);
             Memory::ReadBlock(*src_process, static_buffer_src_address, data.data(), data.size());
@@ -100,8 +101,9 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
 
             StaticBuffer target_buffer;
 
-            u32 static_buffer_offset = IPC::COMMAND_BUFFER_LENGTH * sizeof(u32) +
-                                       sizeof(StaticBuffer) * bufferInfo.buffer_id;
+            u32 static_buffer_offset{IPC::COMMAND_BUFFER_LENGTH * sizeof(u32) +
+                                     sizeof(StaticBuffer) * bufferInfo.buffer_id};
+
             Memory::ReadBlock(*dst_process, dst_address + static_buffer_offset, &target_buffer,
                               sizeof(target_buffer));
 
@@ -112,15 +114,15 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
         }
         case IPC::DescriptorType::MappedBuffer: {
             IPC::MappedBufferDescInfo descInfo{descriptor};
-            VAddr source_address = cmd_buf[i];
+            VAddr source_address{cmd_buf[i]};
 
-            u32 size = static_cast<u32>(descInfo.size);
-            IPC::MappedBufferPermissions permissions = descInfo.perms;
+            u32 size{static_cast<u32>(descInfo.size)};
+            IPC::MappedBufferPermissions permissions{descInfo.perms};
 
-            VAddr page_start = Common::AlignDown(source_address, Memory::PAGE_SIZE);
-            u32 page_offset = source_address - page_start;
-            u32 num_pages =
-                Common::AlignUp(page_offset + size, Memory::PAGE_SIZE) >> Memory::PAGE_BITS;
+            VAddr page_start{Common::AlignDown(source_address, Memory::PAGE_SIZE)};
+            u32 page_offset{source_address - page_start};
+            u32 num_pages{Common::AlignUp(page_offset + size, Memory::PAGE_SIZE) >>
+                          Memory::PAGE_BITS};
 
             ASSERT(num_pages >= 1);
 
@@ -133,8 +135,8 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
                 // process again because they were (presumably) not modified. This behavior is
                 // consistent with the real kernel.
                 if (permissions == IPC::MappedBufferPermissions::R) {
-                    ResultCode result = src_process->vm_manager.UnmapRange(
-                        page_start, num_pages * Memory::PAGE_SIZE);
+                    ResultCode result{src_process->vm_manager.UnmapRange(
+                        page_start, num_pages * Memory::PAGE_SIZE)};
                     ASSERT(result == RESULT_SUCCESS);
                 }
 
@@ -146,9 +148,8 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
 
             VAddr target_address{};
 
-            auto IsPageAligned = [](VAddr address) -> bool {
-                return (address & Memory::PAGE_MASK) == 0;
-            };
+            auto IsPageAligned{
+                [](VAddr address) -> bool { return (address & Memory::PAGE_MASK) == 0; }};
 
             // TODO(Subv): Support more than 1 page and aligned page mappings
             ASSERT_MSG(
@@ -169,15 +170,16 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
                 // be copied back to the source process and deallocated when the server replies to
                 // the request via ReplyAndReceive.
 
-                auto buffer = std::make_shared<std::vector<u8>>(Memory::PAGE_SIZE);
+                auto buffer{std::make_shared<std::vector<u8>>(Memory::PAGE_SIZE)};
 
                 // Number of bytes until the next page.
-                std::size_t difference_to_page =
-                    Common::AlignUp(source_address, Memory::PAGE_SIZE) - source_address;
+                std::size_t difference_to_page{Common::AlignUp(source_address, Memory::PAGE_SIZE) -
+                                               source_address};
+
                 // If the data fits in one page we can just copy the required size instead of the
                 // entire page.
-                std::size_t read_size =
-                    num_pages == 1 ? static_cast<std::size_t>(size) : difference_to_page;
+                std::size_t read_size{num_pages == 1 ? static_cast<std::size_t>(size)
+                                                     : difference_to_page};
 
                 Memory::ReadBlock(*src_process, source_address, buffer->data() + page_offset,
                                   read_size);

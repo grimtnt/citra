@@ -19,7 +19,7 @@
 
 namespace Service {
 class ServiceFrameworkBase;
-}
+} // namespace Service
 
 namespace Kernel {
 
@@ -76,8 +76,8 @@ protected:
     T* GetSessionData(SharedPtr<ServerSession> session) {
         static_assert(std::is_base_of<SessionDataBase, T>(),
                       "T is not a subclass of SessionDataBase");
-        auto itr = std::find_if(connected_sessions.begin(), connected_sessions.end(),
-                                [&](const SessionInfo& info) { return info.session == session; });
+        auto itr{std::find_if(connected_sessions.begin(), connected_sessions.end(),
+                              [&](const SessionInfo& info) { return info.session == session; })};
         ASSERT(itr != connected_sessions.end());
         return static_cast<T*>(itr->data.get());
     }
@@ -88,6 +88,7 @@ protected:
         SharedPtr<ServerSession> session;
         std::unique_ptr<SessionDataBase> data;
     };
+
     /// List of sessions that are connected to this handler. A ServerSession whose server endpoint
     /// is an HLE implementation is kept alive by this list for the duration of the connection.
     std::vector<SessionInfo> connected_sessions;
@@ -100,6 +101,7 @@ public:
     // interface for service
     void Read(void* dest_buffer, std::size_t offset, std::size_t size);
     void Write(const void* src_buffer, std::size_t offset, std::size_t size);
+
     std::size_t GetSize() const {
         return size;
     }

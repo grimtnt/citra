@@ -74,11 +74,13 @@ public:
     std::string GetName() const override {
         return name;
     }
+
     std::string GetTypeName() const override {
         return "Thread";
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::Thread;
+    static const HandleType HANDLE_TYPE{HandleType::Thread};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -113,7 +115,7 @@ public:
     void BoostPriority(u32 priority);
 
     /**
-     * Gets the thread's thread ID
+     * Gets the thread's ID
      * @return The thread's ID
      */
     u32 GetThreadId() const {
@@ -220,6 +222,7 @@ public:
 
     using WakeupCallback = void(ThreadWakeupReason reason, SharedPtr<Thread> thread,
                                 SharedPtr<WaitObject> object);
+
     // Callback that will be invoked when the thread is resumed from a waiting state. If the thread
     // was waiting via WaitSynchronizationN then the object will be the last object that became
     // available. In case of a timeout, the object will be nullptr.

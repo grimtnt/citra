@@ -17,12 +17,16 @@ namespace Kernel {
 enum class VMAType : u8 {
     /// VMA represents an unmapped region of the address space.
     Free,
+
     /// VMA is backed by a ref-counted allocate memory block.
     AllocatedMemoryBlock,
+
     /// VMA is backed by a raw, unmanaged pointer.
     BackingMemory,
+
     /// VMA is mapped to MMIO registers at a fixed PAddr.
     MMIO,
+
     // TODO(yuriks): Implement MemoryAlias to support MAP/UNMAP
 };
 

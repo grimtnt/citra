@@ -39,11 +39,13 @@ public:
     std::string GetName() const override {
         return name;
     }
+
     std::string GetTypeName() const override {
         return "ServerSession";
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::ServerSession;
+    static const HandleType HANDLE_TYPE{HandleType::ServerSession};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

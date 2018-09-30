@@ -21,7 +21,7 @@ ResultVal<SharedPtr<ServerSession>> ServerPort::Accept() {
         return ERR_NO_PENDING_SESSIONS;
     }
 
-    auto session = std::move(pending_sessions.back());
+    auto session{std::move(pending_sessions.back())};
     pending_sessions.pop_back();
     return MakeResult(std::move(session));
 }

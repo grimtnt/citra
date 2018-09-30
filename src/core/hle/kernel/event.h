@@ -22,14 +22,17 @@ public:
     std::string GetTypeName() const override {
         return "Event";
     }
+
     std::string GetName() const override {
         return name;
     }
+
     void SetName(const std::string& name) {
         this->name = name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::Event;
+    static const HandleType HANDLE_TYPE{HandleType::Event};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

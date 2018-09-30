@@ -18,14 +18,17 @@ class ClientSession;
 class ClientPort final : public Object {
 public:
     friend class ServerPort;
+
     std::string GetTypeName() const override {
         return "ClientPort";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::ClientPort;
+    static const HandleType HANDLE_TYPE{HandleType::ClientPort};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

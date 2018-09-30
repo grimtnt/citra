@@ -23,11 +23,13 @@ public:
     std::string GetTypeName() const override {
         return "Timer";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::Timer;
+    static const HandleType HANDLE_TYPE{HandleType::Timer};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -85,6 +87,7 @@ private:
 
 /// Initializes the required variables for timers
 void TimersInit();
+
 /// Tears down the timer variables
 void TimersShutdown();
 

@@ -28,7 +28,8 @@ public:
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::ClientSession;
+    static const HandleType HANDLE_TYPE{HandleType::ClientSession};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

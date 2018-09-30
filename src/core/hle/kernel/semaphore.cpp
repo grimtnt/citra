@@ -44,7 +44,7 @@ ResultVal<s32> Semaphore::Release(s32 release_count) {
     if (max_count - available_count < release_count)
         return ERR_OUT_OF_RANGE_KERNEL;
 
-    s32 previous_count = available_count;
+    s32 previous_count{available_count};
     available_count += release_count;
 
     WakeupAllWaitingThreads();

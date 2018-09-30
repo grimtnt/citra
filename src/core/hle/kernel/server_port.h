@@ -32,11 +32,13 @@ public:
     std::string GetTypeName() const override {
         return "ServerPort";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::ServerPort;
+    static const HandleType HANDLE_TYPE{HandleType::ServerPort};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

@@ -64,11 +64,13 @@ public:
     std::string GetTypeName() const override {
         return "SharedMemory";
     }
+
     std::string GetName() const override {
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::SharedMemory;
+    static const HandleType HANDLE_TYPE{HandleType::SharedMemory};
+
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -106,21 +108,29 @@ public:
 
     /// Process that created this shared memory block.
     SharedPtr<Process> owner_process;
+
     /// Address of shared memory block in the owner process if specified.
     VAddr base_address;
+
     /// Physical address of the shared memory block in the linear heap if no address was specified
     /// during creation.
     PAddr linear_heap_phys_address;
+
     /// Backing memory for this shared memory block.
     std::shared_ptr<std::vector<u8>> backing_block;
+
     /// Offset into the backing block for this shared memory.
     std::size_t backing_block_offset;
+
     /// Size of the memory block. Page-aligned.
     u32 size;
+
     /// Permission restrictions applied to the process which created the block.
     MemoryPermission permissions;
+
     /// Permission restrictions applied to other processes mapping the block.
     MemoryPermission other_permissions;
+
     /// Name of shared memory object.
     std::string name;
 
