@@ -48,10 +48,11 @@ target_compile_definitions(xbyak INTERFACE XBYAK_NO_OP_NAMES)
 add_subdirectory(enet)
 target_include_directories(enet INTERFACE ./enet/include)
 
-# Discord RPC
-set(BUILD_EXAMPLES OFF)
-add_subdirectory(discord-rpc)
-target_include_directories(discord-rpc INTERFACE ./discord-rpc/include)
+if (ENABLE_DISCORD_RPC)
+    # Discord RPC
+    add_subdirectory(discord-rpc)
+    target_include_directories(discord-rpc INTERFACE ./discord-rpc/include)
+endif()
 
 # LibreSSL
 set(LIBRESSL_SKIP_INSTALL ON CACHE BOOL "")
