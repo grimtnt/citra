@@ -185,7 +185,8 @@ void FileBackend::Write(const Entry& entry) {
     CLS(Network)                                                                                   \
     CLS(Movie)                                                                                     \
     CLS(Loader)                                                                                    \
-    CLS(RPC)
+    CLS(RPC)                                                                                       \
+    CLS(WebService)
 
 // GetClassName is a macro defined by Windows.h, grrr...
 const char* GetLogClassName(Class log_class) {

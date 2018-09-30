@@ -4,20 +4,23 @@
 
 #pragma once
 
-#include <QLabel>
-#include <QTimer>
 #include <QWidget>
+#include "core/announce_multiplayer_session.h"
 #include "network/network.h"
 
+class QStandardItemModel;
+class Lobby;
 class HostRoomWindow;
-class IpConnectWindow;
+class ClientRoomWindow;
+class DirectConnectWindow;
 class ClickableLabel;
 
 class MultiplayerState : public QWidget {
     Q_OBJECT;
 
 public:
-    explicit MultiplayerState(QWidget* parent, QAction* leave_room);
+    explicit MultiplayerState(QWidget* parent, QStandardItemModel* game_list, QAction* leave_room,
+                              QAction* show_room);
     ~MultiplayerState();
 
     /**
@@ -25,36 +28,36 @@ public:
      */
     void Close();
 
-    QLabel* GetStatusIcon() const {
+    ClickableLabel* GetStatusIcon() const {
         return status_icon;
-    }
-
-    void SetCloseMs(int ms) {
-        close_timer.setInterval(ms);
-    }
-
-    void StartTimer() {
-        close_timer.start();
     }
 
 public slots:
     void OnNetworkStateChanged(const Network::RoomMember::State& state);
+    void OnViewLobby();
     void OnCreateRoom();
     bool OnCloseRoom();
-    void OnIpConnectToRoom();
+    void OnOpenNetworkRoom();
+    void OnDirectConnectToRoom();
+    void OnAnnounceFailed(const Common::WebResult&);
     void UpdateThemedIcons();
 
 signals:
     void NetworkStateChanged(const Network::RoomMember::State&);
+    void AnnounceFailed(const Common::WebResult&);
 
 private:
+    Lobby* lobby{};
     HostRoomWindow* host_room{};
-    IpConnectWindow* ip_connect{};
-    QLabel* status_icon{};
-    QTimer close_timer;
-    QAction* leave_room;
-    Network::RoomMember::State current_state = Network::RoomMember::State::Uninitialized;
+    ClientRoomWindow* client_room{};
+    DirectConnectWindow* direct_connect{};
+    ClickableLabel* status_icon{};
+    QStandardItemModel* game_list_model{};
+    QAction* leave_room{};
+    QAction* show_room{};
+    std::shared_ptr<Core::AnnounceMultiplayerSession> announce_multiplayer_session;
+    Network::RoomMember::State current_state{Network::RoomMember::State::Uninitialized};
     Network::RoomMember::CallbackHandle<Network::RoomMember::State> state_callback_handle;
 };
 
-Q_DECLARE_METATYPE(Network::RoomMember::State)
+Q_DECLARE_METATYPE(Common::WebResult);

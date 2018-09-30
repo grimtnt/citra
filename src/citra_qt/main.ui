@@ -111,8 +111,11 @@
     <property name="title">
      <string>Multiplayer</string>
     </property>
+    <addaction name="action_View_Lobby"/>
     <addaction name="action_Start_Room"/>
     <addaction name="action_Connect_To_Room"/>
+    <addaction name="separator"/>
+    <addaction name="action_Show_Room"/>
     <addaction name="action_Leave_Room"/>
    </widget>
    <widget class="QMenu" name="menu_Tools">
@@ -260,7 +263,7 @@
   </action>
   <action name="action_Connect_To_Room">
    <property name="text">
-    <string>Connect To Room</string>
+    <string>Direct Connect To Room</string>
    </property>
   </action>
   <action name="action_Show_Room">

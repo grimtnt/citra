@@ -2,16 +2,12 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
-#include <chrono>
 #include <future>
 #include <QColor>
 #include <QImage>
-#include <QInputDialog>
 #include <QList>
 #include <QLocale>
-#include <QMessageBox>
 #include <QMetaType>
-#include <QTableWidgetItem>
 #include <QTime>
 #include <QtConcurrent/QtConcurrentRun>
 #include "citra_qt/game_list_p.h"
@@ -22,47 +18,79 @@
 #include "citra_qt/multiplayer/validation.h"
 #include "citra_qt/ui_settings.h"
 #include "common/logging/log.h"
+#include "core/announce_multiplayer_session.h"
 #include "core/settings.h"
 #include "ui_host_room.h"
 
-HostRoomWindow::HostRoomWindow(QWidget* parent)
+HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list,
+                               std::shared_ptr<Core::AnnounceMultiplayerSession> session)
     : QDialog{parent, Qt::WindowTitleHint | Qt::WindowCloseButtonHint | Qt::WindowSystemMenuHint},
-      ui{std::make_unique<Ui::HostRoom>()} {
+      ui{std::make_unique<Ui::HostRoom>()}, announce_multiplayer_session{session} {
     ui->setupUi(this);
 
     // set up validation for all of the fields
+    ui->room_name->setValidator(validation.GetRoomName());
+    ui->username->setValidator(validation.GetNickname());
     ui->port->setValidator(validation.GetPort());
     ui->port->setPlaceholderText(QString::number(Network::DefaultRoomPort));
 
+    // Create a proxy to the game list to display the list of preferred games
+    game_list = new QStandardItemModel;
+
+    for (int i{}; i < list->rowCount(); i++) {
+        auto parent{list->item(i, 0)};
+        for (int j{}; j < parent->rowCount(); j++) {
+            game_list->appendRow(parent->child(j)->clone());
+        }
+    }
+
+    proxy = new ComboBoxProxyModel;
+    proxy->setSourceModel(game_list);
+    proxy->sort(0, Qt::AscendingOrder);
+    ui->game_list->setModel(proxy);
+
     // Connect all the widgets to the appropriate events
     connect(ui->host, &QPushButton::pressed, this, &HostRoomWindow::Host);
-    connect(ui->stop_in_checkbox, &QCheckBox::stateChanged, this, [&](bool state) {
-        ui->minutes_label->setEnabled(state);
-        ui->minutes_spinbox->setEnabled(state);
-    });
 
-    // Restore the port:
-    ui->port->setText(UISettings::values.port);
+    // Restore the settings:
+    ui->username->setText(UISettings::values.room_nickname);
+    if (ui->username->text().isEmpty() && !Settings::values.citra_username.empty()) {
+        // Use Citra Web Service user name as nickname by default
+        ui->username->setText(QString::fromStdString(Settings::values.citra_username));
+    }
+    ui->room_name->setText(UISettings::values.room_name);
+    ui->port->setText(UISettings::values.room_port);
+    ui->max_player->setValue(UISettings::values.max_player);
+    int index = UISettings::values.host_type;
+    if (index < ui->host_type->count()) {
+        ui->host_type->setCurrentIndex(index);
+    }
+    index = ui->game_list->findData(UISettings::values.game_id, GameListItemPath::ProgramIdRole);
+    if (index != -1) {
+        ui->game_list->setCurrentIndex(index);
+    }
 }
 
 HostRoomWindow::~HostRoomWindow() = default;
 
 void HostRoomWindow::Host() {
+    if (!ui->username->hasAcceptableInput()) {
+        NetworkMessage::ShowError(NetworkMessage::USERNAME_NOT_VALID);
+        return;
+    }
+    if (!ui->room_name->hasAcceptableInput()) {
+        NetworkMessage::ShowError(NetworkMessage::ROOMNAME_NOT_VALID);
+        return;
+    }
     if (!ui->port->hasAcceptableInput()) {
         NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
         return;
-    }
-    auto parent{static_cast<MultiplayerState*>(parentWidget())};
-    bool stop_in_checked{ui->stop_in_checkbox->isChecked()};
-    if (stop_in_checked) {
-        parent->SetCloseMs(std::chrono::duration_cast<std::chrono::milliseconds>(
-                               std::chrono::minutes{ui->minutes_spinbox->value()})
-                               .count());
     }
     if (auto member{Network::GetRoomMember().lock()}) {
         if (member->GetState() == Network::RoomMember::State::Joining) {
             return;
         } else if (member->GetState() == Network::RoomMember::State::Joined) {
+            auto parent{static_cast<MultiplayerState*>(parentWidget())};
             if (!parent->OnCloseRoom()) {
                 close();
                 return;
@@ -70,10 +98,13 @@ void HostRoomWindow::Host() {
         }
         ui->host->setDisabled(true);
 
-        auto port{static_cast<u16>(ui->port->isModified() ? ui->port->text().toInt()
-                                                          : Network::DefaultRoomPort)};
+        auto game_name{ui->game_list->currentData(Qt::DisplayRole).toString()};
+        auto game_id{ui->game_list->currentData(GameListItemPath::ProgramIdRole).toLongLong()};
+        auto port{ui->port->isModified() ? ui->port->text().toInt() : Network::DefaultRoomPort};
+        auto password{ui->password->text().toStdString()};
         if (auto room{Network::GetRoom().lock()}) {
-            bool created{room->Create(port)};
+            bool created{room->Create(ui->room_name->text().toStdString(), "", port, password,
+                                      ui->max_player->value(), game_name.toStdString(), game_id)};
             if (!created) {
                 NetworkMessage::ShowError(NetworkMessage::COULD_NOT_CREATE_ROOM);
                 LOG_ERROR(Network, "Could not create room!");
@@ -81,21 +112,60 @@ void HostRoomWindow::Host() {
                 return;
             }
         }
-        member->Join("127.0.0.1", port, Network::NoPreferredMac);
+        member->Join(ui->username->text().toStdString(), "127.0.0.1", port, Network::NoPreferredMac,
+                     password);
 
-        // Store port setting
-        UISettings::values.port_host = (ui->port->isModified() && !ui->port->text().isEmpty())
+        // Store settings
+        UISettings::values.room_nickname = ui->username->text();
+        UISettings::values.room_name = ui->room_name->text();
+        UISettings::values.game_id =
+            ui->game_list->currentData(GameListItemPath::ProgramIdRole).toLongLong();
+        UISettings::values.max_player = ui->max_player->value();
+
+        UISettings::values.host_type = ui->host_type->currentIndex();
+        UISettings::values.room_port = (ui->port->isModified() && !ui->port->text().isEmpty())
                                            ? ui->port->text()
                                            : QString::number(Network::DefaultRoomPort);
         Settings::Apply();
         OnConnection();
-        if (stop_in_checked) {
-            parent->StartTimer();
-        }
     }
 }
 
 void HostRoomWindow::OnConnection() {
     ui->host->setEnabled(true);
-    close();
+    if (auto room_member{Network::GetRoomMember().lock()}) {
+        if (room_member->GetState() == Network::RoomMember::State::Joining) {
+            // Start the announce session if they chose Public
+            if (ui->host_type->currentIndex() == 0) {
+                if (auto session{announce_multiplayer_session.lock()}) {
+                    session->Start();
+                } else {
+                    LOG_ERROR(Network, "Starting announce session failed");
+                }
+            }
+            close();
+        }
+    }
+}
+
+QVariant ComboBoxProxyModel::data(const QModelIndex& idx, int role) const {
+    if (role != Qt::DisplayRole) {
+        auto val = QSortFilterProxyModel::data(idx, role);
+        // If its the icon, shrink it to 16x16
+        if (role == Qt::DecorationRole)
+            val = val.value<QImage>().scaled(16, 16, Qt::KeepAspectRatio);
+        return val;
+    }
+    std::string filename;
+    Common::SplitPath(
+        QSortFilterProxyModel::data(idx, GameListItemPath::FullPathRole).toString().toStdString(),
+        nullptr, &filename, nullptr);
+    QString title = QSortFilterProxyModel::data(idx, GameListItemPath::TitleRole).toString();
+    return title.isEmpty() ? QString::fromStdString(filename) : title;
+}
+
+bool ComboBoxProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const {
+    auto leftData = left.data(GameListItemPath::TitleRole).toString();
+    auto rightData = right.data(GameListItemPath::TitleRole).toString();
+    return leftData.compare(rightData) < 0;
 }

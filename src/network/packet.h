@@ -114,19 +114,19 @@ private:
     // Member data
     std::vector<char> data; ///< Data stored in the packet
     std::size_t read_pos{}; ///< Current reading position in the packet
-    bool is_valid = true;   ///< Reading state of the packet
+    bool is_valid{true};    ///< Reading state of the packet
 };
 
 template <typename T>
 Packet& Packet::operator>>(std::vector<T>& out_data) {
     // First extract the size
-    u32 size{};
+    u32 size;
     *this >> size;
     out_data.resize(size);
 
     // Then extract the data
     for (std::size_t i{}; i < out_data.size(); ++i) {
-        T character{};
+        T character = 0;
         *this >> character;
         out_data[i] = character;
     }

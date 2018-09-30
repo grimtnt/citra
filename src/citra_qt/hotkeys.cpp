@@ -69,7 +69,7 @@ QShortcut* GetHotkey(const QString& group, const QString& action, QWidget* widge
     return hk.shortcut;
 }
 
-GHotkeysDialog::GHotkeysDialog(QWidget* parent) : QWidget(parent) {
+GHotkeysDialog::GHotkeysDialog(QWidget* parent) : QWidget{parent} {
     ui.setupUi(this);
 
     for (auto group : hotkey_groups) {

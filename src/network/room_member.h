@@ -32,6 +32,12 @@ struct WifiPacket {
     u8 channel;                     ///< WiFi channel where this frame was transmitted.
 };
 
+/// Represents a chat message.
+struct ChatEntry {
+    std::string nickname; ///< Nickname of the client who sent this message.
+    std::string message;  ///< Body of the message.
+};
+
 /**
  * This is what a client [person joining a server] would use.
  * It also has to be used if you host a game yourself (You'd create both, a Room and a
@@ -48,9 +54,20 @@ public:
         LostConnection, ///< Connection closed
 
         // Reasons why connection was rejected
+        NameCollision,  ///< Somebody is already using this name
         MacCollision,   ///< Somebody is already using that mac-address
+        WrongVersion,   ///< The room version is not the same as for this RoomMember
+        WrongPassword,  ///< The password doesn't match the one from the Room
         CouldNotConnect ///< The room is not responding to a connection attempt
     };
+
+    struct MemberInformation {
+        std::string nickname;   ///< Nickname of the member.
+        GameInfo game_info;     ///< Name of the game they're currently playing, or empty if they're
+                                /// not playing anything.
+        MacAddress mac_address; ///< MAC address associated with this member.
+    };
+    using MemberList = std::vector<MemberInformation>;
 
     // The handle for the callback functions
     template <typename T>
@@ -72,9 +89,24 @@ public:
     State GetState() const;
 
     /**
+     * Returns information about the members in the room we're currently connected to.
+     */
+    const MemberList& GetMemberInformation() const;
+
+    /**
+     * Returns the nickname of the RoomMember.
+     */
+    const std::string& GetNickname() const;
+
+    /**
      * Returns the MAC address of the RoomMember.
      */
     const MacAddress& GetMacAddress() const;
+
+    /**
+     * Returns information about the room we're currently connected to.
+     */
+    RoomInformation GetRoomInformation() const;
 
     /**
      * Returns whether we're connected to a server or not.
@@ -82,16 +114,30 @@ public:
     bool IsConnected() const;
 
     /**
-     * Attempts to join a room at the specified address and port.
+     * Attempts to join a room at the specified address and port, using the specified nickname.
+     * This may fail if the username is already taken.
      */
-    void Join(const char* server_addr = "127.0.0.1", const u16 server_port = DefaultRoomPort,
-              const MacAddress& preferred_mac = NoPreferredMac);
+    void Join(const std::string& nickname, const char* server_addr = "127.0.0.1",
+              const u16 server_port = DefaultRoomPort,
+              const MacAddress& preferred_mac = NoPreferredMac, const std::string& password = "");
 
     /**
      * Sends a WiFi packet to the room.
      * @param packet The WiFi packet to send.
      */
     void SendWifiPacket(const WifiPacket& packet);
+
+    /**
+     * Sends a chat message to the room.
+     * @param message The contents of the message.
+     */
+    void SendChatMessage(const std::string& message);
+
+    /**
+     * Sends the current game info to the room.
+     * @param game_info The game information.
+     */
+    void SendGameInfo(const GameInfo& game_info);
 
     /**
      * Binds a function to an event that will be triggered every time the State of the member
@@ -111,6 +157,26 @@ public:
      */
     CallbackHandle<WifiPacket> BindOnWifiPacketReceived(
         std::function<void(const WifiPacket&)> callback);
+
+    /**
+     * Binds a function to an event that will be triggered every time the RoomInformation changes.
+     * The function wil be called every time the event is triggered.
+     * The callback function must not bind or unbind a function. Doing so will cause a deadlock
+     * @param callback The function to call
+     * @return A handle used for removing the function from the registered list
+     */
+    CallbackHandle<RoomInformation> BindOnRoomInformationChanged(
+        std::function<void(const RoomInformation&)> callback);
+
+    /**
+     * Binds a function to an event that will be triggered every time a ChatMessage is received.
+     * The function wil be called every time the event is triggered.
+     * The callback function must not bind or unbind a function. Doing so will cause a deadlock
+     * @param callback The function to call
+     * @return A handle used for removing the function from the registered list
+     */
+    CallbackHandle<ChatEntry> BindOnChatMessageRecieved(
+        std::function<void(const ChatEntry&)> callback);
 
     /**
      * Leaves the current room.
@@ -134,8 +200,14 @@ static const char* GetStateStr(const RoomMember::State& s) {
         return "Joined";
     case RoomMember::State::LostConnection:
         return "LostConnection";
+    case RoomMember::State::NameCollision:
+        return "NameCollision";
     case RoomMember::State::MacCollision:
         return "MacCollision";
+    case RoomMember::State::WrongVersion:
+        return "WrongVersion";
+    case RoomMember::State::WrongPassword:
+        return "WrongPassword";
     case RoomMember::State::CouldNotConnect:
         return "CouldNotConnect";
     }

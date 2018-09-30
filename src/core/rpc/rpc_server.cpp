@@ -338,7 +338,7 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
 }
 
 void RPCServer::HandleRequestsLoop() {
-    std::unique_ptr<RPC::Packet> request_packet{};
+    std::unique_ptr<RPC::Packet> request_packet;
 
     LOG_INFO(RPC, "Request handler started.");
 

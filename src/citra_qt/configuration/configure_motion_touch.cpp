@@ -78,7 +78,7 @@ const std::array<std::pair<const char*, const char*>, 2> TouchProviders = {
      {"cemuhookudp", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "CemuhookUDP")}}};
 
 ConfigureMotionTouch::ConfigureMotionTouch(QWidget* parent)
-    : QDialog(parent), ui(std::make_unique<Ui::ConfigureMotionTouch>()) {
+    : QDialog{parent}, ui{std::make_unique<Ui::ConfigureMotionTouch>()} {
     ui->setupUi(this);
     for (auto [provider, name] : MotionProviders) {
         ui->motion_provider->addItem(name, provider);

@@ -13,6 +13,8 @@ CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_SDL2 "Download bundled SDL2 binaries" O
 
 CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "MSVC" OFF)
 
+option(ENABLE_WEB_SERVICE "Enable web services" ON)
+
 # Sanity check : Check that all submodules are present
 # =======================================================================
 
@@ -200,6 +202,10 @@ else()
 endif()
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
+
+if (ENABLE_WEB_SERVICE)
+    add_definitions(-DENABLE_WEB_SERVICE)
+endif()
 
 # Platform-specific library requirements
 # ======================================

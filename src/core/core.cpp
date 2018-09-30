@@ -25,6 +25,7 @@
 #include "core/movie.h"
 #include "core/rpc/rpc_server.h"
 #include "core/settings.h"
+#include "network/network.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
 
@@ -235,6 +236,11 @@ void System::Shutdown() {
     app_loader.reset();
     rpc_server.reset();
     Memory::InvalidateAreaCache();
+
+    if (auto room_member{Network::GetRoomMember().lock()}) {
+        Network::GameInfo game_info{};
+        room_member->SendGameInfo(game_info);
+    }
 
     LOG_DEBUG(Core, "Shutdown OK");
 }

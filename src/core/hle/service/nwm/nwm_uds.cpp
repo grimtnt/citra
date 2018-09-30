@@ -234,7 +234,7 @@ void HandleAssociationResponseFrame(const Network::WifiPacket& packet) {
 }
 
 static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
-    std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
+    std::unique_lock<std::recursive_mutex> hle_lock{HLE::g_hle_lock, std::defer_lock};
     std::unique_lock<std::mutex> lock{connection_status_mutex, std::defer_lock};
     std::lock(hle_lock, lock);
 
@@ -245,7 +245,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
             return;
         }
 
-        auto node = DeserializeNodeInfoFromFrame(packet.data);
+        auto node{DeserializeNodeInfoFromFrame(packet.data)};
 
         if (connection_status.max_nodes == connection_status.total_nodes) {
             // Reject connection attempt
@@ -255,7 +255,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         }
 
         // Get an unused network node id
-        u16 node_id = GetNextAvailableNodeId();
+        u16 node_id{GetNextAvailableNodeId()};
         node.network_node_id = node_id;
 
         connection_status.node_bitmask |= 1 << (node_id - 1);
@@ -263,7 +263,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         connection_status.nodes[node_id - 1] = node.network_node_id;
         connection_status.total_nodes++;
 
-        u8 current_nodes = network_info.total_nodes;
+        u8 current_nodes{network_info.total_nodes};
         node_info[current_nodes] = node;
 
         network_info.total_nodes++;
@@ -293,7 +293,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         connection_status_event->Signal();
     } else if (connection_status.status == static_cast<u32>(NetworkStatus::Connecting)) {
-        auto logoff = ParseEAPoLLogoffFrame(packet.data);
+        auto logoff{ParseEAPoLLogoffFrame(packet.data)};
 
         network_info.host_mac_address = packet.transmitter_address;
         network_info.total_nodes = logoff.connected_nodes;
@@ -324,7 +324,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         // On a 3ds this packet wouldn't be addressed to already connected clients
         // We use this information because in the current implementation the host
         // isn't broadcasting the node information
-        auto logoff = ParseEAPoLLogoffFrame(packet.data);
+        auto logoff{ParseEAPoLLogoffFrame(packet.data)};
 
         network_info.total_nodes = logoff.connected_nodes;
         connection_status.total_nodes = logoff.connected_nodes;
@@ -344,7 +344,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 }
 
 static void HandleSecureDataPacket(const Network::WifiPacket& packet) {
-    auto secure_data = ParseSecureDataHeader(packet.data);
+    auto secure_data{ParseSecureDataHeader(packet.data)};
     std::unique_lock<std::recursive_mutex> hle_lock{HLE::g_hle_lock, std::defer_lock};
     std::unique_lock<std::mutex> lock{connection_status_mutex, std::defer_lock};
     std::lock(hle_lock, lock);
@@ -491,10 +491,10 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
         return;
     }
 
-    u16 node_id = node_map[packet.transmitter_address];
-    auto node = std::find_if(node_info.begin(), node_info.end(), [&node_id](const NodeInfo& info) {
+    u16 node_id{node_map[packet.transmitter_address]};
+    auto node{std::find_if(node_info.begin(), node_info.end(), [&node_id](const NodeInfo& info) {
         return info.network_node_id == node_id;
-    });
+    })};
     ASSERT(node != node_info.end());
 
     connection_status.node_bitmask &= ~(1 << (node_id - 1));

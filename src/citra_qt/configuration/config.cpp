@@ -200,6 +200,13 @@ void Config::ReadValues() {
     Settings::values.log_filter = qt_config->value("log_filter", "*:Info").toString().toStdString();
     qt_config->endGroup();
 
+    qt_config->beginGroup("WebService");
+    Settings::values.web_api_url =
+        qt_config->value("web_api_url", "https://api.citra-emu.org").toString().toStdString();
+    Settings::values.citra_username = qt_config->value("citra_username").toString().toStdString();
+    Settings::values.citra_token = qt_config->value("citra_token").toString().toStdString();
+    qt_config->endGroup();
+
     qt_config->beginGroup("Hacks");
     Settings::values.priority_boost = qt_config->value("priority_boost", false).toBool();
     Settings::values.ticks_mode =
@@ -273,10 +280,19 @@ void Config::ReadValues() {
     UISettings::values.show_console = qt_config->value("showConsole", false).toBool();
 
     qt_config->beginGroup("Multiplayer");
+    UISettings::values.nickname = qt_config->value("nickname", "").toString();
     UISettings::values.ip = qt_config->value("ip", "").toString();
     UISettings::values.port = qt_config->value("port", Network::DefaultRoomPort).toString();
-    UISettings::values.port_host =
-        qt_config->value("port_host", Network::DefaultRoomPort).toString();
+    UISettings::values.room_nickname = qt_config->value("room_nickname", "").toString();
+    UISettings::values.room_name = qt_config->value("room_name", "").toString();
+    UISettings::values.room_port = qt_config->value("room_port", "24872").toString();
+    bool ok;
+    UISettings::values.host_type = qt_config->value("host_type", 0).toUInt(&ok);
+    if (!ok) {
+        UISettings::values.host_type = 0;
+    }
+    UISettings::values.max_player = qt_config->value("max_player", 8).toUInt();
+    UISettings::values.game_id = qt_config->value("game_id", 0).toULongLong();
     qt_config->endGroup();
 
     qt_config->endGroup();
@@ -390,6 +406,12 @@ void Config::SaveValues() {
     qt_config->setValue("log_filter", QString::fromStdString(Settings::values.log_filter));
     qt_config->endGroup();
 
+    qt_config->beginGroup("WebService");
+    qt_config->setValue("web_api_url", QString::fromStdString(Settings::values.web_api_url));
+    qt_config->setValue("citra_username", QString::fromStdString(Settings::values.citra_username));
+    qt_config->setValue("citra_token", QString::fromStdString(Settings::values.citra_token));
+    qt_config->endGroup();
+
     qt_config->beginGroup("Hacks");
     qt_config->setValue("priority_boost", Settings::values.priority_boost);
     qt_config->setValue("ticks_mode", static_cast<int>(Settings::values.ticks_mode));
@@ -439,9 +461,15 @@ void Config::SaveValues() {
     qt_config->setValue("showConsole", UISettings::values.show_console);
 
     qt_config->beginGroup("Multiplayer");
+    qt_config->setValue("nickname", UISettings::values.nickname);
     qt_config->setValue("ip", UISettings::values.ip);
     qt_config->setValue("port", UISettings::values.port);
-    qt_config->setValue("port_host", UISettings::values.port_host);
+    qt_config->setValue("room_nickname", UISettings::values.room_nickname);
+    qt_config->setValue("room_name", UISettings::values.room_name);
+    qt_config->setValue("room_port", UISettings::values.room_port);
+    qt_config->setValue("host_type", UISettings::values.host_type);
+    qt_config->setValue("max_player", UISettings::values.max_player);
+    qt_config->setValue("game_id", UISettings::values.game_id);
     qt_config->endGroup();
 
     qt_config->endGroup();

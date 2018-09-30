@@ -174,6 +174,11 @@ struct Values {
     std::array<std::string, Service::CAM::NumCameras> camera_config;
     std::array<int, Service::CAM::NumCameras> camera_flip;
 
+    // Web Service
+    std::string web_api_url;
+    std::string citra_username;
+    std::string citra_token;
+
     // Hacks
     bool priority_boost;
     TicksMode ticks_mode;

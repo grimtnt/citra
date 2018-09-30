@@ -3,6 +3,8 @@
 // Refer to the license.txt file included.
 
 #include <cstring>
+#include <dynarmic/A32/a32.h>
+#include <dynarmic/A32/context.h>
 #include "common/assert.h"
 #include "core/core.h"
 #include "core/core_timing.h"
@@ -123,6 +125,69 @@ private:
     bool use_custom_ticks{};
 };
 
+ThreadContext::ThreadContext() {
+    ctx = new Dynarmic::A32::Context;
+    Reset();
+}
+
+ThreadContext::~ThreadContext() = default;
+
+void ThreadContext::Reset() {
+    ctx->Regs() = {};
+    ctx->SetCpsr(0);
+    ctx->ExtRegs() = {};
+    ctx->SetFpscr(0);
+    fpexc = 0;
+}
+
+u32 ThreadContext::GetCpuRegister(std::size_t index) const {
+    return ctx->Regs()[index];
+}
+
+void ThreadContext::SetCpuRegister(std::size_t index, u32 value) {
+    ctx->Regs()[index] = value;
+}
+
+void ThreadContext::SetProgramCounter(u32 value) {
+    return SetCpuRegister(15, value);
+}
+
+void ThreadContext::SetStackPointer(u32 value) {
+    return SetCpuRegister(13, value);
+}
+
+u32 ThreadContext::GetCpsr() const {
+    return ctx->Cpsr();
+}
+
+void ThreadContext::SetCpsr(u32 value) {
+    ctx->SetCpsr(value);
+}
+
+u32 ThreadContext::GetFpuRegister(std::size_t index) const {
+    return ctx->ExtRegs()[index];
+}
+
+void ThreadContext::SetFpuRegister(std::size_t index, u32 value) {
+    ctx->ExtRegs()[index] = value;
+}
+
+u32 ThreadContext::GetFpscr() const {
+    return ctx->Fpscr();
+}
+
+void ThreadContext::SetFpscr(u32 value) {
+    ctx->SetFpscr(value);
+}
+
+u32 ThreadContext::GetFpexc() const {
+    return fpexc;
+}
+
+void ThreadContext::SetFpexc(u32 value) {
+    fpexc = value;
+}
+
 CPU::CPU() : cb{std::make_unique<UserCallbacks>(*this)} {
     state = std::make_shared<State>();
     PageTableChanged();
@@ -202,7 +267,7 @@ void CPU::SaveContext(const std::unique_ptr<ThreadContext>& arg) {
     ThreadContext* ctx{dynamic_cast<ThreadContext*>(arg.get())};
     ASSERT(ctx);
 
-    jit->SaveContext(ctx->ctx);
+    jit->SaveContext(*ctx->ctx);
     ctx->fpexc = state->vfp[VFP_FPEXC];
 }
 
@@ -210,7 +275,7 @@ void CPU::LoadContext(const std::unique_ptr<ThreadContext>& arg) {
     const ThreadContext* ctx{dynamic_cast<ThreadContext*>(arg.get())};
     ASSERT(ctx);
 
-    jit->LoadContext(ctx->ctx);
+    jit->LoadContext(*ctx->ctx);
     state->vfp[VFP_FPEXC] = ctx->fpexc;
 }
 

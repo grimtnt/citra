@@ -60,6 +60,12 @@ add_subdirectory(lurlparser)
 add_library(httplib INTERFACE)
 target_include_directories(httplib INTERFACE ./httplib)
 
+if (ENABLE_WEB_SERVICE)
+    # JSON
+    add_library(json-headers INTERFACE)
+    target_include_directories(json-headers INTERFACE ./json)
+endif()
+
 # Cubeb
 set(BUILD_TESTS OFF CACHE BOOL "")
 add_subdirectory(cubeb EXCLUDE_FROM_ALL)

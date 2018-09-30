@@ -6,8 +6,6 @@
 
 #include <map>
 #include <memory>
-#include <dynarmic/A32/a32.h>
-#include <dynarmic/A32/context.h>
 #include "common/common_types.h"
 #include "core/cpu/common.h"
 
@@ -15,76 +13,36 @@ namespace Memory {
 struct PageTable;
 } // namespace Memory
 
+namespace Dynarmic::A32 {
+class Context;
+class Jit;
+} // namespace Dynarmic::A32
+
 class UserCallbacks;
 
 class ThreadContext final : NonCopyable {
 public:
-    ThreadContext() {
-        Reset();
-    }
-    ~ThreadContext() = default;
-
-    void Reset() {
-        ctx.Regs() = {};
-        ctx.SetCpsr(0);
-        ctx.ExtRegs() = {};
-        ctx.SetFpscr(0);
-        fpexc = 0;
-    }
-
-    u32 GetCpuRegister(std::size_t index) const {
-        return ctx.Regs()[index];
-    }
-
-    void SetCpuRegister(std::size_t index, u32 value) {
-        ctx.Regs()[index] = value;
-    }
-
-    void SetProgramCounter(u32 value) {
-        return SetCpuRegister(15, value);
-    }
-
-    void SetStackPointer(u32 value) {
-        return SetCpuRegister(13, value);
-    }
-
-    u32 GetCpsr() const {
-        return ctx.Cpsr();
-    }
-
-    void SetCpsr(u32 value) {
-        ctx.SetCpsr(value);
-    }
-
-    u32 GetFpuRegister(std::size_t index) const {
-        return ctx.ExtRegs()[index];
-    }
-
-    void SetFpuRegister(std::size_t index, u32 value) {
-        ctx.ExtRegs()[index] = value;
-    }
-
-    u32 GetFpscr() const {
-        return ctx.Fpscr();
-    }
-
-    void SetFpscr(u32 value) {
-        ctx.SetFpscr(value);
-    }
-
-    u32 GetFpexc() const {
-        return fpexc;
-    }
-
-    void SetFpexc(u32 value) {
-        fpexc = value;
-    }
+    ThreadContext();
+    ~ThreadContext();
+    void Reset();
+    u32 GetCpuRegister(std::size_t index) const;
+    void SetCpuRegister(std::size_t index, u32 value);
+    void SetProgramCounter(u32 value);
+    void SetStackPointer(u32 value);
+    u32 GetCpsr() const;
+    void SetCpsr(u32 value);
+    u32 GetFpuRegister(std::size_t index) const;
+    void SetFpuRegister(std::size_t index, u32 value);
+    u32 GetFpscr() const;
+    void SetFpscr(u32 value);
+    u32 GetFpexc() const;
+    void SetFpexc(u32 value);
 
 private:
     friend class CPU;
 
-    Dynarmic::A32::Context ctx;
-    u32 fpexc;
+    Dynarmic::A32::Context* ctx{};
+    u32 fpexc{};
 };
 
 class CPU {

@@ -21,6 +21,7 @@ void ConfigurationDialog::applyConfiguration() {
     ui->graphicsTab->applyConfiguration();
     ui->audioTab->applyConfiguration();
     ui->cameraTab->applyConfiguration();
+    ui->webTab->applyConfiguration();
     ui->hacksTab->applyConfiguration();
     Settings::Apply();
     Settings::LogSettings();

@@ -38,8 +38,10 @@
 #include "citra_qt/multiplayer/state.h"
 #include "citra_qt/swkbd.h"
 #include "citra_qt/ui_settings.h"
+#include "citra_qt/util/clickable_label.h"
 #include "citra_qt/util/console.h"
 #include "common/common_paths.h"
+#include "common/detached_tasks.h"
 #include "common/logging/backend.h"
 #include "common/logging/filter.h"
 #include "common/logging/log.h"
@@ -150,11 +152,13 @@ void GMainWindow::InitializeWidgets() {
     ui.horizontalLayout->addWidget(game_list_placeholder);
     game_list_placeholder->setVisible(false);
 
-    multiplayer_state = new MultiplayerState(this, ui.action_Leave_Room);
+    multiplayer_state = new MultiplayerState(this, game_list->GetModel(), ui.action_Leave_Room,
+                                             ui.action_Show_Room);
     multiplayer_state->setVisible(false);
 
     // Create status bar
     message_label = new QLabel();
+
     // Configured separately for left alignment
     message_label->setVisible(false);
     message_label->setFrameStyle(QFrame::NoFrame);
@@ -190,7 +194,7 @@ void GMainWindow::InitializeWidgets() {
     // Removes an ugly inner border from the status bar widgets under Linux
     setStyleSheet("QStatusBar::item{border: none;}");
 
-    QActionGroup* actionGroup_ScreenLayouts = new QActionGroup(this);
+    QActionGroup* actionGroup_ScreenLayouts{new QActionGroup(this)};
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Default);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Single_Screen);
     actionGroup_ScreenLayouts->addAction(ui.action_Screen_Layout_Medium_Screen);
@@ -207,7 +211,7 @@ void GMainWindow::InitializeRecentFileMenuActions() {
         ui.menu_recent_files->addAction(actions_recent_files[i]);
     }
     ui.menu_recent_files->addSeparator();
-    QAction* action_clear_recent_files = new QAction(this);
+    QAction* action_clear_recent_files{new QAction(this)};
     action_clear_recent_files->setText("Clear Recent Files");
     connect(action_clear_recent_files, &QAction::triggered, this, [this] {
         UISettings::values.recent_files.clear();
@@ -440,12 +444,16 @@ void GMainWindow::ConnectMenuEvents() {
             &GMainWindow::OnCaptureScreenshot);
 
     // Multiplayer
+    connect(ui.action_View_Lobby, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnViewLobby);
     connect(ui.action_Start_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCreateRoom);
     connect(ui.action_Leave_Room, &QAction::triggered, multiplayer_state,
             &MultiplayerState::OnCloseRoom);
     connect(ui.action_Connect_To_Room, &QAction::triggered, multiplayer_state,
-            &MultiplayerState::OnIpConnectToRoom);
+            &MultiplayerState::OnDirectConnectToRoom);
+    connect(ui.action_Show_Room, &QAction::triggered, multiplayer_state,
+            &MultiplayerState::OnOpenNetworkRoom);
 
     // Help
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
@@ -1124,7 +1132,7 @@ void GMainWindow::ToggleWindowMode() {
 }
 
 void GMainWindow::ChangeScreenLayout() {
-    Settings::LayoutOption new_layout = Settings::LayoutOption::Default;
+    Settings::LayoutOption new_layout{Settings::LayoutOption::Default};
 
     if (ui.action_Screen_Layout_Default->isChecked()) {
         new_layout = Settings::LayoutOption::Default;
@@ -1143,7 +1151,7 @@ void GMainWindow::ChangeScreenLayout() {
 }
 
 void GMainWindow::ToggleScreenLayout() {
-    Settings::LayoutOption new_layout = Settings::LayoutOption::Default;
+    Settings::LayoutOption new_layout{Settings::LayoutOption::Default};
 
     switch (Settings::values.layout_option) {
     case Settings::LayoutOption::Default:
@@ -1216,10 +1224,10 @@ void GMainWindow::OnLoadAmiibo() {
         return;
     }
     const QString extensions{"*.bin"};
-    const QString file_filter{tr("Amiibo File") + " (" + extensions + ");;" +
-                              tr("All Files (*.*)")};
+    const QString file_filter{QString("Amiibo File") + " (" + extensions + ");;" +
+                              "All Files (*.*)"};
     const QString filename{QFileDialog::getOpenFileName(
-        this, tr("Load Amiibo"), UISettings::values.amiibo_path, file_filter)};
+        this, "Load Amiibo", UISettings::values.amiibo_path, file_filter)};
     if (!filename.isEmpty()) {
         Core::System& system{Core::System::GetInstance()};
         system.LoadAmiibo(filename.toStdString());
@@ -1609,6 +1617,8 @@ void GMainWindow::SyncMenuUISettings() {
 #endif
 
 int main(int argc, char* argv[]) {
+    Common::DetachedTasks detached_tasks;
+
     // Init settings params
     QCoreApplication::setOrganizationName("Citra team");
     QCoreApplication::setApplicationName("Citra");
@@ -1637,5 +1647,6 @@ int main(int argc, char* argv[]) {
 #ifdef _WIN32
     WSACleanup();
 #endif
+    detached_tasks.WaitForAllTasks();
     return result;
 }
