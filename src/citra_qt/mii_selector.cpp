@@ -40,7 +40,9 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
     ui->setupUi(this);
 
     if (config.magic_value != 0x13DE28CF) {
-        close();
+        result.return_code = 1;
+        QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+        return;
     }
 
     ui->cancel->setEnabled(config.enable_cancel_button == 1);
@@ -53,6 +55,7 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
     auto archive_result{extdata_archive_factory.Open(Service::PTM::ptm_shared_extdata_id)};
     if (!archive_result.Succeeded()) {
         ShowNoMiis(result);
+        return;
     }
 
     auto archive{std::move(archive_result).Unwrap()};
@@ -64,6 +67,7 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
     auto file_result{archive->OpenFile(file_path, mode)};
     if (!file_result.Succeeded()) {
         ShowNoMiis(result);
+        return;
     }
 
     auto file{std::move(file_result).Unwrap()};
@@ -86,6 +90,7 @@ MiiSelectorDialog::MiiSelectorDialog(QWidget* parent, const HLE::Applets::MiiCon
 
     if (miis.empty()) {
         ShowNoMiis(result);
+        return;
     }
 
     if (static_cast<int>(config.initially_selected_mii_index) != 0xFFFF) {
