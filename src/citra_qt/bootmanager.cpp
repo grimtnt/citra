@@ -174,8 +174,8 @@ void GRenderWindow::mousePressEvent(QMouseEvent* event) {
     auto pos{event->pos()};
     if (event->button() == Qt::LeftButton) {
         qreal pixel_ratio{windowPixelRatio()};
-        this->TouchPressed(static_cast<unsigned>(pos.x() * pixel_ratio),
-                           static_cast<unsigned>(pos.y() * pixel_ratio));
+        TouchPressed(static_cast<unsigned>(pos.x() * pixel_ratio),
+                     static_cast<unsigned>(pos.y() * pixel_ratio));
     } else if (event->button() == Qt::RightButton) {
         InputCommon::GetMotionEmu()->BeginTilt(pos.x(), pos.y());
     }
@@ -184,14 +184,14 @@ void GRenderWindow::mousePressEvent(QMouseEvent* event) {
 void GRenderWindow::mouseMoveEvent(QMouseEvent* event) {
     auto pos{event->pos()};
     qreal pixel_ratio{windowPixelRatio()};
-    this->TouchMoved(std::max(static_cast<unsigned>(pos.x() * pixel_ratio), 0u),
-                     std::max(static_cast<unsigned>(pos.y() * pixel_ratio), 0u));
+    TouchMoved(std::max(static_cast<unsigned>(pos.x() * pixel_ratio), 0u),
+               std::max(static_cast<unsigned>(pos.y() * pixel_ratio), 0u));
     InputCommon::GetMotionEmu()->Tilt(pos.x(), pos.y());
 }
 
 void GRenderWindow::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton)
-        this->TouchReleased();
+        TouchReleased();
     else if (event->button() == Qt::RightButton)
         InputCommon::GetMotionEmu()->EndTilt();
 }
