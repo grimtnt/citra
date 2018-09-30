@@ -31,7 +31,7 @@ void HTTP_C::Initialize(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, shmem_size={}", shmem_size);
+    LOG_INFO(Service_HTTP, "called, shmem_size={}", shmem_size);
 }
 
 void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
@@ -53,7 +53,7 @@ void HTTP_C::CreateContext(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(context_counter);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_HTTP, "called, url_size={}, url={}", url_size, url);
+    LOG_INFO(Service_HTTP, "called, url_size={}, url={}", url_size, url);
 }
 
 void HTTP_C::CloseContext(Kernel::HLERequestContext& ctx) {
@@ -71,7 +71,7 @@ void HTTP_C::CloseContext(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::GetRequestState(Kernel::HLERequestContext& ctx) {
@@ -90,7 +90,7 @@ void HTTP_C::GetRequestState(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushEnum<Context::State>(context->second.state);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
@@ -110,7 +110,7 @@ void HTTP_C::GetDownloadSizeState(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(context->second.current_offset);
     rb.Push<u32>(context->second.GetResponseContentLength());
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
@@ -130,7 +130,7 @@ void HTTP_C::InitializeConnectionSession(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
@@ -152,7 +152,7 @@ void HTTP_C::BeginRequest(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
@@ -174,7 +174,7 @@ void HTTP_C::BeginRequestAsync(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
@@ -201,7 +201,7 @@ void HTTP_C::ReceiveData(Kernel::HLERequestContext& ctx) {
                 : RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
@@ -230,7 +230,7 @@ void HTTP_C::ReceiveDataTimeout(Kernel::HLERequestContext& ctx) {
                 : RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::SetProxyDefault(Kernel::HLERequestContext& ctx) {
@@ -249,7 +249,7 @@ void HTTP_C::SetProxyDefault(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}", context_id);
+    LOG_INFO(Service_HTTP, "called, context_id={}", context_id);
 }
 
 void HTTP_C::SetSocketBufferSize(Kernel::HLERequestContext& ctx) {
@@ -297,7 +297,7 @@ void HTTP_C::AddRequestHeader(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(value_buffer);
 
-    LOG_WARNING(Service_HTTP, "called, name={}, value={}, context_id={}", name, value, context_id);
+    LOG_INFO(Service_HTTP, "called, name={}, value={}, context_id={}", name, value, context_id);
 }
 
 void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
@@ -320,7 +320,7 @@ void HTTP_C::AddPostDataRaw(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.PushMappedBuffer(buffer);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}, data={}", context_id, data);
+    LOG_INFO(Service_HTTP, "called, context_id={}, data={}", context_id, data);
 }
 
 void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
@@ -350,9 +350,8 @@ void HTTP_C::GetResponseHeader(Kernel::HLERequestContext& ctx) {
     rb.Push<u32>(size);
     rb.PushMappedBuffer(value_buffer);
 
-    LOG_WARNING(Service_HTTP,
-                "called, name={}, name_size={}, value={}, value_size={}, context_id={}", name,
-                name_size, value, value_size, context_id);
+    LOG_INFO(Service_HTTP, "called, name={}, name_size={}, value={}, value_size={}, context_id={}",
+             name, name_size, value, value_size, context_id);
 }
 
 void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
@@ -373,7 +372,7 @@ void HTTP_C::GetResponseStatusCode(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push(status_code);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}, status_code={}", context_id, status_code);
+    LOG_INFO(Service_HTTP, "called, context_id={}, status_code={}", context_id, status_code);
 }
 
 void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
@@ -393,7 +392,7 @@ void HTTP_C::GetResponseStatusCodeTimeout(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     rb.Push<u32>(contexts[context_id].GetResponseStatusCode());
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}, timeout={}", context_id, timeout);
+    LOG_INFO(Service_HTTP, "called, context_id={}, timeout={}", context_id, timeout);
 }
 
 void HTTP_C::SetSSLOpt(Kernel::HLERequestContext& ctx) {
@@ -413,7 +412,7 @@ void HTTP_C::SetSSLOpt(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}, ssl_options=0x{:X}", context_id, ssl_options);
+    LOG_INFO(Service_HTTP, "called, context_id={}, ssl_options=0x{:X}", context_id, ssl_options);
 }
 
 void HTTP_C::SetKeepAlive(Kernel::HLERequestContext& ctx) {
@@ -433,7 +432,7 @@ void HTTP_C::SetKeepAlive(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 
-    LOG_WARNING(Service_HTTP, "called, context_id={}, keep_alive={}", context_id, keep_alive);
+    LOG_INFO(Service_HTTP, "called, context_id={}, keep_alive={}", context_id, keep_alive);
 }
 
 void HTTP_C::Finalize(Kernel::HLERequestContext& ctx) {
