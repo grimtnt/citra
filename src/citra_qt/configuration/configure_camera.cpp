@@ -27,7 +27,7 @@ ConfigureCamera::ConfigureCamera(QWidget* parent)
     camera_name = Settings::values.camera_name;
     camera_config = Settings::values.camera_config;
     camera_flip = Settings::values.camera_flip;
-    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    QList<QCameraInfo> cameras{QCameraInfo::availableCameras()};
     for (const QCameraInfo& cameraInfo : cameras) {
         ui->system_camera->addItem(cameraInfo.deviceName());
     }
@@ -111,7 +111,7 @@ void ConfigureCamera::updateCameraMode() {
 }
 
 void ConfigureCamera::updateImageSourceUI() {
-    int image_source = ui->image_source->currentIndex();
+    int image_source{ui->image_source->currentIndex()};
     switch (image_source) {
     case 0: /* blank */
     case 2: /* system camera */
@@ -147,8 +147,8 @@ void ConfigureCamera::updateImageSourceUI() {
 }
 
 void ConfigureCamera::recordConfig() {
-    std::string implementation = Implementations[ui->image_source->currentIndex()];
-    int image_source = ui->image_source->currentIndex();
+    std::string implementation{Implementations[ui->image_source->currentIndex()]};
+    int image_source{ui->image_source->currentIndex()};
     std::string config;
     if (image_source == 2) { /* system camera */
         if (ui->system_camera->currentIndex() == 0) {
@@ -164,7 +164,7 @@ void ConfigureCamera::recordConfig() {
         camera_config[0] = camera_config[2] = config;
         camera_flip[0] = camera_flip[2] = ui->camera_flip->currentIndex();
     } else if (current_selected != CameraPosition::Null) {
-        int index = static_cast<int>(current_selected);
+        int index{static_cast<int>(current_selected)};
         camera_name[index] = implementation;
         camera_config[index] = config;
         camera_flip[index] = ui->camera_flip->currentIndex();
@@ -175,7 +175,7 @@ void ConfigureCamera::recordConfig() {
 void ConfigureCamera::startPreviewing() {
     current_selected = getCameraSelection();
     recordConfig();
-    int camera_selection = getSelectedCameraIndex();
+    int camera_selection{getSelectedCameraIndex()};
     stopPreviewing();
     // Init preview box
     ui->preview_box->setHidden(false);
@@ -266,7 +266,7 @@ void ConfigureCamera::setConfiguration() {
 
 void ConfigureCamera::onToolButtonClicked() {
     stopPreviewing();
-    QList<QByteArray> types = QImageReader::supportedImageFormats();
+    QList<QByteArray> types{QImageReader::supportedImageFormats()};
     QList<QString> temp_filters;
     for (const QByteArray& type : types) {
         temp_filters << QString("*." + QString(type));
@@ -308,7 +308,7 @@ ConfigureCamera::CameraPosition ConfigureCamera::getCameraSelection() {
 
 int ConfigureCamera::getSelectedCameraIndex() {
     CameraPosition pos = getCameraSelection();
-    int camera_selection = static_cast<int>(pos);
+    int camera_selection{static_cast<int>(pos)};
     if (pos == CameraPosition::RearBoth) { // Single Mode
         camera_selection = 0;              // Either camera is the same, so we return RearRight
     }

@@ -191,9 +191,9 @@ void ConfigureMotionTouch::OnCemuhookUDPTest() {
 void ConfigureMotionTouch::OnConfigureTouchCalibration() {
     ui->touch_calibration_config->setEnabled(false);
     ui->touch_calibration_config->setText("Configuring");
-    CalibrationConfigurationDialog* dialog = new CalibrationConfigurationDialog(
+    CalibrationConfigurationDialog* dialog{new CalibrationConfigurationDialog(
         this, ui->udp_server->text().toStdString(), static_cast<u16>(ui->udp_port->text().toUInt()),
-        static_cast<u8>(ui->udp_pad_index->currentIndex()), 24872);
+        static_cast<u8>(ui->udp_pad_index->currentIndex()), 24872)};
     dialog->exec();
     if (dialog->completed) {
         min_x = dialog->min_x;

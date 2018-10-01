@@ -412,8 +412,8 @@ void ConfigureSystem::refreshConsoleID() {
         QMessageBox::critical(this, "Warning", warning_text, QMessageBox::No | QMessageBox::Yes);
     if (reply == QMessageBox::No)
         return;
-    u32 random_number{};
-    u64 console_id{};
+    u32 random_number;
+    u64 console_id;
     cfg->GenerateConsoleUniqueId(random_number, console_id);
     cfg->SetConsoleUniqueId(random_number, console_id);
     cfg->UpdateConfigNANDSavegame();

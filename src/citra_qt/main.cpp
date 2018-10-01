@@ -1415,8 +1415,7 @@ void GMainWindow::UpdateStatusBar() {
 }
 
 void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::string& details) {
-    QString status_message{};
-    QString title{}, message{};
+    QString message, title, status_message;
     switch (result) {
     case Core::System::ResultStatus::ErrorSystemFiles: {
         const QString common_message{
@@ -1443,10 +1442,10 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, const std::stri
     }
 
     case Core::System::ResultStatus::FatalError: {
-        title = "Fatal Error";
         message = "A fatal error occured. Check the log for details.<br/>To access the log, "
                   "Click Open Log Location in the general tab of the configuration "
                   "window.<br/>Continuing emulation may result in crashes and bugs.";
+        title = "Fatal Error";
         status_message = "Fatal Error encountered";
         break;
     }
