@@ -31,7 +31,7 @@ void SeedDB::Save() {
     const std::string path{fmt::format("{}/seed_db.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
     FileUtil::CreateFullPath(path);
     FileUtil::IOFile file{path, "wb"};
-    u32 count{seeds.size()};
+    u32 count{static_cast<u32>(seeds.size())};
     file.WriteBytes(&count, sizeof(count));
     for (std::size_t i{}; i < count; ++i) {
         file.WriteBytes(&seeds[i].title_id, sizeof(seeds[i].title_id));

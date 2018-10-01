@@ -158,7 +158,7 @@ Loader::ResultStatus NCCHContainer::Load() {
                 using namespace HW::AES;
                 InitKeys();
 
-                std::array<u8, 16> key_y_primary{}, key_y_secondary{};
+                std::array<u8, 16> key_y_primary, key_y_secondary;
 
                 std::copy(ncch_header.signature, ncch_header.signature + key_y_primary.size(),
                           key_y_primary.begin());
@@ -166,16 +166,16 @@ Loader::ResultStatus NCCHContainer::Load() {
                 if (!ncch_header.seed_crypto) {
                     key_y_secondary = key_y_primary;
                 } else {
-                    auto seed{FileSys::GetSeed(ncch_header.program_id)};
-                    if (!seed.has_value()) {
+                    auto opt{FileSys::GetSeed(ncch_header.program_id)};
+                    if (!opt.has_value()) {
                         LOG_ERROR(Service_FS, "Seed for program {:016X} not found",
                                   ncch_header.program_id);
                         failed_to_decrypt = true;
                     } else {
+                        auto seed{*opt};
                         std::array<u8, 32> key;
                         std::memcpy(key.data(), key_y_primary.data(), key_y_primary.size());
-                        std::memcpy(key.data() + seed.value().size(), seed.value().data(),
-                                    seed.value().size());
+                        std::memcpy(key.data() + seed.size(), seed.data(), seed.size());
                         CryptoPP::SHA256 sha;
                         sha.CalculateDigest(key_y_secondary.data(), key.data(), key.size());
                     }
