@@ -48,6 +48,7 @@ u32 SeedDB::GetCount() {
 }
 
 void AddSeed(const Seed& seed) {
+    // TODO: does this skip/replace if the SeedDB contains a seed for seed.title_id?
     SeedDB db;
     db.Load();
     db.Add(seed);
