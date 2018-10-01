@@ -60,6 +60,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x0004000000055D00, Compatibility::IntroMenu}, // Pokémon™ X
     {0x0004000000055E00, Compatibility::IntroMenu}, // Pokémon™ Y
     {0x000400000F700E00, Compatibility::Okay},      // Super Mario World™
+    {0x000400000F980000, Compatibility::WontBoot},  // Test Program (CTRAging)
 
     // EUR
     {0x00040000001A4900, Compatibility::Great},   // Ever Oasis™
