@@ -166,15 +166,16 @@ Loader::ResultStatus NCCHContainer::Load() {
                 if (!ncch_header.seed_crypto) {
                     key_y_secondary = key_y_primary;
                 } else {
-                    std::array<u8, 16> seed;
-                    if (!FileSys::GetSeed(ncch_header.program_id, seed)) {
+                    auto seed{FileSys::GetSeed(ncch_header.program_id)};
+                    if (!seed.has_value()) {
                         LOG_ERROR(Service_FS, "Seed for program {:016X} not found",
                                   ncch_header.program_id);
                         failed_to_decrypt = true;
                     } else {
                         std::array<u8, 32> key;
                         std::memcpy(key.data(), key_y_primary.data(), key_y_primary.size());
-                        std::memcpy(key.data() + seed.size(), seed.data(), seed.size());
+                        std::memcpy(key.data() + seed.value().size(), seed.value().data(),
+                                    seed.value().size());
                         CryptoPP::SHA256 sha;
                         sha.CalculateDigest(key_y_secondary.data(), key.data(), key.size());
                     }

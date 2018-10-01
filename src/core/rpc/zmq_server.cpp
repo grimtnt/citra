@@ -36,7 +36,7 @@ void ZMQServer::WorkerLoop() {
     while (running) {
         try {
             if (zmq_socket->recv(&request, 0)) {
-                if (request.size() >= MIN_PACKET_SIZE && request.size() <= MAX_PACKET_SIZE) {
+                if (request.size() >= MIN_PACKET_SIZE) {
                     u8* request_buffer{static_cast<u8*>(request.data())};
                     PacketHeader header;
                     std::memcpy(&header, request_buffer, sizeof(header));

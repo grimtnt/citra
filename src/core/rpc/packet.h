@@ -80,7 +80,7 @@ public:
 
 private:
     struct PacketHeader header;
-    std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;
+    std::vector<u8> packet_data;
 
     std::function<void(Packet&)> send_reply_callback;
 };

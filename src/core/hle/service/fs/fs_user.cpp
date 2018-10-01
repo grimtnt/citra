@@ -700,7 +700,7 @@ void FS_USER::AddSeed(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x87A, 6, 0};
     u64 title_id{rp.Pop<u64>()};
     std::array<u8, 16> seed{rp.PopRaw<std::array<u8, 16>>()};
-    FileSys::AddSeed(title_id, seed);
+    FileSys::AddSeed({title_id, seed});
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
 }

@@ -3,27 +3,30 @@
 // Refer to the license.txt file included.
 
 #include <array>
+#include <optional>
 #include <vector>
 #include "common/common_types.h"
+#include "common/swap.h"
 
 namespace FileSys {
 
 struct Seed {
-    u64 title_id;
+    u64_le title_id;
     std::array<u8, 16> data;
 };
 
 struct SeedDB {
-    u32 count;
     std::vector<Seed> seeds;
 
     void Load();
     void Save();
+    void Add(const Seed& seed);
+
+    u32 GetCount();
 };
 
-SeedDB GetSeedDB();
-void AddSeed(u64 title_id, std::array<u8, 16> seed);
-bool GetSeed(u64 title_id, std::array<u8, 16>& output);
+void AddSeed(const Seed& seed);
+std::optional<std::array<u8, 16>> GetSeed(u64 title_id);
 u32 GetSeedCount();
 
 } // namespace FileSys
