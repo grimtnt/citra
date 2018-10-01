@@ -33,9 +33,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="toggle_memory_developer_mode">
+         <widget class="QCheckBox" name="toggle_force_memory_mode_7">
           <property name="text">
-           <string>Enable Memory Developer Mode</string>
+           <string>Force Memory Mode To 7 (New 3DS Only)</string>
           </property>
          </widget>
         </item>

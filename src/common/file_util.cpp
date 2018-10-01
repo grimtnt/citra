@@ -603,7 +603,7 @@ static const std::string& GetHomeDirectory() {
         if (envvar) {
             home_path = envvar;
         } else {
-            auto pw = getpwuid(getuid());
+            auto pw{getpwuid(getuid())};
             ASSERT_MSG(pw,
                        "$HOME isn’t defined, and the current user can’t be found in /etc/passwd.");
             home_path = pw->pw_dir;
@@ -626,7 +626,7 @@ const std::string& GetUserPath(const unsigned int DirIDX) {
     if (paths[D_USER_IDX].empty()) {
 #ifdef _WIN32
         if (IsDirectory(GetExeDirectory() + DIR_SEP USER_DIR DIR_SEP)) {
-            paths[D_USER_IDX] = GetExeDirectory() + DIR_SEP USER_DIR DIR_SEP);
+            paths[D_USER_IDX] = GetExeDirectory() + DIR_SEP USER_DIR DIR_SEP;
         } else {
             paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP DATA_DIR DIR_SEP;
         }

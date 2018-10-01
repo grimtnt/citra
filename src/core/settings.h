@@ -185,7 +185,7 @@ struct Values {
     u64 ticks;
     bool use_bos;
     bool disable_mh_3d;
-    bool memory_developer_mode;
+    bool force_memory_mode_7;
 } extern values;
 
 // a special value for Values::region_value indicating that citra will automatically select a region

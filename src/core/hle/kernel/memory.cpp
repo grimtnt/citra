@@ -43,7 +43,7 @@ static const u32 memory_region_sizes[8][3] = {
 
 void MemoryInit(u32 mem_type) {
     if (Service::CFG::IsNewModeEnabled()) {
-        if (Settings::values.memory_developer_mode) {
+        if (Settings::values.force_memory_mode_7) {
             mem_type = 7;
         } else if (mem_type <= 5) {
             mem_type = 6;

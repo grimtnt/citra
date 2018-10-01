@@ -15,7 +15,7 @@ ConfigureHacks::ConfigureHacks(QWidget* parent)
 
     ui->toggle_priority_boost->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->toggle_bos->setEnabled(!Core::System::GetInstance().IsPoweredOn());
-    ui->toggle_memory_developer_mode->setEnabled(!Core::System::GetInstance().IsPoweredOn());
+    ui->toggle_force_memory_mode_7->setEnabled(!Core::System::GetInstance().IsPoweredOn());
 
     connect(ui->combo_ticks_mode,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
@@ -30,7 +30,7 @@ void ConfigureHacks::setConfiguration() {
     ui->spinbox_ticks->setValue(static_cast<int>(Settings::values.ticks));
     ui->spinbox_ticks->setEnabled(Settings::values.ticks_mode == Settings::TicksMode::Custom);
     ui->toggle_bos->setChecked(Settings::values.use_bos);
-    ui->toggle_memory_developer_mode->setChecked(Settings::values.memory_developer_mode);
+    ui->toggle_force_memory_mode_7->setChecked(Settings::values.force_memory_mode_7);
 }
 
 void ConfigureHacks::applyConfiguration() {
@@ -39,7 +39,7 @@ void ConfigureHacks::applyConfiguration() {
         static_cast<Settings::TicksMode>(ui->combo_ticks_mode->currentIndex());
     Settings::values.ticks = static_cast<u64>(ui->spinbox_ticks->value());
     Settings::values.use_bos = ui->toggle_bos->isChecked();
-    Settings::values.memory_developer_mode = ui->toggle_memory_developer_mode->isChecked();
+    Settings::values.force_memory_mode_7 = ui->toggle_force_memory_mode_7->isChecked();
     if (Core::System::GetInstance().IsPoweredOn())
         Core::GetCPU().SyncSettings();
 }
