@@ -13,8 +13,6 @@
 
 namespace GPU {
 
-constexpr float SCREEN_REFRESH_RATE{120};
-
 // Returns index corresponding to the Regs member labeled by field_name
 // TODO: Due to Visual studio bug 209229, offsetof does not return constant expressions
 //       when used with array elements (e.g. GPU_REG_INDEX(memory_fill_config[0])).

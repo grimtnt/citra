@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <condition_variable>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -19,6 +19,8 @@ public:
     ~RPCServer();
 
     void QueueRequest(std::unique_ptr<RPC::Packet> request);
+
+    static inline std::function<void()> cb_update_frame_advancing;
 
 private:
     void Start();
@@ -40,6 +42,8 @@ private:
     void HandleSetScreenRefreshRate(Packet& packet, int rate);
     void HandleSetShadowsEnabled(Packet& packet, bool enabled);
     void HandleIsButtonPressed(Packet& packet, int button);
+    void HandleSetFrameAdvancing(Packet& packet, bool enable);
+    void HandleAdvanceFrame(Packet& packet);
     bool ValidatePacket(const PacketHeader& packet_header);
     void HandleSingleRequest(std::unique_ptr<Packet> request);
     void HandleRequestsLoop();

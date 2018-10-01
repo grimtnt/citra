@@ -29,6 +29,8 @@ enum class PacketType {
     SetScreenRefreshRate,
     SetShadowsEnabled,
     IsButtonPressed,
+    SetFrameAdvancing,
+    AdvanceFrame,
 };
 
 struct PacketHeader {

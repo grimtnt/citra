@@ -211,7 +211,7 @@ public:
     /// NFC Loading
     Kernel::SharedPtr<Kernel::Event> nfc_tag_in_range_event;
     std::string nfc_filename;
-    Service::NFC::TagState nfc_tag_state = Service::NFC::TagState::NotInitialized;
+    Service::NFC::TagState nfc_tag_state{Service::NFC::TagState::NotInitialized};
 
 private:
     /**

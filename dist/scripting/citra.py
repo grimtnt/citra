@@ -25,7 +25,9 @@ class RequestType(enum.IntEnum):
     SetBackgroundColor = 14,
     SetScreenRefreshRate = 15,
     SetShadowsEnabled = 16,
-    IsButtonPressed = 17
+    IsButtonPressed = 17,
+    SetFrameAdvancing = 18,
+    AdvanceFrame = 19
 
 
 CITRA_PORT = "45987"
@@ -248,3 +250,19 @@ class Citra:
         pressed = self._read_and_validate_header(
             raw_reply, request_id, RequestType.IsButtonPressed)
         return pressed[0] == 1
+
+    def set_frame_advancing(self, enable):
+        request_data = struct.pack("II?", 0, 0, enable)
+        request, request_id = self._generate_header(
+            RequestType.SetFrameAdvancing, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()
+
+    def advance_frame(self):
+        request_data = struct.pack("II", 0, 0)
+        request, request_id = self._generate_header(
+            RequestType.AdvanceFrame, len(request_data))
+        request += request_data
+        self.socket.send(request)
+        self.socket.recv()

@@ -59,6 +59,7 @@
 #include "core/hle/service/ptm/ptm.h"
 #include "core/loader/loader.h"
 #include "core/movie.h"
+#include "core/rpc/rpc_server.h"
 #include "core/settings.h"
 #include "video_core/renderer/renderer.h"
 #include "video_core/video_core.h"
@@ -702,6 +703,8 @@ void GMainWindow::BootGame(const QString& filename) {
     };
 
     SharedPage::Handler::update_3d = [this] { Update3D(); };
+
+    RPC::RPCServer::cb_update_frame_advancing = [this] { UpdateFrameAdvancingCallback(); };
 }
 
 void GMainWindow::ShutdownGame() {
@@ -855,6 +858,18 @@ void GMainWindow::Update3D() {
 
     if (control_panel != nullptr)
         control_panel->Update3D();
+}
+
+void GMainWindow::UpdateFrameAdvancingCallback() {
+    if (QThread::currentThread() != thread()) {
+        QMetaObject::invokeMethod(this, "UpdateFrameAdvancingCallback",
+                                  Qt::BlockingQueuedConnection);
+        return;
+    }
+
+    const bool enabled{Core::System::GetInstance().frame_limiter.GetFrameAdvancing()};
+    ui.action_Enable_Frame_Advancing->setChecked(enabled);
+    ui.action_Advance_Frame->setEnabled(enabled);
 }
 
 void GMainWindow::UpdateRecentFiles() {

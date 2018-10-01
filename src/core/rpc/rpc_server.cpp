@@ -141,6 +141,24 @@ void RPCServer::HandleIsButtonPressed(Packet& packet, int button) {
     packet.SendReply();
 }
 
+void RPCServer::HandleSetFrameAdvancing(Packet& packet, bool enable) {
+    Core::System::GetInstance().frame_limiter.SetFrameAdvancing(enable);
+    if (cb_update_frame_advancing) {
+        cb_update_frame_advancing();
+    }
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
+void RPCServer::HandleAdvanceFrame(Packet& packet) {
+    Core::System::GetInstance().frame_limiter.AdvanceFrame();
+    if (cb_update_frame_advancing) {
+        cb_update_frame_advancing();
+    }
+    packet.SetPacketDataSize(0);
+    packet.SendReply();
+}
+
 bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
     if (packet_header.version <= CURRENT_VERSION) {
         switch (packet_header.packet_type) {
@@ -161,6 +179,8 @@ bool RPCServer::ValidatePacket(const PacketHeader& packet_header) {
         case PacketType::SetScreenRefreshRate:
         case PacketType::SetShadowsEnabled:
         case PacketType::IsButtonPressed:
+        case PacketType::SetFrameAdvancing:
+        case PacketType::AdvanceFrame:
             if (packet_header.packet_size >= (sizeof(u32) * 2)) {
                 return true;
             }
@@ -338,6 +358,20 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
             std::memcpy(&button, data, sizeof(int));
             HandleIsButtonPressed(*request_packet, button);
             success = true;
+            break;
+        }
+        case PacketType::SetFrameAdvancing: {
+            const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
+            bool enable;
+            std::memcpy(&enable, data, sizeof(bool));
+            HandleSetFrameAdvancing(*request_packet, enable);
+            success = true;
+            break;
+        }
+        case PacketType::AdvanceFrame: {
+            HandleAdvanceFrame(*request_packet);
+            success = true;
+            break;
         }
         default:
             break;

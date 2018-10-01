@@ -86,6 +86,7 @@ private:
     Q_INVOKABLE void MiiSelectorCallback(const HLE::Applets::MiiConfig& config,
                                          HLE::Applets::MiiResult& result);
     Q_INVOKABLE void Update3D();
+    Q_INVOKABLE void UpdateFrameAdvancingCallback();
     void SyncMenuUISettings();
     void RestoreUIState();
 
