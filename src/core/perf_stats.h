@@ -4,9 +4,11 @@
 
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include "common/common_types.h"
+#include "common/event.h"
 
 namespace Core {
 
@@ -21,10 +23,13 @@ public:
     struct Results {
         /// System FPS (LCD VBlanks) in Hz
         double system_fps;
+
         /// Game FPS (GSP frame submissions) in Hz
         double game_fps;
+
         /// Walltime per system frame, in seconds, excluding any waits
         double frametime;
+
         /// Ratio of walltime / emulated time elapsed
         double emulation_speed;
     };
@@ -70,14 +75,29 @@ public:
 
     void DoFrameLimiting(u64 current_system_time_us);
 
+    /**
+     * Sets whether frame advancing is enabled or not.
+     * Note: The frontend must cancel frame advancing before shutting down in order
+     *       to resume the emu_thread.
+     */
+    void SetFrameAdvancing(bool value);
+    void AdvanceFrame();
+
 private:
     /// Emulated system time (in microseconds) at the last limiter invocation
     u64 previous_system_time_us{};
+
     /// Walltime at the last limiter invocation
     Clock::time_point previous_walltime{Clock::now()};
 
     /// Accumulated difference between walltime and emulated time
     std::chrono::microseconds frame_limiting_delta_err{0};
+
+    /// Whether to use frame advancing (i.e. frame by frame)
+    std::atomic_bool frame_advancing_enabled;
+
+    /// Event to advance the frame when frame advancing is enabled
+    Common::Event frame_advance_event;
 };
 
 } // namespace Core

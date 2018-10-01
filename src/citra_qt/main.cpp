@@ -245,6 +245,10 @@ void GMainWindow::InitializeHotkeys() {
     RegisterHotkey("Main Window", "Capture Screenshot", QKeySequence("CTRL+S"));
     RegisterHotkey("Main Window", "Toggle Shell Open", QKeySequence("F2"));
     RegisterHotkey("Main Window", "Change CPU Ticks", QKeySequence("CTRL+T"));
+    RegisterHotkey("Main Window", "Toggle Frame Advancing", QKeySequence("CTRL+A"),
+                   Qt::ApplicationShortcut);
+    RegisterHotkey("Main Window", "Advance Frame", QKeySequence(Qt::Key_Backslash),
+                   Qt::ApplicationShortcut);
     LoadHotkeys();
 
     connect(GetHotkey("Main Window", "Load File", this), &QShortcut::activated, this,
@@ -324,6 +328,10 @@ void GMainWindow::InitializeHotkeys() {
             QMessageBox::critical(this, "Error", "Invalid number");
         }
     });
+    connect(GetHotkey("Main Window", "Toggle Frame Advancing", this), &QShortcut::activated,
+            ui.action_Enable_Frame_Advancing, &QAction::trigger);
+    connect(GetHotkey("Main Window", "Advance Frame", this), &QShortcut::activated,
+            ui.action_Advance_Frame, &QAction::trigger);
 }
 
 void GMainWindow::SetDefaultUIGeometry() {
@@ -436,16 +444,28 @@ void GMainWindow::ConnectMenuEvents() {
     connect(ui.action_Screen_Layout_Swap_Screens, &QAction::triggered, this,
             &GMainWindow::OnSwapScreens);
 
-    // Misc
-    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, &GMainWindow::OnSetPlayCoins);
-
-    // Movie
+    // Tools
     connect(ui.action_Record_Movie, &QAction::triggered, this, &GMainWindow::OnRecordMovie);
     connect(ui.action_Play_Movie, &QAction::triggered, this, &GMainWindow::OnPlayMovie);
     connect(ui.action_Stop_Recording_Playback, &QAction::triggered, this,
             &GMainWindow::OnStopRecordingPlayback);
     connect(ui.action_Capture_Screenshot, &QAction::triggered, this,
             &GMainWindow::OnCaptureScreenshot);
+    connect(ui.action_Set_Play_Coins, &QAction::triggered, this, &GMainWindow::OnSetPlayCoins);
+    connect(ui.action_Enable_Frame_Advancing, &QAction::triggered, this, [this] {
+        if (emulation_running) {
+            Core::System::GetInstance().frame_limiter.SetFrameAdvancing(
+                ui.action_Enable_Frame_Advancing->isChecked());
+            ui.action_Advance_Frame->setEnabled(ui.action_Enable_Frame_Advancing->isChecked());
+        }
+    });
+    connect(ui.action_Advance_Frame, &QAction::triggered, this, [this] {
+        if (emulation_running) {
+            ui.action_Enable_Frame_Advancing->setChecked(true);
+            ui.action_Advance_Frame->setEnabled(true);
+            Core::System::GetInstance().frame_limiter.AdvanceFrame();
+        }
+    });
 
     // Multiplayer
     connect(ui.action_View_Lobby, &QAction::triggered, multiplayer_state,
@@ -688,6 +708,9 @@ void GMainWindow::ShutdownGame() {
     OnStopRecordingPlayback();
     emu_thread->RequestStop();
 
+    // Frame advancing must be cancelled in order to release the emu thread from waiting
+    Core::System::GetInstance().frame_limiter.SetFrameAdvancing(false);
+
     emit EmulationStopping();
 
     // Wait for emulation thread to complete and delete it
@@ -709,6 +732,9 @@ void GMainWindow::ShutdownGame() {
     ui.action_Select_SDMC_Directory->setEnabled(true);
     ui.action_Capture_Screenshot->setEnabled(false);
     ui.action_Load_Amiibo->setEnabled(false);
+    ui.action_Enable_Frame_Advancing->setEnabled(false);
+    ui.action_Enable_Frame_Advancing->setChecked(false);
+    ui.action_Advance_Frame->setEnabled(false);
     render_window->hide();
     if (game_list->isEmpty())
         game_list_placeholder->show();
@@ -1063,6 +1089,7 @@ void GMainWindow::OnStartGame() {
     ui.action_Select_SDMC_Directory->setEnabled(false);
     ui.action_Capture_Screenshot->setEnabled(true);
     ui.action_Load_Amiibo->setEnabled(true);
+    ui.action_Enable_Frame_Advancing->setEnabled(true);
 }
 
 void GMainWindow::OnPauseGame() {
