@@ -23,6 +23,7 @@ namespace Core {
 class AnnounceMultiplayerSession : NonCopyable {
 public:
     using CallbackHandle = std::shared_ptr<std::function<void(const Common::WebResult&)>>;
+
     AnnounceMultiplayerSession();
     ~AnnounceMultiplayerSession();
 

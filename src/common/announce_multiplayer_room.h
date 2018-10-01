@@ -116,6 +116,7 @@ public:
 class NullBackend : public Backend {
 public:
     ~NullBackend() = default;
+
     void SetRoomInformation(const std::string& /*uid*/, const std::string& /*name*/,
                             const u16 /*port*/, const u32 /*max_player*/, const u32 /*net_version*/,
                             const bool /*has_password*/, const std::string& /*preferred_game*/,

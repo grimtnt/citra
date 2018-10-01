@@ -61,7 +61,7 @@ HostRoomWindow::HostRoomWindow(QWidget* parent, QStandardItemModel* list,
     ui->room_name->setText(UISettings::values.room_name);
     ui->port->setText(UISettings::values.room_port);
     ui->max_player->setValue(UISettings::values.max_player);
-    int index = UISettings::values.host_type;
+    int index{static_cast<int>(UISettings::values.host_type)};
     if (index < ui->host_type->count()) {
         ui->host_type->setCurrentIndex(index);
     }
@@ -150,7 +150,7 @@ void HostRoomWindow::OnConnection() {
 
 QVariant ComboBoxProxyModel::data(const QModelIndex& idx, int role) const {
     if (role != Qt::DisplayRole) {
-        auto val = QSortFilterProxyModel::data(idx, role);
+        auto val{QSortFilterProxyModel::data(idx, role)};
         // If its the icon, shrink it to 16x16
         if (role == Qt::DecorationRole)
             val = val.value<QImage>().scaled(16, 16, Qt::KeepAspectRatio);
@@ -160,7 +160,7 @@ QVariant ComboBoxProxyModel::data(const QModelIndex& idx, int role) const {
     Common::SplitPath(
         QSortFilterProxyModel::data(idx, GameListItemPath::FullPathRole).toString().toStdString(),
         nullptr, &filename, nullptr);
-    QString title = QSortFilterProxyModel::data(idx, GameListItemPath::TitleRole).toString();
+    QString title{QSortFilterProxyModel::data(idx, GameListItemPath::TitleRole).toString()};
     return title.isEmpty() ? QString::fromStdString(filename) : title;
 }
 

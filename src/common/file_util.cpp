@@ -84,7 +84,7 @@ static void StripTailDirSlashes(std::string& fname) {
 
 // Returns true if file filename exists
 bool Exists(const std::string& filename) {
-    struct stat file_info {};
+    struct stat file_info;
 
     std::string copy{filename};
     StripTailDirSlashes(copy);
@@ -94,9 +94,9 @@ bool Exists(const std::string& filename) {
     if (copy.size() != 0 && copy.back() == ':')
         copy += DIR_SEP_CHR;
 
-    int result = _wstat64(Common::UTF8ToUTF16W(copy).c_str(), &file_info);
+    int result{_wstat64(Common::UTF8ToUTF16W(copy).c_str(), &file_info)};
 #else
-    int result = stat(copy.c_str(), &file_info);
+    int result{stat(copy.c_str(), &file_info)};
 #endif
 
     return (result == 0);
@@ -104,7 +104,7 @@ bool Exists(const std::string& filename) {
 
 // Returns true if filename is a directory
 bool IsDirectory(const std::string& filename) {
-    struct stat file_info {};
+    struct stat file_info;
 
     std::string copy{filename};
     StripTailDirSlashes(copy);
@@ -114,9 +114,9 @@ bool IsDirectory(const std::string& filename) {
     if (copy.size() != 0 && copy.back() == ':')
         copy += DIR_SEP_CHR;
 
-    int result = _wstat64(Common::UTF8ToUTF16W(copy).c_str(), &file_info);
+    int result{_wstat64(Common::UTF8ToUTF16W(copy).c_str(), &file_info)};
 #else
-    int result = stat(copy.c_str(), &file_info);
+    int result{stat(copy.c_str(), &file_info)};
 #endif
 
     if (result < 0) {
@@ -194,7 +194,7 @@ bool CreateFullPath(const std::string& full_path) {
     int panic_counter{100};
     LOG_TRACE(Common_Filesystem, "path {}", full_path);
 
-    if (FileUtil::Exists(full_path)) {
+    if (Exists(full_path)) {
         LOG_DEBUG(Common_Filesystem, "path exists {}", full_path);
         return true;
     }
@@ -210,7 +210,7 @@ bool CreateFullPath(const std::string& full_path) {
 
         // Include the '/' so the first call is CreateDir("/") rather than CreateDir("")
         std::string const subPath(full_path.substr(0, position + 1));
-        if (!FileUtil::IsDirectory(subPath) && !FileUtil::CreateDir(subPath)) {
+        if (!IsDirectory(subPath) && !CreateDir(subPath)) {
             LOG_ERROR(Common, "CreateFullPath: directory creation failed");
             return false;
         }
@@ -230,7 +230,7 @@ bool DeleteDir(const std::string& filename) {
     LOG_TRACE(Common_Filesystem, "directory {}", filename);
 
     // check if a directory
-    if (!FileUtil::IsDirectory(filename)) {
+    if (!IsDirectory(filename)) {
         LOG_ERROR(Common_Filesystem, "Not a directory {}", filename);
         return false;
     }
@@ -331,7 +331,7 @@ u64 GetSize(const std::string& filename) {
         return 0;
     }
 
-    struct stat buf {};
+    struct stat buf;
 #ifdef _WIN32
     if (_wstat64(Common::UTF8ToUTF16W(filename).c_str(), &buf) == 0)
 #else
@@ -348,7 +348,7 @@ u64 GetSize(const std::string& filename) {
 
 // Overloaded GetSize, accepts file descriptor
 u64 GetSize(const int fd) {
-    struct stat buf {};
+    struct stat buf;
     if (fstat(fd, &buf) != 0) {
         LOG_ERROR(Common_Filesystem, "GetSize: stat failed {}: {}", fd, GetLastErrorMsg());
         return 0;
@@ -398,28 +398,28 @@ bool ForeachDirectoryEntry(u64* num_entries_out, const std::string& directory,
     // Find the first file in the directory.
     WIN32_FIND_DATAW ffd;
 
-    HANDLE handle_find = FindFirstFileW(Common::UTF8ToUTF16W(directory + "\\*").c_str(), &ffd);
+    HANDLE handle_find{FindFirstFileW(Common::UTF8ToUTF16W(directory + "\\*").c_str(), &ffd)};
     if (handle_find == INVALID_HANDLE_VALUE) {
         FindClose(handle_find);
         return false;
     }
     // windows loop
     do {
-        const std::string virtual_name(Common::UTF16ToUTF8(ffd.cFileName));
+        const std::string virtual_name{Common::UTF16ToUTF8(ffd.cFileName)};
 #else
     DIR* dirp{opendir(directory.c_str())};
     if (!dirp)
         return false;
 
     // non windows loop
-    while (struct dirent* result = readdir(dirp)) {
+    while (struct dirent * result{readdir(dirp)}) {
         const std::string virtual_name{result->d_name};
 #endif
 
         if (virtual_name == "." || virtual_name == "..")
             continue;
 
-        u64 ret_entries{};
+        u64 ret_entries;
         if (!callback(&ret_entries, directory, virtual_name)) {
             callback_error = true;
             break;
@@ -472,7 +472,7 @@ u64 ScanDirectoryTree(const std::string& directory, FSTEntry& parent_entry,
         return true;
     }};
 
-    u64 num_entries{};
+    u64 num_entries;
     return ForeachDirectoryEntry(&num_entries, directory, callback) ? num_entries : 0;
 }
 
@@ -493,7 +493,7 @@ bool DeleteDirRecursively(const std::string& directory, unsigned int recursion) 
         return false;
 
     // Delete the outermost directory
-    FileUtil::DeleteDir(directory);
+    DeleteDir(directory);
     return true;
 }
 
@@ -502,33 +502,34 @@ void CopyDir(const std::string& source_path, const std::string& dest_path) {
 #ifndef _WIN32
     if (source_path == dest_path)
         return;
-    if (!FileUtil::Exists(source_path))
+    if (!Exists(source_path))
         return;
-    if (!FileUtil::Exists(dest_path))
-        FileUtil::CreateFullPath(dest_path);
+    if (!Exists(dest_path))
+        CreateFullPath(dest_path);
 
     DIR* dirp{opendir(source_path.c_str())};
     if (!dirp)
         return;
 
-    while (struct dirent* result = readdir(dirp)) {
-        const std::string virtualName(result->d_name);
+    while (struct dirent * result{readdir(dirp)}) {
+        const std::string virtualName{result->d_name};
+
         // check for "." and ".."
         if (((virtualName[0] == '.') && (virtualName[1] == '\0')) ||
             ((virtualName[0] == '.') && (virtualName[1] == '.') && (virtualName[2] == '\0')))
             continue;
 
-        std::string source{}, dest{};
+        std::string source, dest;
         source = source_path + virtualName;
         dest = dest_path + virtualName;
         if (IsDirectory(source)) {
             source += '/';
             dest += '/';
-            if (!FileUtil::Exists(dest))
-                FileUtil::CreateFullPath(dest);
+            if (!Exists(dest))
+                CreateFullPath(dest);
             CopyDir(source, dest);
-        } else if (!FileUtil::Exists(dest))
-            FileUtil::Copy(source, dest);
+        } else if (!Exists(dest))
+            Copy(source, dest);
     }
     closedir(dirp);
 #endif
@@ -538,19 +539,19 @@ void CopyDir(const std::string& source_path, const std::string& dest_path) {
 std::string GetCurrentDir() {
 // Get the current working directory (getcwd uses malloc)
 #ifdef _WIN32
-    wchar_t* dir{};
+    wchar_t* dir;
     if (!(dir = _wgetcwd(nullptr, 0))) {
 #else
-    char* dir{};
+    char* dir;
     if (!(dir = getcwd(nullptr, 0))) {
 #endif
         LOG_ERROR(Common_Filesystem, "GetCurrentDir failed: {}", GetLastErrorMsg());
         return nullptr;
     }
 #ifdef _WIN32
-    std::string str_dir = Common::UTF16ToUTF8(dir);
+    std::string str_dir{Common::UTF16ToUTF8(dir)};
 #else
-    std::string str_dir = dir;
+    std::string str_dir{dir};
 #endif
     free(dir);
     return str_dir;
@@ -558,7 +559,7 @@ std::string GetCurrentDir() {
 
 // Sets the current directory to the given directory
 bool SetCurrentDir(const std::string& directory) {
-    bool success{};
+    bool success;
 #ifdef _WIN32
     success = _wchdir(Common::UTF8ToUTF16W(directory).c_str()) == 0;
 #else
@@ -582,10 +583,12 @@ const std::string& GetExeDirectory() {
 }
 
 std::string AppDataRoamingDirectory() {
-    PWSTR pw_local_path{};
+    PWSTR pw_local_path;
+
     // Only supported by Windows Vista or later
     SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, nullptr, &pw_local_path);
-    std::string local_path = Common::UTF16ToUTF8(pw_local_path);
+
+    std::string local_path{Common::UTF16ToUTF8(pw_local_path)};
     CoTaskMemFree(pw_local_path);
     return local_path;
 }
@@ -596,7 +599,7 @@ std::string AppDataRoamingDirectory() {
 static const std::string& GetHomeDirectory() {
     static std::string home_path;
     if (home_path.empty()) {
-        const char* envvar = getenv("HOME");
+        const char* envvar{getenv("HOME")};
         if (envvar) {
             home_path = envvar;
         } else {
@@ -622,9 +625,17 @@ const std::string& GetUserPath(const unsigned int DirIDX) {
     // Set up all paths and files on the first run
     if (paths[D_USER_IDX].empty()) {
 #ifdef _WIN32
-        paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP DATA_DIR DIR_SEP;
+        if (IsDirectory(GetExeDirectory() + DIR_SEP USER_DIR DIR_SEP)) {
+            paths[D_USER_IDX] = GetExeDirectory() + DIR_SEP USER_DIR DIR_SEP);
+        } else {
+            paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP DATA_DIR DIR_SEP;
+        }
 #else
-        paths[D_USER_IDX] = GetDataDirectory() + DIR_SEP DATA_DIR DIR_SEP;
+        if (Exists(ROOT_DIR DIR_SEP USER_DIR)) {
+            paths[D_USER_IDX] = ROOT_DIR DIR_SEP USER_DIR DIR_SEP;
+        } else {
+            paths[D_USER_IDX] = GetDataDirectory() + DIR_SEP DATA_DIR DIR_SEP;
+        }
 #endif
 
         paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
@@ -638,7 +649,7 @@ const std::string& GetUserPath(const unsigned int DirIDX) {
 }
 
 size_t WriteStringToFile(bool text_file, const std::string& str, const char* filename) {
-    return FileUtil::IOFile{filename, text_file ? "w" : "wb"}.WriteBytes(str.data(), str.size());
+    return IOFile{filename, text_file ? "w" : "wb"}.WriteBytes(str.data(), str.size());
 }
 
 size_t ReadFileToString(bool text_file, const char* filename, std::string& str) {

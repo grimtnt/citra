@@ -252,9 +252,9 @@ void GameList::onUpdateThemedIcons() {
             child->setData(QIcon::fromTheme("chip").pixmap(48), Qt::DecorationRole);
             break;
         case GameListItemType::CustomDir: {
-            const UISettings::GameDir* game_dir =
-                child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>();
-            QString icon_name = QFileInfo::exists(game_dir->path) ? "folder" : "bad_folder";
+            const UISettings::GameDir* game_dir{
+                child->data(GameListDir::GameDirRole).value<UISettings::GameDir*>()};
+            QString icon_name{QFileInfo::exists(game_dir->path) ? "folder" : "bad_folder"};
             child->setData(QIcon::fromTheme(icon_name).pixmap(48), Qt::DecorationRole);
             break;
         }

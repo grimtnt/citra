@@ -9,6 +9,9 @@
 #define DIR_SEP_CHR '/'
 
 // The user directory
+#define ROOT_DIR "."
+#define USER_DIR "user"
+
 #ifdef _WIN32
 #define DATA_DIR "Citra"
 #else

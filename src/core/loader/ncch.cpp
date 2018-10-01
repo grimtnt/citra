@@ -204,7 +204,7 @@ ResultStatus AppLoader_NCCH::ReadLogo(std::vector<u8>& buffer) {
 }
 
 ResultStatus AppLoader_NCCH::ReadProgramId(u64& out_program_id) {
-    ResultStatus result = base_ncch.ReadProgramId(out_program_id);
+    ResultStatus result{base_ncch.ReadProgramId(out_program_id)};
     if (result != ResultStatus::Success)
         return result;
 
@@ -212,7 +212,7 @@ ResultStatus AppLoader_NCCH::ReadProgramId(u64& out_program_id) {
 }
 
 ResultStatus AppLoader_NCCH::ReadExtdataId(u64& out_extdata_id) {
-    ResultStatus result = base_ncch.ReadExtdataId(out_extdata_id);
+    ResultStatus result{base_ncch.ReadExtdataId(out_extdata_id)};
     if (result != ResultStatus::Success)
         return result;
     return ResultStatus::Success;

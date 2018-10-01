@@ -50,7 +50,7 @@ void AnnounceMultiplayerSession::Stop() {
 AnnounceMultiplayerSession::CallbackHandle AnnounceMultiplayerSession::BindErrorCallback(
     std::function<void(const Common::WebResult&)> function) {
     std::lock_guard<std::mutex> lock{callback_mutex};
-    auto handle = std::make_shared<std::function<void(const Common::WebResult&)>>(function);
+    auto handle{std::make_shared<std::function<void(const Common::WebResult&)>>(function)};
     error_callbacks.insert(handle);
     return handle;
 }
@@ -65,19 +65,19 @@ AnnounceMultiplayerSession::~AnnounceMultiplayerSession() {
 }
 
 void AnnounceMultiplayerSession::AnnounceMultiplayerLoop() {
-    auto update_time = std::chrono::steady_clock::now();
+    auto update_time{std::chrono::steady_clock::now()};
     std::future<Common::WebResult> future;
     while (!shutdown_event.WaitUntil(update_time)) {
         update_time += announce_time_interval;
-        std::shared_ptr<Network::Room> room = Network::GetRoom().lock();
+        std::shared_ptr<Network::Room> room{Network::GetRoom().lock()};
         if (!room) {
             break;
         }
         if (room->GetState() != Network::Room::State::Open) {
             break;
         }
-        Network::RoomInformation room_information = room->GetRoomInformation();
-        std::vector<Network::Room::Member> memberlist = room->GetRoomMemberList();
+        Network::RoomInformation room_information{room->GetRoomInformation()};
+        std::vector<Network::Room::Member> memberlist{room->GetRoomMemberList()};
         backend->SetRoomInformation(
             room_information.uid, room_information.name, room_information.port,
             room_information.member_slots, Network::network_version, room->HasPassword(),
@@ -87,7 +87,7 @@ void AnnounceMultiplayerSession::AnnounceMultiplayerLoop() {
             backend->AddPlayer(member.nickname, member.mac_address, member.game_info.id,
                                member.game_info.name);
         }
-        Common::WebResult result = backend->Announce();
+        Common::WebResult result{backend->Announce()};
         if (result.result_code != Common::WebResult::Code::Success) {
             std::lock_guard<std::mutex> lock{callback_mutex};
             for (auto callback : error_callbacks) {

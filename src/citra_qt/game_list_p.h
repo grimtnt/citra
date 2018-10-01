@@ -258,8 +258,9 @@ const static inline std::map<Compatibility, CompatStatus> status_data = {
 
 class GameListItem : public QStandardItem {
 public:
-    GameListItem() : QStandardItem() {}
-    GameListItem(const QString& string) : QStandardItem(string) {}
+    GameListItem() : QStandardItem{} {}
+    GameListItem(const QString& string) : QStandardItem{string} {}
+
     virtual ~GameListItem() override {}
 };
 
@@ -271,15 +272,11 @@ public:
  */
 class GameListItemPath : public GameListItem {
 public:
-    static const int FullPathRole{Qt::UserRole + 1};
-    static const int TitleRole{Qt::UserRole + 2};
-    static const int ProgramIdRole{Qt::UserRole + 3};
-    static const int ExtdataIdRole{Qt::UserRole + 4};
+    GameListItemPath() : GameListItem{} {}
 
-    GameListItemPath() : GameListItem() {}
     GameListItemPath(const QString& game_path, const std::vector<u8>& smdh_data, u64 program_id,
                      u64 extdata_id)
-        : GameListItem() {
+        : GameListItem{} {
         setData(game_path, FullPathRole);
         setData(qulonglong(program_id), ProgramIdRole);
         setData(qulonglong(extdata_id), ExtdataIdRole);
@@ -308,9 +305,9 @@ public:
     QVariant data(int role) const override {
         if (role == Qt::DisplayRole) {
             std::string path, filename, extension;
-            std::string sdmc_dir = Settings::values.sdmc_dir.empty()
-                                       ? FileUtil::GetUserPath(D_SDMC_IDX)
-                                       : Settings::values.sdmc_dir + "/";
+            std::string sdmc_dir{Settings::values.sdmc_dir.empty()
+                                     ? FileUtil::GetUserPath(D_SDMC_IDX)
+                                     : Settings::values.sdmc_dir + "/"};
             Common::SplitPath(data(FullPathRole).toString().toStdString(), &path, &filename,
                               &extension);
             QString title{data(TitleRole).toString()};
@@ -340,13 +337,17 @@ public:
             return GameListItem::data(role);
         }
     }
+
+    static const int FullPathRole{Qt::UserRole + 1};
+    static const int TitleRole{Qt::UserRole + 2};
+    static const int ProgramIdRole{Qt::UserRole + 3};
+    static const int ExtdataIdRole{Qt::UserRole + 4};
 };
 
 class GameListItemCompat : public GameListItem {
 public:
-    static const int CompatNumberRole{Qt::UserRole + 1};
+    GameListItemCompat() : GameListItem{} {}
 
-    GameListItemCompat() = default;
     explicit GameListItemCompat(Compatibility compatibility) {
         auto it{status_data.find(compatibility)};
         if (it == status_data.end()) {
@@ -368,11 +369,15 @@ public:
     bool operator<(const QStandardItem& other) const override {
         return data(CompatNumberRole) < other.data(CompatNumberRole);
     }
+
+private:
+    static const int CompatNumberRole{Qt::UserRole + 1};
 };
 
 class GameListItemRegion : public GameListItem {
 public:
-    GameListItemRegion() = default;
+    GameListItemRegion() : GameListItem{} {}
+
     explicit GameListItemRegion(const std::vector<u8>& smdh_data) {
         if (!Loader::IsValidSMDH(smdh_data)) {
             setText("Invalid region");
@@ -392,10 +397,9 @@ public:
  */
 class GameListItemSize : public GameListItem {
 public:
-    static const int SizeRole{Qt::UserRole + 1};
+    GameListItemSize() : GameListItem{} {}
 
-    GameListItemSize() : GameListItem() {}
-    GameListItemSize(const qulonglong size_bytes) : GameListItem() {
+    GameListItemSize(const qulonglong size_bytes) : GameListItem{} {
         setData(size_bytes, SizeRole);
     }
 
@@ -423,13 +427,14 @@ public:
     bool operator<(const QStandardItem& other) const override {
         return data(SizeRole).toULongLong() < other.data(SizeRole).toULongLong();
     }
+
+private:
+    static const int SizeRole{Qt::UserRole + 1};
 };
 
 class GameListDir : public GameListItem {
 public:
-    int type() const override {
-        return static_cast<int>(dir_type);
-    }
+    GameListDir() : GameListItem{} {}
 
     explicit GameListDir(UISettings::GameDir& directory,
                          GameListItemType type = GameListItemType::CustomDir)
@@ -451,7 +456,11 @@ public:
             setData(game_dir->path, Qt::DisplayRole);
             break;
         };
-    };
+    }
+
+    int type() const override {
+        return static_cast<int>(dir_type);
+    }
 
     static const int GameDirRole{Qt::UserRole + 1};
 
@@ -461,13 +470,13 @@ private:
 
 class GameListAddDir : public GameListItem {
 public:
-    int type() const override {
-        return static_cast<int>(GameListItemType::AddDir);
-    }
-
-    explicit GameListAddDir() {
+    explicit GameListAddDir() : GameListItem{} {
         setData(QIcon::fromTheme("plus").pixmap(48), Qt::DecorationRole);
         setData("Add New Game Directory", Qt::DisplayRole);
+    }
+
+    int type() const override {
+        return static_cast<int>(GameListItemType::AddDir);
     }
 };
 
