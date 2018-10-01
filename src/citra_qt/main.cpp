@@ -185,7 +185,8 @@ void GMainWindow::InitializeWidgets() {
     emu_frametime_label = new QLabel();
     emu_frametime_label->setToolTip(
         "Time taken to emulate a 3DS frame, not counting framelimiting. For "
-        "full-speed emulation this should be at most 16.67 ms.");
+        "full-speed emulation (with screen refresh rate set to 60) this should be at most 16.67 "
+        "ms.");
 
     for (auto& label : {emu_speed_label, game_fps_label, emu_frametime_label}) {
         label->setVisible(false);

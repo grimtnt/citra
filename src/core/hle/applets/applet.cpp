@@ -34,8 +34,10 @@ struct hash<Service::APT::AppletId> {
 namespace HLE::Applets {
 
 static std::unordered_map<Service::APT::AppletId, std::shared_ptr<Applet>> applets;
+
 /// The CoreTiming event identifier for the Applet update callback.
-static CoreTiming::EventType* applet_update_event{nullptr};
+static CoreTiming::EventType* applet_update_event{};
+
 /// The interval at which the Applet update callback will be called, 16.6ms
 static const u64 applet_update_interval_us{16666};
 
