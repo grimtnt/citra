@@ -12,8 +12,7 @@ Packet::Packet(const PacketHeader& header, u8* data,
                std::function<void(Packet&)> send_reply_callback)
     : header{header}, send_reply_callback{std::move(send_reply_callback)} {
 
-    packet_data.resize(header.packet_size);
-    std::memcpy(packet_data.data(), data, header.packet_size);
+    std::memcpy(packet_data.data(), header.packet_size);
 }
 
 }; // namespace RPC

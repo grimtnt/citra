@@ -40,6 +40,7 @@ struct PacketHeader {
 
 constexpr u32 CURRENT_VERSION{1};
 constexpr u32 MIN_PACKET_SIZE{sizeof(PacketHeader)};
+constexpr u32 MAX_READ_WRITE_SIZE{32};
 
 class Packet {
 public:
@@ -79,7 +80,7 @@ public:
 
 private:
     struct PacketHeader header;
-    std::vector<u8> packet_data;
+    std::array<u8, MAX_PACKET_DATA_SIZE> packet_data;
 
     std::function<void(Packet&)> send_reply_callback;
 };

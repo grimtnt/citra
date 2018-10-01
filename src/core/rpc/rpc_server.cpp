@@ -184,14 +184,14 @@ void RPCServer::HandleSingleRequest(std::unique_ptr<Packet> request_packet) {
                     sizeof(data_size));
         switch (request_packet->GetPacketType()) {
         case PacketType::ReadMemory: {
-            if (data_size > 0) {
+            if (data_size > 0 && data_size <= MAX_READ_WRITE_SIZE) {
                 HandleReadMemory(*request_packet, address, data_size);
                 success = true;
             }
             break;
         }
         case PacketType::WriteMemory: {
-            if (data_size > 0) {
+            if (data_size > 0 && data_size <= MAX_READ_WRITE_SIZE) {
                 const u8* data{request_packet->GetPacketData().data() + (sizeof(u32) * 2)};
                 HandleWriteMemory(*request_packet, address, data, data_size);
                 success = true;
