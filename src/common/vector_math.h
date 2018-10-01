@@ -53,7 +53,7 @@ public:
     }
 
     constexpr Vec2() = default;
-    constexpr Vec2(const T& x_, const T& y_) : x(x_), y(y_) {}
+    constexpr Vec2(const T& x_, const T& y_) : x{x_}, y{y_} {}
 
     template <typename T2>
     constexpr Vec2<T2> Cast() const {
@@ -67,14 +67,17 @@ public:
     constexpr Vec2<decltype(T{} + T{})> operator+(const Vec2& other) const {
         return {x + other.x, y + other.y};
     }
+
     constexpr Vec2& operator+=(const Vec2& other) {
         x += other.x;
         y += other.y;
         return *this;
     }
+
     constexpr Vec2<decltype(T{} - T{})> operator-(const Vec2& other) const {
         return {x - other.x, y - other.y};
     }
+
     constexpr Vec2& operator-=(const Vec2& other) {
         x -= other.x;
         y -= other.y;
@@ -85,6 +88,7 @@ public:
     constexpr Vec2<std::enable_if_t<std::is_signed_v<U>, U>> operator-() const {
         return {-x, -y};
     }
+
     constexpr Vec2<decltype(T{} * T{})> operator*(const Vec2& other) const {
         return {x * other.x, y * other.y};
     }
@@ -122,6 +126,7 @@ public:
     constexpr T& operator[](std::size_t i) {
         return *((&x) + i);
     }
+
     constexpr const T& operator[](std::size_t i) const {
         return *((&x) + i);
     }
@@ -135,12 +140,14 @@ public:
     constexpr T& u() {
         return x;
     }
+
     constexpr T& v() {
         return y;
     }
     constexpr T& s() {
         return x;
     }
+
     constexpr T& t() {
         return y;
     }
@@ -148,12 +155,15 @@ public:
     constexpr const T& u() const {
         return x;
     }
+
     constexpr const T& v() const {
         return y;
     }
+
     constexpr const T& s() const {
         return x;
     }
+
     constexpr const T& t() const {
         return y;
     }
@@ -162,9 +172,11 @@ public:
     constexpr Vec2 yx() const {
         return Vec2(y, x);
     }
+
     constexpr Vec2 vu() const {
         return Vec2(y, x);
     }
+
     constexpr Vec2 ts() const {
         return Vec2(y, x);
     }
@@ -253,6 +265,7 @@ public:
         *this = *this * f;
         return *this;
     }
+
     template <typename V>
     constexpr Vec3<decltype(T{} / V{})> operator/(const V& f) const {
         return {x / f, y / f, z / f};
@@ -291,9 +304,11 @@ public:
     constexpr T& u() {
         return x;
     }
+
     constexpr T& v() {
         return y;
     }
+
     constexpr T& w() {
         return z;
     }
@@ -301,9 +316,11 @@ public:
     constexpr T& r() {
         return x;
     }
+
     constexpr T& g() {
         return y;
     }
+
     constexpr T& b() {
         return z;
     }
@@ -311,9 +328,11 @@ public:
     constexpr T& s() {
         return x;
     }
+
     constexpr T& t() {
         return y;
     }
+
     constexpr T& q() {
         return z;
     }
@@ -321,9 +340,11 @@ public:
     constexpr const T& u() const {
         return x;
     }
+
     constexpr const T& v() const {
         return y;
     }
+
     constexpr const T& w() const {
         return z;
     }
@@ -331,9 +352,11 @@ public:
     constexpr const T& r() const {
         return x;
     }
+
     constexpr const T& g() const {
         return y;
     }
+
     constexpr const T& b() const {
         return z;
     }
@@ -341,9 +364,11 @@ public:
     constexpr const T& s() const {
         return x;
     }
+
     constexpr const T& t() const {
         return y;
     }
+
     constexpr const T& q() const {
         return z;
     }
@@ -390,7 +415,7 @@ inline Vec3<float> Vec3<float>::Normalized() const {
 
 template <>
 inline float Vec3<float>::Normalize() {
-    float length = Length();
+    float length{Length()};
     *this /= length;
     return length;
 }
@@ -501,12 +526,15 @@ public:
     constexpr T& r() {
         return x;
     }
+
     constexpr T& g() {
         return y;
     }
+
     constexpr T& b() {
         return z;
     }
+
     constexpr T& a() {
         return w;
     }
@@ -514,12 +542,15 @@ public:
     constexpr const T& r() const {
         return x;
     }
+
     constexpr const T& g() const {
         return y;
     }
+
     constexpr const T& b() const {
         return z;
     }
+
     constexpr const T& a() const {
         return w;
     }
@@ -638,8 +669,8 @@ constexpr decltype((X{} * int{} + X{} * int{}) / base) LerpInt(const X& begin, c
 template <typename X>
 constexpr auto BilinearInterp(const X& x00, const X& x01, const X& x10, const X& x11, const float s,
                               const float t) {
-    auto y0 = Lerp(x00, x01, s);
-    auto y1 = Lerp(x10, x11, s);
+    auto y0{Lerp(x00, x01, s)};
+    auto y1{Lerp(x10, x11, s)};
     return Lerp(y0, y1, t);
 }
 

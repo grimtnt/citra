@@ -19,7 +19,7 @@ struct ThreadQueueList {
     typedef unsigned int Priority;
 
     // Number of priority levels. (Valid levels are [0..NUM_QUEUES).)
-    static const Priority NUM_QUEUES = N;
+    static const Priority NUM_QUEUES{N};
 
     ThreadQueueList() {
         first = nullptr;
@@ -28,7 +28,7 @@ struct ThreadQueueList {
     // Only for debugging, returns priority level.
     Priority contains(const T& uid) {
         for (Priority i{}; i < NUM_QUEUES; ++i) {
-            Queue& cur = queues[i];
+            Queue& cur{queues[i]};
             if (std::find(cur.data.cbegin(), cur.data.cend(), uid) != cur.data.cend()) {
                 return i;
             }
@@ -38,7 +38,7 @@ struct ThreadQueueList {
     }
 
     T get_first() {
-        Queue* cur = first;
+        Queue* cur{first};
         while (cur != nullptr) {
             if (!cur->data.empty()) {
                 return cur->data.front();
@@ -50,10 +50,10 @@ struct ThreadQueueList {
     }
 
     T pop_first() {
-        Queue* cur = first;
+        Queue* cur{first};
         while (cur != nullptr) {
             if (!cur->data.empty()) {
-                auto tmp = std::move(cur->data.front());
+                auto tmp{std::move(cur->data.front())};
                 cur->data.pop_front();
                 return tmp;
             }
@@ -64,11 +64,11 @@ struct ThreadQueueList {
     }
 
     T pop_first_better(Priority priority) {
-        Queue* cur = first;
-        Queue* stop = &queues[priority];
+        Queue* cur{first};
+        Queue* stop{&queues[priority]};
         while (cur < stop) {
             if (!cur->data.empty()) {
-                auto tmp = std::move(cur->data.front());
+                auto tmp{std::move(cur->data.front())};
                 cur->data.pop_front();
                 return tmp;
             }
@@ -79,12 +79,12 @@ struct ThreadQueueList {
     }
 
     void push_front(Priority priority, const T& thread_id) {
-        Queue* cur = &queues[priority];
+        Queue* cur{&queues[priority]};
         cur->data.push_front(thread_id);
     }
 
     void push_back(Priority priority, const T& thread_id) {
-        Queue* cur = &queues[priority];
+        Queue* cur{&queues[priority]};
         cur->data.push_back(thread_id);
     }
 
@@ -95,12 +95,12 @@ struct ThreadQueueList {
     }
 
     void remove(Priority priority, const T& thread_id) {
-        Queue* cur = &queues[priority];
+        Queue* cur{&queues[priority]};
         boost::remove_erase(cur->data, thread_id);
     }
 
     void rotate(Priority priority) {
-        Queue* cur = &queues[priority];
+        Queue* cur{&queues[priority]};
 
         if (cur->data.size() > 1) {
             cur->data.push_back(std::move(cur->data.front()));
@@ -114,12 +114,12 @@ struct ThreadQueueList {
     }
 
     bool empty(Priority priority) const {
-        const Queue* cur = &queues[priority];
+        const Queue* cur{&queues[priority]};
         return cur->data.empty();
     }
 
     void prepare(Priority priority) {
-        Queue* cur = &queues[priority];
+        Queue* cur{&queues[priority]};
         if (cur->next_nonempty == UnlinkedTag())
             link(priority);
     }
@@ -155,6 +155,7 @@ private:
 
     // The first queue that's ever been used.
     Queue* first;
+
     // The priority level queues of thread ids.
     std::array<Queue, NUM_QUEUES> queues;
 };

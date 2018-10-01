@@ -19,7 +19,7 @@ namespace Common {
 template <typename T, bool NeedSize = true>
 class SPSCQueue {
 public:
-    SPSCQueue() : size(0) {
+    SPSCQueue() : size{0} {
         write_ptr = read_ptr = new ElementPtr();
     }
 
@@ -116,9 +116,10 @@ private:
     // and a pointer to the next ElementPtr
     class ElementPtr {
     public:
-        ElementPtr() : next(nullptr) {}
+        ElementPtr() : next{nullptr} {}
+
         ~ElementPtr() {
-            ElementPtr* next_ptr = next.load();
+            ElementPtr* next_ptr{next.load()};
 
             if (next_ptr)
                 delete next_ptr;

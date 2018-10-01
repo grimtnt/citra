@@ -70,12 +70,10 @@ add_executable(citra-qt
     main.h
     ui_settings.cpp
     ui_settings.h
-    util/spinbox.cpp
     util/clickable_label.cpp
     util/clickable_label.h
     util/console.cpp
     util/console.h
-    util/spinbox.h
     util/util.cpp
     util/util.h
     swkbd.cpp

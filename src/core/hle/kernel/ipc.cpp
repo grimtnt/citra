@@ -101,8 +101,8 @@ ResultCode TranslateCommandBuffer(SharedPtr<Thread> src_thread, SharedPtr<Thread
 
             StaticBuffer target_buffer;
 
-            u32 static_buffer_offset{IPC::COMMAND_BUFFER_LENGTH * sizeof(u32) +
-                                     sizeof(StaticBuffer) * bufferInfo.buffer_id};
+            u32 static_buffer_offset{static_cast<u32>(IPC::COMMAND_BUFFER_LENGTH * sizeof(u32) +
+                                                      sizeof(StaticBuffer) * bufferInfo.buffer_id)};
 
             Memory::ReadBlock(*dst_process, dst_address + static_buffer_offset, &target_buffer,
                               sizeof(target_buffer));

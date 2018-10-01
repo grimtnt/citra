@@ -8,7 +8,7 @@
 
 namespace Common {
 
-DetachedTasks* DetachedTasks::instance = nullptr;
+DetachedTasks* DetachedTasks::instance{};
 
 DetachedTasks::DetachedTasks() {
     ASSERT(instance == nullptr);

@@ -131,7 +131,8 @@ public:
     /// Constants to allow limited introspection of fields if needed
     static constexpr std::size_t position{Position};
     static constexpr std::size_t bits{Bits};
-    static constexpr StorageType mask = (((StorageTypeU)~0) >> (8 * sizeof(T) - bits)) << position;
+    static constexpr StorageType mask{
+        static_cast<StorageType>((((StorageTypeU)~0) >> (8 * sizeof(T) - bits)) << position)};
 
     /**
      * Formats a value by masking and shifting it according to the field parameters. A value
@@ -149,7 +150,7 @@ public:
      */
     static constexpr FORCE_INLINE T ExtractValue(const StorageType& storage) {
         if (std::numeric_limits<T>::is_signed) {
-            std::size_t shift = 8 * sizeof(T) - bits;
+            std::size_t shift{8 * sizeof(T) - bits};
             return (T)((storage << (shift - position)) >> shift);
         } else {
             return (T)((storage & mask) >> position);
