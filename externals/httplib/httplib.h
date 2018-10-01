@@ -853,7 +853,9 @@ inline bool read_content_without_length(Stream& strm, std::string& out, Progress
         out += byte;
 
         if (progress) {
-            progress(++r, 0);
+            if (!progress(++r, 0)) {
+                return false;
+            }
         }
     }
 
