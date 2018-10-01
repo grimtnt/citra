@@ -56,6 +56,5 @@ private:
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
-bool GetSeed(u64 title_id, std::array<u8, 16>& output);
 
 } // namespace Service::FS
