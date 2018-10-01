@@ -11,7 +11,7 @@ namespace FileSys {
 void SeedDB::Load() {
     count = 0;
     seeds.clear();
-    const std::string path{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    const std::string path{fmt::format("{}/seed_db.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
     if (!FileUtil::Exists(path)) {
         FileUtil::CreateFullPath(path);
         Save();
@@ -28,7 +28,7 @@ void SeedDB::Load() {
 }
 
 void SeedDB::Save() {
-    const std::string path{fmt::format("{}/seeds.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    const std::string path{fmt::format("{}/seed_db.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
     FileUtil::CreateFullPath(path);
     FileUtil::IOFile file{path, "wb"};
     file.WriteBytes(&count, sizeof(count));
