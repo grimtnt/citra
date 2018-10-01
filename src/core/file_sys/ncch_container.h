@@ -122,7 +122,7 @@ struct ExHeader_SystemInfo {
 struct ExHeader_StorageInfo {
     u64_le ext_save_data_id;
     u8 system_save_data_id[8];
-    u8 reserved[8];
+    u64_le storage_accessible_unique_ids;
     u8 access_info[7];
     u8 other_attributes;
 };
