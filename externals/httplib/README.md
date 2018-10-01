@@ -1,4 +1,4 @@
-From https://github.com/yhirose/cpp-httplib/commit/d9479bc0b12e8a1e8bce2d34da4feeef488581f3
+From https://github.com/yhirose/cpp-httplib/commit/d32eee76274d9c8f7e3c6b690b3de53ff8445e81 (some changes made)
 
 MIT License
 

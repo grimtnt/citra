@@ -100,12 +100,14 @@ struct ci {
 
 enum class HttpVersion { v1_0 = 0, v1_1 };
 
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
 enum class SSLVerifyMode {
     None = SSL_VERIFY_NONE,
     Peer = SSL_VERIFY_PEER,
     FailNoPeerCert = SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
     VerifyOnce =  SSL_VERIFY_CLIENT_ONCE
 };
+#endif
 
 typedef std::multimap<std::string, std::string, detail::ci>  Headers;
 
@@ -838,10 +840,8 @@ inline bool read_content_with_length(Stream& strm, std::string& out, size_t len,
     return true;
 }
 
-inline bool read_content_without_length(Stream& strm, std::string& out, Progress progress)
+inline bool read_content_without_length(Stream& strm, std::string& out)
 {
-    size_t r = 0;
-
     for (;;) {
         char byte;
         auto n = strm.read(&byte, 1);
@@ -851,12 +851,6 @@ inline bool read_content_without_length(Stream& strm, std::string& out, Progress
             return true;
         }
         out += byte;
-
-        if (progress) {
-            if (!progress(++r, 0)) {
-                return false;
-            }
-        }
     }
 
     return true;
@@ -924,7 +918,7 @@ bool read_content(Stream& strm, T& x, Progress progress = Progress())
         if (!strcasecmp(encoding, "chunked")) {
             return read_content_chunked(strm, x.body);
         }
-        return read_content_without_length(strm, x.body, progress);
+        return read_content_without_length(strm, x.body);
     }
     return true;
 }
@@ -1944,14 +1938,13 @@ inline bool Client::is_valid() const
 inline void Client::set_verify(SSLVerifyMode mode) {
     // nothing to do here
 }
-
-inline void Client::add_client_cert_ASN1(std::vector<unsigned char> cert, std::vector<unsigned char> key) {
+ inline void Client::add_client_cert_ASN1(std::vector<unsigned char> cert, std::vector<unsigned char> key) {
+    // nothing to do here
+}
+ inline void Client::add_cert(std::vector<unsigned char> cert) {
     // nothing to do here
 }
 
-inline void Client::add_cert(std::vector<unsigned char> cert) {
-    // nothing to do here
-}
 
 inline socket_t Client::create_client_socket() const
 {
