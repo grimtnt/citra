@@ -73,7 +73,14 @@ private:
 GRenderWindow::GRenderWindow(QWidget* parent, EmuThread* emu_thread)
     : QWidget{parent}, child{nullptr}, emu_thread{emu_thread} {
 
+<<<<<<< HEAD
     setWindowTitle("Render Window");
+=======
+    std::string window_title = fmt::format("Citra {} | {}-{}", Common::g_build_name,
+                                           Common::g_scm_branch, Common::g_scm_desc);
+    setWindowTitle(QString::fromStdString(window_title));
+    setAttribute(Qt::WA_AcceptTouchEvents);
+>>>>>>> 97cdaf214... implemented touch in Qt
 
     InputCommon::Init();
 }
@@ -194,6 +201,42 @@ void GRenderWindow::mouseReleaseEvent(QMouseEvent* event) {
         TouchReleased();
     else if (event->button() == Qt::RightButton)
         InputCommon::GetMotionEmu()->EndTilt();
+}
+
+bool GRenderWindow::event(QEvent* event) {
+    // Handle touchscreen events
+    // Code is essentially copied from the corresponding mouse events
+    if (event->type() == QEvent::TouchBegin) {
+        QTouchEvent* te = static_cast<QTouchEvent*>(event);
+
+        auto points = te->touchPoints();
+        auto tp = points.first();
+        auto pos = tp.pos();
+
+        qreal pixelRatio = windowPixelRatio();
+        this->TouchPressed(static_cast<unsigned>(pos.x() * pixelRatio),
+                           static_cast<unsigned>(pos.y() * pixelRatio));
+
+        return true;
+    } else if (event->type() == QEvent::TouchUpdate) {
+        QTouchEvent* te = static_cast<QTouchEvent*>(event);
+
+        auto points = te->touchPoints();
+        auto tp = points.first();
+        auto pos = tp.pos();
+
+        qreal pixelRatio = windowPixelRatio();
+        this->TouchMoved(std::max(static_cast<unsigned>(pos.x() * pixelRatio), 0u),
+                         std::max(static_cast<unsigned>(pos.y() * pixelRatio), 0u));
+
+        return true;
+    } else if (event->type() == QEvent::TouchEnd || event->type() == QEvent::TouchCancel) {
+        this->TouchReleased();
+
+        return true;
+    }
+
+    return QWidget::event(event);
 }
 
 void GRenderWindow::focusOutEvent(QFocusEvent* event) {
