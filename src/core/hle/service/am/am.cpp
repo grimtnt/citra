@@ -101,7 +101,7 @@ ResultCode CIAFile::WriteTicket() {
 
 ResultCode CIAFile::WriteTitleMetadata() {
     container.LoadTitleMetadata(data, container.GetTitleMetadataOffset());
-    FileSys::TitleMetadata tmd = container.GetTitleMetadata();
+    FileSys::TitleMetadata tmd{container.GetTitleMetadata()};
     tmd.Print();
 
     // If a TMD already exists for this app (ie 00000000.tmd), the incoming TMD
@@ -110,7 +110,7 @@ ResultCode CIAFile::WriteTitleMetadata() {
     if (FileUtil::Exists(GetTitleMetadataPath(media_type, tmd.GetTitleID())))
         is_update = true;
 
-    std::string tmd_path = GetTitleMetadataPath(media_type, tmd.GetTitleID(), is_update);
+    std::string tmd_path{GetTitleMetadataPath(media_type, tmd.GetTitleID(), is_update)};
 
     // Create content/ folder if it doesn't exist
     std::string tmd_folder;
@@ -291,8 +291,8 @@ bool CIAFile::Close() const {
     std::string new_tmd_path{
         GetTitleMetadataPath(media_type, container.GetTitleMetadata().GetTitleID(), true)};
     if (FileUtil::Exists(new_tmd_path) && old_tmd_path != new_tmd_path) {
-        FileSys::TitleMetadata old_tmd{};
-        FileSys::TitleMetadata new_tmd{};
+        FileSys::TitleMetadata old_tmd;
+        FileSys::TitleMetadata new_tmd;
 
         old_tmd.Load(old_tmd_path);
         new_tmd.Load(new_tmd_path);
@@ -330,7 +330,7 @@ InstallStatus InstallCIA(const std::string& path,
         return InstallStatus::ErrorFileNotFound;
     }
 
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(path) == Loader::ResultStatus::Success) {
         Service::AM::CIAFile installFile{
             Service::AM::GetTitleMediaType(container.GetTitleMetadata().GetTitleID())};
@@ -442,7 +442,7 @@ std::string GetTitleContentPath(Service::FS::MediaType media_type, u64 tid, u16 
     std::string tmd_path{GetTitleMetadataPath(media_type, tid, update)};
 
     u32 content_id{};
-    FileSys::TitleMetadata tmd{};
+    FileSys::TitleMetadata tmd;
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
         if (index < tmd.GetContentCount()) {
             content_id = tmd.GetContentIDByIndex(index);
@@ -567,7 +567,7 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
     std::string tmd_path{GetTitleMetadataPath(media_type, title_id)};
 
     u32 content_read{};
-    FileSys::TitleMetadata tmd{};
+    FileSys::TitleMetadata tmd;
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
         std::size_t write_offset{};
         // Get info for each content index requested
@@ -634,7 +634,7 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
     std::string tmd_path{GetTitleMetadataPath(media_type, title_id)};
 
     u32 copied{};
-    FileSys::TitleMetadata tmd{};
+    FileSys::TitleMetadata tmd;
     if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
         u32 end_index{
             std::min(start_index + content_count, static_cast<u32>(tmd.GetContentCount()))};
@@ -717,7 +717,7 @@ ResultCode GetTitleInfoFromList(const std::vector<u64>& title_id_list,
         TitleInfo title_info = {};
         title_info.tid = title_id_list[i];
 
-        FileSys::TitleMetadata tmd{};
+        FileSys::TitleMetadata tmd;
         if (tmd.Load(tmd_path) == Loader::ResultStatus::Success) {
             // TODO(shinyquagsire23): This is the total size of all files this process owns,
             // including savefiles and other content. This comes close but is off.
@@ -1091,7 +1091,7 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     }
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1132,7 +1132,7 @@ void Module::Interface::GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx)
     std::size_t output_buffer_size{std::min(output_buffer.GetSize(), sizeof(Loader::SMDH))};
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1172,7 +1172,7 @@ void Module::Interface::GetDependencyListFromCia(Kernel::HLERequestContext& ctx)
     }
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1200,7 +1200,7 @@ void Module::Interface::GetTransferSizeFromCia(Kernel::HLERequestContext& ctx) {
     }
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1251,7 +1251,7 @@ void Module::Interface::GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx) {
     }
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1299,7 +1299,7 @@ void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
     }
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
@@ -1330,7 +1330,7 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
     output_size = std::min(static_cast<u32>(output_buffer.GetSize()), output_size);
 
     auto file{file_res.Unwrap()};
-    FileSys::CIAContainer container{};
+    FileSys::CIAContainer container;
     if (container.Load(*file->backend) != Loader::ResultStatus::Success) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
         rb.Push(ResultCode(ErrCodes::InvalidCIAHeader, ErrorModule::AM,
