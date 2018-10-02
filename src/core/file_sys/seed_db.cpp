@@ -33,27 +33,25 @@ bool SeedDB::Load() {
         LOG_ERROR(Service_FS, "Failed to read seed database count fully");
         return false;
     }
-    if (!file.Seek(file.Tell() + 12, SEEK_SET)) {
+    if (!file.Seek(file.Tell() + SEEDDB_PADDING_BYTES, SEEK_SET)) {
         LOG_ERROR(Service_FS, "Failed to skip seed database padding");
         return false;
     }
     for (u32 i{}; i < count; ++i) {
-        auto& seed{seeds.emplace_back()};
+        Seed seed;
         if (!file.ReadBytes(&seed.title_id, sizeof(seed.title_id))) {
-            seeds.pop_back();
             LOG_ERROR(Service_FS, "Failed to read seed {} title ID", i);
             return false;
         }
         if (!file.ReadBytes(seed.data.data(), seed.data.size())) {
-            seeds.pop_back();
             LOG_ERROR(Service_FS, "Failed to read seed {} data", i);
             return false;
         }
         if (!file.ReadBytes(seed.reserved.data(), seed.reserved.size())) {
-            seeds.pop_back();
             LOG_ERROR(Service_FS, "Failed to read seed {} reserved data", i);
             return false;
         }
+        seeds.push_back(seed);
     }
     return true;
 }
@@ -74,7 +72,7 @@ bool SeedDB::Save() {
         LOG_ERROR(Service_FS, "Failed to write seed database count fully");
         return false;
     }
-    std::array<u8, 12> padding{};
+    std::array<u8, SEEDDB_PADDING_BYTES> padding{};
     if (file.WriteBytes(padding.data(), padding.size()) != padding.size()) {
         LOG_ERROR(Service_FS, "Failed to write seed database padding fully");
         return false;

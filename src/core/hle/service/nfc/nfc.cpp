@@ -81,7 +81,7 @@ void Module::Interface::StopCommunication(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::StartTagScanning(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x05, 1, 0}; // 0x00050040
+    IPC::RequestParser rp{ctx, 0x05, 1, 0};
     u16 in_val{rp.Pop<u16>()};
 
     Core::System& system{Core::System::GetInstance()};

@@ -479,7 +479,7 @@ void Y2R_U::GetAlpha(Kernel::HLERequestContext& ctx) {
 }
 
 void Y2R_U::SetDitheringWeightParams(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x24, 8, 0}; // 0x240200
+    IPC::RequestParser rp{ctx, 0x24, 8, 0};
     rp.PopRaw(dithering_weight_params);
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RESULT_SUCCESS);
@@ -498,11 +498,9 @@ void Y2R_U::GetDitheringWeightParams(Kernel::HLERequestContext& ctx) {
 }
 
 void Y2R_U::StartConversion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x26, 0, 0};
-
     // dst_image_size would seem to be perfect for this, but it doesn't include the gap :(
-    u32 total_output_size =
-        conversion.input_lines * (conversion.dst.transfer_unit + conversion.dst.gap);
+    u32 total_output_size{static_cast<u32>(conversion.input_lines *
+                                           (conversion.dst.transfer_unit + conversion.dst.gap))};
     Memory::RasterizerFlushVirtualRegion(conversion.dst.address, total_output_size,
                                          Memory::FlushMode::FlushAndInvalidate);
 
@@ -510,25 +508,21 @@ void Y2R_U::StartConversion(Kernel::HLERequestContext& ctx) {
 
     completion_event->Signal();
 
-    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{ctx, 0x26, 1, 0};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_Y2R, "called");
 }
 
 void Y2R_U::StopConversion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x27, 0, 0};
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{ctx, 0x27, 1, 0};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_Y2R, "called");
 }
 
 void Y2R_U::IsBusyConversion(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x28, 0, 0};
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{ctx, 0x28, 2, 0};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0); // StartConversion always finishes immediately
 
@@ -544,7 +538,7 @@ void Y2R_U::SetPackageParameter(Kernel::HLERequestContext& ctx) {
     conversion.rotation = params.rotation;
     conversion.block_alignment = params.block_alignment;
 
-    ResultCode result = conversion.SetInputLineWidth(params.input_line_width);
+    ResultCode result{conversion.SetInputLineWidth(params.input_line_width)};
 
     if (result.IsError())
         goto cleanup;
@@ -577,9 +571,7 @@ cleanup:
 }
 
 void Y2R_U::PingProcess(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x2A, 0, 0};
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(2, 0)};
+    IPC::ResponseBuilder rb{ctx, 0x2A, 2, 0};
     rb.Push(RESULT_SUCCESS);
     rb.Push<u8>(0);
 
@@ -587,10 +579,6 @@ void Y2R_U::PingProcess(Kernel::HLERequestContext& ctx) {
 }
 
 void Y2R_U::DriverInitialize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x2B, 0, 0};
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
-
     conversion.input_format = InputFormat::YUV422_Indiv8;
     conversion.output_format = OutputFormat::RGBA8;
     conversion.rotation = Rotation::None;
@@ -608,24 +596,21 @@ void Y2R_U::DriverInitialize(Kernel::HLERequestContext& ctx) {
 
     completion_event->Clear();
 
+    IPC::ResponseBuilder rb{ctx, 0x2B, 1, 0};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_Y2R, "called");
 }
 
 void Y2R_U::DriverFinalize(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x2C, 0, 0};
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
+    IPC::ResponseBuilder rb{ctx, 0x2C, 1, 0};
     rb.Push(RESULT_SUCCESS);
 
     LOG_DEBUG(Service_Y2R, "called");
 }
 
 void Y2R_U::GetPackageParameter(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp{ctx, 0x2D, 0, 0};
-
-    IPC::ResponseBuilder rb{rp.MakeBuilder(4, 0)};
+    IPC::ResponseBuilder rb{ctx, 0x2D, 4, 0};
     rb.Push(RESULT_SUCCESS);
     rb.PushRaw(conversion);
 

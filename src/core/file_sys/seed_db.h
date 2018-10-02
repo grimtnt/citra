@@ -10,6 +10,8 @@
 
 namespace FileSys {
 
+constexpr std::size_t SEEDDB_PADDING_BYTES{12};
+
 struct Seed {
     using Data = std::array<u8, 16>;
 
