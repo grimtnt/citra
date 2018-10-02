@@ -45,7 +45,6 @@ struct Values {
 
     bool single_window_mode;
     bool fullscreen;
-    bool display_titlebar;
     bool show_filter_bar;
     bool show_status_bar;
 

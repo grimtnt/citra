@@ -363,9 +363,6 @@ void GMainWindow::RestoreUIState() {
     ui.action_Fullscreen->setChecked(UISettings::values.fullscreen);
     SyncMenuUISettings();
 
-    ui.action_Display_Dock_Widget_Headers->setChecked(UISettings::values.display_titlebar);
-    OnDisplayTitleBars(ui.action_Display_Dock_Widget_Headers->isChecked());
-
     ui.action_Show_Filter_Bar->setChecked(UISettings::values.show_filter_bar);
     game_list->setFilterVisible(ui.action_Show_Filter_Bar->isChecked());
 
@@ -422,8 +419,6 @@ void GMainWindow::ConnectMenuEvents() {
     // View
     connect(ui.action_Single_Window_Mode, &QAction::triggered, this,
             &GMainWindow::ToggleWindowMode);
-    connect(ui.action_Display_Dock_Widget_Headers, &QAction::triggered, this,
-            &GMainWindow::OnDisplayTitleBars);
     ui.action_Show_Filter_Bar->setShortcut(QKeySequence("CTRL+F"));
     connect(ui.action_Show_Filter_Bar, &QAction::triggered, this, &GMainWindow::OnToggleFilterBar);
     connect(ui.action_Show_Status_Bar, &QAction::triggered, statusBar(), &QStatusBar::setVisible);
@@ -483,26 +478,6 @@ void GMainWindow::ConnectMenuEvents() {
 
     // Help
     connect(ui.action_About, &QAction::triggered, this, &GMainWindow::OnMenuAboutCitra);
-}
-
-void GMainWindow::OnDisplayTitleBars(bool show) {
-    QList<QDockWidget*> widgets{findChildren<QDockWidget*>()};
-
-    if (show) {
-        for (QDockWidget* widget : widgets) {
-            QWidget* old{widget->titleBarWidget()};
-            widget->setTitleBarWidget(nullptr);
-            if (old != nullptr)
-                delete old;
-        }
-    } else {
-        for (QDockWidget* widget : widgets) {
-            QWidget* old{widget->titleBarWidget()};
-            widget->setTitleBarWidget(new QWidget());
-            if (old != nullptr)
-                delete old;
-        }
-    }
 }
 
 bool GMainWindow::LoadROM(const QString& filename) {
@@ -1558,7 +1533,6 @@ void GMainWindow::closeEvent(QCloseEvent* event) {
     UISettings::values.state = saveState();
     UISettings::values.single_window_mode = ui.action_Single_Window_Mode->isChecked();
     UISettings::values.fullscreen = ui.action_Fullscreen->isChecked();
-    UISettings::values.display_titlebar = ui.action_Display_Dock_Widget_Headers->isChecked();
     UISettings::values.show_filter_bar = ui.action_Show_Filter_Bar->isChecked();
     UISettings::values.show_status_bar = ui.action_Show_Status_Bar->isChecked();
 

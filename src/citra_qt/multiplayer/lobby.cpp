@@ -241,11 +241,11 @@ bool LobbyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 
     // filter by filled rooms
     if (filter_full) {
-        QModelIndex member_list = sourceModel()->index(sourceRow, Column::MEMBER, sourceParent);
-        int player_count =
-            sourceModel()->data(member_list, LobbyItemMemberList::MemberListRole).toList().size();
-        int max_players =
-            sourceModel()->data(member_list, LobbyItemMemberList::MaxPlayerRole).toInt();
+        QModelIndex member_list{sourceModel()->index(sourceRow, Column::MEMBER, sourceParent)};
+        int player_count{
+            sourceModel()->data(member_list, LobbyItemMemberList::MemberListRole).toList().size()};
+        int max_players{
+            sourceModel()->data(member_list, LobbyItemMemberList::MaxPlayerRole).toInt()};
         if (player_count >= max_players) {
             return false;
         }

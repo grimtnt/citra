@@ -48,10 +48,7 @@ public:
     GMainWindow();
     ~GMainWindow();
 
-    GameList* game_list;
-
 signals:
-
     /**
      * Signal that is emitted when a new EmuThread has been created and an emulation session is
      * about to start. At this time, the core system emulation has been initialized, and all
@@ -71,6 +68,7 @@ signals:
     void UpdateProgress(std::size_t written, std::size_t total);
     void CIAInstallReport(Service::AM::InstallStatus status, QString filepath);
     void CIAInstallFinished();
+
     // Signal that tells widgets to update icons to use the current theme
     void UpdateThemedIcons();
 
@@ -101,7 +99,7 @@ private:
      * Stores the filename in the recently loaded files list.
      * The new filename is stored at the beginning of the recently loaded files list.
      * After inserting the new entry, duplicates are removed meaning that if
-     * this was inserted from \a OnMenuRecentFile(), the entry will be put on top
+     * this was inserted from OnMenuRecentFile(), the entry will be put on top
      * and remove from its previous position.
      *
      * Finally, this function calls \a UpdateRecentFiles() to update the UI.
@@ -131,8 +129,10 @@ private slots:
     void OnStartGame();
     void OnPauseGame();
     void OnStopGame();
-    /// Called whenever a user selects a game in the game list widget.
+
+    /// Called when user selects a game in the game list widget.
     void OnGameListLoadFile(QString game_path);
+
     void OnGameListOpenFolder(u64 program_id, GameListOpenTarget target);
     void OnGameListOpenDirectory(QString path);
     void OnGameListAddDirectory();
@@ -149,7 +149,6 @@ private slots:
     void OnControlPanel();
     void OnLoadAmiibo();
     void OnToggleFilterBar();
-    void OnDisplayTitleBars(bool);
     void ToggleFullscreen();
     void ChangeScreenLayout();
     void ToggleScreenLayout();
@@ -162,7 +161,8 @@ private slots:
     void OnStopRecordingPlayback();
     void OnCaptureScreenshot();
     void OnCoreError(Core::System::ResultStatus, const std::string&);
-    /// Called whenever a user selects Help->About Citra
+
+    /// Called when user selects Help->About Citra
     void OnMenuAboutCitra();
 
 private:
@@ -175,6 +175,7 @@ private:
 
     GRenderWindow* render_window;
 
+    GameList* game_list;
     GameListPlaceholder* game_list_placeholder;
 
     // Status bar elements
@@ -218,7 +219,7 @@ private:
 
     QAction* actions_recent_files[max_recent_files_item];
 
-    // stores default icon theme search paths for the platform
+    // Stores default icon theme search paths for the platform
     QStringList default_theme_paths;
 
 protected:
