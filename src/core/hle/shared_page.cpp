@@ -16,7 +16,7 @@ static std::chrono::seconds GetInitTime() {
     u64 override_init_time{Core::Movie::GetInstance().GetOverrideInitTime()};
     if (override_init_time) {
         // Override the clock init time with the one in the movie
-        return std::chrono::seconds(override_init_time);
+        return std::chrono::seconds{override_init_time};
     }
 
     switch (Settings::values.init_clock) {
@@ -30,7 +30,7 @@ static std::chrono::seconds GetInitTime() {
         return std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch());
     }
     case Settings::InitClock::FixedTime:
-        return std::chrono::seconds(Settings::values.init_time);
+        return std::chrono::seconds{Settings::values.init_time};
     default:
         UNREACHABLE();
     }
@@ -66,8 +66,8 @@ Handler::Handler() {
 
 /// Gets system time in 3DS format. The epoch is Jan 1900, and the unit is millisecond.
 u64 Handler::GetSystemTime() const {
-    std::chrono::milliseconds now{init_time +
-                                  std::chrono::milliseconds(CoreTiming::GetGlobalTimeUs() / 1000)};
+    std::chrono::milliseconds now{init_time + std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                  CoreTiming::GetGlobalTimeUs())};
 
     // 3DS system does't allow user to set a time before Jan 1 2000,
     // so we use it as an auxiliary epoch to calculate the console time.
