@@ -1272,7 +1272,7 @@ void Module::Interface::DeleteProgram(Kernel::HLERequestContext& ctx) {
     auto media_type{rp.PopEnum<FS::MediaType>()};
     u64 title_id{rp.Pop<u64>()};
     LOG_INFO(Service_AM, "Deleting title 0x{:016x}", title_id);
-    std::string path = GetTitlePath(media_type, title_id);
+    std::string path{GetTitlePath(media_type, title_id)};
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     if (!FileUtil::Exists(path)) {
         rb.Push(ResultCode(ErrorDescription::NotFound, ErrorModule::AM, ErrorSummary::InvalidState,
@@ -1285,6 +1285,12 @@ void Module::Interface::DeleteProgram(Kernel::HLERequestContext& ctx) {
     rb.Push(RESULT_SUCCESS);
     if (!success)
         LOG_ERROR(Service_AM, "DeleteDirRecursively failed: {}", GetLastErrorMsg());
+}
+
+void Module::Interface::GetSystemUpdaterMutex(Kernel::HLERequestContext& ctx) {
+    IPC::ResponseBuilder rb{ctx, 0x412, 1, 2};
+    rb.Push(RESULT_SUCCESS);
+    rb.PushCopyObjects(am->system_updater_mutex);
 }
 
 void Module::Interface::GetMetaSizeFromCia(Kernel::HLERequestContext& ctx) {
@@ -1357,6 +1363,7 @@ void Module::Interface::GetMetaDataFromCia(Kernel::HLERequestContext& ctx) {
 
 Module::Module() {
     ScanForAllTitles();
+    system_updater_mutex = Kernel::Mutex::Create(false, "AM::SystemUpdaterMutex");
 }
 
 Module::~Module() = default;

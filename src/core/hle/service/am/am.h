@@ -12,6 +12,7 @@
 #include "common/common_types.h"
 #include "core/file_sys/cia_container.h"
 #include "core/file_sys/file_backend.h"
+#include "core/hle/kernel/mutex.h"
 #include "core/hle/result.h"
 #include "core/hle/service/service.h"
 
@@ -180,6 +181,7 @@ public:
         void GetCoreVersionFromCia(Kernel::HLERequestContext& ctx);
         void GetRequiredSizeFromCia(Kernel::HLERequestContext& ctx);
         void DeleteProgram(Kernel::HLERequestContext& ctx);
+        void GetSystemUpdaterMutex(Kernel::HLERequestContext& ctx);
         void GetMetaSizeFromCia(Kernel::HLERequestContext& ctx);
         void GetMetaDataFromCia(Kernel::HLERequestContext& ctx);
 
@@ -201,6 +203,7 @@ private:
 
     bool cia_installing{};
     std::array<std::vector<u64_le>, 3> am_title_list;
+    Kernel::SharedPtr<Kernel::Mutex> system_updater_mutex;
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
