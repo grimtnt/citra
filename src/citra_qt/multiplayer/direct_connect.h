@@ -11,7 +11,7 @@
 
 namespace Ui {
 class DirectConnect;
-}
+} // namespace Ui
 
 class DirectConnectWindow : public QDialog {
     Q_OBJECT

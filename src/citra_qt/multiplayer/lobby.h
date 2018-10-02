@@ -103,7 +103,7 @@ public slots:
 
 private:
     QStandardItemModel* game_list;
-    bool filter_owned = false;
-    bool filter_full = false;
+    bool filter_owned{};
+    bool filter_full{};
     QString filter_search;
 };

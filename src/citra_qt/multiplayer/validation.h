@@ -10,7 +10,7 @@
 class Validation {
 public:
     Validation()
-        : room_name(room_name_regex), nickname(nickname_regex), ip(ip_regex), port(0, 65535) {}
+        : room_name{room_name_regex}, nickname{nickname_regex}, ip{ip_regex}, port{0, 65535} {}
 
     ~Validation() = default;
 
@@ -28,21 +28,21 @@ public:
     }
 
 private:
-    /// room name can be alphanumeric and " " "_" "." and "-" and must have a size of 4-20
-    QRegExp room_name_regex = QRegExp("^[a-zA-Z0-9._- ]{4,20}$");
+    /// Room name can be alphanumeric and " " "_" "." and "-" and must have a size of 4-20
+    QRegExp room_name_regex{QRegExp("^[a-zA-Z0-9._- ]{4,20}$")};
     QRegExpValidator room_name;
 
-    /// nickname can be alphanumeric and " " "_" "." and "-" and must have a size of 4-20
-    QRegExp nickname_regex = QRegExp("^[a-zA-Z0-9._- ]{4,20}$");
+    /// Nickname can be alphanumeric and " " "_" "." and "-" and must have a size of 4-20
+    QRegExp nickname_regex{QRegExp("^[a-zA-Z0-9._- ]{4,20}$")};
     QRegExpValidator nickname;
 
-    /// ipv4 address only
-    // TODO remove this when we support hostnames in direct connect
-    QRegExp ip_regex = QRegExp(
+    /// IPv4 address only
+    // TODO: remove this when we support hostnames in direct connect
+    QRegExp ip_regex{QRegExp(
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|"
-        "2[0-4][0-9]|25[0-5])");
+        "2[0-4][0-9]|25[0-5])")};
     QRegExpValidator ip;
 
-    /// port must be between 0 and 65535
+    /// Port must be between 0 and 65535
     QIntValidator port;
 };

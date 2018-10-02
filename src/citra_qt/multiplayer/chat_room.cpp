@@ -32,7 +32,7 @@ public:
 
     /// Format the message using the players color
     QString GetPlayerChatMessage(u16 player) const {
-        auto color = player_color[player % 16];
+        auto color{player_color[player % 16]};
         return QString("[%1] <font color='%2'>&lt;%3&gt;</font> %4")
             .arg(timestamp, color, nickname.toHtmlEscaped(), message.toHtmlEscaped());
     }

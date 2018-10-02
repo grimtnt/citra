@@ -14,11 +14,11 @@
 
 namespace Ui {
 class ChatRoom;
-}
+} // namespace Ui
 
 namespace Core {
 class AnnounceMultiplayerSession;
-}
+} // namespace Core
 
 class ConnectionError;
 class ComboBoxProxyModel;
@@ -48,7 +48,7 @@ signals:
     void ChatReceived(const Network::ChatEntry&);
 
 private:
-    static constexpr u32 max_chat_lines = 1000;
+    static constexpr u32 max_chat_lines{1000};
     void AppendChatMessage(const QString&);
     bool ValidateMessage(const std::string&);
     QStandardItemModel* player_list;

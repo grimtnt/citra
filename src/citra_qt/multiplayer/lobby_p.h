@@ -24,16 +24,15 @@ enum List {
 class LobbyItem : public QStandardItem {
 public:
     LobbyItem() = default;
-    explicit LobbyItem(const QString& string) : QStandardItem(string) {}
+
+    explicit LobbyItem(const QString& string) : QStandardItem{string} {}
     virtual ~LobbyItem() override = default;
 };
 
 class LobbyItemName : public LobbyItem {
 public:
-    static const int NameRole = Qt::UserRole + 1;
-    static const int PasswordRole = Qt::UserRole + 2;
-
     LobbyItemName() = default;
+
     explicit LobbyItemName(bool has_password, QString name) : LobbyItem() {
         setData(name, NameRole);
         setData(has_password, PasswordRole);
@@ -41,7 +40,7 @@ public:
 
     QVariant data(int role) const override {
         if (role == Qt::DecorationRole) {
-            bool has_password = data(PasswordRole).toBool();
+            bool has_password{data(PasswordRole).toBool()};
             return has_password ? QIcon::fromTheme("lock").pixmap(16) : QIcon();
         }
         if (role != Qt::DisplayRole) {
@@ -53,15 +52,15 @@ public:
     bool operator<(const QStandardItem& other) const override {
         return data(NameRole).toString().localeAwareCompare(other.data(NameRole).toString()) < 0;
     }
+
+    static const int NameRole{Qt::UserRole + 1};
+    static const int PasswordRole{Qt::UserRole + 2};
 };
 
 class LobbyItemGame : public LobbyItem {
 public:
-    static const int TitleIDRole = Qt::UserRole + 1;
-    static const int GameNameRole = Qt::UserRole + 2;
-    static const int GameIconRole = Qt::UserRole + 3;
-
     LobbyItemGame() = default;
+
     explicit LobbyItemGame(u64 title_id, QString game_name, QPixmap smdh_icon) {
         setData(static_cast<unsigned long long>(title_id), TitleIDRole);
         setData(game_name, GameNameRole);
@@ -72,7 +71,7 @@ public:
 
     QVariant data(int role) const override {
         if (role == Qt::DecorationRole) {
-            auto val = data(GameIconRole);
+            auto val{data(GameIconRole)};
             if (val.isValid()) {
                 val = val.value<QPixmap>().scaled(16, 16, Qt::KeepAspectRatio);
             }
@@ -88,15 +87,16 @@ public:
                    .toString()
                    .localeAwareCompare(other.data(GameNameRole).toString()) < 0;
     }
+
+    static const int TitleIDRole{Qt::UserRole + 1};
+    static const int GameNameRole{Qt::UserRole + 2};
+    static const int GameIconRole{Qt::UserRole + 3};
 };
 
 class LobbyItemHost : public LobbyItem {
 public:
-    static const int HostUsernameRole = Qt::UserRole + 1;
-    static const int HostIPRole = Qt::UserRole + 2;
-    static const int HostPortRole = Qt::UserRole + 3;
-
     LobbyItemHost() = default;
+
     explicit LobbyItemHost(QString username, QString ip, u16 port) {
         setData(username, HostUsernameRole);
         setData(ip, HostIPRole);
@@ -115,22 +115,30 @@ public:
                    .toString()
                    .localeAwareCompare(other.data(HostUsernameRole).toString()) < 0;
     }
+
+    static const int HostUsernameRole{Qt::UserRole + 1};
+    static const int HostIPRole{Qt::UserRole + 2};
+    static const int HostPortRole{Qt::UserRole + 3};
 };
 
 class LobbyMember {
 public:
     LobbyMember() = default;
     LobbyMember(const LobbyMember& other) = default;
+
     explicit LobbyMember(QString username, u64 title_id, QString game_name)
-        : username(std::move(username)), title_id(title_id), game_name(std::move(game_name)) {}
+        : username{std::move(username)}, title_id{title_id}, game_name{std::move(game_name)} {}
+
     ~LobbyMember() = default;
 
     QString GetUsername() const {
         return username;
     }
+
     u64 GetTitleId() const {
         return title_id;
     }
+
     QString GetGameName() const {
         return game_name;
     }
@@ -145,10 +153,8 @@ Q_DECLARE_METATYPE(LobbyMember);
 
 class LobbyItemMemberList : public LobbyItem {
 public:
-    static const int MemberListRole = Qt::UserRole + 1;
-    static const int MaxPlayerRole = Qt::UserRole + 2;
-
     LobbyItemMemberList() = default;
+
     explicit LobbyItemMemberList(QList<QVariant> members, u32 max_players) {
         setData(members, MemberListRole);
         setData(max_players, MaxPlayerRole);
@@ -165,10 +171,13 @@ public:
 
     bool operator<(const QStandardItem& other) const override {
         // sort by rooms that have the most players
-        int left_members = data(MemberListRole).toList().size();
-        int right_members = other.data(MemberListRole).toList().size();
+        int left_members{data(MemberListRole).toList().size()};
+        int right_members{other.data(MemberListRole).toList().size()};
         return left_members < right_members;
     }
+
+    static const int MemberListRole{Qt::UserRole + 1};
+    static const int MaxPlayerRole{Qt::UserRole + 2};
 };
 
 /**
@@ -176,9 +185,8 @@ public:
  */
 class LobbyItemExpandedMemberList : public LobbyItem {
 public:
-    static const int MemberListRole{Qt::UserRole + 1};
-
     LobbyItemExpandedMemberList() = default;
+
     explicit LobbyItemExpandedMemberList(QList<QVariant> members) {
         setData(members, MemberListRole);
     }
@@ -203,4 +211,6 @@ public:
         }
         return out;
     }
+
+    static const int MemberListRole{Qt::UserRole + 1};
 };
