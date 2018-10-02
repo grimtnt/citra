@@ -20,22 +20,23 @@ ResultCode ErrEula::ReceiveParameter(const Service::APT::MessageParameter& param
     // The LibAppJustStarted message contains a buffer with the size of the framebuffer shared
     // memory.
     // Create the SharedMemory that will hold the framebuffer data
-    Service::APT::CaptureBufferInfo capture_info{};
+    Service::APT::CaptureBufferInfo capture_info;
     ASSERT(sizeof(capture_info) == parameter.buffer.size());
-
     memcpy(&capture_info, parameter.buffer.data(), sizeof(capture_info));
 
     // TODO: allocated memory never released
     using Kernel::MemoryPermission;
+
     // Allocate a heap block of the required size for this applet.
     heap_memory = std::make_shared<std::vector<u8>>(capture_info.size);
+
     // Create a SharedMemory that directly points to this heap block.
     framebuffer_memory = Kernel::SharedMemory::CreateForApplet(
         heap_memory, 0, capture_info.size, MemoryPermission::ReadWrite, MemoryPermission::ReadWrite,
         "ErrEula Memory");
 
     // Send the response message with the newly created SharedMemory
-    Service::APT::MessageParameter result{};
+    Service::APT::MessageParameter result;
     result.signal = Service::APT::SignalType::Response;
     result.buffer.clear();
     result.destination_id = Service::APT::AppletId::Application;
