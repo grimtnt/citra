@@ -357,7 +357,7 @@ void SoftwareKeyboard::Update() {
 
 void SoftwareKeyboard::Finalize() {
     // Let the application know that we're closing
-    Service::APT::MessageParameter message{};
+    Service::APT::MessageParameter message;
     message.buffer.resize(sizeof(SoftwareKeyboardConfig));
     std::memcpy(message.buffer.data(), &config, message.buffer.size());
     message.signal = Service::APT::SignalType::WakeupByExit;

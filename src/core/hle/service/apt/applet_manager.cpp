@@ -3,8 +3,6 @@
 // Refer to the license.txt file included.
 
 #include "common/common_paths.h"
-#include "common/file_util.h"
-#include "common/string_util.h"
 #include "core/hle/applets/applet.h"
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/service/apt/applet_manager.h"
@@ -211,18 +209,6 @@ ResultVal<MessageParameter> AppletManager::GlanceParameter(AppletId app_id) {
     if (next_parameter->signal == SignalType::DspSleep ||
         next_parameter->signal == SignalType::DspWakeup)
         next_parameter = boost::none;
-
-    if (parameter.buffer.size() == 132) {
-        std::u16string name(10, '\0');
-        std::memcpy(name.data(), parameter.buffer.data() + 0x26, 10 * sizeof(u16));
-        name = std::u16string(name.data());
-        std::string miis_dir{FileUtil::GetUserPath(D_USER_IDX) + "miis"};
-        if (!FileUtil::Exists(miis_dir)) {
-            FileUtil::CreateDir(miis_dir);
-        }
-        FileUtil::IOFile file{fmt::format("{}/{}.mii", miis_dir, Common::UTF16ToUTF8(name)), "wb"};
-        file.WriteBytes(parameter.buffer.data(), parameter.buffer.size());
-    }
 
     return MakeResult<MessageParameter>(parameter);
 }
@@ -452,9 +438,9 @@ ResultCode AppletManager::PrepareToCloseLibraryApplet(bool not_pause, bool exiti
 
 ResultCode AppletManager::CloseLibraryApplet(Kernel::SharedPtr<Kernel::Object> object,
                                              std::vector<u8> buffer) {
-    auto& slot = applet_slots[static_cast<std::size_t>(AppletSlot::LibraryApplet)];
+    auto& slot{applet_slots[static_cast<std::size_t>(AppletSlot::LibraryApplet)]};
 
-    MessageParameter param{};
+    MessageParameter param;
     // TODO(Subv): The destination id should be the "current applet slot id", which changes
     // constantly depending on what is going on in the system. Most of the time it is the running
     // application, but it could be something else if a system applet is launched.

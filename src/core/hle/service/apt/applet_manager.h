@@ -74,9 +74,9 @@ enum class AppletId : u32 {
 
 /// Holds information about the parameters used in Send/Glance/ReceiveParameter
 struct MessageParameter {
-    AppletId sender_id = AppletId::None;
-    AppletId destination_id = AppletId::None;
-    SignalType signal = SignalType::None;
+    AppletId sender_id{AppletId::None};
+    AppletId destination_id{AppletId::None};
+    SignalType signal{SignalType::None};
     Kernel::SharedPtr<Kernel::Object> object{};
     std::vector<u8> buffer;
 };
@@ -144,7 +144,7 @@ private:
     /// Parameter data to be returned in the next call to Glance/ReceiveParameter.
     boost::optional<MessageParameter> next_parameter;
 
-    static constexpr std::size_t NumAppletSlot = 4;
+    static constexpr std::size_t NumAppletSlot{4};
 
     enum class AppletSlot : u8 {
         Application,
