@@ -11,22 +11,26 @@
 namespace FileSys {
 
 struct Seed {
+    using Data = std::array<u8, 16>;
+
     u64_le title_id;
-    std::array<u8, 16> data;
+    Data data;
+    std::array<u8, 8> reserved;
 };
 
 struct SeedDB {
     std::vector<Seed> seeds;
 
-    void Load();
-    void Save();
+    bool Load();
+    bool Save();
     void Add(const Seed& seed);
 
-    u32 GetCount();
+    std::size_t GetCount() const;
+    auto FindSeedByTitleID(u64 title_id) const;
 };
 
-void AddSeed(const Seed& seed);
-std::optional<std::array<u8, 16>> GetSeed(u64 title_id);
+bool AddSeed(const Seed& seed);
+std::optional<Seed::Data> GetSeed(u64 title_id);
 u32 GetSeedCount();
 
 } // namespace FileSys

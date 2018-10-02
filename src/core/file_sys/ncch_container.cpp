@@ -173,11 +173,11 @@ Loader::ResultStatus NCCHContainer::Load() {
                         failed_to_decrypt = true;
                     } else {
                         auto seed{*opt};
-                        std::array<u8, 32> key;
-                        std::memcpy(key.data(), key_y_primary.data(), key_y_primary.size());
-                        std::memcpy(key.data() + seed.size(), seed.data(), seed.size());
+                        std::array<u8, 32> input;
+                        std::memcpy(input.data(), key_y_primary.data(), key_y_primary.size());
+                        std::memcpy(input.data() + seed.size(), seed.data(), seed.size());
                         CryptoPP::SHA256 sha;
-                        sha.CalculateDigest(key_y_secondary.data(), key.data(), key.size());
+                        sha.CalculateDigest(key_y_secondary.data(), input.data(), input.size());
                     }
                 }
 

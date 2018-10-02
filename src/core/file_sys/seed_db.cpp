@@ -4,79 +4,145 @@
 
 #include <fmt/format.h>
 #include "common/file_util.h"
+#include "common/logging/log.h"
 #include "core/file_sys/seed_db.h"
 
 namespace FileSys {
 
-void SeedDB::Load() {
+bool SeedDB::Load() {
     seeds.clear();
-    const std::string path{fmt::format("{}/seed_db.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    const std::string path{fmt::format("{}/seeddb.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
     if (!FileUtil::Exists(path)) {
-        FileUtil::CreateFullPath(path);
-        Save();
-        return;
+        if (!FileUtil::CreateFullPath(path)) {
+            LOG_ERROR(Service_FS, "Failed to create seed database");
+            return false;
+        }
+        if (!Save()) {
+            LOG_ERROR(Service_FS, "Failed to save seed database");
+            return false;
+        }
+        return true;
     }
     FileUtil::IOFile file{path, "rb"};
-    u32 count;
-    file.ReadBytes(&count, sizeof(count));
-    for (u32 i{}; i < count; ++i) {
-        Seed seed{};
-        file.ReadBytes(&seed.title_id, sizeof(seed.title_id));
-        file.ReadBytes(seed.data.data(), seed.data.size());
-        seeds.push_back(seed);
+    if (!file.IsOpen()) {
+        LOG_ERROR(Service_FS, "Failed to open seed database");
+        return false;
     }
+    u32 count;
+    if (!file.ReadBytes(&count, sizeof(count))) {
+        LOG_ERROR(Service_FS, "Failed to read seed database count fully");
+        return false;
+    }
+    if (!file.Seek(file.Tell() + 12, SEEK_SET)) {
+        LOG_ERROR(Service_FS, "Failed to skip seed database padding");
+        return false;
+    }
+    for (u32 i{}; i < count; ++i) {
+        auto& seed{seeds.emplace_back()};
+        if (!file.ReadBytes(&seed.title_id, sizeof(seed.title_id))) {
+            seeds.pop_back();
+            LOG_ERROR(Service_FS, "Failed to read seed {} title ID", i);
+            return false;
+        }
+        if (!file.ReadBytes(seed.data.data(), seed.data.size())) {
+            seeds.pop_back();
+            LOG_ERROR(Service_FS, "Failed to read seed {} data", i);
+            return false;
+        }
+        if (!file.ReadBytes(seed.reserved.data(), seed.reserved.size())) {
+            seeds.pop_back();
+            LOG_ERROR(Service_FS, "Failed to read seed {} reserved data", i);
+            return false;
+        }
+    }
+    return true;
 }
 
-void SeedDB::Save() {
-    const std::string path{fmt::format("{}/seed_db.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
-    FileUtil::CreateFullPath(path);
-    FileUtil::IOFile file{path, "wb"};
-    u32 count{static_cast<u32>(seeds.size())};
-    file.WriteBytes(&count, sizeof(count));
-    for (std::size_t i{}; i < count; ++i) {
-        file.WriteBytes(&seeds[i].title_id, sizeof(seeds[i].title_id));
-        file.WriteBytes(seeds[i].data.data(), seeds[i].data.size());
+bool SeedDB::Save() {
+    const std::string path{fmt::format("{}/seeddb.bin", FileUtil::GetUserPath(D_SYSDATA_IDX))};
+    if (!FileUtil::CreateFullPath(path)) {
+        LOG_ERROR(Service_FS, "Failed to create seed database");
+        return false;
     }
+    FileUtil::IOFile file{path, "wb"};
+    if (!file.IsOpen()) {
+        LOG_ERROR(Service_FS, "Failed to open seed database");
+        return false;
+    }
+    u32 count{static_cast<u32>(seeds.size())};
+    if (file.WriteBytes(&count, sizeof(count)) != sizeof(count)) {
+        LOG_ERROR(Service_FS, "Failed to write seed database count fully");
+        return false;
+    }
+    std::array<u8, 12> padding{};
+    if (file.WriteBytes(padding.data(), padding.size()) != padding.size()) {
+        LOG_ERROR(Service_FS, "Failed to write seed database padding fully");
+        return false;
+    }
+    for (std::size_t i{}; i < count; ++i) {
+        if (file.WriteBytes(&seeds[i].title_id, sizeof(seeds[i].title_id)) !=
+            sizeof(seeds[i].title_id)) {
+            LOG_ERROR(Service_FS, "Failed to write seed {} title ID fully", i);
+            return false;
+        }
+        if (file.WriteBytes(seeds[i].data.data(), seeds[i].data.size()) != seeds[i].data.size()) {
+            LOG_ERROR(Service_FS, "Failed to write seed {} data fully", i);
+            return false;
+        }
+        if (file.WriteBytes(seeds[i].reserved.data(), seeds[i].reserved.size()) !=
+            seeds[i].reserved.size()) {
+            LOG_ERROR(Service_FS, "Failed to write seed {} reserved data fully", i);
+            return false;
+        }
+    }
+    return true;
 }
 
 void SeedDB::Add(const Seed& seed) {
     seeds.push_back(seed);
 }
 
-u32 SeedDB::GetCount() {
+std::size_t SeedDB::GetCount() const {
     return seeds.size();
 }
 
-void AddSeed(const Seed& seed) {
-    // TODO: does this skip/replace if the SeedDB contains a seed for seed.title_id?
-    SeedDB db;
-    db.Load();
-    db.Add(seed);
-    db.Save();
+auto SeedDB::FindSeedByTitleID(u64 title_id) const {
+    return std::find_if(seeds.begin(), seeds.end(),
+                        [title_id](const auto& seed) { return seed.title_id == title_id; });
 }
 
-std::optional<std::array<u8, 16>> GetSeed(u64 title_id) {
+bool AddSeed(const Seed& seed) {
+    // TODO: does this skip/replace if the SeedDB contains a seed for seed.title_id?
     SeedDB db;
-    db.Load();
-    for (const auto& seed : db.seeds) {
-        if (seed.title_id == title_id) {
-            return seed.data;
-        }
+    if (!db.Load()) {
+        LOG_ERROR(Service_FS, "Failed to load seed database");
+        return false;
     }
-    const std::string seed_path{
-        fmt::format("{}/seeds/{:016X}.bin", FileUtil::GetUserPath(D_SYSDATA_IDX), title_id)};
-    if (FileUtil::Exists(seed_path)) {
-        FileUtil::IOFile file{seed_path, "rb"};
-        std::array<u8, 16> data;
-        file.ReadBytes(data.data(), data.size());
-        return data;
+    db.Add(seed);
+    if (!db.Save()) {
+        LOG_ERROR(Service_FS, "Failed to save seed database");
+        return false;
+    }
+    return true;
+}
+
+std::optional<Seed::Data> GetSeed(u64 title_id) {
+    SeedDB db;
+    if (!db.Load()) {
+        return std::nullopt;
+    }
+    const auto found_seed_iter{db.FindSeedByTitleID(title_id)};
+    if (found_seed_iter != db.seeds.end()) {
+        return found_seed_iter->data;
     }
     return std::nullopt;
 }
 
 u32 GetSeedCount() {
     SeedDB db;
-    db.Load();
+    if (!db.Load()) {
+        return 0;
+    }
     return db.GetCount();
 }
 
