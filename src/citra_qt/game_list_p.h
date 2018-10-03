@@ -106,8 +106,10 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
      Compatibility::IntroMenu}, // Teenage Mutant Ninja Turtles: Master Splinter's Training Pack
 
     // EUR (System)
-    {0x0004001000022A00, Compatibility::WontBoot}, // ???
-    {0x0004001000022700, Compatibility::Great},    // Mii Maker
+    {0x0004001000022A00, Compatibility::WontBoot},  // ???
+    {0x0004001000022700, Compatibility::Great},     // Mii Maker
+    {0x0004001000022100, Compatibility::IntroMenu}, // Download Play
+    {0x0004001000022300, Compatibility::Perfect},   // Health and Safety Information
 
     // EUR (Demos)
     {0x00040002001CB201, Compatibility::Perfect}, // Captain Toad Demo
@@ -134,6 +136,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x0004000000112600, Compatibility::Great},     // Cut the Rope: Triple Treat
     {0x00040000001B8700, Compatibility::IntroMenu}, // Minecraft
     {0x0004000000062300, Compatibility::Great},     // Sonic Generations
+    {0x0004000000126300, Compatibility::Great},     // MONSTER HUNTER 4 ULTIMATE
 
     // USA (Demos)
     {0x00040002001CB101, Compatibility::Perfect}, // Captain Toad Demo
