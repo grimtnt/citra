@@ -174,6 +174,9 @@ public:
         void CheckContentRightsIgnorePlatform(Kernel::HLERequestContext& ctx);
         void BeginImportProgram(Kernel::HLERequestContext& ctx);
         void EndImportProgram(Kernel::HLERequestContext& ctx);
+        void BeginImportProgramTemporarily(Kernel::HLERequestContext& ctx);
+        void EndImportProgramWithoutCommit(Kernel::HLERequestContext& ctx);
+        void CommitImportPrograms(Kernel::HLERequestContext& ctx);
         void GetProgramInfoFromCia(Kernel::HLERequestContext& ctx);
         void GetSystemMenuDataFromCia(Kernel::HLERequestContext& ctx);
         void GetDependencyListFromCia(Kernel::HLERequestContext& ctx);
