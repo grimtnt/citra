@@ -199,7 +199,7 @@ void GRenderWindow::mouseReleaseEvent(QMouseEvent* event) {
 
 void GRenderWindow::touchBeginEvent(QTouchEvent* event) {
     auto points{event->touchPoints()};
-    auto tp{points.first()};
+    auto tp{points.first()}; // there should only be 1 point in TouchBegin
     auto pos{tp.pos()};
 
     // Copied from mousePressEvent:
@@ -209,9 +209,25 @@ void GRenderWindow::touchBeginEvent(QTouchEvent* event) {
 }
 
 void GRenderWindow::touchUpdateEvent(QTouchEvent* event) {
+    QPointF pos;
+    int activePoints{};
     auto points{event->touchPoints()};
-    auto tp{points.first()};
-    auto pos{tp.pos()};
+
+    // To do: print the actual positions of the fingers and see why the following happens:
+    // 1. Touch finger A
+    // 2. Touch finger B
+    // 3. Slide finger A, keeping finger B stationary
+    // Result: cursor follows A, not the average of A and B.
+
+    for (int i{}; i < points.count(); i++) {
+        auto tp{points[i]};
+        if (tp.state() & (Qt::TouchPointPressed | Qt::TouchPointMoved | Qt::TouchPointStationary)) {
+            activePoints++;
+            pos += tp.pos();
+        }
+    }
+
+    pos /= activePoints;
 
     // Copied from mouseMoveEvent:
     qreal pixelRatio{windowPixelRatio()};
