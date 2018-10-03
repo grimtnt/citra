@@ -8,11 +8,11 @@
 #include <unordered_map>
 #include "common/common_types.h"
 #include "core/hle/kernel/object.h"
+#include "core/hle/kernel/server_port.h"
 #include "core/hle/result.h"
 
 namespace Kernel {
 
-class ServerPort;
 class ClientSession;
 
 class ClientPort final : public Object {
@@ -31,6 +31,10 @@ public:
 
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
+    }
+
+    SharedPtr<ServerPort> GetServerPort() const {
+        return server_port;
     }
 
     /**
