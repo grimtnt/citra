@@ -8,6 +8,7 @@
 #include <QGLWidget>
 #include <QImage>
 #include <QThread>
+#include <QTouchEvent>
 #include "core/core.h"
 #include "core/frontend/emu_window.h"
 
@@ -76,6 +77,10 @@ public:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
+
+    void touchBeginEvent(QTouchEvent* event);
+    void touchUpdateEvent(QTouchEvent* event);
+    void touchEndEvent(QTouchEvent* event);
 
     bool event(QEvent* event) override;
 
