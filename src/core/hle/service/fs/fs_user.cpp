@@ -221,7 +221,7 @@ void FS_USER::CreateFile(Kernel::HLERequestContext& ctx) {
 
     FileSys::Path file_path{filename_type, filename};
 
-    LOG_DEBUG(Service_FS, "type={} attributes={} size={:x} data={}",
+    LOG_DEBUG(Service_FS, "called, type={}, attributes={}, size={:x}, data={}",
               static_cast<u32>(filename_type), attributes, file_size, file_path.DebugStr());
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -263,10 +263,11 @@ void FS_USER::RenameDirectory(Kernel::HLERequestContext& ctx) {
     FileSys::Path src_dir_path{src_dirname_type, src_dirname};
     FileSys::Path dest_dir_path{dest_dirname_type, dest_dirname};
 
-    LOG_DEBUG(Service_FS,
-              "src_type={} src_size={} src_data={} dest_type={} dest_size={} dest_data={}",
-              static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr(),
-              static_cast<u32>(dest_dirname_type), dest_dirname_size, dest_dir_path.DebugStr());
+    LOG_DEBUG(
+        Service_FS,
+        "called, src_type={}, src_size={}, src_data={}, dest_type={}, dest_size={}, dest_data={}",
+        static_cast<u32>(src_dirname_type), src_dirname_size, src_dir_path.DebugStr(),
+        static_cast<u32>(dest_dirname_type), dest_dirname_size, dest_dir_path.DebugStr());
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
     rb.Push(RenameDirectoryBetweenArchives(src_archive_handle, src_dir_path, dest_archive_handle,
@@ -283,8 +284,8 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
 
     FileSys::Path dir_path{dirname_type, dirname};
 
-    LOG_DEBUG(Service_FS, "type={} size={} data={}", static_cast<u32>(dirname_type), dirname_size,
-              dir_path.DebugStr());
+    LOG_DEBUG(Service_FS, "called, type={}, size={}, data={}", static_cast<u32>(dirname_type),
+              dirname_size, dir_path.DebugStr());
 
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 2)};
     ResultVal<std::shared_ptr<Directory>> dir_res{

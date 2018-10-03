@@ -242,12 +242,12 @@ void ConfigureSystem::setConfiguration() {
     enabled = !Core::System::GetInstance().IsPoweredOn();
 
     ui->combo_init_clock->setCurrentIndex(static_cast<u8>(Settings::values.init_clock));
-    QDateTime date_time{};
+    QDateTime date_time;
     date_time.setTime_t(Settings::values.init_time);
     ui->edit_init_time->setDateTime(date_time);
 
     if (!enabled) {
-        cfg = Service::CFG::GetCurrentModule();
+        this->cfg = Service::CFG::GetCurrentModule();
         ReadSystemSettings();
         ui->group_system_settings->setEnabled(false);
     } else {

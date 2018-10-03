@@ -8,6 +8,7 @@
 #include "common/file_util.h"
 #include "common/logging/log.h"
 #include "common/string_util.h"
+#include "core/core.h"
 #include "core/file_sys/archive_systemsavedata.h"
 #include "core/file_sys/directory_backend.h"
 #include "core/file_sys/errors.h"
@@ -609,7 +610,7 @@ void Module::Interface::ReadData(Kernel::HLERequestContext& ctx) {
 
     /// TODO: Other CecSystemInfoTypes
     IPC::ResponseBuilder rb{rp.MakeBuilder(1, 4)};
-    std::vector<u8> buffer{};
+    std::vector<u8> buffer;
     switch (info_type) {
     case CecSystemInfoType::EulaVersion:
         buffer = Service::CFG::GetCurrentModule()->GetEulaVersion();
@@ -628,7 +629,7 @@ void Module::Interface::ReadData(Kernel::HLERequestContext& ctx) {
         dest_buffer.Write(buffer.data(), 0, buffer.size());
         break;
     default:
-        LOG_ERROR(Service_CECD, "Unknown system info type={:#x}", static_cast<u32>(info_type));
+        LOG_ERROR(Service_CECD, "Unknown system info type {:#x}", static_cast<u32>(info_type));
     }
 
     rb.Push(RESULT_SUCCESS);

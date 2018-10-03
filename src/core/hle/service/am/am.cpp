@@ -1047,7 +1047,7 @@ void Module::Interface::EndImportProgram(Kernel::HLERequestContext& ctx) {
 class AMFileWrapper : public FileSys::FileBackend {
 public:
     AMFileWrapper(std::shared_ptr<Service::FS::File> file, std::size_t offset, std::size_t size)
-        : file(std::move(file)), file_offset(offset), file_size(size) {}
+        : file{std::move(file)}, file_offset{offset}, file_size{size} {}
 
     ResultVal<std::size_t> Read(u64 offset, std::size_t length, u8* buffer) const override {
         return file->backend->Read(offset + file_offset, length, buffer);
@@ -1061,12 +1061,15 @@ public:
     u64 GetSize() const override {
         return file_size;
     }
+
     bool SetSize(u64 size) const override {
         return false;
     }
+
     bool Close() const override {
         return false;
     }
+
     void Flush() const override {}
 
 private:
@@ -1099,8 +1102,8 @@ ResultVal<std::unique_ptr<AMFileWrapper>> GetFileFromSession(
         if (file != nullptr) {
             // Grab the session file offset in case we were given a subfile opened with
             // File::OpenSubFile
-            std::size_t offset = file->GetSessionFileOffset(server);
-            std::size_t size = file->GetSessionFileSize(server);
+            std::size_t offset{file->GetSessionFileOffset(server)};
+            std::size_t size{file->GetSessionFileSize(server)};
             return MakeResult(std::make_unique<AMFileWrapper>(file, offset, size));
         }
 

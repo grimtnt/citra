@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include "common/logging/log.h"
+#include "core/core.h"
 #include "core/hle/ipc.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/event.h"
@@ -14,8 +15,6 @@
 #include "core/settings.h"
 
 namespace Service::MIC {
-
-MIC_U* current_mic{};
 
 enum class Encoding : u8 {
     PCM8 = 0,
@@ -391,8 +390,6 @@ MIC_U::MIC_U() : ServiceFramework{"mic:u", 1}, impl{std::make_unique<Impl>()} {
     };
 
     RegisterHandlers(functions);
-
-    current_mic = this;
 }
 
 MIC_U::~MIC_U() {}
@@ -406,9 +403,13 @@ void InstallInterfaces(SM::ServiceManager& service_manager) {
 }
 
 void ReloadDevice() {
-    if (!current_mic)
+    if (!Core::System::GetInstance().IsPoweredOn()) {
         return;
-    current_mic->ReloadDevice();
+    }
+
+    std::shared_ptr<MIC_U> mic{
+        Core::System::GetInstance().ServiceManager().GetService<MIC_U>("mic:u")};
+    mic->ReloadDevice();
 }
 
 } // namespace Service::MIC

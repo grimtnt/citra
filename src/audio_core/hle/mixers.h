@@ -26,32 +26,37 @@ public:
     }
 
 private:
-    StereoFrame16 current_frame = {};
+    StereoFrame16 current_frame{};
 
     using OutputFormat = DspConfiguration::OutputFormat;
 
     struct {
-        std::array<float, 3> intermediate_mixer_volume = {};
+        std::array<float, 3> intermediate_mixer_volume{};
 
-        bool mixer1_enabled = false;
-        bool mixer2_enabled = false;
-        std::array<QuadFrame32, 3> intermediate_mix_buffer = {};
+        bool mixer1_enabled{};
+        bool mixer2_enabled{};
+        std::array<QuadFrame32, 3> intermediate_mix_buffer{};
 
-        OutputFormat output_format = OutputFormat::Stereo;
+        OutputFormat output_format{OutputFormat::Stereo};
 
     } state;
 
     /// INTERNAL: Update our internal state based on the current config.
     void ParseConfig(DspConfiguration& config);
+
     /// INTERNAL: Read samples from shared memory that have been modified by the ARM11.
     void AuxReturn(const IntermediateMixSamples& read_samples);
+
     /// INTERNAL: Write samples to shared memory for the ARM11 to modify.
     void AuxSend(IntermediateMixSamples& write_samples, const std::array<QuadFrame32, 3>& input);
+
     /// INTERNAL: Mix current_frame.
     void MixCurrentFrame();
+
     /// INTERNAL: Downmix from quadraphonic to stereo based on status.output_format and accumulate
     /// into current_frame.
     void DownmixAndMixIntoCurrentFrame(float gain, const QuadFrame32& samples);
+
     /// INTERNAL: Generate DspStatus based on internal state.
     DspStatus GetCurrentStatus() const;
 };

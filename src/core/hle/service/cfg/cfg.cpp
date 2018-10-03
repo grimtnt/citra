@@ -91,21 +91,22 @@ struct ConsoleCountryInfo {
 static_assert(sizeof(ConsoleCountryInfo) == 4, "ConsoleCountryInfo must be exactly 4 bytes");
 } // namespace
 
-static const ConsoleModelInfo CONSOLE_MODEL = {NINTENDO_3DS_XL, {0, 0, 0}};
-static const u8 CONSOLE_LANGUAGE = LANGUAGE_EN;
-static const UsernameBlock CONSOLE_USERNAME_BLOCK = {u"CITRA", 0, 0};
-static const BirthdayBlock PROFILE_BIRTHDAY = {3, 25}; // March 25th, 2014
-static const u8 SOUND_OUTPUT_MODE = SOUND_SURROUND;
-static const u8 UNITED_STATES_COUNTRY_ID = 49;
+constexpr ConsoleModelInfo CONSOLE_MODEL{NINTENDO_3DS_XL, {0, 0, 0}};
+constexpr u8 CONSOLE_LANGUAGE{LANGUAGE_EN};
+constexpr UsernameBlock CONSOLE_USERNAME_BLOCK{u"CITRA", 0, 0};
+constexpr BirthdayBlock PROFILE_BIRTHDAY{3, 25}; // March 25th, 2014
+constexpr u8 SOUND_OUTPUT_MODE{SOUND_SURROUND};
+constexpr u8 UNITED_STATES_COUNTRY_ID{49};
+
 /// TODO(Subv): Find what the other bytes are
-static const ConsoleCountryInfo COUNTRY_INFO = {{0, 0, 0}, UNITED_STATES_COUNTRY_ID};
+constexpr ConsoleCountryInfo COUNTRY_INFO{{0, 0, 0}, UNITED_STATES_COUNTRY_ID};
 
 /**
  * TODO(Subv): Find out what this actually is, these values fix some NaN uniforms in some games,
  * for example Nintendo Zone
  * Thanks Normmatt for providing this information
  */
-static const std::array<float, 8> STEREO_CAMERA_SETTINGS = {
+constexpr std::array<float, 8> STEREO_CAMERA_SETTINGS = {
     62.0f, 289.0f, 76.80000305175781f, 46.08000183105469f,
     10.0f, 5.0f,   55.58000183105469f, 21.56999969482422f,
 };
@@ -116,8 +117,8 @@ static const std::vector<u8> cfg_system_savedata_id = {
     0x00, 0x00, 0x00, 0x00, 0x17, 0x00, 0x01, 0x00,
 };
 
-static std::weak_ptr<Module> current_cfg;
 static bool new_mode_enabled{};
+static std::weak_ptr<Module> current_cfg;
 
 std::shared_ptr<Module> GetCurrentModule() {
     auto cfg{current_cfg.lock()};
@@ -199,7 +200,7 @@ void Module::Interface::GenHashConsoleUnique(Kernel::HLERequestContext& ctx) {
     IPC::ResponseBuilder rb{rp.MakeBuilder(3, 0)};
 
     std::array<u8, 12> buffer;
-    const ResultCode result = cfg->GetConfigInfoBlock(ConsoleUniqueID2BlockID, 8, 2, buffer.data());
+    const ResultCode result{cfg->GetConfigInfoBlock(ConsoleUniqueID2BlockID, 8, 2, buffer.data())};
     rb.Push(result);
     if (result.IsSuccess()) {
         std::memcpy(&buffer[8], &app_id_salt, sizeof(u32));
@@ -224,7 +225,7 @@ void Module::Interface::GetRegionCanadaUSA(Kernel::HLERequestContext& ctx) {
 
     rb.Push(RESULT_SUCCESS);
 
-    u8 canada_or_usa = 1;
+    u8 canada_or_usa{1};
     if (canada_or_usa == cfg->GetRegionValue()) {
         rb.Push(true);
     } else {
@@ -437,7 +438,7 @@ ResultVal<void*> Module::GetConfigInfoBlockPointer(u32 block_id, u32 size, u32 f
 
     void* pointer;
 
-    // The data is located in the block header itself if the size is less than 4 bytes
+    // The data is located in the block header itself if the size is <= 4 bytes
     if (itr->size <= 4)
         pointer = &itr->offset_or_data;
     else
@@ -771,7 +772,7 @@ std::u16string Module::GetUsername() {
 }
 
 void Module::SetBirthday(u8 month, u8 day) {
-    BirthdayBlock block = {month, day};
+    BirthdayBlock block{month, day};
     SetConfigInfoBlock(BirthdayBlockID, sizeof(block), 4, &block);
 }
 
@@ -782,7 +783,7 @@ std::tuple<u8, u8> Module::GetBirthday() {
 }
 
 void Module::SetSystemLanguage(SystemLanguage language) {
-    u8 block = language;
+    u8 block{static_cast<u8>(language)};
     SetConfigInfoBlock(LanguageBlockID, sizeof(block), 4, &block);
 }
 
@@ -793,7 +794,7 @@ SystemLanguage Module::GetSystemLanguage() {
 }
 
 void Module::SetSoundOutputMode(SoundOutputMode mode) {
-    u8 block = mode;
+    u8 block{static_cast<u8>(mode)};
     SetConfigInfoBlock(SoundOutputModeBlockID, sizeof(block), 4, &block);
 }
 
@@ -804,7 +805,7 @@ SoundOutputMode Module::GetSoundOutputMode() {
 }
 
 void Module::SetCountryCode(u8 country_code) {
-    ConsoleCountryInfo block = {{0, 0, 0}, country_code};
+    ConsoleCountryInfo block{{0, 0, 0}, country_code};
     SetConfigInfoBlock(CountryInfoBlockID, sizeof(block), 4, &block);
 }
 
@@ -824,9 +825,9 @@ void Module::GenerateConsoleUniqueId(u32& random_number, u64& console_id) {
 }
 
 ResultCode Module::SetConsoleUniqueId(u32 random_number, u64 console_id) {
-    u64_le console_id_le = console_id;
-    ResultCode res =
-        SetConfigInfoBlock(ConsoleUniqueID1BlockID, sizeof(console_id_le), 0xE, &console_id_le);
+    u64_le console_id_le{console_id};
+    ResultCode res{
+        SetConfigInfoBlock(ConsoleUniqueID1BlockID, sizeof(console_id_le), 0xE, &console_id_le)};
     if (!res.IsSuccess())
         return res;
 
@@ -834,7 +835,7 @@ ResultCode Module::SetConsoleUniqueId(u32 random_number, u64 console_id) {
     if (!res.IsSuccess())
         return res;
 
-    u32_le random_number_le = random_number;
+    u32_le random_number_le{random_number};
     res = SetConfigInfoBlock(ConsoleUniqueID3BlockID, sizeof(random_number_le), 0xE,
                              &random_number_le);
     if (!res.IsSuccess())

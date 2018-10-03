@@ -77,18 +77,18 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
             u32 length{static_cast<u32>(byte1 >> 4)};
             u32 offset;
             if (length == 0) {
-                u8 byte2 = *(in++);
-                u8 byte3 = *(in++);
+                u8 byte2{*(in++)};
+                u8 byte3{*(in++)};
                 length = (((byte1 & 0x0F) << 4) | (byte2 >> 4)) + 0x11;
                 offset = (((byte2 & 0x0F) << 8) | byte3) + 0x1;
             } else if (length == 1) {
-                u8 byte2 = *(in++);
-                u8 byte3 = *(in++);
-                u8 byte4 = *(in++);
+                u8 byte2{*(in++)};
+                u8 byte3{*(in++)};
+                u8 byte4{*(in++)};
                 length = (((byte1 & 0x0F) << 12) | (byte2 << 4) | (byte3 >> 4)) + 0x111;
                 offset = (((byte3 & 0x0F) << 8) | byte4) + 0x1;
             } else {
-                u8 byte2 = *(in++);
+                u8 byte2{*(in++)};
                 length = (byte1 >> 4) + 0x1;
                 offset = (((byte1 & 0x0F) << 8) | byte2) + 0x1;
             }
@@ -109,7 +109,7 @@ static u32 DecompressLZ11(const u8* in, u8* out) {
 
 bool Module::LoadSharedFont() {
     u8 font_region_code;
-    switch (CFG::GetCurrentModule()->GetRegionValue()) {
+    switch (Service::CFG::GetCurrentModule()->GetRegionValue()) {
     case 4: // CHN
         font_region_code = 2;
         break;

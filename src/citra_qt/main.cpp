@@ -784,8 +784,9 @@ void GMainWindow::ErrEulaCallback(HLE::Applets::ErrEulaConfig& config) {
     case HLE::Applets::ErrEulaErrorType::EulaFirstBoot: {
         QMessageBox::StandardButton button{
             QMessageBox::question(nullptr, "ErrEula", "Agree EULA?")};
-        if (button == QMessageBox::StandardButton::Yes)
+        if (button == QMessageBox::StandardButton::Yes) {
             Service::CFG::GetCurrentModule()->AgreeEula();
+        }
         break;
     }
     }

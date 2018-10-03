@@ -122,8 +122,6 @@ public:
             (this->*function)(ctx, id);
         }
 
-        u32 GetRegionValue();
-
     private:
         std::shared_ptr<Module> cfg;
     };
@@ -311,7 +309,7 @@ private:
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);
-std::shared_ptr<Module> GetCurrentModule();
 bool IsNewModeEnabled();
+std::shared_ptr<Module> GetCurrentModule();
 
 } // namespace Service::CFG

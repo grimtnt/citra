@@ -4,6 +4,7 @@
 
 #include "common/logging/log.h"
 #include "common/string_util.h"
+#include "core/core.h"
 #include "core/hle/ipc_helpers.h"
 #include "core/hle/kernel/shared_memory.h"
 #include "core/hle/service/act/act.h"
@@ -57,7 +58,7 @@ void Module::Interface::GetAccountDataBlock(Kernel::HLERequestContext& ctx) {
         break;
     }
     case BlkID::Unknown6: {
-        u32 value = 1;
+        u32 value{1};
         buffer.Write(&value, 0, sizeof(u32));
         break;
     }

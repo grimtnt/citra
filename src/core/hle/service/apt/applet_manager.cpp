@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include "common/common_paths.h"
+#include "core/core.h"
 #include "core/hle/applets/applet.h"
 #include "core/hle/kernel/handle_table.h"
 #include "core/hle/service/apt/applet_manager.h"
@@ -79,7 +80,7 @@ static u64 GetTitleIdForApplet(AppletId id) {
 
     ASSERT_MSG(itr != applet_titleids.end(), "Unknown applet id {:#05X}", static_cast<u32>(id));
 
-    return itr->title_ids[CFG::GetCurrentModule()->GetRegionValue()];
+    return itr->title_ids[Service::CFG::GetCurrentModule()->GetRegionValue()];
 }
 
 AppletManager::AppletSlotData* AppletManager::GetAppletSlotData(AppletId id) {

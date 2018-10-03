@@ -70,7 +70,7 @@ public:
     /// Enable/Disable audio stretching.
     void EnableStretching(bool enable);
 
-    void OutputFrame(StereoFrame16& frame);
+    void OutputFrame(const StereoFrame16& frame);
 
 private:
     void FlushResidualStretcherAudio();

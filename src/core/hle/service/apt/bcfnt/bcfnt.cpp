@@ -22,9 +22,9 @@ void RelocateSharedFont(Kernel::SharedPtr<Kernel::SharedMemory> shared_font, VAd
     u32 first_tglp_offset{};
 
     // First discover the location of sections so that the rebase offset can be auto-detected
-    u32 current_offset = SharedFontStartOffset + cfnt.header_size;
+    u32 current_offset{SharedFontStartOffset + cfnt.header_size};
     for (unsigned block{}; block < cfnt.num_blocks; ++block) {
-        const u8* data = shared_font->GetPointer(current_offset);
+        const u8* data{shared_font->GetPointer(current_offset)};
 
         SectionHeader section_header;
         memcpy(&section_header, data, sizeof(section_header));

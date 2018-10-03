@@ -62,9 +62,9 @@ private:
     void AudioTickCallback(s64 cycles_late);
 
     DspState dsp_state{DspState::Off};
-    std::array<std::vector<u8>, num_dsp_pipe> pipe_data{};
+    std::array<std::vector<u8>, num_dsp_pipe> pipe_data;
 
-    HLE::DspMemory dsp_memory{};
+    HLE::DspMemory dsp_memory;
     std::array<HLE::Source, HLE::num_sources> sources{{
         HLE::Source(0),  HLE::Source(1),  HLE::Source(2),  HLE::Source(3),  HLE::Source(4),
         HLE::Source(5),  HLE::Source(6),  HLE::Source(7),  HLE::Source(8),  HLE::Source(9),
@@ -72,12 +72,12 @@ private:
         HLE::Source(15), HLE::Source(16), HLE::Source(17), HLE::Source(18), HLE::Source(19),
         HLE::Source(20), HLE::Source(21), HLE::Source(22), HLE::Source(23),
     }};
-    HLE::Mixers mixers{};
+    HLE::Mixers mixers;
 
     DspHle& parent;
-    CoreTiming::EventType* tick_event{};
+    CoreTiming::EventType* tick_event;
 
-    std::weak_ptr<DSP_DSP> dsp_dsp{};
+    std::weak_ptr<DSP_DSP> dsp_dsp;
 };
 
 DspHle::Impl::Impl(DspHle& parent_) : parent{parent_} {
@@ -190,7 +190,8 @@ void DspHle::Impl::PipeWrite(DspPipe pipe_number, const std::vector<u8>& buffer)
             dsp_state = DspState::Off;
             break;
         }
-
+        std::copy(buffer.begin(), buffer.end(),
+                  std::back_inserter(pipe_data[static_cast<std::size_t>(DspPipe::Binary)]));
         return;
     }
     case DspPipe::Binary:
@@ -323,13 +324,10 @@ StereoFrame16 DspHle::Impl::GenerateCurrentFrame() {
 bool DspHle::Impl::Tick() {
     if (!IsOutputAllowed())
         return false;
-    StereoFrame16 current_frame = {};
 
     // TODO: Check dsp::DSP semaphore (which indicates emulated application has finished writing to
     // shared memory region)
-    current_frame = GenerateCurrentFrame();
-
-    parent.OutputFrame(current_frame);
+    parent.OutputFrame(GenerateCurrentFrame());
 
     return true;
 }
@@ -409,7 +407,7 @@ void DspHle::EnableStretching(bool enable) {
     perform_time_stretching = enable;
 }
 
-void DspHle::OutputFrame(StereoFrame16& frame) {
+void DspHle::OutputFrame(const StereoFrame16& frame) {
     if (!sink)
         return;
 

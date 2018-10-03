@@ -13,7 +13,6 @@
 #include "common/logging/log.h"
 #include "common/string_util.h"
 #include "common/swap.h"
-#include "core/core.h"
 #include "core/file_sys/archive_selfncch.h"
 #include "core/file_sys/ncch_container.h"
 #include "core/file_sys/title_metadata.h"
@@ -32,7 +31,7 @@ namespace Loader {
 static const u64 UPDATE_MASK{0x0000000e00000000};
 
 FileType AppLoader_NCCH::IdentifyType(FileUtil::IOFile& file) {
-    u32 magic{};
+    u32 magic;
     file.Seek(0x100, SEEK_SET);
     if (1 != file.ReadArray<u32>(&magic, 1))
         return FileType::Error;
@@ -66,8 +65,8 @@ ResultStatus AppLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& proces
     if (!is_loaded)
         return ResultStatus::ErrorNotLoaded;
 
-    std::vector<u8> code{};
-    u64_le program_id{};
+    std::vector<u8> code;
+    u64_le program_id;
     if (ResultStatus::Success == ReadCode(code) &&
         ResultStatus::Success == ReadProgramId(program_id)) {
         std::string process_name{Common::StringFromFixedZeroTerminatedBuffer(
@@ -128,13 +127,13 @@ ResultStatus AppLoader_NCCH::LoadExec(Kernel::SharedPtr<Kernel::Process>& proces
 }
 
 void AppLoader_NCCH::ParseRegionLockoutInfo() {
-    std::vector<u8> smdh_buffer{};
+    std::vector<u8> smdh_buffer;
     if (ReadIcon(smdh_buffer) == ResultStatus::Success && smdh_buffer.size() >= sizeof(SMDH)) {
-        SMDH smdh{};
+        SMDH smdh;
         memcpy(&smdh, smdh_buffer.data(), sizeof(SMDH));
         u32 region_lockout{smdh.region_lockout};
         constexpr u32 REGION_COUNT{7};
-        std::vector<u32> regions{};
+        std::vector<u32> regions;
         for (u32 region{}; region < REGION_COUNT; ++region) {
             if (region_lockout & 1) {
                 regions.push_back(region);
@@ -146,8 +145,6 @@ void AppLoader_NCCH::ParseRegionLockoutInfo() {
 }
 
 ResultStatus AppLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& process) {
-    u64_le ncch_program_id{};
-
     if (is_loaded)
         return ResultStatus::ErrorAlreadyLoaded;
 
@@ -155,6 +152,7 @@ ResultStatus AppLoader_NCCH::Load(Kernel::SharedPtr<Kernel::Process>& process) {
     if (result != ResultStatus::Success)
         return result;
 
+    u64_le ncch_program_id;
     ReadProgramId(ncch_program_id);
     std::string program_id{fmt::format("{:016X}", ncch_program_id)};
 
