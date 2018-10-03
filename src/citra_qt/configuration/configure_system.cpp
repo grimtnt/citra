@@ -247,7 +247,7 @@ void ConfigureSystem::setConfiguration() {
     ui->edit_init_time->setDateTime(date_time);
 
     if (!enabled) {
-        this->cfg = Service::CFG::GetCurrentModule();
+        cfg = Service::CFG::GetCurrentModule();
         ReadSystemSettings();
         ui->group_system_settings->setEnabled(false);
     } else {
