@@ -11,20 +11,19 @@
 #include "common/swap.h"
 #include "core/hle/service/service.h"
 
-// Local-WLAN service
-
 namespace Service::NWM {
 
-const std::size_t ApplicationDataSize = 0xC8;
-const u8 DefaultNetworkChannel = 11;
+const std::size_t ApplicationDataSize{0xC8};
+const u8 DefaultNetworkChannel{11};
 
 // Number of milliseconds in a TU.
-const double MillisecondsPerTU = 1.024;
+const double MillisecondsPerTU{1.024};
+
 // Interval measured in TU, the default value is 100TU = 102.4ms
-const u16 DefaultBeaconInterval = 100;
+const u16 DefaultBeaconInterval{100};
 
 /// The maximum number of nodes that can exist in an UDS session.
-constexpr u32 UDSMaxNodes = 16;
+constexpr u32 UDSMaxNodes{16};
 
 struct NodeInfo {
     u64_le friend_code_seed;
@@ -73,8 +72,7 @@ struct NetworkInfo {
     INSERT_PADDING_BYTES(3);
     std::array<u8, 3> oui_value;
     u8 oui_type;
-    // This field is received as BigEndian from the game.
-    u32_be wlan_comm_id;
+    u32_be wlan_comm_id; ///< This field is received as BigEndian from the game.
     u8 id;
     INSERT_PADDING_BYTES(1);
     u16_be attributes;

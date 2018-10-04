@@ -9,9 +9,9 @@
 #include <list>
 #include <map>
 #include <mutex>
-#include <optional>
 #include <unordered_map>
 #include <vector>
+#include <boost/optional.hpp>
 #include <cryptopp/osrng.h>
 #include "common/common_types.h"
 #include "common/logging/log.h"
@@ -112,7 +112,7 @@ static std::list<Network::WifiPacket> received_beacons;
 // Network node id used when a SecureData packet is addressed to every connected node.
 constexpr u16 BroadcastNetworkNodeId{0xFFFF};
 
-// The Host has always dest_node_id 1
+// The host has always dest_node_id 1
 constexpr u16 HostDestNodeId{1};
 
 /**
@@ -167,11 +167,13 @@ static void BroadcastNodeMap() {
     packet.channel = network_channel;
     packet.type = Network::WifiPacket::PacketType::NodeMap;
     packet.destination_address = Network::BroadcastMac;
-    std::size_t size{node_map.size()};
+    std::size_t num_entries{static_cast<std::size_t>(std::count_if(
+        node_map.begin(), node_map.end(), [](const auto& node) { return node.second.connected; }))};
     using node_t = decltype(node_map)::value_type;
-    packet.data.resize(sizeof(size) + (sizeof(node_t::first) + sizeof(node_t::second)) * size);
-    std::memcpy(packet.data.data(), &size, sizeof(size));
-    std::size_t offset{sizeof(size)};
+    packet.data.resize(sizeof(num_entries) +
+                       (sizeof(node_t::first) + sizeof(node_t::second.node_id)) * num_entries);
+    std::memcpy(packet.data.data(), &num_entries, sizeof(num_entries));
+    std::size_t offset{sizeof(num_entries)};
     for (const auto& node : node_map) {
         if (node.second.connected) {
             std::memcpy(packet.data.data() + offset, node.first.data(), sizeof(node.first));
@@ -308,6 +310,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
         eapol_logoff.data =
             GenerateEAPoLLogoffFrame(packet.transmitter_address, node.network_node_id, node_info,
                                      network_info.max_nodes, network_info.total_nodes);
+
         // TODO(Subv): Encrypt the packet.
 
         // TODO(B3N30): send the eapol packet just to the new client and implement a proper
@@ -344,6 +347,7 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
         // We're now connected, signal the application
         connection_status.status = static_cast<u32>(NetworkStatus::ConnectedAsClient);
+
         // Some games require ConnectToNetwork to block, for now it doesn't
         // If blocking is implemented this lock needs to be changed,
         // otherwise it might cause deadlocks
@@ -511,6 +515,7 @@ void HandleAuthenticationFrame(const Network::WifiPacket& packet) {
             if (connection_status.max_nodes == connection_status.total_nodes) {
                 // Reject connection attempt
                 LOG_ERROR(Service_NWM, "Reached maximum nodes, but reject packet wasn't sent.");
+
                 // TODO(B3N30): Figure out what packet is sent here
                 return;
             }
@@ -541,29 +546,28 @@ void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
         return;
     }
 
-    u16 node_id{node_map[packet.transmitter_address].node_id};
-    bool connected{node_map[packet.transmitter_address].connected};
+    Node node{node_map[packet.transmitter_address]};
     node_map.erase(packet.transmitter_address);
 
-    if (!connected) {
+    if (!node.connected) {
         LOG_DEBUG(Service_NWM, "Received DeauthenticationFrame from a not connected MAC Address");
         return;
     }
 
-    auto node{std::find_if(node_info.begin(), node_info.end(), [&node_id](const NodeInfo& info) {
-        return info.network_node_id == node_id;
+    auto node_it{std::find_if(node_info.begin(), node_info.end(), [&node](const NodeInfo& info) {
+        return info.network_node_id == node.node_id;
     })};
-    ASSERT(node != node_info.end());
+    ASSERT(node_it != node_info.end());
 
-    connection_status.node_bitmask &= ~(1 << (node_id - 1));
-    connection_status.changed_nodes |= 1 << (node_id - 1);
+    connection_status.node_bitmask &= ~(1 << (node.node_id - 1));
+    connection_status.changed_nodes |= 1 << (node.node_id - 1);
     connection_status.total_nodes--;
-    connection_status.nodes[node_id - 1] = 0;
-
-    network_info.total_nodes--;
+    connection_status.nodes[node.node_id - 1] = 0;
     // TODO(B3N30): broadcast new connection_status to clients
 
-    node->Reset();
+    network_info.total_nodes--;
+
+    node_it->Reset();
 
     connection_status_event->Signal();
 
@@ -605,8 +609,8 @@ void OnWifiPacketReceived(const Network::WifiPacket& packet) {
     }
 }
 
-static std::optional<Network::MacAddress> GetNodeMacAddress(u16 dest_node_id, u8 flags) {
-    constexpr u8 BroadcastFlag = 0x2;
+static boost::optional<Network::MacAddress> GetNodeMacAddress(u16 dest_node_id, u8 flags) {
+    constexpr u8 BroadcastFlag{0x2};
     if ((flags & BroadcastFlag) || dest_node_id == BroadcastNetworkNodeId) {
         // Broadcast
         return Network::BroadcastMac;
@@ -615,10 +619,10 @@ static std::optional<Network::MacAddress> GetNodeMacAddress(u16 dest_node_id, u8
         return network_info.host_mac_address;
     }
     // Destination is a specific client
-    auto destination =
+    auto destination{
         std::find_if(node_map.begin(), node_map.end(), [dest_node_id](const auto& node) {
             return node.second.node_id == dest_node_id && node.second.connected;
-        });
+        })};
     if (destination == node_map.end()) {
         return {};
     }
