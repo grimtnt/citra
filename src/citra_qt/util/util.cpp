@@ -7,7 +7,7 @@
 #include "citra_qt/util/util.h"
 
 QString ReadableByteSize(qulonglong size) {
-    static const std::array<const char*, 6> units = {"B", "KiB", "MiB", "GiB", "TiB", "PiB"};
+    static const std::array<const char*, 6> units{{"B", "KiB", "MiB", "GiB", "TiB", "PiB"}};
     if (size == 0)
         return "0";
     int digit_groups{std::min<int>(static_cast<int>(std::log10(size) / std::log10(1024)),

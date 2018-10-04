@@ -14,7 +14,7 @@
 #include "core/memory.h"
 #include "core/settings.h"
 
-static std::unordered_map<u64, u64> custom_ticks_map = {
+static std::unordered_map<u64, u64> custom_ticks_map{{
     {0x000400000008C300, 570},   {0x000400000008C400, 570},   {0x000400000008C500, 570},
     {0x0004000000126A00, 570},   {0x0004000000126B00, 570},   {0x0004000200120C01, 570},
     {0x000400000F700E00, 18000}, {0x0004000000055D00, 17000}, {0x0004000000055E00, 17000},
@@ -24,7 +24,7 @@ static std::unordered_map<u64, u64> custom_ticks_map = {
     {0x0004000000055F00, 27000}, {0x0004000000076500, 27000}, {0x0004000000076400, 27000},
     {0x00040000000D0000, 27000}, {0x0004000000126100, 6000},  {0x0004000000126300, 6000},
     {0x000400000011D700, 6000},
-};
+}};
 
 class UserCallbacks final : public Dynarmic::A32::UserCallbacks {
 public:

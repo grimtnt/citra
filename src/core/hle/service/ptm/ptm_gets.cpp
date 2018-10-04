@@ -8,7 +8,7 @@ namespace Service::PTM {
 
 PTM_Gets::PTM_Gets(std::shared_ptr<Module> ptm)
     : Module::Interface{std::move(ptm), "ptm:gets", 26} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // ptm:u common commands
         {0x00010002, nullptr, "RegisterAlarmClient"},
         {0x00020080, nullptr, "SetRtcAlarm"},

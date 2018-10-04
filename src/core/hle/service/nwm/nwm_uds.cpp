@@ -1354,7 +1354,7 @@ static void BeaconBroadcastCallback(u64 userdata, s64 cycles_late) {
 }
 
 NWM_UDS::NWM_UDS() : ServiceFramework{"nwm::UDS"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x000102C2, nullptr, "Initialize (deprecated)"},
         {0x00020000, nullptr, "Scrap"},
         {0x00030000, &NWM_UDS::Shutdown, "Shutdown"},

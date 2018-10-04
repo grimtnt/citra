@@ -36,7 +36,7 @@ constexpr u32 EncryptedDataSizeCutoff{0xFA};
  * The real key can be used here to generate beacons that will be accepted by
  * a real 3ds.
  */
-constexpr std::array<u8, CryptoPP::AES::BLOCKSIZE> nwm_beacon_key = {};
+constexpr std::array<u8, CryptoPP::AES::BLOCKSIZE> nwm_beacon_key{};
 
 /**
  * Generates a buffer with the fixed parameters of an 802.11 Beacon frame
@@ -130,6 +130,7 @@ std::vector<u8> GenerateNintendoNetworkInfoTag(const NetworkInfo& network_info) 
     tag.header.length =
         sizeof(NetworkInfoTag) - sizeof(TagHeader) + network_info.application_data_size;
     tag.appdata_size = network_info.application_data_size;
+
     // Set the hash to zero initially, it will be updated once we calculate it.
     tag.sha_hash = {};
 

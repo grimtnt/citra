@@ -7,7 +7,7 @@
 namespace Service::NS {
 
 NS_S::NS_S() : ServiceFramework{"ns:s", 2} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x000100C0, nullptr, "LaunchFIRM"},
         {0x000200C0, &NS_S::LaunchTitle, "LaunchTitle"},
         {0x00030000, nullptr, "TerminateApplication"},

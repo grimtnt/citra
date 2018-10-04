@@ -7,7 +7,7 @@
 namespace Service::MP {
 
 MP_U::MP_U() : ServiceFramework{"mp:u"} {
-    const FunctionInfo functions[] = {
+    const FunctionInfo functions[]{
         {0x00010040, nullptr, "GetHandle"},     {0x00020000, nullptr, "Initialize"},
         {0x00030000, nullptr, "Shutdown"},      {0x000400C0, nullptr, "Bind"},
         {0x00050042, nullptr, "SetBeaconData"}, {0x00070042, nullptr, "SetAppData"},

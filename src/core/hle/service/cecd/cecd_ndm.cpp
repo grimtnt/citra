@@ -6,9 +6,8 @@
 
 namespace Service::CECD {
 
-CECD_NDM::CECD_NDM(std::shared_ptr<Module> cecd)
-    : Module::Interface{std::move(cecd), "cecd:ndm"} {
-    static const FunctionInfo functions[] = {
+CECD_NDM::CECD_NDM(std::shared_ptr<Module> cecd) : Module::Interface{std::move(cecd), "cecd:ndm"} {
+    static const FunctionInfo functions[]{
         // clang-format off
         {0x00010000, nullptr, "Initialize"},
         {0x00020000, nullptr, "Deinitialize"},

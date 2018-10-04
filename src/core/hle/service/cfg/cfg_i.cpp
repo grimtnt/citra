@@ -7,7 +7,7 @@
 namespace Service::CFG {
 
 CFG_I::CFG_I(std::shared_ptr<Module> cfg) : Module::Interface{std::move(cfg), "cfg:i", 23} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // cfg common
         {0x00010082, &CFG_I::GetConfigInfoBlk2, "GetConfigInfoBlk2"},
         {0x00020000, &CFG_I::D<&CFG_I::SecureInfoGetRegion, 0x0002>, "SecureInfoGetRegion"},

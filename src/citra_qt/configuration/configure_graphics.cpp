@@ -51,6 +51,11 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
         }
     });
 #endif
+
+    if (!Settings::values.enable_clear_cache) {
+        ui->clear_cache_secs->setEnabled(false);
+        ui->clear_cache_secs->setToolTip("enable_clear_cache is disabled.");
+    }
 }
 
 ConfigureGraphics::~ConfigureGraphics() {}

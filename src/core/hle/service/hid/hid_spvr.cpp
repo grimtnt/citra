@@ -7,7 +7,7 @@
 namespace Service::HID {
 
 Spvr::Spvr(std::shared_ptr<Module> hid) : Module::Interface{std::move(hid), "hid:SPVR"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010200, nullptr, "CalibrateTouchScreen"},
         {0x00020000, nullptr, "UpdateTouchConfig"},
         {0x000A0000, &Spvr::GetIPCHandles, "GetIPCHandles"},

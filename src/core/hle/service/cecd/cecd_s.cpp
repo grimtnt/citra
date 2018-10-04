@@ -6,9 +6,8 @@
 
 namespace Service::CECD {
 
-CECD_S::CECD_S(std::shared_ptr<Module> cecd)
-    : Module::Interface{std::move(cecd), "cecd:s"} {
-    static const FunctionInfo functions[] = {
+CECD_S::CECD_S(std::shared_ptr<Module> cecd) : Module::Interface{std::move(cecd), "cecd:s"} {
+    static const FunctionInfo functions[]{
         // cecd:u shared commands
         // clang-format off
         {0x000100C2, &CECD_S::Open, "Open"},

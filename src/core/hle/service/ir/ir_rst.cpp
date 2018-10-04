@@ -158,7 +158,7 @@ IR_RST::IR_RST() : ServiceFramework{"ir:rst", 1} {
             UpdateCallback(userdata, cycles_late);
         });
 
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010000, &IR_RST::GetHandles, "GetHandles"},
         {0x00020080, &IR_RST::Initialize, "Initialize"},
         {0x00030000, &IR_RST::Shutdown, "Shutdown"},

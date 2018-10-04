@@ -1383,7 +1383,7 @@ struct FunctionDef {
 };
 } // namespace
 
-static const FunctionDef SVC_Table[] = {
+constexpr FunctionDef SVC_Table[]{
     {0x00, nullptr, "Unknown"},
     {0x01, HLE::Wrap<ControlMemory>, "ControlMemory"},
     {0x02, HLE::Wrap<QueryMemory>, "QueryMemory"},

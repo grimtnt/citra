@@ -264,15 +264,15 @@ private:
         bool proctex_lut_dirty;
         bool proctex_diff_lut_dirty;
         bool dirty;
-    } uniform_block_data = {};
+    } uniform_block_data{};
 
     std::unique_ptr<ShaderProgramManager> shader_program_manager;
 
     // They shall be big enough for about one frame.
-    static constexpr std::size_t VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
-    static constexpr std::size_t INDEX_BUFFER_SIZE = 1 * 1024 * 1024;
-    static constexpr std::size_t UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
-    static constexpr std::size_t TEXTURE_BUFFER_SIZE = 1 * 1024 * 1024;
+    static constexpr std::size_t VERTEX_BUFFER_SIZE{32 * 1024 * 1024};
+    static constexpr std::size_t INDEX_BUFFER_SIZE{1 * 1024 * 1024};
+    static constexpr std::size_t UNIFORM_BUFFER_SIZE{2 * 1024 * 1024};
+    static constexpr std::size_t TEXTURE_BUFFER_SIZE{1 * 1024 * 1024};
 
     VertexArray sw_vao; // VAO for software shader draw
     VertexArray hw_vao; // VAO for hardware shader / accelerate draw

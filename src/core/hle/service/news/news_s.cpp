@@ -28,7 +28,7 @@ void NEWS_S::SetInfoLEDPattern(Kernel::HLERequestContext& ctx) {
 }
 
 NEWS_S::NEWS_S() : ServiceFramework{"news:s", 2} {
-    const FunctionInfo functions[] = {
+    const FunctionInfo functions[]{
         {0x000100C6, nullptr, "AddNotification"},
         {0x00050000, &NEWS_S::GetTotalNotifications, "GetTotalNotifications"},
         {0x00060042, nullptr, "SetNewsDBHeader"},

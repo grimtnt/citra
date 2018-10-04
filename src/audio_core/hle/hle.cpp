@@ -25,11 +25,15 @@ namespace AudioCore {
 
 static constexpr u64 audio_frame_ticks{1310252ull}; ///< Units: ARM11 cycles
 
-static const std::unordered_set<u64> titles_output_allowed_shell_closed = {
+static const std::unordered_set<u64> titles_output_allowed_shell_closed{{
     // Nintendo 3DS Sound
-    0x0004001000020500, 0x0004001000021500, 0x0004001000022500,
-    0x0004001000026500, 0x0004001000027500, 0x0004001000028500,
-};
+    0x0004001000020500,
+    0x0004001000021500,
+    0x0004001000022500,
+    0x0004001000026500,
+    0x0004001000027500,
+    0x0004001000028500,
+}};
 
 struct DspHle::Impl final {
 public:

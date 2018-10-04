@@ -587,7 +587,7 @@ void Module::Interface::FindDLCContentInfos(Kernel::HLERequestContext& ctx) {
                 return;
             }
 
-            ContentInfo content_info = {};
+            ContentInfo content_info{};
             content_info.index = content_requested[i];
             content_info.type = tmd.GetContentTypeByIndex(content_requested[i]);
             content_info.content_id = tmd.GetContentIDByIndex(content_requested[i]);
@@ -643,7 +643,7 @@ void Module::Interface::ListDLCContentInfos(Kernel::HLERequestContext& ctx) {
             std::shared_ptr<FileUtil::IOFile> romfs_file{};
             u64 romfs_offset{};
 
-            ContentInfo content_info = {};
+            ContentInfo content_info{};
             content_info.index = static_cast<u16>(i);
             content_info.type = tmd.GetContentTypeByIndex(i);
             content_info.content_id = tmd.GetContentIDByIndex(i);
@@ -714,7 +714,7 @@ ResultCode GetTitleInfoFromList(const std::vector<u64>& title_id_list,
     for (u32 i{}; i < title_id_list.size(); i++) {
         std::string tmd_path{GetTitleMetadataPath(media_type, title_id_list[i])};
 
-        TitleInfo title_info = {};
+        TitleInfo title_info{};
         title_info.tid = title_id_list[i];
 
         FileSys::TitleMetadata tmd;
@@ -885,7 +885,7 @@ void Module::Interface::ListDataTitleTicketInfos(Kernel::HLERequestContext& ctx)
 
     std::size_t write_offset{};
     for (u32 i{}; i < ticket_count; i++) {
-        TicketInfo ticket_info = {};
+        TicketInfo ticket_info{};
         ticket_info.title_id = title_id;
         ticket_info.version = 0; // TODO
         ticket_info.size = 0;    // TODO
@@ -1192,12 +1192,12 @@ void Module::Interface::GetProgramInfoFromCia(Kernel::HLERequestContext& ctx) {
     }
 
     FileSys::TitleMetadata tmd{container.GetTitleMetadata()};
-    TitleInfo title_info = {};
     container.Print();
 
     // TODO(shinyquagsire23): Sizes allegedly depend on the mediatype, and will double
     // on some mediatypes. Since this is more of a required install size we'll report
     // what Citra needs, but it would be good to be more accurate here.
+    TitleInfo title_info{};
     title_info.tid = tmd.GetTitleID();
     title_info.size = tmd.GetContentSizeByIndex(FileSys::TMDContentIndex::Main);
     title_info.version = tmd.GetTitleVersion();

@@ -8,7 +8,7 @@ namespace Service::PTM {
 
 PTM_S_Common::PTM_S_Common(std::shared_ptr<Module> ptm, const char* name)
     : Module::Interface{std::move(ptm), name, 26} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // ptm:u common commands
         {0x00010002, nullptr, "RegisterAlarmClient"},
         {0x00020080, nullptr, "SetRtcAlarm"},

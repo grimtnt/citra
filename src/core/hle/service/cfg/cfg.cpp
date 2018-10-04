@@ -537,7 +537,7 @@ ResultCode Module::FormatConfig() {
     config->data_entries_offset = 0x455C;
 
     // Insert the default blocks
-    u8 zero_buffer[0xC0] = {};
+    u8 zero_buffer[0xC0]{};
 
     // 0x00030001 - Unknown
     res = CreateConfigInfoBlk(0x00030001, 0x8, 0xE, zero_buffer);
@@ -590,7 +590,7 @@ ResultCode Module::FormatConfig() {
     if (!res.IsSuccess())
         return res;
 
-    u16_le country_name_buffer[16][0x40] = {};
+    u16_le country_name_buffer[16][0x40]{};
     std::u16string region_name{Common::UTF8ToUTF16("Gensokyo")};
     for (std::size_t i{}; i < 16; ++i) {
         std::copy(region_name.cbegin(), region_name.cend(), country_name_buffer[i]);

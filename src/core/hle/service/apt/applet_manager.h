@@ -173,7 +173,7 @@ private:
     };
 
     // Holds data about the concurrently running applets in the system.
-    std::array<AppletSlotData, NumAppletSlot> applet_slots = {};
+    std::array<AppletSlotData, NumAppletSlot> applet_slots{};
 
     // This overload returns nullptr if no applet with the specified id has been started.
     AppletSlotData* GetAppletSlotData(AppletId id);

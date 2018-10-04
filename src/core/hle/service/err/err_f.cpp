@@ -244,7 +244,7 @@ void ERR_F::SetUserString(Kernel::HLERequestContext& ctx) {
 }
 
 ERR_F::ERR_F() : ServiceFramework{"err:f", 1} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010800, &ERR_F::ThrowFatalError, "ThrowFatalError"},
         {0x00020042, &ERR_F::SetUserString, "SetUserString"},
     };

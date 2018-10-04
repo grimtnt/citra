@@ -7,7 +7,7 @@
 namespace Service::NEWS {
 
 NEWS_U::NEWS_U() : ServiceFramework{"news:u", 1} {
-    const FunctionInfo functions[] = {
+    const FunctionInfo functions[]{
         {0x000100C8, nullptr, "AddNotification"},
     };
     RegisterHandlers(functions);

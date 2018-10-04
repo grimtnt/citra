@@ -765,7 +765,7 @@ void FS_USER::GetThisSaveDataSecureValue(Kernel::HLERequestContext& ctx) {
 }
 
 FS_USER::FS_USER() : ServiceFramework{"fs:USER", 30} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x000100C6, nullptr, "Dummy1"},
         {0x040100C4, nullptr, "Control"},
         {0x08010002, &FS_USER::Initialize, "Initialize"},

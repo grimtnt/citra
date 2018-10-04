@@ -29,14 +29,14 @@ namespace Service::LDR {
     static_assert(sizeof(name) == (size), "Unexpected struct size for CRO structure " #name)
 #endif
 
-static constexpr u32 CRO_HEADER_SIZE = 0x138;
-static constexpr u32 CRO_HASH_SIZE = 0x80;
+static constexpr u32 CRO_HEADER_SIZE{0x138};
+static constexpr u32 CRO_HASH_SIZE{0x80};
 
 /// Represents a loaded module (CRO) with interfaces manipulating it.
 class CROHelper final {
 public:
     // TODO (wwylele): pass in the process handle for memory access
-    explicit CROHelper(VAddr cro_address) : module_address(cro_address) {}
+    explicit CROHelper(VAddr cro_address) : module_address{cro_address} {}
 
     std::string ModuleName() const {
         return Memory::ReadCString(GetField(ModuleNameOffset), GetField(ModuleNameSize));

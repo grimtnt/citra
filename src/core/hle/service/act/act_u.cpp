@@ -9,7 +9,7 @@ namespace Service::ACT {
 
 ACT_U::ACT_U(std::shared_ptr<Module> act)
     : Module::Interface{std::move(act), "act:u"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010084, &ACT_U::Initialize, "Initialize"},
         {0x00020040, &ACT_U::GetErrorCode, "GetErrorCode"},
         {0x000600C2, &ACT_U::GetAccountDataBlock, "GetAccountDataBlock"},

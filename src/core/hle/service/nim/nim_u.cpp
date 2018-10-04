@@ -9,7 +9,7 @@
 namespace Service::NIM {
 
 NIM_U::NIM_U() : ServiceFramework{"nim:u", 2} {
-    const FunctionInfo functions[] = {
+    const FunctionInfo functions[]{
         {0x00010000, nullptr, "StartSysUpdate"},
         {0x00020000, nullptr, "GetUpdateDownloadProgress"},
         {0x00040000, nullptr, "FinishTitlesInstall"},

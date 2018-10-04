@@ -7,7 +7,7 @@
 namespace Service::NIM {
 
 NIM_AOC::NIM_AOC() : ServiceFramework{"nim:aoc", 2} {
-    const FunctionInfo functions[] = {
+    const FunctionInfo functions[]{
         {0x00030042, nullptr, "SetApplicationId"},
         {0x00040042, nullptr, "SetTin"},
         {0x000902D0, nullptr, "ListContentSetsEx"},

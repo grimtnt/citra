@@ -7,7 +7,7 @@
 namespace Service::AM {
 
 AM_NET::AM_NET(std::shared_ptr<Module> am) : Module::Interface{std::move(am), "am:net", 5} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010040, &AM_NET::GetNumPrograms, "GetNumPrograms"},
         {0x00020082, &AM_NET::GetProgramList, "GetProgramList"},
         {0x00030084, &AM_NET::GetProgramInfos, "GetProgramInfos"},

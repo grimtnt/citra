@@ -12,7 +12,6 @@
 #include "core/hle/service/ldr_ro/cro_helper.h"
 #include "core/hle/service/ldr_ro/ldr_ro.h"
 
-
 namespace Service::LDR {
 
 static const ResultCode ERROR_ALREADY_INITIALIZED = // 0xD9612FF9
@@ -573,7 +572,7 @@ void RO::Shutdown(Kernel::HLERequestContext& ctx) {
 }
 
 RO::RO() : ServiceFramework{"ldr:ro", 2} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x000100C2, &RO::Initialize, "Initialize"},
         {0x00020082, &RO::LoadCRR, "LoadCRR"},
         {0x00030042, &RO::UnloadCRR, "UnloadCRR"},

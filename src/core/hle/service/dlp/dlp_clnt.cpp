@@ -8,7 +8,7 @@
 namespace Service::DLP {
 
 DLP_CLNT::DLP_CLNT() : ServiceFramework{"dlp:CLNT", 1} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // clang-format off
         {0x000100C3, nullptr, "Initialize"},
         {0x00020000, nullptr, "Finalize"},

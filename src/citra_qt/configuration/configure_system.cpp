@@ -11,7 +11,7 @@
 #include "core/settings.h"
 #include "ui_configure_system.h"
 
-static const std::array<int, 12> days_in_month = {{
+static const std::array<int, 12> days_in_month{{
     31,
     29,
     31,
@@ -26,7 +26,7 @@ static const std::array<int, 12> days_in_month = {{
     31,
 }};
 
-static const std::array<const char*, 187> country_names = {
+static const std::array<const char*, 187> country_names{{
     "",
     "Japan",
     "",
@@ -214,7 +214,7 @@ static const std::array<const char*, 187> country_names = {
     "San Marino",
     "Vatican City",
     "Bermuda", // 180-186
-};
+}};
 
 ConfigureSystem::ConfigureSystem(QWidget* parent)
     : QWidget{parent}, ui{std::make_unique<Ui::ConfigureSystem>()} {

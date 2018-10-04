@@ -7,7 +7,7 @@
 namespace Service::NWM {
 
 NWM_CEC::NWM_CEC() : ServiceFramework{"nwm::CEC"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x000D0082, nullptr, "SendProbeRequest"},
     };
     RegisterHandlers(functions);

@@ -930,7 +930,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
 
     switch (path_type) {
     case CecDataPathType::MboxList: {
-        CecMBoxListHeader mbox_list_header = {};
+        CecMBoxListHeader mbox_list_header;
         std::memcpy(&mbox_list_header, file_buffer.data(), sizeof(CecMBoxListHeader));
 
         LOG_DEBUG(Service_CECD, "CecMBoxList: magic={:#06x}, version={:#06x}, num_boxes={:#06x}",
@@ -1026,7 +1026,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         break;
     }
     case CecDataPathType::MboxInfo: {
-        CecMBoxInfoHeader mbox_info_header = {};
+        CecMBoxInfoHeader mbox_info_header;
         std::memcpy(&mbox_info_header, file_buffer.data(), sizeof(CecMBoxInfoHeader));
 
         LOG_DEBUG(Service_CECD,
@@ -1060,7 +1060,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         break;
     }
     case CecDataPathType::InboxInfo: {
-        CecBoxInfoHeader inbox_info_header = {};
+        CecBoxInfoHeader inbox_info_header;
         std::memcpy(&inbox_info_header, file_buffer.data(), sizeof(CecBoxInfoHeader));
 
         LOG_DEBUG(Service_CECD,
@@ -1122,7 +1122,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         break;
     }
     case CecDataPathType::OutboxInfo: {
-        CecBoxInfoHeader outbox_info_header = {};
+        CecBoxInfoHeader outbox_info_header;
         std::memcpy(&outbox_info_header, file_buffer.data(), sizeof(CecBoxInfoHeader));
 
         LOG_DEBUG(Service_CECD,
@@ -1245,7 +1245,7 @@ void Module::CheckAndUpdateFile(const CecDataPathType path_type, const u32 ncch_
         break;
     }
     case CecDataPathType::OutboxIndex: {
-        CecOBIndexHeader obindex_header = {};
+        CecOBIndexHeader obindex_header;
         std::memcpy(&obindex_header, file_buffer.data(), sizeof(CecOBIndexHeader));
 
         if (file_size < sizeof(CecOBIndexHeader)) { // 0x08, minimum size

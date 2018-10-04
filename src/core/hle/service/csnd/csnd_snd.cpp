@@ -173,7 +173,7 @@ void CSND_SND::Reset(Kernel::HLERequestContext& ctx) {
 }
 
 CSND_SND::CSND_SND() : ServiceFramework{"csnd:SND", 4} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // clang-format off
         {0x00010140, &CSND_SND::Initialize, "Initialize"},
         {0x00020000, &CSND_SND::Shutdown, "Shutdown"},

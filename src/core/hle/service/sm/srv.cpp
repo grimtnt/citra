@@ -206,7 +206,7 @@ void SRV::RegisterService(Kernel::HLERequestContext& ctx) {
 
 SRV::SRV(std::shared_ptr<ServiceManager> service_manager)
     : ServiceFramework{"srv:", 4}, service_manager{std::move(service_manager)} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010002, &SRV::RegisterClient, "RegisterClient"},
         {0x00020000, &SRV::EnableNotification, "EnableNotification"},
         {0x00030100, &SRV::RegisterService, "RegisterService"},

@@ -42,7 +42,7 @@ enum class Compatibility {
     NotTested = 99,
 };
 
-static const std::unordered_map<u64, Compatibility> compatibility_database = {
+static const std::unordered_map<u64, Compatibility> compatibility_database{{
     // Homebrew
     {0x000400000F800100, Compatibility::Okay},      // FBI
     {0x0004000004395500, Compatibility::IntroMenu}, // DSiMenuPlusPlus
@@ -157,7 +157,7 @@ static const std::unordered_map<u64, Compatibility> compatibility_database = {
     {0x0004000000086500, Compatibility::Great}, // 튀어나와요 동물의 숲
     {0x0004000000199000, Compatibility::Great}, // Animal Crossing™: New Leaf - Welcome amiibo
     {0x00040000001BB800, Compatibility::Great}, // Super Mario Maker for Nintendo 3DS
-};
+}};
 
 /**
  * Gets the game icon from SMDH data.
@@ -234,7 +234,7 @@ struct CompatStatus {
     const char* tooltip;
 };
 
-const static inline std::map<Compatibility, CompatStatus> status_data = {
+const static inline std::map<Compatibility, CompatStatus> status_data{
     {Compatibility::Perfect,
      {"#5c93ed", "Perfect",
       "Game functions flawless with no audio or graphical glitches, all tested functionality works "

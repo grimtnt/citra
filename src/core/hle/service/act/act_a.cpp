@@ -8,7 +8,7 @@ namespace Service::ACT {
 
 ACT_A::ACT_A(std::shared_ptr<Module> act)
     : Module::Interface{std::move(act), "act:a"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // act:u shared commands
         {0x00010084, &ACT_A::Initialize, "Initialize"},
         {0x00020040, &ACT_A::GetErrorCode, "GetErrorCode"},

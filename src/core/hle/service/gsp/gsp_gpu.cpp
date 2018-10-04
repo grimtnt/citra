@@ -719,7 +719,7 @@ SessionData* GSP_GPU::FindRegisteredThreadData(u32 thread_id) {
 }
 
 GSP_GPU::GSP_GPU() : ServiceFramework{"gsp::Gpu", 2} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010082, &GSP_GPU::WriteHWRegs, "WriteHWRegs"},
         {0x00020084, &GSP_GPU::WriteHWRegsWithMask, "WriteHWRegsWithMask"},
         {0x00030082, nullptr, "WriteHWRegRepeat"},

@@ -23,19 +23,22 @@ public:
     void timerEvent(QTimerEvent*) override;
 
 public slots:
-    /// recordConfig() and updateUiDisplay()
     void setConfiguration();
     void onToolButtonClicked();
 
 private:
     enum class CameraPosition { RearRight, Front, RearLeft, RearBoth, Null };
     static const std::array<std::string, 3> Implementations;
+
     /// Record the current configuration
     void recordConfig();
+
     /// Updates camera mode
     void updateCameraMode();
+
     /// Updates image source
     void updateImageSourceUI();
+
     void startPreviewing();
     void stopPreviewing();
     void connectEvents();
@@ -50,7 +53,7 @@ private:
     int timer_id{};
     int preview_width{};
     int preview_height{};
-    CameraPosition current_selected = CameraPosition::Front;
-    bool is_previewing = false;
+    CameraPosition current_selected{CameraPosition::Front};
+    bool is_previewing{};
     std::unique_ptr<Camera::CameraInterface> previewing_camera;
 };

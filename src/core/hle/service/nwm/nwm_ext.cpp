@@ -12,7 +12,7 @@
 namespace Service::NWM {
 
 NWM_EXT::NWM_EXT() : ServiceFramework{"nwm::EXT"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00080040, &NWM_EXT::ControlWirelessEnabled, "ControlWirelessEnabled"},
     };
     RegisterHandlers(functions);

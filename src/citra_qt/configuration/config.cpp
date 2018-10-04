@@ -19,10 +19,23 @@ Config::Config() {
     Reload();
 }
 
-const std::array<int, Settings::NativeButton::NumButtons> Config::default_buttons = {
-    Qt::Key_A, Qt::Key_S, Qt::Key_Z, Qt::Key_X, Qt::Key_T, Qt::Key_G, Qt::Key_F, Qt::Key_H,
-    Qt::Key_Q, Qt::Key_W, Qt::Key_M, Qt::Key_N, Qt::Key_1, Qt::Key_2, Qt::Key_B,
-};
+const std::array<int, Settings::NativeButton::NumButtons> Config::default_buttons{{
+    Qt::Key_A,
+    Qt::Key_S,
+    Qt::Key_Z,
+    Qt::Key_X,
+    Qt::Key_T,
+    Qt::Key_G,
+    Qt::Key_F,
+    Qt::Key_H,
+    Qt::Key_Q,
+    Qt::Key_W,
+    Qt::Key_M,
+    Qt::Key_N,
+    Qt::Key_1,
+    Qt::Key_2,
+    Qt::Key_B,
+}};
 
 const std::array<std::array<int, 5>, Settings::NativeAnalog::NumAnalogs> Config::default_analogs{{
     {
@@ -196,6 +209,7 @@ void Config::ReadValues() {
     Settings::values.bg_green = qt_config->value("bg_green", 0.0).toFloat();
     Settings::values.bg_blue = qt_config->value("bg_blue", 0.0).toFloat();
     Settings::values.enable_shadows = qt_config->value("enable_shadows", true).toBool();
+    Settings::values.enable_clear_cache = qt_config->value("enable_clear_cache", true).toBool();
     Settings::values.clear_cache_secs = qt_config->value("clear_cache_secs", 30).toInt();
     Settings::values.screen_refresh_rate = qt_config->value("screen_refresh_rate", 60).toInt();
     Settings::values.min_vertices_per_thread =
@@ -439,6 +453,7 @@ void Config::SaveValues() {
     qt_config->setValue("resolution_factor", Settings::values.resolution_factor);
     qt_config->setValue("use_frame_limit", Settings::values.use_frame_limit);
     qt_config->setValue("frame_limit", Settings::values.frame_limit);
+    qt_config->setValue("enable_clear_cache", Settings::values.enable_clear_cache);
     qt_config->setValue("clear_cache_secs", Settings::values.clear_cache_secs);
     // Cast to double because Qt's written float values are not human-readable
     qt_config->setValue("bg_red", (double)Settings::values.bg_red);

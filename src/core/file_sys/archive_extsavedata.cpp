@@ -265,7 +265,7 @@ ResultVal<ArchiveFormatInfo> ArchiveFactory_ExtSaveData::GetFormatInfo(const Pat
         return ERR_NOT_FORMATTED;
     }
 
-    ArchiveFormatInfo info = {};
+    ArchiveFormatInfo info;
     file.ReadBytes(&info, sizeof(info));
     return MakeResult<ArchiveFormatInfo>(info);
 }

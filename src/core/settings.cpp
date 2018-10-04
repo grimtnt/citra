@@ -13,7 +13,7 @@
 
 namespace Settings {
 
-Values values = {};
+Values values{};
 
 void Apply() {
     VideoCore::g_hw_shader_enabled = values.use_hw_shader;

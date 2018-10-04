@@ -17,7 +17,7 @@ namespace UISettings {
 using ContextualShortcut = std::pair<QString, int>;
 using Shortcut = std::pair<QString, ContextualShortcut>;
 
-static const std::array<std::pair<QString, QString>, 4> themes = {
+static const std::array<std::pair<QString, QString>, 4> themes{
     {std::make_pair(QString("Default"), QString("default")),
      std::make_pair(QString("Dark"), QString("qdarkstyle")),
      std::make_pair(QString("Colorful"), QString("colorful")),
@@ -65,7 +65,7 @@ struct Values {
     // Shortcut name <Shortcut, context>
     std::vector<Shortcut> shortcuts;
 
-    // multiplayer settings
+    // Multiplayer settings
     QString nickname;
     QString ip;
     QString port;
@@ -76,11 +76,12 @@ struct Values {
     uint host_type;
     qulonglong game_id;
 
-    // logging
+    // Logging
     bool show_console;
 };
 
 extern Values values;
+
 } // namespace UISettings
 
 Q_DECLARE_METATYPE(UISettings::GameDir*);

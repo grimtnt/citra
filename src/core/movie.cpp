@@ -386,7 +386,7 @@ void Movie::SaveMovie() {
         return;
     }
 
-    CTMHeader header = {};
+    CTMHeader header{};
     header.filetype = header_magic_bytes;
     header.clock_init_time = init_time;
 

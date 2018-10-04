@@ -69,11 +69,11 @@ void CalibrationConfigurationDialog::UpdateButtonText(QString text) {
     cancel_button->setText(text);
 }
 
-const std::array<std::pair<const char*, const char*>, 2> MotionProviders = {
+static const std::array<std::pair<const char*, const char*>, 2> MotionProviders{
     {{"motion_emu", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "Mouse (Right Click)")},
      {"cemuhookudp", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "CemuhookUDP")}}};
 
-const std::array<std::pair<const char*, const char*>, 2> TouchProviders = {
+static const std::array<std::pair<const char*, const char*>, 2> TouchProviders{
     {{"emu_window", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "Emulator Window")},
      {"cemuhookudp", QT_TRANSLATE_NOOP("ConfigureMotionTouch", "CemuhookUDP")}}};
 

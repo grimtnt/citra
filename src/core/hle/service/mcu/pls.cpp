@@ -7,7 +7,7 @@
 namespace Service::MCU {
 
 PLS::PLS(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::PLS"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010000, nullptr, "GetDatetime"},  {0x00020000, nullptr, "GetSeconds"},
         {0x00030000, nullptr, "GetMinutes"},   {0x00040000, nullptr, "GetHour"},
         {0x00050000, nullptr, "GetDayOfWeek"}, {0x00060000, nullptr, "GetDay"},

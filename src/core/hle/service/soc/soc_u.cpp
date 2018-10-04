@@ -7,7 +7,7 @@
 namespace Service::SOC {
 
 SOC_U::SOC_U(std::shared_ptr<Module> soc) : Module::Interface{std::move(soc), "soc:U"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010044, &SOC_U::InitializeSockets, "InitializeSockets"},
         {0x000200C2, &SOC_U::Socket, "Socket"},
         {0x00030082, &SOC_U::Listen, "Listen"},

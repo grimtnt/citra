@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    static constexpr std::array<const char*, 16> player_color = {
+    static constexpr std::array<const char*, 16> player_color{
         {"#0000FF", "#FF0000", "#8A2BE2", "#FF69B4", "#1E90FF", "#008000", "#00FF7F", "#B22222",
          "#DAA520", "#FF4500", "#2E8B57", "#5F9EA0", "#D2691E", "#9ACD32", "#FF7F50", "FFFF00"}};
 
@@ -62,7 +62,7 @@ public:
     }
 
 private:
-    static constexpr const char system_color[] = "#888888";
+    static constexpr const char system_color[]{"#888888"};
     QString timestamp;
     QString message;
 };

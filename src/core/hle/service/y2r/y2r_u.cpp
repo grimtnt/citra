@@ -588,7 +588,7 @@ void Y2R_U::DriverInitialize(Kernel::HLERequestContext& ctx) {
     conversion.SetInputLines(1024);
     conversion.alpha = 0;
 
-    ConversionBuffer zero_buffer = {};
+    ConversionBuffer zero_buffer{};
     conversion.src_Y = zero_buffer;
     conversion.src_U = zero_buffer;
     conversion.src_V = zero_buffer;
@@ -618,7 +618,7 @@ void Y2R_U::GetPackageParameter(Kernel::HLERequestContext& ctx) {
 }
 
 Y2R_U::Y2R_U() : ServiceFramework{"y2r:u", 1} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010040, &Y2R_U::SetInputFormat, "SetInputFormat"},
         {0x00020000, &Y2R_U::GetInputFormat, "GetInputFormat"},
         {0x00030040, &Y2R_U::SetOutputFormat, "SetOutputFormat"},

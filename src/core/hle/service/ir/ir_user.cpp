@@ -20,6 +20,7 @@ namespace Service::IR {
 struct SharedMemoryHeader {
     u32_le latest_receive_error_result;
     u32_le latest_send_error_result;
+
     // TODO(wwylele): for these fields below, make them enum when the meaning of values is known.
     u8 connection_status;
     u8 trying_to_connect_status;
@@ -381,7 +382,7 @@ void IR_USER::ReleaseReceivedData(Kernel::HLERequestContext& ctx) {
 }
 
 IR_USER::IR_USER() : ServiceFramework{"ir:USER", 1} {
-    const FunctionInfo functions[] = {
+    const FunctionInfo functions[]{
         {0x00010182, nullptr, "InitializeIrNop"},
         {0x00020000, &IR_USER::FinalizeIrNop, "FinalizeIrNop"},
         {0x00030000, nullptr, "ClearReceiveBuffer"},

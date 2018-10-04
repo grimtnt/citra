@@ -6,5 +6,6 @@
 
 namespace UISettings {
 
-Values values = {};
-}
+Values values{};
+
+} // namespace UISettings

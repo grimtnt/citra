@@ -194,7 +194,7 @@ struct CTRPollFD {
         /// Translates the resulting events of a Poll operation from platform-specific to 3ds
         /// specific
         static Events TranslateTo3DS(u32 input_event) {
-            Events ev = {};
+            Events ev{};
             if (input_event & POLLIN)
                 ev.pollin.Assign(1);
             if (input_event & POLLPRI)
@@ -502,8 +502,8 @@ void Module::Interface::GetHostId(Kernel::HLERequestContext& ctx) {
 
     char name[128];
     gethostname(name, sizeof(name));
-    addrinfo hints = {};
-    addrinfo* res{};
+    addrinfo hints{};
+    addrinfo* res;
 
     hints.ai_family = AF_INET;
     getaddrinfo(name, nullptr, &hints, &res);

@@ -54,7 +54,7 @@ static constexpr std::array<FormatTuple, 4> depth_format_tuples = {{
     {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8}, // D24S8
 }};
 
-static constexpr FormatTuple tex_tuple = {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
+static constexpr FormatTuple tex_tuple{GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE};
 
 static CoreTiming::EventType* cache_clear_event;
 static RasterizerCache* g_rasterizer_cache;
@@ -999,20 +999,24 @@ void main() {
     d24s8_abgr_viewport_u_id = glGetUniformLocation(d24s8_abgr_shader.handle, "viewport");
     ASSERT(d24s8_abgr_viewport_u_id != -1);
 
-    g_rasterizer_cache = this;
-    cache_clear_event = CoreTiming::RegisterEvent(
-        "RasterizerCache::cache_clear_event", [](u64 userdata, s64 cycles_late) {
-            g_rasterizer_cache->Clear();
-            CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
-                                      cache_clear_event);
-        });
-    CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
-                              cache_clear_event);
+    if (Settings::values.enable_clear_cache) {
+        g_rasterizer_cache = this;
+        cache_clear_event = CoreTiming::RegisterEvent(
+            "RasterizerCache::cache_clear_event", [](u64 userdata, s64 cycles_late) {
+                g_rasterizer_cache->Clear();
+                CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
+                                          cache_clear_event);
+            });
+        CoreTiming::ScheduleEvent(msToCycles(1000 * Settings::values.clear_cache_secs),
+                                  cache_clear_event);
+    }
 }
 
 RasterizerCache::~RasterizerCache() {
-    CoreTiming::UnscheduleEvent(cache_clear_event, 0);
-    g_rasterizer_cache = nullptr;
+    if (Settings::values.enable_clear_cache) {
+        CoreTiming::UnscheduleEvent(cache_clear_event, 0);
+        g_rasterizer_cache = nullptr;
+    }
     Clear();
 }
 
@@ -1252,13 +1256,13 @@ const CachedTextureCube& RasterizerCache::GetTextureCube(const TextureCubeConfig
 
     struct Face {
         Face(std::shared_ptr<SurfaceWatcher>& watcher, PAddr address, GLenum gl_face)
-            : watcher(watcher), address(address), gl_face(gl_face) {}
+            : watcher{watcher}, address{address}, gl_face{gl_face} {}
         std::shared_ptr<SurfaceWatcher>& watcher;
         PAddr address;
         GLenum gl_face;
     };
 
-    const std::array<Face, 6> faces{{
+    static const std::array<Face, 6> faces{{
         {cube.px, config.px, GL_TEXTURE_CUBE_MAP_POSITIVE_X},
         {cube.nx, config.nx, GL_TEXTURE_CUBE_MAP_NEGATIVE_X},
         {cube.py, config.py, GL_TEXTURE_CUBE_MAP_POSITIVE_Y},
@@ -1289,7 +1293,7 @@ const CachedTextureCube& RasterizerCache::GetTextureCube(const TextureCubeConfig
     if (cube.texture.handle == 0) {
         for (const Face& face : faces) {
             if (face.watcher) {
-                auto surface = face.watcher->Get();
+                auto surface{face.watcher->Get()};
                 cube.res_scale = std::max(cube.res_scale, surface->res_scale);
             }
         }
@@ -1345,10 +1349,7 @@ SurfaceSurfaceRect_Tuple RasterizerCache::GetFramebufferSurfaces(
     static u16 resolution_scale_factor{VideoCore::GetResolutionScaleFactor()};
     if (resolution_scale_factor != VideoCore::GetResolutionScaleFactor()) {
         resolution_scale_factor = VideoCore::GetResolutionScaleFactor();
-        FlushAll();
-        while (!surface_cache.empty())
-            UnregisterSurface(*surface_cache.begin()->second.begin());
-        texture_cube_cache.clear();
+        Clear();
     }
 
     MathUtil::Rectangle<u32> viewport_clamped{
@@ -1611,13 +1612,14 @@ void RasterizerCache::Clear() {
     FlushAll();
     while (!surface_cache.empty())
         UnregisterSurface(*surface_cache.begin()->second.begin());
+    texture_cube_cache.clear();
 }
 
 void RasterizerCache::InvalidateRegion(PAddr addr, u32 size, const Surface& region_owner) {
     if (size == 0)
         return;
 
-    const SurfaceInterval invalid_interval(addr, addr + size);
+    const SurfaceInterval invalid_interval{addr, addr + size};
 
     if (region_owner != nullptr) {
         ASSERT(region_owner->type != SurfaceType::Texture);

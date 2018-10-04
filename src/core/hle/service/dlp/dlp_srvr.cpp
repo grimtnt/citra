@@ -22,7 +22,7 @@ void DLP_SRVR::IsChild(Kernel::HLERequestContext& ctx) {
 }
 
 DLP_SRVR::DLP_SRVR() : ServiceFramework{"dlp:SRVR", 1} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // clang-format off
         {0x00010183, nullptr, "Initialize"},
         {0x00020000, nullptr, "Finalize"},

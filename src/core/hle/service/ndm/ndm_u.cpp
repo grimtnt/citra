@@ -214,7 +214,7 @@ void NDM_U::ClearHalfAwakeMacFilter(Kernel::HLERequestContext& ctx) {
 }
 
 NDM_U::NDM_U() : ServiceFramework{"ndm:u", 6} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010042, &NDM_U::EnterExclusiveState, "EnterExclusiveState"},
         {0x00020002, &NDM_U::LeaveExclusiveState, "LeaveExclusiveState"},
         {0x00030000, &NDM_U::QueryExclusiveMode, "QueryExclusiveMode"},

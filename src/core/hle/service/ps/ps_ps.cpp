@@ -17,7 +17,7 @@ void PS_PS::GetLocalFriendCodeSeed(Kernel::HLERequestContext& ctx) {
 }
 
 PS_PS::PS_PS() : ServiceFramework{"ps:ps"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // clang-format off
         {0x00010244, nullptr, "SignRsaSha256"},
         {0x00020244, nullptr, "VerifyRsaSha256"},

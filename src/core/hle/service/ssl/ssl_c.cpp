@@ -57,7 +57,7 @@ void SSL_C::GenerateRandomData(Kernel::HLERequestContext& ctx) {
 }
 
 SSL_C::SSL_C() : ServiceFramework{"ssl:C"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010002, &SSL_C::Initialize, "Initialize"},
         {0x000200C2, nullptr, "CreateContext"},
         {0x00030000, nullptr, "CreateRootCertChain"},

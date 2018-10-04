@@ -42,10 +42,10 @@ void PrintColoredMessage(const Entry& entry) {
         return;
     }
 
-    CONSOLE_SCREEN_BUFFER_INFO original_info = {};
+    CONSOLE_SCREEN_BUFFER_INFO original_info;
     GetConsoleScreenBufferInfo(console_handle, &original_info);
 
-    WORD color{};
+    WORD color;
     switch (entry.log_level) {
         switch (entry.log_level) {
         case Level::Trace: // Grey
@@ -74,7 +74,7 @@ void PrintColoredMessage(const Entry& entry) {
     }
 #else
 #define ESC "\x1b"
-    const char* color{""};
+    const char* color;
     switch (entry.log_level) {
     case Level::Trace: // Grey
         color = ESC "[1;30m";

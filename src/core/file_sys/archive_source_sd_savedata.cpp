@@ -78,7 +78,7 @@ ResultVal<ArchiveFormatInfo> ArchiveSource_SDSaveData::GetFormatInfo(u64 program
         return ERR_NOT_FORMATTED;
     }
 
-    ArchiveFormatInfo info = {};
+    ArchiveFormatInfo info;
     file.ReadBytes(&info, sizeof(info));
     return MakeResult<ArchiveFormatInfo>(info);
 }

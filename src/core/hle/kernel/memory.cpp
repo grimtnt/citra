@@ -27,7 +27,7 @@ MemoryRegionInfo memory_regions[3];
 
 /// Size of the APPLICATION, SYSTEM and BASE memory regions (respectively) for each system
 /// memory configuration type.
-static const u32 memory_region_sizes[8][3] = {
+static const u32 memory_region_sizes[8][3]{
     // Old 3DS layouts
     {0x04000000, 0x02C00000, 0x01400000}, // 0
     {/* This appears to be unused. */},   // 1
@@ -116,7 +116,7 @@ void HandleSpecialMapping(VMManager& address_space, const AddressMapping& mappin
 
     // The order of entries in this array is important. The VRAM and IO VAddr ranges overlap, and
     // VRAM must be tried first.
-    static constexpr MemoryArea memory_areas[] = {
+    static constexpr MemoryArea memory_areas[]{
         {VRAM_VADDR, VRAM_PADDR, VRAM_N3DS_SIZE},
         {IO_AREA_VADDR, IO_AREA_PADDR, IO_AREA_SIZE},
         {DSP_RAM_VADDR, DSP_RAM_PADDR, DSP_RAM_SIZE},

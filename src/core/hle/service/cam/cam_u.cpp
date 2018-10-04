@@ -8,7 +8,7 @@
 namespace Service::CAM {
 
 CAM_U::CAM_U(std::shared_ptr<Module> cam) : Module::Interface{std::move(cam), "cam:u", 1} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010040, &CAM_U::StartCapture, "StartCapture"},
         {0x00020040, &CAM_U::StopCapture, "StopCapture"},
         {0x00030040, &CAM_U::IsBusy, "IsBusy"},

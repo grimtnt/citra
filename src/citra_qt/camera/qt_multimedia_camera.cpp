@@ -12,7 +12,7 @@
 
 namespace Camera {
 
-constexpr std::array<QCamera::FrameRateRange, 13> FrameRateList = {
+constexpr std::array<QCamera::FrameRateRange, 13> FrameRateList{{
     /* Rate_15 */ QCamera::FrameRateRange(15, 15),
     /* Rate_15_To_5 */ QCamera::FrameRateRange(5, 15),
     /* Rate_15_To_2 */ QCamera::FrameRateRange(2, 15),
@@ -26,7 +26,7 @@ constexpr std::array<QCamera::FrameRateRange, 13> FrameRateList = {
     /* Rate_15_To_10 */ QCamera::FrameRateRange(10, 15),
     /* Rate_20_To_10 */ QCamera::FrameRateRange(10, 20),
     /* Rate_30_To_10 */ QCamera::FrameRateRange(10, 30),
-};
+}};
 
 QList<QVideoFrame::PixelFormat> QtCameraSurface::supportedPixelFormats(
     QAbstractVideoBuffer::HandleType handleType) const {

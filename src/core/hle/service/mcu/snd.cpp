@@ -7,7 +7,7 @@
 namespace Service::MCU {
 
 SND::SND(std::shared_ptr<Module> mcu) : Module::Interface{std::move(mcu), "mcu::SND"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         {0x00010080, &SND::GetSoundVolume, "GetSoundVolume"},
         {0x00030000, nullptr, "GetRegister25h"},
     };

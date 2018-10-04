@@ -862,7 +862,7 @@ void Module::Interface::GetStereoCameraCalibrationData(Kernel::HLERequestContext
 
     // Default values taken from yuriks' 3DS. Valid data is required here or games using the
     // calibration get stuck in an infinite CPU loop.
-    StereoCameraCalibrationData data = {};
+    StereoCameraCalibrationData data{};
     data.isValidRotationXY = 0;
     data.scale = 1.001776f;
     data.rotationZ = 0.008322907f;

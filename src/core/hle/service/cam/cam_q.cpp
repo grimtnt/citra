@@ -8,7 +8,7 @@ namespace Service::CAM {
 
 CAM_Q::CAM_Q() : ServiceFramework{"cam:q", 1 /*TODO: find the true value*/} {
     // Empty arrays are illegal -- commented out until an entry is added.
-    // static const FunctionInfo functions[] = {};
+    // static const FunctionInfo functions[]{};
     // RegisterHandlers(functions);
 }
 

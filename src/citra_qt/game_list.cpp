@@ -628,8 +628,8 @@ void GameList::LoadInterfaceLayout() {
     item_model->sort(header->sortIndicatorSection(), header->sortIndicatorOrder());
 }
 
-const QStringList GameList::supported_file_extensions = {"3ds", "3dsx", "elf", "axf",
-                                                         "cci", "cxi",  "app"};
+const QStringList GameList::supported_file_extensions{{"3ds", "3dsx", "elf", "axf",
+                                                         "cci", "cxi",  "app"}};
 
 static bool HasSupportedFileExtension(const std::string& file_name) {
     QFileInfo file = QFileInfo(QString::fromStdString(file_name));

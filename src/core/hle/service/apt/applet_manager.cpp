@@ -25,7 +25,7 @@ struct AppletTitleData {
 };
 
 static constexpr std::size_t NumApplets{29};
-static constexpr std::array<AppletTitleData, NumApplets> applet_titleids = {{
+static constexpr std::array<AppletTitleData, NumApplets> applet_titleids{{
     {AppletId::HomeMenu, AppletId::None, 0x4003000008202, 0x4003000008F02, 0x4003000009802,
      0x4003000008202, 0x400300000A102, 0x400300000A902, 0x400300000B102},
     {AppletId::AlternateMenu, AppletId::None, 0x4003000008102, 0x4003000008102, 0x4003000008102,

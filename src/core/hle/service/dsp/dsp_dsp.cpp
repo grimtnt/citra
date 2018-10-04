@@ -374,7 +374,7 @@ bool DSP_DSP::HasTooManyEventsRegistered() const {
 }
 
 DSP_DSP::DSP_DSP() : ServiceFramework{"dsp::DSP"} {
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
         // clang-format off
         {0x00010040, &DSP_DSP::RecvData, "RecvData"},
         {0x00020040, &DSP_DSP::RecvDataIsReady, "RecvDataIsReady"},

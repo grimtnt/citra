@@ -25,10 +25,10 @@ enum class EtherType : u16 { SecureData = 0x876D, EAPoL = 0x888E };
  * and the OUI is always 0.
  */
 struct LLCHeader {
-    SAP dsap = SAP::SNAPExtensionUsed;
-    SAP ssap = SAP::SNAPExtensionUsed;
-    PDUControl control = PDUControl::UnnumberedInformation;
-    std::array<u8, 3> OUI = {};
+    SAP dsap{SAP::SNAPExtensionUsed};
+    SAP ssap{SAP::SNAPExtensionUsed};
+    PDUControl control{PDUControl::UnnumberedInformation};
+    std::array<u8, 3> OUI{};
     enum_be<EtherType> protocol;
 };
 

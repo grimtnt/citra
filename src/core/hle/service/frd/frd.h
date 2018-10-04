@@ -53,8 +53,8 @@ public:
     };
 
 private:
-    FriendKey my_friend_key = {0, 0, 0ull};
-    MyPresence my_presence = {};
+    FriendKey my_friend_key{0, 0, 0ull};
+    MyPresence my_presence{};
 };
 
 void InstallInterfaces(SM::ServiceManager& service_manager);

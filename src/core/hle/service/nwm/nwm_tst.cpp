@@ -8,7 +8,7 @@ namespace Service::NWM {
 
 NWM_TST::NWM_TST() : ServiceFramework{"nwm::TST"} {
     /*
-    static const FunctionInfo functions[] = {
+    static const FunctionInfo functions[]{
     };
     RegisterHandlers(functions);
     */

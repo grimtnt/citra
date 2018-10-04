@@ -88,59 +88,52 @@ private:
     };
 
     struct {
-
         // State variables
-
-        bool enabled = false;
+        bool enabled{};
         u16 sync{};
 
         // Mixing
-
-        std::array<std::array<float, 4>, 3> gain = {};
+        std::array<std::array<float, 4>, 3> gain{};
 
         // Buffer queue
-
         std::priority_queue<Buffer, std::vector<Buffer>, BufferOrder> input_queue;
         MonoOrStereo mono_or_stereo = MonoOrStereo::Mono;
         Format format = Format::ADPCM;
 
         // Current buffer
-
         u32 current_sample_number{};
         u32 next_sample_number{};
         AudioInterp::StereoBuffer16 current_buffer;
 
         // buffer_id state
-
-        bool buffer_update = false;
+        bool buffer_update{};
         u32 current_buffer_id{};
 
         // Decoding state
-
-        std::array<s16, 16> adpcm_coeffs = {};
-        Codec::ADPCMState adpcm_state = {};
+        std::array<s16, 16> adpcm_coeffs{};
+        Codec::ADPCMState adpcm_state{};
 
         // Resampling state
-
-        float rate_multiplier = 1.0;
-        InterpolationMode interpolation_mode = InterpolationMode::Polyphase;
-        AudioInterp::State interp_state = {};
+        float rate_multiplier{1.0f};
+        InterpolationMode interpolation_mode{InterpolationMode::Polyphase};
+        AudioInterp::State interp_state{};
 
         // Filter state
-
         SourceFilters filters;
-
     } state;
 
     // Internal functions
 
     /// INTERNAL: Update our internal state based on the current config.
     void ParseConfig(SourceConfiguration::Configuration& config, const s16_le (&adpcm_coeffs)[16]);
+
     /// INTERNAL: Generate the current audio output for this frame based on our internal state.
     void GenerateFrame();
+
     /// INTERNAL: Dequeues a buffer and does preprocessing on it (decoding, resampling). Puts it
     /// into current_buffer.
     bool DequeueBuffer();
+
     /// INTERNAL: Generates a SourceStatus::Status based on our internal state.
     SourceStatus::Status GetCurrentStatus();
 };

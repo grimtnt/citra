@@ -6,9 +6,8 @@
 
 namespace Service::BOSS {
 
-BOSS_P::BOSS_P(std::shared_ptr<Module> boss)
-    : Module::Interface{std::move(boss), "boss:P"}{
-    static const FunctionInfo functions[] = {
+BOSS_P::BOSS_P(std::shared_ptr<Module> boss) : Module::Interface{std::move(boss), "boss:P"} {
+    static const FunctionInfo functions[]{
         // boss:u shared commands
         // clang-format off
         {0x00010082, &BOSS_P::InitializeSession, "InitializeSession"},
