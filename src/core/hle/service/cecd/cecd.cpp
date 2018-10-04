@@ -224,7 +224,7 @@ void Module::Interface::ReadMessage(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::ReadMessageWithHMAC(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x04, 4, 6);
+    IPC::RequestParser rp{ctx, 0x04, 4, 6};
     const u32 ncch_program_id{rp.Pop<u32>()};
     const bool is_outbox{rp.Pop<bool>()};
     const u32 message_id_size{rp.Pop<u32>()};
@@ -434,7 +434,7 @@ void Module::Interface::WriteMessage(Kernel::HLERequestContext& ctx) {
 }
 
 void Module::Interface::WriteMessageWithHMAC(Kernel::HLERequestContext& ctx) {
-    IPC::RequestParser rp(ctx, 0x07, 4, 6);
+    IPC::RequestParser rp{ctx, 0x07, 4, 6};
     const u32 ncch_program_id{rp.Pop<u32>()};
     const bool is_outbox{rp.Pop<bool>()};
     const u32 message_id_size{rp.Pop<u32>()};
