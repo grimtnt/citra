@@ -67,7 +67,8 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_SRV, "called name_len=0x{:X} -> ERR_INVALID_NAME_SIZE", name_len);
         return;
     }
-    std::string name(name_buf.data(), name_len);
+
+    std::string name{name_buf.data(), name_len};
 
     // TODO(yuriks): Permission checks go here
 
@@ -75,13 +76,13 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
                                  Kernel::HLERequestContext& ctx,
                                  Kernel::ThreadWakeupReason reason) {
         LOG_ERROR(Service_SRV, "called service={} wakeup", name);
-        auto client_port = service_manager->GetServicePort(name);
+        auto client_port{service_manager->GetServicePort(name)};
 
-        auto session = client_port.Unwrap()->Connect();
+        auto session{client_port.Unwrap()->Connect()};
         if (session.Succeeded()) {
             LOG_DEBUG(Service_SRV, "called service={} -> session={}", name,
                       (*session)->GetObjectId());
-            IPC::ResponseBuilder rb(ctx, 0x5, 1, 2);
+            IPC::ResponseBuilder rb{ctx, 0x5, 1, 2};
             rb.Push(session.Code());
             rb.PushMoveObjects(std::move(session).Unwrap());
         } else if (session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED) {
@@ -93,12 +94,12 @@ void SRV::GetServiceHandle(Kernel::HLERequestContext& ctx) {
                 session = client_port.Unwrap()->Connect();
                 return session.Code() == Kernel::ERR_MAX_CONNECTIONS_REACHED;
             });
-            IPC::ResponseBuilder rb(ctx, 0x5, 1, 2);
+            IPC::ResponseBuilder rb{ctx, 0x5, 1, 2};
             rb.Push(session.Code());
             rb.PushMoveObjects(std::move(session).Unwrap());
         } else {
             LOG_ERROR(Service_SRV, "called service={} -> error 0x{:08X}", name, session.Code().raw);
-            IPC::ResponseBuilder rb(ctx, 0x5, 1, 0);
+            IPC::ResponseBuilder rb{ctx, 0x5, 1, 0};
             rb.Push(session.Code());
         }
     }};
@@ -177,14 +178,13 @@ void SRV::PublishToSubscriber(Kernel::HLERequestContext& ctx) {
 
 void SRV::RegisterService(Kernel::HLERequestContext& ctx) {
     IPC::RequestParser rp{ctx, 0x3, 4, 0};
-
     auto name_buf{rp.PopRaw<std::array<char, 8>>()};
     std::size_t name_len{rp.Pop<u32>()};
     u32 max_sessions{rp.Pop<u32>()};
 
-    std::string name(name_buf.data(), std::min(name_len, name_buf.size()));
+    std::string name{name_buf.data(), std::min(name_len, name_buf.size())};
 
-    auto port = service_manager->RegisterService(name, max_sessions);
+    auto port{service_manager->RegisterService(name, max_sessions)};
 
     if (port.Failed()) {
         IPC::ResponseBuilder rb{rp.MakeBuilder(1, 0)};
@@ -193,7 +193,7 @@ void SRV::RegisterService(Kernel::HLERequestContext& ctx) {
         return;
     }
 
-    auto it = get_service_handle_delayed_map.find(name);
+    auto it{get_service_handle_delayed_map.find(name)};
     if (it != get_service_handle_delayed_map.end()) {
         it->second->Signal();
         get_service_handle_delayed_map.erase(it);

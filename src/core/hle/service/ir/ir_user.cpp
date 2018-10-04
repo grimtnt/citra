@@ -286,7 +286,7 @@ void IR_USER::RequireConnection(Kernel::HLERequestContext& ctx) {
 }
 
 void IR_USER::GetReceiveEvent(Kernel::HLERequestContext& ctx) {
-    IPC::ResponseBuilder rb(ctx, 0x0A, 1, 2);
+    IPC::ResponseBuilder rb{ctx, 0x0A, 1, 2};
 
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(receive_event);
@@ -295,7 +295,7 @@ void IR_USER::GetReceiveEvent(Kernel::HLERequestContext& ctx) {
 }
 
 void IR_USER::GetSendEvent(Kernel::HLERequestContext& ctx) {
-    IPC::ResponseBuilder rb(ctx, 0x0B, 1, 2);
+    IPC::ResponseBuilder rb{ctx, 0x0B, 1, 2};
 
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(send_event);
@@ -310,19 +310,18 @@ void IR_USER::Disconnect(Kernel::HLERequestContext& ctx) {
         conn_status_event->Signal();
     }
 
-    u8* shared_memory_ptr = shared_memory->GetPointer();
+    u8* shared_memory_ptr{shared_memory->GetPointer()};
     shared_memory_ptr[offsetof(SharedMemoryHeader, connection_status)] = 0;
     shared_memory_ptr[offsetof(SharedMemoryHeader, connected)] = 0;
 
-    IPC::ResponseBuilder rb(ctx, 0x09, 1, 0);
+    IPC::ResponseBuilder rb{ctx, 0x09, 1, 0};
     rb.Push(RESULT_SUCCESS);
 
     LOG_INFO(Service_IR, "called");
 }
 
 void IR_USER::GetConnectionStatusEvent(Kernel::HLERequestContext& ctx) {
-    IPC::ResponseBuilder rb(ctx, 0x0C, 1, 2);
-
+    IPC::ResponseBuilder rb{ctx, 0x0C, 1, 2};
     rb.Push(RESULT_SUCCESS);
     rb.PushCopyObjects(conn_status_event);
 
@@ -338,7 +337,7 @@ void IR_USER::FinalizeIrNop(Kernel::HLERequestContext& ctx) {
     shared_memory = nullptr;
     receive_buffer = nullptr;
 
-    IPC::ResponseBuilder rb(ctx, 0x02, 1, 0);
+    IPC::ResponseBuilder rb{ctx, 0x02, 1, 0};
     rb.Push(RESULT_SUCCESS);
 
     LOG_INFO(Service_IR, "called");
