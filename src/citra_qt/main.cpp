@@ -1212,8 +1212,10 @@ void GMainWindow::OnSwapScreens() {
 }
 
 void GMainWindow::OnOpenConfiguration() {
-    ConfigurationDialog configuration_dialog(this);
+    ConfigurationDialog configuration_dialog{this};
     auto old_theme{UISettings::values.theme};
+    int old_profile{Settings::values.profile};
+    auto old_profiles{Settings::values.profiles};
     auto result{configuration_dialog.exec()};
     if (result == QDialog::Accepted) {
         configuration_dialog.applyConfiguration();
@@ -1224,6 +1226,9 @@ void GMainWindow::OnOpenConfiguration() {
         SyncMenuUISettings();
         game_list->RefreshGameDirectory();
         config->Save();
+    } else {
+        Settings::values.profiles = old_profiles;
+        Settings::LoadProfile(old_profile);
     }
 }
 
