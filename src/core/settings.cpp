@@ -77,4 +77,47 @@ void LogSettings() {
     LogSetting("Hacks_UseBos", Settings::values.use_bos);
 }
 
+void LoadProfile(int index) {
+    const auto& profile{values.profiles.at(index)};
+    values.profile = index;
+    values.analogs = profile.analogs;
+    values.buttons = profile.buttons;
+    values.motion_device = profile.motion_device;
+    values.touch_device = profile.touch_device;
+    values.udp_input_address = profile.udp_input_address;
+    values.udp_input_port = profile.udp_input_port;
+    values.udp_pad_index = profile.udp_pad_index;
+}
+
+void SaveProfile(int index) {
+    auto& profile{values.profiles.at(index)};
+    profile.analogs = values.analogs;
+    profile.buttons = values.buttons;
+    profile.motion_device = values.motion_device;
+    profile.touch_device = values.touch_device;
+    profile.udp_input_address = values.udp_input_address;
+    profile.udp_input_port = values.udp_input_port;
+    profile.udp_pad_index = values.udp_pad_index;
+}
+
+void CreateProfile(std::string name) {
+    ControllerProfile profile{};
+    profile.name = name;
+    profile.analogs = values.analogs;
+    profile.buttons = values.buttons;
+    profile.motion_device = values.motion_device;
+    profile.touch_device = values.touch_device;
+    profile.udp_input_address = values.udp_input_address;
+    profile.udp_input_port = values.udp_input_port;
+    profile.udp_pad_index = values.udp_pad_index;
+    values.profiles.push_back(profile);
+    values.profile = values.profiles.size() - 1;
+    LoadProfile(values.profile);
+}
+
+void DeleteProfile(int index) {
+    values.profiles.erase(values.profiles.begin() + index);
+    LoadProfile(0);
+}
+
 } // namespace Settings

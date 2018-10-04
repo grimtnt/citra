@@ -33,6 +33,7 @@ public:
 
     /// Save all button configurations to settings file
     void applyConfiguration();
+    void applyProfile();
 
 private:
     std::unique_ptr<Ui::ConfigureInput> ui;
@@ -46,7 +47,7 @@ private:
     std::array<Common::ParamPackage, Settings::NativeButton::NumButtons> buttons_param;
     std::array<Common::ParamPackage, Settings::NativeAnalog::NumAnalogs> analogs_param;
 
-    static constexpr int ANALOG_SUB_BUTTONS_NUM = 5;
+    static constexpr int ANALOG_SUB_BUTTONS_NUM{5};
 
     /// Each button input is represented by a QPushButton.
     std::array<QPushButton*, Settings::NativeButton::NumButtons> button_map;
@@ -66,12 +67,14 @@ private:
 
     /// A flag to indicate if keyboard keys are okay when configuring an input. If this is false,
     /// keyboard events are ignored.
-    bool want_keyboard_keys = false;
+    bool want_keyboard_keys{};
 
     /// Load configuration settings.
     void loadConfiguration();
+
     /// Restore all buttons to their default values.
     void restoreDefaults();
+
     /// Clear all input configuration
     void ClearAll();
 
@@ -88,4 +91,7 @@ private:
 
     /// Handle key press events.
     void keyPressEvent(QKeyEvent* event) override;
+
+    void newProfile();
+    void deleteProfile();
 };

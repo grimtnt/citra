@@ -18,6 +18,7 @@ void ConfigurationDialog::applyConfiguration() {
     ui->generalTab->applyConfiguration();
     ui->systemTab->applyConfiguration();
     ui->inputTab->applyConfiguration();
+    ui->inputTab->applyProfile();
     ui->graphicsTab->applyConfiguration();
     ui->audioTab->applyConfiguration();
     ui->cameraTab->applyConfiguration();

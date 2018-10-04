@@ -7,6 +7,7 @@
 #include <array>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include "common/common_types.h"
 #include "core/hle/service/cam/cam.h"
 
@@ -97,6 +98,17 @@ static const std::array<const char*, NumAnalogs> mapping = {{
 }};
 } // namespace NativeAnalog
 
+struct ControllerProfile {
+    std::string name;
+    std::array<std::string, NativeButton::NumButtons> buttons;
+    std::array<std::string, NativeAnalog::NumAnalogs> analogs;
+    std::string motion_device;
+    std::string touch_device;
+    std::string udp_input_address;
+    u16 udp_input_port;
+    u8 udp_pad_index;
+};
+
 struct Values {
     // Control Panel
     float volume;
@@ -117,6 +129,8 @@ struct Values {
     std::string udp_input_address;
     u16 udp_input_port;
     u8 udp_pad_index;
+    int profile;
+    std::vector<ControllerProfile> profiles;
 
     // Core
     KeyboardMode keyboard_mode;
@@ -188,10 +202,14 @@ struct Values {
     bool force_memory_mode_7;
 } extern values;
 
-// a special value for Values::region_value indicating that citra will automatically select a region
+// A special value for Values::region_value indicating that citra will automatically select a region
 // value to fit the region lockout info of the game
 static constexpr int REGION_VALUE_AUTO_SELECT{-1};
 
 void Apply();
 void LogSettings();
+void LoadProfile(int index);
+void SaveProfile(int index);
+void CreateProfile(std::string name);
+void DeleteProfile(int index);
 } // namespace Settings

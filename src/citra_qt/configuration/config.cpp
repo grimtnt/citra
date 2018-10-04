@@ -58,46 +58,110 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
-    for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
-        std::string default_param{InputCommon::GenerateKeyboardParam(default_buttons[i])};
-        Settings::values.buttons[i] =
+    int size{qt_config->beginReadArray("profiles")};
+    for (int p{}; p < size; ++p) {
+        qt_config->setArrayIndex(p);
+        Settings::ControllerProfile profile{};
+        profile.name = qt_config->value("name", "default").toString().toStdString();
+        for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
+            std::string default_param{InputCommon::GenerateKeyboardParam(default_buttons[i])};
+            profile.buttons[i] = qt_config
+                                     ->value(Settings::NativeButton::mapping[i],
+                                             QString::fromStdString(default_param))
+                                     .toString()
+                                     .toStdString();
+            if (profile.buttons[i].empty())
+                profile.buttons[i] = default_param;
+        }
+
+        for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
+            std::string default_param{InputCommon::GenerateAnalogParamFromKeys(
+                default_analogs[i][0], default_analogs[i][1], default_analogs[i][2],
+                default_analogs[i][3], default_analogs[i][4], 0.5f)};
+            profile.analogs[i] = qt_config
+                                     ->value(Settings::NativeAnalog::mapping[i],
+                                             QString::fromStdString(default_param))
+                                     .toString()
+                                     .toStdString();
+            if (profile.analogs[i].empty())
+                profile.analogs[i] = default_param;
+        }
+
+        profile.motion_device =
             qt_config
-                ->value(Settings::NativeButton::mapping[i], QString::fromStdString(default_param))
+                ->value("motion_device",
+                        "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0")
                 .toString()
                 .toStdString();
-        if (Settings::values.buttons[i].empty())
-            Settings::values.buttons[i] = default_param;
-    }
+        profile.touch_device =
+            qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
 
-    for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
-        std::string default_param{InputCommon::GenerateAnalogParamFromKeys(
-            default_analogs[i][0], default_analogs[i][1], default_analogs[i][2],
-            default_analogs[i][3], default_analogs[i][4], 0.5f)};
-        Settings::values.analogs[i] =
-            qt_config
-                ->value(Settings::NativeAnalog::mapping[i], QString::fromStdString(default_param))
+        profile.udp_input_address =
+            qt_config->value("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR)
                 .toString()
                 .toStdString();
-        if (Settings::values.analogs[i].empty())
-            Settings::values.analogs[i] = default_param;
+        profile.udp_input_port = static_cast<u16>(
+            qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
+        profile.udp_pad_index = static_cast<u8>(qt_config->value("udp_pad_index", 0).toUInt());
+        Settings::values.profiles.push_back(profile);
+    }
+    qt_config->endArray();
+    Settings::values.profile = qt_config->value("profile", 0).toInt();
+
+    if (size == 0) {
+        Settings::ControllerProfile profile{};
+        profile.name = "default";
+        for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
+            std::string default_param{InputCommon::GenerateKeyboardParam(default_buttons[i])};
+            profile.buttons[i] = qt_config
+                                     ->value(Settings::NativeButton::mapping[i],
+                                             QString::fromStdString(default_param))
+                                     .toString()
+                                     .toStdString();
+            if (profile.buttons[i].empty())
+                profile.buttons[i] = default_param;
+        }
+
+        for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
+            std::string default_param{InputCommon::GenerateAnalogParamFromKeys(
+                default_analogs[i][0], default_analogs[i][1], default_analogs[i][2],
+                default_analogs[i][3], default_analogs[i][4], 0.5f)};
+            profile.analogs[i] = qt_config
+                                     ->value(Settings::NativeAnalog::mapping[i],
+                                             QString::fromStdString(default_param))
+                                     .toString()
+                                     .toStdString();
+            if (profile.analogs[i].empty())
+                profile.analogs[i] = default_param;
+        }
+
+        profile.motion_device =
+            qt_config
+                ->value("motion_device",
+                        "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0")
+                .toString()
+                .toStdString();
+        profile.touch_device =
+            qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
+
+        profile.udp_input_address =
+            qt_config->value("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR)
+                .toString()
+                .toStdString();
+        profile.udp_input_port = static_cast<u16>(
+            qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
+        profile.udp_pad_index = static_cast<u8>(qt_config->value("udp_pad_index", 0).toUInt());
+
+        Settings::values.profiles.push_back(profile);
     }
 
-    Settings::values.motion_device =
-        qt_config
-            ->value("motion_device",
-                    "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0")
-            .toString()
-            .toStdString();
-    Settings::values.touch_device =
-        qt_config->value("touch_device", "engine:emu_window").toString().toStdString();
+    if (Settings::values.profile <= size) {
+        Settings::values.profile = 0;
+        LOG_ERROR(Config, "Invalid profile index");
+    }
 
-    Settings::values.udp_input_address =
-        qt_config->value("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR)
-            .toString()
-            .toStdString();
-    Settings::values.udp_input_port = static_cast<u16>(
-        qt_config->value("udp_input_port", InputCommon::CemuhookUDP::DEFAULT_PORT).toInt());
-    Settings::values.udp_pad_index = static_cast<u8>(qt_config->value("udp_pad_index", 0).toUInt());
+    Settings::LoadProfile(Settings::values.profile);
+
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
@@ -255,7 +319,7 @@ void Config::ReadValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Paths");
-    int size{qt_config->beginReadArray("gamedirs")};
+    size = qt_config->beginReadArray("gamedirs");
     for (int i{}; i < size; ++i) {
         qt_config->setArrayIndex(i);
         UISettings::GameDir game_dir{};
@@ -335,20 +399,27 @@ void Config::SaveValues() {
     qt_config->endGroup();
 
     qt_config->beginGroup("Controls");
-    for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
-        qt_config->setValue(QString::fromStdString(Settings::NativeButton::mapping[i]),
-                            QString::fromStdString(Settings::values.buttons[i]));
+    qt_config->beginWriteArray("profiles");
+    for (int p{}; p < Settings::values.profiles.size(); ++p) {
+        qt_config->setArrayIndex(p);
+        const auto& profile{Settings::values.profiles[p]};
+        qt_config->setValue("name", QString::fromStdString(profile.name));
+        for (int i{}; i < Settings::NativeButton::NumButtons; ++i) {
+            qt_config->setValue(QString::fromStdString(Settings::NativeButton::mapping[i]),
+                                QString::fromStdString(profile.buttons[i]));
+        }
+        for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
+            qt_config->setValue(QString::fromStdString(Settings::NativeAnalog::mapping[i]),
+                                QString::fromStdString(profile.analogs[i]));
+        }
+        qt_config->setValue("motion_device", QString::fromStdString(profile.motion_device));
+        qt_config->setValue("touch_device", QString::fromStdString(profile.touch_device));
+        qt_config->setValue("udp_input_address", QString::fromStdString(profile.udp_input_address));
+        qt_config->setValue("udp_input_port", profile.udp_input_port);
+        qt_config->setValue("udp_pad_index", profile.udp_pad_index);
     }
-    for (int i{}; i < Settings::NativeAnalog::NumAnalogs; ++i) {
-        qt_config->setValue(QString::fromStdString(Settings::NativeAnalog::mapping[i]),
-                            QString::fromStdString(Settings::values.analogs[i]));
-    }
-    qt_config->setValue("motion_device", QString::fromStdString(Settings::values.motion_device));
-    qt_config->setValue("touch_device", QString::fromStdString(Settings::values.touch_device));
-    qt_config->setValue("udp_input_address",
-                        QString::fromStdString(Settings::values.udp_input_address));
-    qt_config->setValue("udp_input_port", Settings::values.udp_input_port);
-    qt_config->setValue("udp_pad_index", Settings::values.udp_pad_index);
+    qt_config->endArray();
+    qt_config->setValue("profile", Settings::values.profile);
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");
