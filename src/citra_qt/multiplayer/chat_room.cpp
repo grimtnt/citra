@@ -57,12 +57,10 @@ public:
     }
 
     QString GetSystemChatMessage() const {
-        return QString("[%1] <font color='%2'><i>%3</i></font>")
-            .arg(timestamp, system_color, message);
+        return QString("[%1] <font color='#888888'><i>%2</i></font>").arg(timestamp, message);
     }
 
 private:
-    static constexpr const char system_color[]{"#888888"};
     QString timestamp;
     QString message;
 };
