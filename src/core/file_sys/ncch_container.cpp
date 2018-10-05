@@ -176,8 +176,8 @@ Loader::ResultStatus NCCHContainer::Load() {
                         std::array<u8, 32> input;
                         std::memcpy(input.data(), key_y_primary.data(), key_y_primary.size());
                         std::memcpy(input.data() + key_y_primary.size(), seed.data(), seed.size());
-                        CryptoPP::SHA256 sha;
-                        sha.CalculateDigest(key_y_secondary.data(), input.data(), input.size());
+                        CryptoPP::SHA256().CalculateDigest(key_y_secondary.data(), input.data(),
+                                                           input.size());
                     }
                 }
 

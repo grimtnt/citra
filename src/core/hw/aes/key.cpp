@@ -70,7 +70,7 @@ AESKey HexToKey(const std::string& hex) {
 }
 
 void LoadPresetKeys() {
-    const std::string filepath = FileUtil::GetUserPath(D_SYSDATA_IDX) + AES_KEYS;
+    const std::string filepath{FileUtil::GetUserPath(D_SYSDATA_IDX) + AES_KEYS};
     FileUtil::CreateFullPath(filepath); // Create path if not already created
     std::ifstream file;
     OpenFStream(file, filepath, std::ios_base::in);
@@ -88,7 +88,7 @@ void LoadPresetKeys() {
             continue;
         }
 
-        const std::string& name = parts[0];
+        const std::string& name{parts[0]};
         AESKey key;
         try {
             key = HexToKey(parts[1]);
@@ -120,7 +120,7 @@ void LoadPresetKeys() {
         }
 
         if (slot_id >= MaxKeySlotID) {
-            LOG_ERROR(HW_AES, "Out of range slot ID {:#X}", slot_id);
+            LOG_ERROR(HW_AES, "Out of range slot ID 0x{:X}", slot_id);
             continue;
         }
 
@@ -144,7 +144,7 @@ void LoadPresetKeys() {
 } // namespace
 
 void InitKeys() {
-    static bool initialized = false;
+    static bool initialized{};
     if (initialized)
         return;
     LoadPresetKeys();
