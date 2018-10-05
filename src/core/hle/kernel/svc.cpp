@@ -301,7 +301,7 @@ static ResultCode ConnectToPort(Handle* out_handle, VAddr port_name_address) {
     if (port_name.size() > PortNameMaxLength)
         return ERR_PORT_NAME_TOO_LONG;
 
-    LOG_TRACE(Kernel_SVC, "called port_name={}", port_name);
+    LOG_TRACE(Kernel_SVC, "called, port_name={}", port_name);
 
     auto it{g_named_ports.find(port_name)};
     if (it == g_named_ports.end()) {
@@ -769,7 +769,7 @@ static void OutputDebugString(VAddr address, int len) {
 
 /// Get resource limit
 static ResultCode GetResourceLimit(Handle* resource_limit, Handle process_handle) {
-    LOG_TRACE(Kernel_SVC, "called process=0x{:08X}", process_handle);
+    LOG_TRACE(Kernel_SVC, "called, process=0x{:08X}", process_handle);
 
     SharedPtr<Process> process{g_handle_table.Get<Process>(process_handle)};
     if (process == nullptr)
@@ -951,7 +951,7 @@ static ResultCode ReleaseMutex(Handle handle) {
 
 /// Get the ID of the specified process
 static ResultCode GetProcessId(u32* process_id, Handle process_handle) {
-    LOG_TRACE(Kernel_SVC, "called process=0x{:08X}", process_handle);
+    LOG_TRACE(Kernel_SVC, "called, process=0x{:08X}", process_handle);
 
     const SharedPtr<Process> process{g_handle_table.Get<Process>(process_handle)};
     if (process == nullptr)
@@ -1031,7 +1031,7 @@ static ResultCode QueryProcessMemory(MemoryInfo* memory_info, PageInfo* page_inf
     memory_info->state = static_cast<u32>(vma->second.meminfo_state);
 
     page_info->flags = 0;
-    LOG_TRACE(Kernel_SVC, "called process=0x{:08X} addr=0x{:08X}", process_handle, addr);
+    LOG_TRACE(Kernel_SVC, "called, process=0x{:08X}, addr=0x{:08X}", process_handle, addr);
     return RESULT_SUCCESS;
 }
 
@@ -1138,7 +1138,7 @@ static ResultCode CancelTimer(Handle handle) {
 
 /// Sleep the current thread
 static void SleepThread(s64 nanoseconds) {
-    LOG_TRACE(Kernel_SVC, "called nanoseconds={}", nanoseconds);
+    LOG_TRACE(Kernel_SVC, "called, nanoseconds={}", nanoseconds);
 
     // Don't attempt to yield execution if there are no available threads to run,
     // this way we avoid a useless reschedule to the idle thread.
@@ -1156,7 +1156,10 @@ static void SleepThread(s64 nanoseconds) {
 
 /// This returns the total CPU ticks elapsed since the CPU was powered-on
 static s64 GetSystemTick() {
-    return static_cast<s64>(CoreTiming::GetTicks());
+    s64 result{static_cast<s64>(CoreTiming::GetTicks())};
+    // Advance time to defeat dumb games (like Cubic Ninja) that busy-wait for the frame to end.
+    CoreTiming::AddTicks(150); // Measured time between two calls on a 9.2 o3DS with Ninjhax 1.1b
+    return result;
 }
 
 /// Creates a memory block at the specified address with the specified permissions and size
@@ -1277,7 +1280,7 @@ static ResultCode GetSystemInfo(s64* out, u32 type, s32 param) {
             *out = GetMemoryRegion(MemoryRegion::BASE)->used;
             break;
         default:
-            LOG_ERROR(Kernel_SVC, "unknown GetSystemInfo type=0 region: param={}", param);
+            LOG_ERROR(Kernel_SVC, "unknown GetSystemInfo type=0, region: param={}", param);
             *out = 0;
             break;
         }
@@ -1286,7 +1289,7 @@ static ResultCode GetSystemInfo(s64* out, u32 type, s32 param) {
         *out = GetProcessListSize();
         break;
     default:
-        LOG_ERROR(Kernel_SVC, "unknown GetSystemInfo type={} param={}", type, param);
+        LOG_ERROR(Kernel_SVC, "unknown GetSystemInfo type={}, param={}", type, param);
         *out = 0;
         break;
     }
@@ -1296,7 +1299,7 @@ static ResultCode GetSystemInfo(s64* out, u32 type, s32 param) {
 }
 
 static ResultCode GetProcessInfo(s64* out, Handle process_handle, u32 type) {
-    LOG_TRACE(Kernel_SVC, "called process=0x{:08X}, type={}", process_handle, type);
+    LOG_TRACE(Kernel_SVC, "called, process=0x{:08X}, type={}", process_handle, type);
 
     SharedPtr<Process> process{g_handle_table.Get<Process>(process_handle)};
     if (process == nullptr)
