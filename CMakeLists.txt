@@ -86,6 +86,16 @@ if (NOT MSVC)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse4.1")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.1")
+
+    if (MINGW)
+        add_definitions(-DMINGW_HAS_SECURE_API)
+
+        if (MINGW_STATIC_BUILD)
+            add_definitions(-DQT_STATICPLUGIN)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+        endif()
+    endif()
 else()
     # Silence "deprecation" warnings
     add_definitions(/D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE /D_SCL_SECURE_NO_WARNINGS)
@@ -200,9 +210,9 @@ if (CITRA_USE_BUNDLED_QT)
 
     set(QT_PREFIX_HINT HINTS "${QT_PREFIX}")
 else()
-    # Passing an empty HINTS seems to cause default system paths to get ignored in CMake 2.8 so
-    # make sure to not pass anything if we don't have one.
-    set(QT_PREFIX_HINT)
+        # Passing an empty HINTS seems to cause default system paths to get ignored in CMake 2.8 so
+        # make sure to not pass anything if we don't have one.
+        set(QT_PREFIX_HINT)
 endif()
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL Multimedia ${QT_PREFIX_HINT})
@@ -230,6 +240,10 @@ ELSEIF (WIN32)
     # WSAPoll and SHGetKnownFolderPath (AppData/Roaming) didn't exist before WinNT 6.x (Vista)
     add_definitions(-D_WIN32_WINNT=0x0600 -DWINVER=0x0600)
     set(PLATFORM_LIBRARIES winmm ws2_32)
+    IF (MINGW)
+        # PSAPI is the Process Status API
+        set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} psapi imm32 version)
+    ENDIF (MINGW)
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "^(Linux|kFreeBSD|GNU|SunOS)$")
     set(PLATFORM_LIBRARIES rt)
 ENDIF (APPLE)
@@ -268,6 +282,10 @@ if (CLANG_FORMAT)
     if (WIN32)
         add_custom_target(clang-format
             COMMAND powershell.exe -Command "@(Get-ChildItem -Recurse ${SRCS}/* -Include '*.h', '*.cpp') | ForEach-Object { ${CLANG_FORMAT} -i $_.FullName }"
+            COMMENT ${CCOMMENT})
+    elseif(MINGW)
+        add_custom_target(clang-format
+            COMMAND find `cygpath -u ${SRCS}` -iname *.h -o -iname *.cpp | xargs `cygpath -u ${CLANG_FORMAT}` -i
             COMMENT ${CCOMMENT})
     else()
         add_custom_target(clang-format

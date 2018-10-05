@@ -11,7 +11,7 @@ Citra is a brand new project, so we have a great opportunity to keep things clea
 # Using clang format (version 6.0)
 When generating the native build script for your toolset, cmake will try to find the correct version of clang format (or will download it on windows). Before running cmake, please install clang format version 6.0 for your platform as follows:
 
-* Windows: do nothing; cmake will download a pre built binary. users can additionally install a clang format Visual Studio extension to add features like format on save.
+* Windows: do nothing; cmake will download a pre built binary for MSVC and MINGW. MSVC users can additionally install a clang format Visual Studio extension to add features like format on save.
 * OSX: run `brew install clang-format`.
 * Linux: use your package manager to get an appropriate binary.
 
