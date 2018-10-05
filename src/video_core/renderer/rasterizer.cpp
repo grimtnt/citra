@@ -236,7 +236,7 @@ struct VertexArrayInfo {
     u32 vs_input_size;
 };
 
-Rasterizer::VertexArrayInfo Rasterizer::AnalyzeVertexArray(bool is_indexed) {
+std::optional<Rasterizer::VertexArrayInfo> Rasterizer::AnalyzeVertexArray(bool is_indexed) {
     const auto& regs{Pica::g_state.regs};
     const auto& vertex_attributes{regs.pipeline.vertex_attributes};
 
@@ -246,6 +246,8 @@ Rasterizer::VertexArrayInfo Rasterizer::AnalyzeVertexArray(bool is_indexed) {
         const auto& index_info{regs.pipeline.index_array};
         PAddr address{vertex_attributes.GetPhysicalBaseAddress() + index_info.offset};
         const u8* index_address_8{Memory::GetPhysicalPointer(address)};
+        if (!index_address_8)
+            return std::nullopt;
         const u16* index_address_16{reinterpret_cast<const u16*>(index_address_8)};
         bool index_u16{index_info.format != 0};
 
@@ -272,7 +274,7 @@ Rasterizer::VertexArrayInfo Rasterizer::AnalyzeVertexArray(bool is_indexed) {
         }
     }
 
-    return {vertex_min, vertex_max, vs_input_size};
+    return VertexArrayInfo{vertex_min, vertex_max, vs_input_size};
 }
 
 void Rasterizer::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint vs_input_index_min,
@@ -294,7 +296,7 @@ void Rasterizer::SetupVertexArray(u8* array_ptr, GLintptr buffer_offset, GLuint 
 
         u32 offset{};
         for (u32 comp{}; comp < loader.component_count && comp < 12; ++comp) {
-            u32 attribute_index = loader.GetComponent(comp);
+            u32 attribute_index{loader.GetComponent(comp)};
             if (attribute_index < 12) {
                 if (vertex_attributes.GetNumElements(attribute_index) != 0) {
                     offset = Common::AlignUp(
@@ -429,7 +431,11 @@ bool Rasterizer::AccelerateDrawBatchInternal(bool is_indexed, bool use_gs) {
     const auto& regs{Pica::g_state.regs};
     GLenum primitive_mode{GetCurrentPrimitiveMode(use_gs)};
 
-    auto [vs_input_index_min, vs_input_index_max, vs_input_size]{AnalyzeVertexArray(is_indexed)};
+    auto opt{AnalyzeVertexArray(is_indexed)};
+    if (!opt.has_value())
+        return false;
+
+    auto [vs_input_index_min, vs_input_index_max, vs_input_size]{*opt};
 
     if (vs_input_size > VERTEX_BUFFER_SIZE) {
         LOG_WARNING(Render, "Too large vertex input size {}", vs_input_size);

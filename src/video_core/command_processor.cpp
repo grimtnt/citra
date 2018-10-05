@@ -292,15 +292,17 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         VertexLoader loader{regs.pipeline};
         Shader::OutputVertex::ValidateSemantics(regs.rasterizer);
 
-        // Multithreaded vertex cache. Each thread will lock the vertex that its processing and add
+        // Multithreaded vertex cache. Each thread will lock the vertex that it's processing and add
         // the data to that batch
         struct CachedVertex {
-            explicit CachedVertex() : batch(0), lock ATOMIC_FLAG_INIT {}
-            CachedVertex(const CachedVertex& other) : CachedVertex() {}
+            explicit CachedVertex() : batch{0}, lock ATOMIC_FLAG_INIT {}
+            CachedVertex(const CachedVertex& other) : CachedVertex{} {}
+
             union {
                 Shader::AttributeBuffer output_attr; // GS used
                 Shader::OutputVertex output_vertex;  // No GS
             };
+
             std::atomic<u32> batch;
             std::atomic_flag lock;
         };
@@ -313,6 +315,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         // used to invalidate data from the previous batch without clearing it
         static u32 batch_id{std::numeric_limits<u32>::max()};
         ++batch_id;
+
         // reset cache when id overflows for safety
         if (batch_id == 0) {
             ++batch_id;
@@ -328,11 +331,11 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         const u16* index_address_16{reinterpret_cast<const u16*>(index_address_8)};
         bool index_u16{index_info.format != 0};
 
-        auto VertexIndex = [&](unsigned int index) {
+        auto VertexIndex{[&](unsigned int index) {
             // Indexed rendering doesn't use the start offset
             return is_indexed ? (index_u16 ? index_address_16[index] : index_address_8[index])
                               : (index + regs.pipeline.vertex_offset);
-        };
+        }};
 
         auto* shader_engine{Shader::GetEngine()};
         Shader::UnitState shader_unit;
@@ -341,7 +344,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
         const bool use_gs{regs.pipeline.use_gs == PipelineRegs::UseGS::Yes};
 
-        auto VSUnitLoop = [&](u32 thread_id, auto num_threads) {
+        auto VSUnitLoop{[&](u32 thread_id, auto num_threads) {
             constexpr bool single_thread{
                 std::is_same<std::integral_constant<u32, 1>, decltype(num_threads)>()};
             Shader::UnitState shader_unit;
@@ -392,7 +395,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                     cached_vertex.batch.store(batch_id, std::memory_order_relaxed);
                 }
             }
-        };
+        }};
 
         auto& thread_pool{Common::ThreadPool::GetPool()};
         std::vector<std::future<void>> futures;
